@@ -100,15 +100,15 @@ const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verific
 
 // Gmail transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
 });
+
 
 // Send email
 // Send email (do not crash if it fails)
