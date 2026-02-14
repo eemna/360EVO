@@ -1,103 +1,157 @@
-import { Link, useNavigate } from "react-router";
 import { useState } from "react";
-import api from "../../lib/axios";
-import { AxiosError } from "axios";
-
+import { useNavigate } from "react-router";
+//import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Card } from "../components/ui/card";
+import api from "../../services/axios";
+import { AxiosError } from "axios";
+import { InputField } from '../components/ui/InputField';
 
-export default function Login() {
+
+export default function LoginPage() {
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+const handleSubmit = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
+  e.preventDefault();
 
-    try {
-      await api.post("/auth/login", {
-        email,
-        password,
-      });
+  setError("");
+  setLoading(true);
 
-      // success → go to app
-      navigate("/");
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      setError(error.response?.data?.message || "Login failed");
-    }
-  };
+  try {
+    const response = await api.post("/auth/login", {
+      email,
+      password
+    });
+    
+    localStorage.setItem("accessToken", response.data.accessToken);
+
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+    console.log("Logged user:", response.data.user);
+
+    navigate("/");
+  } catch (err) {
+  const error = err as AxiosError<{ message: string }>;
+
+  if (error.response?.status === 401) {
+  localStorage.setItem("pendingEmail", email);
+  navigate("/verify-email");
+  return;
+}
+
+
+  setError(error.response?.data?.message || "Login failed");
+}
+ finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4">
-      <Card className="w-full max-w-md p-8 border-none shadow-lg">
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
-            <span className="font-bold text-white">360</span>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Welcome back to 360EVO
-          </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Sign in to continue your journey
-          </p>
+    <div className="min-h-screen bg-[#e8eef5] flex items-center justify-center p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
+              <span className="font-bold text-white">360</span>
+            </div>
+          
         </div>
 
-        {error && (
-          <p className="mb-4 text-sm text-red-600 text-center">{error}</p>
+        {/* Title */}
+        <h1 className="text-center mb-2">Welcome back to 360EVO</h1>
+        <p className="text-center text-muted-foreground mb-6">
+          Sign in to continue your journey
+        </p>
+          {error && (
+          <p className="text-red-500 text-sm text-center mb-4">
+            {error}
+          </p>
         )}
-
+        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
+            
+            <InputField
               id="email"
+              label="Email"
               type="email"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+              error={error}
+               required />
+
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            
+           <InputField
+                 id="password"
+                 label="Password"
+                 type="password"
+                 placeholder="Enter your password"
+                 value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={error}
+                required />
+          </div>
+
+          {/* Forgot Password */}
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-primary hover:underline"
+            >
+              Forgot Password?
+            </button>
           </div>
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600"
+            variant="primary"
+            size="md"
+            disabled={loading}
+            className="w-full"
+            
           >
-            Sign In
+            {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
 
-        <div className="mt-6 text-center text-sm">
-          <span className="text-gray-600">Don't have an account? </span>
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Sign up
-          </Link>
-        </div>
 
-        <div className="mt-4 text-center">
-          <Link to="/" className="text-sm text-gray-600 hover:underline">
+        {/* Sign Up */}
+        <p className="text-center mt-6 text-muted-foreground">
+          Don't have an account?{" "}
+          <button
+            onClick={() => navigate("/register")}
+            className="text-primary hover:underline"
+          >
+            Sign up
+          </button>
+        </p>
+
+        {/* Back to Home */}
+        <div className="text-center mt-4">
+          <Button
+            onClick={() => navigate("/")}
+            variant="link"
+            size="sm"
+          >
             ← Back to home
-          </Link>
+          </Button>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

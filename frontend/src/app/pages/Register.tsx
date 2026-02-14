@@ -1,10 +1,10 @@
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
-import api from "../../lib/axios";
+import api from "../../services/axios";
 import { AxiosError } from "axios";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { InputField } from '../components/ui/InputField';
 import { Card } from "../components/ui/card";
 import {
   Select,
@@ -23,26 +23,30 @@ export default function Register() {
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError("");
 
-    try {
-      await api.post("/auth/register", {
-        name,
-        email,
-        password,
-        role,
-      });
+  if (!role) {
+    setError("Please select a role");
+    return;
+  }
 
-      // success → go to app
-      navigate("/");
-   } catch (err) {
-       const error = err as AxiosError<{ message: string }>;
-       setError(error.response?.data?.message || "Registration failed");
-               }
+  try {
+    await api.post("/auth/register", {
+      name,
+      email,
+      password,
+      role,
+    });
 
-  };
+    navigate("/");
+  } catch (err) {
+    const error = err as AxiosError<{ message: string }>;
+    setError(error.response?.data?.message || "Registration failed");
+  }
+};
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 px-4 py-12">
@@ -64,40 +68,37 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
-              required
-            />
-          </div>
+         <InputField
+  id="name"
+  label="Full Name"
+  value={name}
+  onChange={(e) => setName(e.target.value)}
+  placeholder="John Doe"
+  required
+/>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              required
-            />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+        <InputField
+  id="email"
+  label="Email"
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder="you@example.com"
+  required
+/>
+
+
+          <InputField
+  id="password"
+  label="Password"
+  type="password"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  placeholder="••••••••"
+  required
+/>
+
 
           <div className="space-y-2">
             <Label>I am a...</Label>
@@ -116,15 +117,16 @@ export default function Register() {
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600"
-          >
+            variant="gradient"
+            size="md"
+            className="w-full">
             Create Account
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm">
           <span className="text-gray-600">Already have an account? </span>
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-primary hover:underline">
             Sign in
           </Link>
         </div>

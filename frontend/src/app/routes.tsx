@@ -1,21 +1,36 @@
 import { createBrowserRouter } from "react-router";
-//import Root from "./pages/Root";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
+
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    Component: Landing,
+    element: <Landing />,
   },
   {
     path: "/login",
-    Component: Login,
+    element: <Login />,
   },
   {
     path: "/register",
-    Component: Register,
+    element: <Register />,
+  },
+  {
+    path: "/verify-email",
+    element: <VerifyEmailPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordPage />,
   },
 ]);

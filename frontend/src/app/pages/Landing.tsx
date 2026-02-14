@@ -1,5 +1,3 @@
-
-
 function Landing() {
   return (
     <div>
