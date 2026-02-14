@@ -12,18 +12,24 @@ dotenv.config();
 const app = express();
 
 app.use(rateLimiter);
+
+
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
 }));
+
 app.use(express.json());
 app.use(cookieParser());
-
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
 app.use("/api/auth", authRoutes);
-app.use(errorHandler);
+
 
 const PORT= process.env.PORT || 5001;
 
+app.use(errorHandler);
 
 
 initDB().then(() => {
