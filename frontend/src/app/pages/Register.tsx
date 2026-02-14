@@ -23,7 +23,10 @@ export default function Register() {
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
 
-const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
+
   e.preventDefault();
   setError("");
 
