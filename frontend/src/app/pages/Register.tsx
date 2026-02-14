@@ -40,7 +40,7 @@ const handleSubmit = async (e: React.FormEvent) => {
       role,
     });
 
-    navigate("/");
+    navigate("/login");
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
     setError(error.response?.data?.message || "Registration failed");
@@ -125,7 +125,8 @@ const handleSubmit = async (e: React.FormEvent) => {
             type="submit"
             variant="gradient"
             size="md"
-            className="w-full">
+            className="w-full"
+            >
             Create Account
           </Button>
         </form>
