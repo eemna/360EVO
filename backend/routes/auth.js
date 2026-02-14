@@ -96,7 +96,7 @@ router.post(
         [userId, verificationToken]
       );
       // Create verification link
-const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
 // Gmail transporter
 const transporter = nodemailer.createTransport({
@@ -111,15 +111,21 @@ const transporter = nodemailer.createTransport({
 });
 
 // Send email
-await transporter.sendMail({
-  from: `"360EVO" <${process.env.EMAIL_USER}>`,
-  to: email,
-  subject: "Verify your email",
-  html: `
-    <p>Click below to verify your email:</p>
-    <a href="${verificationLink}">${verificationLink}</a>
-  `,
-});
+// Send email (do not crash if it fails)
+try {
+  await transporter.sendMail({
+    from: `"360EVO" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Verify your email",
+    html: `
+      <p>Click below to verify your email:</p>
+      <a href="${verificationLink}">${verificationLink}</a>
+    `,
+  });
+} catch (mailError) {
+  console.error("Email sending failed:", mailError.message);
+}
+
 
 
       res.status(201).json({
