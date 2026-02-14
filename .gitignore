@@ -1,5 +1,20 @@
+
 node_modules/
 
-.env
 
+dist/
+build/
+
+
+.env
+.env.*
+frontend/.env
+frontend/.env.*
+backend/.env
+backend/.env.*
+
+
+logs
+*.log
 npm-debug.log*
+

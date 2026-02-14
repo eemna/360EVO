@@ -19,7 +19,7 @@ pool.connect()
   .catch((err) => console.error(" DB Connection Error:", err));
 
 
-// 🚀 Initialize Database
+// Initialize Database
 export const initDB = async () => {
   try {
 
@@ -90,9 +90,9 @@ export const initDB = async () => {
       );
     `);
 
-    console.log("✅ All tables created successfully");
+    console.log(" All tables created successfully");
 
   } catch (error) {
-    console.error("❌ Database initialization error:", error);
+    console.error(" Database initialization error:", error);
   }
 };
