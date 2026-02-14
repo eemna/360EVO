@@ -11,8 +11,6 @@ import job from './config/cron.js'
 dotenv.config();
 const app = express();
 
-app.use(rateLimiter);
-
 
 const allowedOrigins = [
   "http://localhost:5173",
@@ -41,7 +39,7 @@ if (process.env.NODE_ENV === "production") job.start();
 app.get("/api/health", (req, res) => {
   res.send("Backend is running 🚀");
 });
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", rateLimiter, authRoutes);
 
 
 const PORT= process.env.PORT || 5001;
