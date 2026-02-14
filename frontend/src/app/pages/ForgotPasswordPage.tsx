@@ -70,7 +70,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+                      }
                 className="bg-input-background border-0"
                 required
               />

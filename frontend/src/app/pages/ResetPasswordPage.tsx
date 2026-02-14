@@ -84,7 +84,10 @@ export default function ResetPasswordPage() {
                   type="password"
                   placeholder="••••••••"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setNewPassword(e.target.value)
+                    }
+
                   className="bg-input-background border-0"
                   required
                 />
@@ -97,7 +100,10 @@ export default function ResetPasswordPage() {
                   type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setConfirmPassword(e.target.value)
+                  }
+
                   className="bg-input-background border-0"
                   required
                 />

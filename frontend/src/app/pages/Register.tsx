@@ -4,7 +4,7 @@ import api from "../../services/axios";
 import { AxiosError } from "axios";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
-import { InputField } from '../components/ui/InputField';
+import { InputField } from '../components/ui/inputField';
 import { Card } from "../components/ui/card";
 import {
   Select,
@@ -72,7 +72,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   id="name"
   label="Full Name"
   value={name}
-  onChange={(e) => setName(e.target.value)}
+  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+  setName(e.target.value)
+}
+
   placeholder="John Doe"
   required
 />
@@ -83,7 +86,10 @@ const handleSubmit = async (e: React.FormEvent) => {
   label="Email"
   type="email"
   value={email}
-  onChange={(e) => setEmail(e.target.value)}
+  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+  setEmail(e.target.value)
+}
+
   placeholder="you@example.com"
   required
 />

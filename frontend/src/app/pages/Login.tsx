@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
-import { InputField } from '../components/ui/InputField';
+import { InputField } from '../components/ui/inputField';
 
 
 export default function LoginPage() {
@@ -87,7 +87,10 @@ const handleSubmit = async (
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+                    }
+
               error={error}
                required />
 
@@ -101,7 +104,9 @@ const handleSubmit = async (
                  type="password"
                  placeholder="Enter your password"
                  value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                 setPassword(e.target.value)}
+
                 error={error}
                 required />
           </div>
