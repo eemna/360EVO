@@ -2,7 +2,7 @@
 function Landing() {
   return (
     <div>
-      
+      helloo
     </div>
   )
 }
