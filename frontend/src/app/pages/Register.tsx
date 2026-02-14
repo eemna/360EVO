@@ -111,7 +111,7 @@ const handleSubmit = async (
 
           <div className="space-y-2">
             <Label>I am a...</Label>
-            <Select onValueChange={setRole} required>
+           <Select value={role} onValueChange={setRole}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your role" />
               </SelectTrigger>
