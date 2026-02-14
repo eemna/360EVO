@@ -5,7 +5,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
-// 🔐 Add access token to every request
+// Add access token to every request
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
@@ -19,7 +19,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// 🔁 Auto refresh if access token expires
+//  Auto refresh if access token expires
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -29,7 +29,6 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // ❗ DO NOT try refresh for login or refresh route itself
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
