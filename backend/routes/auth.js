@@ -274,19 +274,19 @@ router.post("/forgot-password", async (req, res, next) => {
     );
 
     // ✅ Gmail transporter
-    const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-        },
-        tls: {
-        rejectUnauthorized: false,
-         },
-        });
+   const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 
-    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+
+    const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
     await transporter.sendMail({
       from: `"360EVO" <${process.env.EMAIL_USER}>`,
@@ -334,16 +334,18 @@ router.post("/resend-verification", async (req, res, next) => {
       [userId, verificationToken]
     );
 
-    const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+    const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      tls: { rejectUnauthorized: false },
-    });
+  const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
 
     await transporter.sendMail({
       from: `"360EVO" <${process.env.EMAIL_USER}>`,
