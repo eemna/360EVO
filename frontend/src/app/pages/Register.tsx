@@ -42,7 +42,7 @@ const handleSubmit = async (
       password,
       role,
     });
-
+    alert("Register success!");
     navigate("/login");
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
