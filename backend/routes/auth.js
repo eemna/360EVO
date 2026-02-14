@@ -36,6 +36,27 @@ const generateRefreshToken = (id) => {
   });
 };
 
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  requireTLS: true,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: {
+    rejectUnauthorized: false,
+  },
+});
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("SMTP ERROR:", error);
+  } else {
+    console.log("SMTP READY");
+  }
+});
+
 
 /* ===============================
    REGISTER
@@ -98,17 +119,7 @@ router.post(
       // Create verification link
 const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-// Gmail transporter
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+
 
 
 // Send email
@@ -275,30 +286,26 @@ router.post("/forgot-password", async (req, res, next) => {
     );
 
     // ✅ Gmail transporter
-   const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+  
 
 
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-    await transporter.sendMail({
-      from: `"360EVO" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Reset your password",
-      html: `
-        <p>Click below to reset your password:</p>
-        <a href="${resetLink}">${resetLink}</a>
-      `,
-    });
+   try {
+  await transporter.sendMail({
+    from: `"360EVO" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Reset your password",
+    html: `
+      <p>Click below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+    `,
+  });
+} catch (mailError) {
+  console.error("Forgot password email failed:", mailError.message);
+}
+
 
     res.json({ message: "Password reset link sent to your email" });
 
@@ -338,16 +345,7 @@ router.post("/resend-verification", async (req, res, next) => {
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-  const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  family: 4,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+  
 
 
     await transporter.sendMail({
