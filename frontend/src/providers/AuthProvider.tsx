@@ -10,12 +10,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = (user: User, accessToken: string) => {
     setUser(user);
-    localStorage.setItem("token", accessToken);
+    localStorage.setItem("accessToken", accessToken);
+     localStorage.setItem("user", JSON.stringify(user));
   };
 
   const logout = async () => {
     setUser(null);
-    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+
   };
 
 
