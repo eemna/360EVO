@@ -15,14 +15,14 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { useToast } from "../../context/ToastContext";
-import { useAuth } from "../../hooks/useAuth";
+//import { useAuth } from "../../hooks/useAuth";
 
 export default function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  //const { login } = useAuth();
 
   const { showToast } = useToast();
-
+  const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,33 +35,32 @@ const handleSubmit = async (
 ) => {
   e.preventDefault();
   setError("");
-
+  setLoading(true);
   if (!role) {
     showToast({
       type: "warning",
       title: "Missing Role",
       message: "Please select a role before continuing.",
     });
+    setLoading(false);
     return;
   }
 
   try {
-    const response = await api.post("/auth/register", {
+     await api.post("/auth/register", {
       name,
       email,
       password,
       role,
     });
 
-    login(response.data.user, response.data.accessToken);
+   showToast({
+  type: "success",
+  title: "Check your email",
+  message: "We sent you a verification link.",
+});
 
-    showToast({
-      type: "success",
-      title: "Account created 🎉",
-      message: "Welcome to 360EVO!",
-    });
-
-    navigate("/");
+navigate("/login");
 
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
@@ -75,8 +74,11 @@ const handleSubmit = async (
     });
 
     setError(message);
+  } finally {
+    setLoading(false);
   }
 };
+
 
 
 
@@ -154,13 +156,14 @@ const handleSubmit = async (
           </div>
 
           <Button
-            type="submit"
-            variant="gradient"
-            size="md"
-            className="w-full"
-            >
-            Create Account
+           type="submit"
+           variant="gradient"
+           size="md"
+          className="w-full"
+          disabled={loading} >
+          {loading ? "Registering..." : "Create Account"}
           </Button>
+
         </form>
 
         <div className="mt-6 text-center text-sm">

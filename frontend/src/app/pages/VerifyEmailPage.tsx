@@ -13,7 +13,8 @@ export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
-  const [message, setMessage] = useState("Verifying...");
+  const [message, setMessage] = useState("");
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [resent, setResent] = useState(false);
@@ -112,13 +113,18 @@ const handleResend = async () => {
 
         <h1 className="text-center mb-4">Verify your email</h1>
 
-        {loading ? (
-          <p className="text-center text-gray-500">Verifying...</p>
-        ) : error ? (
-          <p className="text-red-600 text-center">{error}</p>
-        ) : (
-          <p className="text-green-600 text-center">{message}</p>
-        )}
+        {loading && (
+             <p className="text-center text-gray-500">Verifying...</p>
+                )}
+
+        {!loading && error && (
+            <p className="text-red-600 text-center">{error}</p>
+                )}
+
+        {!loading && !error && message && (
+           <p className="text-green-600 text-center">{message}</p>
+              )}
+
 
         {/* Resend Button */}
         {!loading && !token && (
