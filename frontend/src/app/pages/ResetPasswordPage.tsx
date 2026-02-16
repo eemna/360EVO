@@ -7,10 +7,13 @@ import { useNavigate } from "react-router";
 import { useSearchParams } from "react-router";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
+import { useToast } from "../../context/ToastContext";
+import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [success, setSuccess] = useState(false);
@@ -18,17 +21,25 @@ export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [loading, setLoading] = useState(false);
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError('');
 
   if (newPassword !== confirmPassword) {
-    setError('Passwords do not match');
+    showToast({
+      type: "warning",
+      title: "Password Mismatch",
+      message: "Passwords do not match.",
+    });
     return;
   }
 
   if (newPassword.length < 8) {
-    setError('Password must be at least 8 characters');
+    showToast({
+      type: "warning",
+      title: "Weak Password",
+      message: "Password must be at least 8 characters.",
+    });
     return;
   }
 
@@ -37,17 +48,40 @@ export default function ResetPasswordPage() {
   try {
     await api.post("/auth/reset-password", {
       token,
-      newPassword: newPassword,
+      newPassword,
+    });
+
+    showToast({
+      type: "success",
+      title: "Password Updated 🎉",
+      message: "Your password has been successfully updated.",
     });
 
     setSuccess(true);
+
+    // Optional: auto redirect after 2 seconds
+    setTimeout(() => {
+      navigate("/login");
+    }, 2000);
+
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
-    setError(error.response?.data?.message || "Invalid or expired token");
+
+    const message =
+      error.response?.data?.message || "Invalid or expired token";
+
+    showToast({
+      type: "error",
+      title: "Reset Failed",
+      message,
+    });
+
+    setError(message);
   } finally {
     setLoading(false);
   }
-  };
+};
+
 
   return (
     <div className="min-h-screen bg-[#e8eef5] flex items-center justify-center p-4">
@@ -91,6 +125,7 @@ export default function ResetPasswordPage() {
                   className="bg-input-background border-0"
                   required
                 />
+                <PasswordStrengthBar password={newPassword} />
               </div>
 
               <div className="space-y-2">

@@ -5,27 +5,30 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const { Pool } = pkg;
-
 export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+
+/*export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === "production"
     ? { rejectUnauthorized: false }
     : false,
+}); */
+
+
+pool.on("error", (err) => {
+  console.error("Unexpected idle client error", err);
 });
-
-// Test connection
-pool.connect()
-  .then(() => console.log("Connected to Neon PostgreSQL"))
-  .catch((err) => console.error(" DB Connection Error:", err));
-
 
 // Initialize Database
 export const initDB = async () => {
   try {
 
-    // ===============================
     // USERS TABLE
-    // ===============================
     await pool.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -39,9 +42,9 @@ export const initDB = async () => {
       );
     `);
 
-    // ===============================
+   
     // EMAIL VERIFICATION
-    // ===============================
+   
     await pool.query(`
       CREATE TABLE IF NOT EXISTS email_verifications (
         id SERIAL PRIMARY KEY,
@@ -63,9 +66,9 @@ export const initDB = async () => {
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`);
 
-    // ===============================
+  
     // PASSWORD RESETS
-    // ===============================
+   
     await pool.query(`
       CREATE TABLE IF NOT EXISTS password_resets (
         id SERIAL PRIMARY KEY,
@@ -76,9 +79,8 @@ export const initDB = async () => {
       );
     `);
 
-    // ===============================
     // SESSIONS (Refresh Tokens)
-    // ===============================
+    
     await pool.query(`
       CREATE TABLE IF NOT EXISTS sessions (
         id SERIAL PRIMARY KEY,

@@ -5,10 +5,17 @@ import { Button } from "../components/ui/button";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
 import { InputField } from '../components/ui/inputField';
+import { useToast } from "../../context/ToastContext";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { useAuth } from "../../hooks/useAuth";
 
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const { showToast } = useToast();
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,12 +36,15 @@ const handleSubmit = async (
       password
     });
     
-    localStorage.setItem("accessToken", response.data.accessToken);
+   login(response.data.user, response.data.accessToken);
 
-    localStorage.setItem("user", JSON.stringify(response.data.user));
     console.log("Logged user:", response.data.user);
-
-    navigate("/");
+    showToast({
+      type: "success",
+      title: "Login successful 🎉",
+      message: "Welcome back!",
+    });
+    navigate("/app");
   } catch (err) {
   const error = err as AxiosError<{ message: string }>;
 
@@ -45,7 +55,17 @@ const handleSubmit = async (
 }
 
 
-  setError(error.response?.data?.message || "Login failed");
+  const message =
+  error.response?.data?.message || "Login failed";
+
+showToast({
+  type: "error",
+  title: "Login Failed",
+  message,
+});
+
+setError(message);
+
 }
  finally {
     setLoading(false);
@@ -130,7 +150,11 @@ const handleSubmit = async (
             className="w-full"
             
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? (
+              <>
+              <LoadingSpinner size="sm" />
+              Signing in...
+              </> ) : ( "Sign In" )}
           </Button>
         </form>
 
