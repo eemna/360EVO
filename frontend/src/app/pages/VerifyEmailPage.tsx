@@ -4,9 +4,12 @@ import { Mail } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
+import { useToast } from "../../context/ToastContext";
 
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
 
@@ -15,10 +18,13 @@ export default function VerifyEmailPage() {
   const [loading, setLoading] = useState(true);
   const [resent, setResent] = useState(false);
 
-  // 🔹 Auto verify when page loads
   useEffect(() => {
   if (!token) {
-    setMessage("Please check your email for a verification link.");
+    showToast({
+      type: "info",
+      title: "Verification Required",
+      message: "Please check your email for a verification link.",
+    });
     setLoading(false);
     return;
   }
@@ -26,13 +32,28 @@ export default function VerifyEmailPage() {
   const verify = async () => {
     try {
       await api.post("/auth/verify-email", { token });
+
+      showToast({
+        type: "success",
+        title: "Email Verified 🎉",
+        message: "Your email has been successfully verified.",
+      });
+
       setMessage("Email successfully verified.");
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      setError(
+
+      const message =
         error.response?.data?.message ||
-        "Invalid or expired verification link."
-      );
+        "Invalid or expired verification link.";
+
+      showToast({
+        type: "error",
+        title: "Verification Failed",
+        message,
+      });
+
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -42,21 +63,37 @@ export default function VerifyEmailPage() {
 }, [token]);
 
 
-  // 🔹 Resend verification email
+
+  //  Resend verification email
 const handleResend = async () => {
   const email = localStorage.getItem("pendingEmail");
 
   if (!email) {
-    setError("No email found. Please login again.");
+    showToast({
+      type: "error",
+      title: "No Email Found",
+      message: "Please login again.",
+    });
     return;
   }
 
   try {
     await api.post("/auth/resend-verification", { email });
+
+    showToast({
+      type: "success",
+      title: "Email Sent 📩",
+      message: "Verification email has been resent.",
+    });
+
     setResent(true);
     setTimeout(() => setResent(false), 3000);
   } catch {
-    setError("Failed to resend verification email.");
+    showToast({
+      type: "error",
+      title: "Resend Failed",
+      message: "Failed to resend verification email.",
+    });
   }
 };
 

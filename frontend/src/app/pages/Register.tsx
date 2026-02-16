@@ -5,6 +5,7 @@ import { AxiosError } from "axios";
 import { Button } from "../components/ui/button";
 import { Label } from "../components/ui/label";
 import { InputField } from '../components/ui/inputField';
+import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 import { Card } from "../components/ui/card";
 import {
   Select,
@@ -13,9 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
+import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
+  const { showToast } = useToast();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,32 +29,55 @@ export default function Register() {
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
 
+
 const handleSubmit = async (
   e: React.FormEvent<HTMLFormElement>
 ) => {
-
   e.preventDefault();
   setError("");
 
   if (!role) {
-    setError("Please select a role");
+    showToast({
+      type: "warning",
+      title: "Missing Role",
+      message: "Please select a role before continuing.",
+    });
     return;
   }
 
   try {
-    await api.post("/auth/register", {
+    const response = await api.post("/auth/register", {
       name,
       email,
       password,
       role,
     });
-    alert("Register success!");
-    navigate("/login");
+
+    login(response.data.user, response.data.accessToken);
+
+    showToast({
+      type: "success",
+      title: "Account created 🎉",
+      message: "Welcome to 360EVO!",
+    });
+
+    navigate("/");
+
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
-    setError(error.response?.data?.message || "Registration failed");
+    const message =
+      error.response?.data?.message || "Registration failed";
+
+    showToast({
+      type: "error",
+      title: "Registration Failed",
+      message,
+    });
+
+    setError(message);
   }
 };
+
 
 
   return (
@@ -107,7 +136,7 @@ const handleSubmit = async (
   placeholder="••••••••"
   required
 />
-
+<PasswordStrengthBar password={password} />
 
           <div className="space-y-2">
             <Label>I am a...</Label>

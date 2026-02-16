@@ -2,6 +2,8 @@ import { Link } from "react-router";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useAuth } from "../../../hooks/useAuth";
+import { useNavigate } from "react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +15,14 @@ import {
 import { Search, Bell, MessageSquare, Home, Users, Briefcase } from "lucide-react";
 
 export default function TopNav() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
   return (
-    <nav className="fixed top-0 z-50 w-full border-b bg-white">
+    <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center gap-4">
           {/* Logo */}
@@ -77,12 +85,11 @@ export default function TopNav() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
-                  <div className="flex flex-col">
-                    <span className="font-semibold">John Doe</span>
-                    <span className="text-xs text-gray-500">Startup Founder</span>
+                   <div className="flex flex-col">
+                   <span className="font-semibold">{user?.name}</span>
+                  <span className="text-xs text-gray-500">{user?.role}</span>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
                 <Link to="/app/profile/me">
                   <DropdownMenuItem>My Profile</DropdownMenuItem>
                 </Link>
@@ -91,7 +98,9 @@ export default function TopNav() {
                 </Link>
                 <DropdownMenuSeparator />
                 <Link to="/">
-                  <DropdownMenuItem>Sign out</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                      Sign out
+                  </DropdownMenuItem>
                 </Link>
               </DropdownMenuContent>
             </DropdownMenu>

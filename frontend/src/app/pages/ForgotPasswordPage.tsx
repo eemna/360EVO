@@ -6,10 +6,13 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from "react-router";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
+import { useToast } from '../../context/ToastContext';
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
 
   const [email, setEmail] = useState('');
@@ -25,14 +28,32 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   try {
     await api.post("/auth/forgot-password", { email });
+
+    showToast({
+      type: "success",
+      title: "Email Sent 📩",
+      message: "Password reset link has been sent to your email.",
+    });
+
     setSent(true);
   } catch (err) {
     const error = err as AxiosError<{ message: string }>;
-    setError(error.response?.data?.message || "Something went wrong");
+
+    const message =
+      error.response?.data?.message || "Something went wrong";
+
+    showToast({
+      type: "error",
+      title: "Request Failed",
+      message,
+    });
+
+    setError(message);
   } finally {
     setLoading(false);
   }
 };
+
 
 
   return (
@@ -84,8 +105,12 @@ const handleSubmit = async (e: React.FormEvent) => {
              size="md"
              disabled={loading}
              className="w-full"
-            >
-             {loading ? "Sending..." : "Send Reset Link"}
+            > 
+              {loading ? (
+                <>
+               <LoadingSpinner size="sm" />
+                Sending...
+                </> ) : ( "Send Reset Link" )}
             </Button>
 
           </form>

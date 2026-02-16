@@ -2,15 +2,17 @@ import express from 'express';
 import dotenv from "dotenv";
 import cookieParser from 'cookie-parser';
 import cors from "cors";
-import authRoutes from "./routes/auth.js";
+import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
 import { initDB } from "./config/db.js";
 import rateLimiter from './middleware/rateLimiter.js';
-import job from './config/cron.js'
+import job from './config/cron.js';
+import helmet from "helmet";
+
 
 dotenv.config();
 const app = express();
-
+app.use(helmet());
 
 const allowedOrigins = [
   "http://localhost:5173",

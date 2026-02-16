@@ -1,75 +1,21 @@
-import express from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { body, validationResult } from "express-validator";
 import { pool } from "../config/db.js";
-import { protect } from "../middleware/auth.js";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { generateAccessToken, generateRefreshToken } 
+from "../utils/tokenUtils.js";
+import { sendEmail } from "../utils/email.js";
+import { cookieOptions } from "../utils/cookieOptions.js";
+import jwt from "jsonwebtoken";
 
-const router = express.Router();
+
 dotenv.config();
 
-/* ===============================
-   COOKIE CONFIG
-================================= */
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
-  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-};
 
-/* ===============================
-   GENERATE JWT
-================================= */
-const generateAccessToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "15m",
-  });
-};
+  // REGISTER
 
-const generateRefreshToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "30d",
-  });
-};
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-
-  requireTLS: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("SMTP ERROR:", error);
-  } else {
-    console.log("SMTP READY");
-  }
-});
-
-
-/* ===============================
-   REGISTER
-================================= */
-router.post(
-  "/register",
-  [
-    body("email").isEmail(),
-    body("password").isLength({ min: 6 }),
-    body("role").notEmpty(),
-  ],
-  async (req, res, next) => {
+export const register = async (req, res, next) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -121,12 +67,8 @@ router.post(
 const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
 
-
-
-// Send email
-// Send email (do not crash if it fails)
 try {
-  await transporter.sendMail({
+  await sendEmail({
     from: `"360EVO" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Verify your email",
@@ -148,13 +90,12 @@ try {
     } catch (error) {
   next(error);
 }
-  }
-);
+  };
 
-/* ===============================
-   LOGIN
-================================= */
-router.post("/login", async (req, res, next) => {
+
+  // LOGIN
+
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -214,12 +155,11 @@ res.json({
 } catch (error) {
   next(error);
 }
-});
+};
 
-/* ===============================
-   VERIFY EMAIL
-================================= */
-router.post("/verify-email", async (req, res, next) => {
+  // VERIFY EMAIL
+
+export const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.body;
 
@@ -253,14 +193,13 @@ router.post("/verify-email", async (req, res, next) => {
   }catch (error) {
   next(error);
 }
-});
+};
 
 
 
-/* ===============================
-   FORGOT PASSWORD
-================================= */
-router.post("/forgot-password", async (req, res, next) => {
+ //  FORGOT PASSWORD
+
+export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -285,16 +224,10 @@ router.post("/forgot-password", async (req, res, next) => {
        VALUES ($1, $2, NOW() + INTERVAL '1 hour')`,
       [user.rows[0].id, resetToken]
     );
-
-    // ✅ Gmail transporter
-  
-
-
-
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
    try {
-  await transporter.sendMail({
+  await sendEmail({
     from: `"360EVO" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: "Reset your password",
@@ -313,9 +246,9 @@ router.post("/forgot-password", async (req, res, next) => {
   }  catch (error) {
   next(error);
 }
-});
+};
 
-router.post("/resend-verification", async (req, res, next) => {
+export const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -349,7 +282,7 @@ router.post("/resend-verification", async (req, res, next) => {
   
 
 
-    await transporter.sendMail({
+    await sendEmail({
       from: `"360EVO" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Verify your email",
@@ -364,9 +297,9 @@ router.post("/resend-verification", async (req, res, next) => {
   }catch (error) {
   next(error);
 }
-});
+};
 
-router.post("/refresh-token", async (req, res, next) => {
+export const refreshToken = async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
@@ -396,14 +329,12 @@ router.post("/refresh-token", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+};
 
 
 
-/* ===============================
-   RESET PASSWORD
-================================= */
-router.post("/reset-password", async (req, res, next) => {
+ //  RESET PASSWORD
+export const resetPassword = async (req, res, next) => {
   try {
     const { token, newPassword } = req.body;
 
@@ -443,20 +374,20 @@ router.post("/reset-password", async (req, res, next) => {
   } catch (error) {
     next(error); // 👈 send error to global error handler
   }
-});
+};
 
 
-/* ===============================
-   GET CURRENT USER
-================================= */
-router.get("/me", protect, async (req, res) => {
-  res.json(req.user);
-});
+  // GET CURRENT USER
+export const getMe = async (req, res, next) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    next(error);
+  }
+};
 
-/* ===============================
-   LOGOUT
-================================= */
-router.post("/logout", async (req, res, next) => {
+ //  LOGOUT
+export const logout = async (req, res, next) => {
   try {
     const refreshToken = req.cookies.refreshToken;
 
@@ -474,7 +405,6 @@ router.post("/logout", async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+};
 
 
-export default router;
