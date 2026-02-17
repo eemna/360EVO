@@ -15,82 +15,130 @@ dotenv.config();
 
   // REGISTER
 
+
+
 export const register = async (req, res, next) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
+  const client = await pool.connect();
 
-      const { name, email, password, role } = req.body;
-      if (!name || !email || !password || !role) {
+   try {
+    await client.query("BEGIN");
+
+    const {
+      name,
+      email,
+      password,
+      role,
+      companyName,
+      stage,
+      expertise,
+      hourlyRate,
+    } = req.body;
+
+    if (!name || !email || !password || !role) {
       return res.status(400).json({
-      message: "All fields are required",
-       });
-      }
-
-      // Check existing user
-      const userExists = await pool.query(
-        "SELECT id FROM users WHERE email = $1",
-        [email]
-      );
-
-      if (userExists.rows.length > 0) {
-        return res.status(400).json({ message: "User already exists" });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const newUser = await pool.query(
-        `INSERT INTO users (email, password_hash, role, name)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, email, role, name`,
-        [email, hashedPassword, role, name]
-      );
-
-      const userId = newUser.rows[0].id;
-
-      // Create email verification token
-      const verificationToken = crypto.randomBytes(32).toString("hex");
-      // Delete old tokens for this user
-      await pool.query(
-       "DELETE FROM email_verifications WHERE user_id = $1",
-         [userId]
-        );
-
-      await pool.query(
-        `INSERT INTO email_verifications (user_id, token, expires_at)
-         VALUES ($1, $2, NOW() + INTERVAL '1 day')`,
-        [userId, verificationToken]
-      );
-      // Create verification link
-const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
-
-
-try {
-  await sendEmail({
-    from: `"360EVO" <${process.env.EMAIL_USER}>`,
-    to: email,
-    subject: "Verify your email",
-    html: `
-      <p>Click below to verify your email:</p>
-      <a href="${verificationLink}">${verificationLink}</a>
-    `,
-  });
-} catch (mailError) {
-  console.error("Email sending failed:", mailError.message);
-}
-
-
-
-      res.status(201).json({
-        user: newUser.rows[0],
-          message: "Registration successful. Please check your email to verify your account.",
+        message: "All fields are required",
       });
-    } catch (error) {
-  next(error);
-}
-  };
+    }
+
+    // Check if email exists
+    const userExists = await client.query(
+      "SELECT id FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (userExists.rows.length > 0) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert user
+    const newUser = await client.query(
+      `INSERT INTO users (email, password_hash, role, name)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, email, role, name`,
+      [email, hashedPassword, role, name]
+    );
+
+    const userId = newUser.rows[0].id;
+
+    // STARTUP PROFILE
+    if (role === "startup") {
+      if (!companyName) {
+        throw new Error("Company name is required for startups");
+      }
+
+      await client.query(
+        `INSERT INTO startup_profiles (user_id, company_name, stage)
+         VALUES ($1, $2, $3)`,
+        [userId, companyName, stage || null]
+      );
+    }
+
+    // EXPERT PROFILE
+    if (role === "expert") {
+      if (!expertise) {
+        throw new Error("Expertise is required for experts");
+      }
+
+      await client.query(
+        `INSERT INTO expert_profiles (user_id, expertise, hourly_rate)
+         VALUES ($1, $2, $3)`,
+        [userId, expertise, hourlyRate || null]
+      );
+    }
+
+    // ✅ CREATE VERIFICATION TOKEN
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+
+    // Delete old tokens
+    await client.query(
+      "DELETE FROM email_verifications WHERE user_id = $1",
+      [userId]
+    );
+
+    // Insert new token
+    await client.query(
+      `INSERT INTO email_verifications (user_id, token, expires_at)
+       VALUES ($1, $2, NOW() + INTERVAL '1 day')`,
+      [userId, verificationToken]
+    );
+
+    // ✅ Commit transaction
+    await client.query("COMMIT");
+
+    // Create verification link (AFTER COMMIT)
+    const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
+
+    // Send email (outside transaction)
+    try {
+      await sendEmail({
+        from: `"360EVO" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Verify your email",
+        html: `
+          <p>Click below to verify your email:</p>
+          <a href="${verificationLink}">${verificationLink}</a>
+        `,
+      });
+    } catch (mailError) {
+      console.error("Email sending failed:", mailError.message);
+    }
+
+    res.status(201).json({
+      user: newUser.rows[0],
+      message:
+        "Registration successful. Please check your email to verify your account.",
+    });
+
+       } catch (error) {
+       await client.query("ROLLBACK");
+       next(error);
+       } finally {
+        client.release();
+       }
+};
+
 
 
   // LOGIN
