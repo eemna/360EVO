@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { body, validationResult } from "express-validator";
-import { pool } from "../config/db.js";
+import { validationResult } from "express-validator";
+import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { generateAccessToken, generateRefreshToken } 
 from "../utils/tokenUtils.js";
@@ -18,11 +18,12 @@ dotenv.config();
 
 
 export const register = async (req, res, next) => {
-  const client = await pool.connect();
-
-   try {
-    await client.query("BEGIN");
-
+  try {
+    
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
     const {
       name,
       email,
@@ -40,77 +41,73 @@ export const register = async (req, res, next) => {
       });
     }
 
-    // Check if email exists
-    const userExists = await client.query(
-      "SELECT id FROM users WHERE email = $1",
-      [email]
-    );
+    const existingUser = await prisma.users.findUnique({
+      where: { email },
+    });
 
-    if (userExists.rows.length > 0) {
+    if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert user
-    const newUser = await client.query(
-      `INSERT INTO users (email, password_hash, role, name)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, role, name`,
-      [email, hashedPassword, role, name]
-    );
-
-    const userId = newUser.rows[0].id;
-
-    // STARTUP PROFILE
-    if (role === "startup") {
-      if (!companyName) {
-        throw new Error("Company name is required for startups");
-      }
-
-      await client.query(
-        `INSERT INTO startup_profiles (user_id, company_name, stage)
-         VALUES ($1, $2, $3)`,
-        [userId, companyName, stage || null]
-      );
-    }
-
-    // EXPERT PROFILE
-    if (role === "expert") {
-      if (!expertise) {
-        throw new Error("Expertise is required for experts");
-      }
-
-      await client.query(
-        `INSERT INTO expert_profiles (user_id, expertise, hourly_rate)
-         VALUES ($1, $2, $3)`,
-        [userId, expertise, hourlyRate || null]
-      );
-    }
-
-    // ✅ CREATE VERIFICATION TOKEN
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    // Delete old tokens
-    await client.query(
-      "DELETE FROM email_verifications WHERE user_id = $1",
-      [userId]
-    );
+    const newUser = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.users.create({
+        data: {
+          email,
+          password_hash: hashedPassword,
+          role,
+          name,
+        },
+      });
 
-    // Insert new token
-    await client.query(
-      `INSERT INTO email_verifications (user_id, token, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '1 day')`,
-      [userId, verificationToken]
-    );
+      if (role === "startup") {
+        if (!companyName) {
+          throw new Error("Company name is required for startups");
+        }
 
-    // ✅ Commit transaction
-    await client.query("COMMIT");
+        await tx.startup_profiles.create({
+          data: {
+            user_id: createdUser.id,
+            company_name: companyName,
+            stage: stage || null,
+          },
+        });
+      }
 
-    // Create verification link (AFTER COMMIT)
+      if (role === "expert") {
+        if (!expertise) {
+          throw new Error("Expertise is required for experts");
+        }
+
+        await tx.tx.expert_profiles.create({
+          data: {
+            user_id: createdUser.id,
+            expertise,
+            hourly_rate: hourlyRate || null,
+          },
+        });
+      }
+
+      await tx.email_verifications.deleteMany({
+        where: { user_id: createdUser.id },
+      });
+
+      await tx.email_verifications.create({
+        data: {
+          user_id: createdUser.id,
+          token: verificationToken,
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        },
+      });
+
+      return createdUser;
+    });
+
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-    // Send email (outside transaction)
     try {
       await sendEmail({
         from: `"360EVO" <${process.env.EMAIL_USER}>`,
@@ -126,17 +123,14 @@ export const register = async (req, res, next) => {
     }
 
     res.status(201).json({
-      user: newUser.rows[0],
+      user: newUser,
       message:
         "Registration successful. Please check your email to verify your account.",
     });
 
-       } catch (error) {
-       await client.query("ROLLBACK");
-       next(error);
-       } finally {
-        client.release();
-       }
+  } catch (error) {
+    next(error);
+  }
 };
 
 
@@ -153,16 +147,15 @@ export const login = async (req, res, next) => {
       });
     }
 
-    const user = await pool.query(
-      "SELECT * FROM users WHERE email = $1",
-      [email]
-    );
+  const userData = await prisma.users.findUnique({
+  where: { email },
+});
 
-    if (user.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
+if (!userData) {
+  return res.status(400).json({ message: "Invalid credentials" });
+}
+
     
-    const userData = user.rows[0];
 
     const isMatch = await bcrypt.compare(
       password,
@@ -181,11 +174,15 @@ const accessToken = generateAccessToken(userData.id);
 const refreshToken = generateRefreshToken(userData.id);
 
 // Save refresh token in DB
-await pool.query(
-  `INSERT INTO sessions (user_id, token, expires_at, device_info)
-   VALUES ($1, $2, NOW() + INTERVAL '30 days', $3)`,
-  [userData.id, refreshToken, req.headers["user-agent"]]
-);
+await prisma.sessions.create({
+  data: {
+    user_id: userData.id,
+    token: refreshToken,
+    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    device_info: req.headers["user-agent"],
+  },
+});
+
 
 // Send refresh token as httpOnly cookie
 res.cookie("refreshToken", refreshToken, cookieOptions);
@@ -215,26 +212,27 @@ export const verifyEmail = async (req, res, next) => {
       return res.status(400).json({ message: "Token is required" });
     }
 
-    const result = await pool.query(
-      "SELECT * FROM email_verifications WHERE token = $1 AND expires_at > NOW()",
-      [token]
-    );
+  const verification = await prisma.email_verifications.findFirst({
+  where: {
+    token,
+    expires_at: { gt: new Date() },
+  },
+});
 
-    if (result.rows.length === 0) {
-      return res.status(400).json({ message: "Invalid or expired token" });
-    }
+if (!verification) {
+  return res.status(400).json({ message: "Invalid or expired token" });
+}
 
-    const userId = result.rows[0].user_id;
+    
 
-    await pool.query(
-      "UPDATE users SET is_verified = true WHERE id = $1",
-      [userId]
-    );
+  await prisma.users.update({
+  where: { id: verification.user_id },
+  data: { is_verified: true },
+});
 
-    await pool.query(
-      "DELETE FROM email_verifications WHERE token = $1",
-      [token]
-    );
+await prisma.email_verifications.delete({
+  where: { id: verification.id },
+});
 
     res.json({ message: "Email verified successfully" });
 
@@ -251,27 +249,26 @@ export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const user = await pool.query(
-      "SELECT id FROM users WHERE email = $1",
-      [email]
-    );
+const user = await prisma.users.findUnique({
+  where: { email },
+});
 
-    if (user.rows.length === 0) {
-      return res.json({ message: "If this email exists, a reset link has been sent" });
-
-    }
+if (!user) {
+  return res.json({ message: "If this email exists, a reset link has been sent" });
+}
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    await pool.query(
-    "DELETE FROM password_resets WHERE user_id = $1",
-    [user.rows[0].id]
-      );
+await prisma.password_resets.deleteMany({
+  where: { user_id: user.id },
+});
 
-    await pool.query(
-      `INSERT INTO password_resets (user_id, token, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '1 hour')`,
-      [user.rows[0].id, resetToken]
-    );
+await prisma.password_resets.create({
+  data: {
+    user_id: user.id,
+    token: resetToken,
+    expires_at: new Date(Date.now() + 60 * 60 * 1000),
+  },
+});
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
    try {
@@ -300,35 +297,29 @@ export const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const user = await pool.query(
-      "SELECT id, email FROM users WHERE email = $1",
-      [email]
-    );
+    const user = await prisma.users.findUnique({
+      where: { email },
+    });
 
-    if (user.rows.length === 0) {
+    if (!user) {
       return res.status(400).json({ message: "User not found" });
     }
 
-    const userId = user.rows[0].id;
-
-    // delete old tokens
-    await pool.query(
-      "DELETE FROM email_verifications WHERE user_id = $1",
-      [userId]
-    );
+    await prisma.email_verifications.deleteMany({
+      where: { user_id: user.id },
+    });
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    await pool.query(
-      `INSERT INTO email_verifications (user_id, token, expires_at)
-       VALUES ($1, $2, NOW() + INTERVAL '1 day')`,
-      [userId, verificationToken]
-    );
+    await prisma.email_verifications.create({
+      data: {
+        user_id: user.id,
+        token: verificationToken,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    });
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
-
-  
-
 
     await sendEmail({
       from: `"360EVO" <${process.env.EMAIL_USER}>`,
@@ -342,10 +333,11 @@ export const resendVerification = async (req, res, next) => {
 
     res.json({ message: "Verification email resent" });
 
-  }catch (error) {
-  next(error);
-}
+  } catch (error) {
+    next(error);
+  }
 };
+
 
 export const refreshToken = async (req, res, next) => {
   try {
@@ -356,14 +348,18 @@ export const refreshToken = async (req, res, next) => {
     }
 
     // Check if refresh token exists in DB
-    const session = await pool.query(
-      "SELECT * FROM sessions WHERE token = $1 AND expires_at > NOW()",
-      [refreshToken]
-    );
+   const session = await prisma.sessions.findFirst({
+  where: {
+    token: refreshToken,
+    expires_at: { gt: new Date() },
+  },
+});
 
-    if (session.rows.length === 0) {
-      return res.status(403).json({ message: "Invalid refresh token" });
-    }
+
+   if (!session) {
+  return res.status(403).json({ message: "Invalid refresh token" });
+}
+
 
     const decoded = jwt.verify(
       refreshToken,
@@ -392,30 +388,30 @@ export const resetPassword = async (req, res, next) => {
       });
     }
 
-    const result = await pool.query(
-      "SELECT * FROM password_resets WHERE token = $1 AND expires_at > NOW()",
-      [token]
-    );
+    const resetRecord = await prisma.password_resets.findFirst({
+  where: {
+    token,
+    expires_at: { gt: new Date() },
+  },
+});
 
-    if (result.rows.length === 0) {
-      return res.status(400).json({
-        message: "Invalid or expired token",
-      });
-    }
+if (!resetRecord) {
+  return res.status(400).json({
+    message: "Invalid or expired token",
+  });
+}
 
-    const userId = result.rows[0].user_id;
+   
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+await prisma.users.update({
+  where: { id: resetRecord.user_id },
+  data: { password_hash: hashedPassword },
+});
 
-    await pool.query(
-      "UPDATE users SET password_hash = $1 WHERE id = $2",
-      [hashedPassword, userId]
-    );
-
-    await pool.query(
-      "DELETE FROM password_resets WHERE user_id = $1",
-      [userId]
-    );
+await prisma.password_resets.deleteMany({
+  where: { user_id: resetRecord.user_id },
+});
 
     res.json({ message: "Password reset successful" });
 
@@ -440,10 +436,10 @@ export const logout = async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken;
 
     if (refreshToken) {
-      await pool.query(
-        "DELETE FROM sessions WHERE token = $1",
-        [refreshToken]
-      );
+     await prisma.sessions.deleteMany({
+  where: { token: refreshToken },
+});
+
     }
 
     res.cookie("refreshToken", "", { ...cookieOptions, maxAge: 1 });
