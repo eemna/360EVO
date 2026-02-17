@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model email_verifications {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  token      String
+  expires_at DateTime  @db.Timestamp(6)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model expert_profiles {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?      @unique
+  expertise   String    @db.VarChar(255)
+  hourly_rate Decimal?  @db.Decimal
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model password_resets {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  token      String
+  expires_at DateTime  @db.Timestamp(6)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model profiles {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?      @unique
+  bio        String?
+  phone      String?   @db.VarChar(20)
+  location   String?   @db.VarChar(100)
+  avatar     String?
+  linkedin   String?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model sessions {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  token       String
+  expires_at  DateTime  @db.Timestamp(6)
+  device_info String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model startup_profiles {
+  id           Int       @id @default(autoincrement())
+  user_id      Int?      @unique
+  company_name String    @db.VarChar(255)
+  stage        String?   @db.VarChar(100)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  users        users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id                  Int                   @id @default(autoincrement())
+  email               String                @unique @db.VarChar(255)
+  password_hash       String
+  role                String?               @default("user") @db.VarChar(50)
+  name                String?               @db.VarChar(100)
+  is_verified         Boolean?              @default(false)
+  created_at          DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at          DateTime?             @default(now()) @db.Timestamp(6)
+  email_verifications email_verifications[]
+  expert_profiles     expert_profiles?
+  password_resets     password_resets[]
+  profiles            profiles?
+  sessions            sessions[]
+  startup_profiles    startup_profiles?
+}

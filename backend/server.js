@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser';
 import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
-import { initDB } from "./config/db.js";
 import rateLimiter from './middleware/rateLimiter.js';
 import job from './config/cron.js';
 import helmet from "helmet";
@@ -49,8 +48,7 @@ const PORT= process.env.PORT || 5001;
 app.use(errorHandler);
 
 
-initDB().then(() => {
+
   app.listen(PORT, () => {
     console.log("Server is up and running on PORT:", PORT);
   });
-}); 
