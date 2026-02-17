@@ -7,6 +7,8 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
+import ProtectedRoute from "./ProtectedRoute";
+import RoleRoute from "./RoleRoute";
 
 export const router = createBrowserRouter([
   {
@@ -34,12 +36,20 @@ export const router = createBrowserRouter([
     element: <ResetPasswordPage />,
   },
    {
-    path: "/app",
-    element: <AppLayout />,
+  
+  path: "/app",
+  element: (
+    <ProtectedRoute>
+      <AppLayout />
+    </ProtectedRoute>
+  ),
     children: [
       {
         index: true,
-        element: <Dashboard />,
+        element:
+        <RoleRoute allowedRoles={["member", "expert","startup"]}>
+         <Dashboard />
+         </RoleRoute>
       },
     ],
   },

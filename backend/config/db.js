@@ -65,6 +65,27 @@ export const initDB = async () => {
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`);
+  // STARTUP PROFILES
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS startup_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    company_name VARCHAR(255) NOT NULL,
+    stage VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
+// EXPERT PROFILES
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS expert_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    expertise VARCHAR(255) NOT NULL,
+    hourly_rate NUMERIC,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
   
     // PASSWORD RESETS
