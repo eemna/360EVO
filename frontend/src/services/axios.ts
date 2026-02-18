@@ -16,7 +16,7 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 //  Auto refresh if access token expires
@@ -41,16 +41,14 @@ api.interceptors.response.use(
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         localStorage.setItem("accessToken", res.data.accessToken);
 
-        originalRequest.headers.Authorization =
-          `Bearer ${res.data.accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
 
         return api(originalRequest);
-
       } catch {
         localStorage.removeItem("accessToken");
         window.location.href = "/login";
@@ -58,7 +56,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

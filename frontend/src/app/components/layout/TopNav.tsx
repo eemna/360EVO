@@ -12,7 +12,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Search, Bell, MessageSquare, Home, Users, Briefcase } from "lucide-react";
+import {
+  Search,
+  Bell,
+  MessageSquare,
+  Home,
+  Users,
+  Briefcase,
+} from "lucide-react";
 
 export default function TopNav() {
   const { user, logout } = useAuth();
@@ -30,7 +37,9 @@ export default function TopNav() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
               <span className="text-sm font-bold text-white">360</span>
             </div>
-            <span className="hidden font-bold text-gray-900 sm:inline">360EVO</span>
+            <span className="hidden font-bold text-gray-900 sm:inline">
+              360EVO
+            </span>
           </Link>
 
           {/* Search */}
@@ -76,7 +85,10 @@ export default function TopNav() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Button
+                  variant="ghost"
+                  className="relative h-10 w-10 rounded-full"
+                >
                   <Avatar>
                     <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=user1" />
                     <AvatarFallback>JD</AvatarFallback>
@@ -85,9 +97,9 @@ export default function TopNav() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
-                   <div className="flex flex-col">
-                   <span className="font-semibold">{user?.name}</span>
-                  <span className="text-xs text-gray-500">{user?.role}</span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{user?.name}</span>
+                    <span className="text-xs text-gray-500">{user?.role}</span>
                   </div>
                 </DropdownMenuLabel>
                 <Link to="/app/profile/me">
@@ -99,7 +111,7 @@ export default function TopNav() {
                 <DropdownMenuSeparator />
                 <Link to="/">
                   <DropdownMenuItem onClick={handleLogout}>
-                      Sign out
+                    Sign out
                   </DropdownMenuItem>
                 </Link>
               </DropdownMenuContent>

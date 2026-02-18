@@ -1,11 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
 
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { X, CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { Button } from '../app/components/ui/button';
+import React, { createContext, useContext, useState, useCallback } from "react";
+import { X, CheckCircle, XCircle, Info, AlertTriangle } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { Button } from "../app/components/ui/button";
 
-type ToastType = 'success' | 'error' | 'info' | 'warning';
+type ToastType = "success" | "error" | "info" | "warning";
 
 interface Toast {
   id: string;
@@ -16,7 +16,7 @@ interface Toast {
 }
 
 interface ToastContextType {
-  showToast: (toast: Omit<Toast, 'id'>) => void;
+  showToast: (toast: Omit<Toast, "id">) => void;
   dismissToast: (id: string) => void;
 }
 
@@ -25,20 +25,20 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {
-    throw new Error('useToast must be used within ToastProvider');
+    throw new Error("useToast must be used within ToastProvider");
   }
   return context;
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-   const dismissToast = useCallback((id: string) => {
+  const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
-  const showToast = useCallback((toast: Omit<Toast, 'id'>) => {
+  const showToast = useCallback((toast: Omit<Toast, "id">) => {
     const id = Math.random().toString(36).substring(2, 9);
     const newToast = { ...toast, id };
-    
+
     setToasts((prev) => [...prev, newToast]);
 
     // Auto dismiss after duration (default 5 seconds)
@@ -50,8 +50,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
- 
-
   return (
     <ToastContext.Provider value={{ showToast, dismissToast }}>
       {children}
@@ -60,7 +58,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id: string) => void }) {
+function ToastContainer({
+  toasts,
+  onDismiss,
+}: {
+  toasts: Toast[];
+  onDismiss: (id: string) => void;
+}) {
   return (
     <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2 max-w-md">
       <AnimatePresence>
@@ -72,7 +76,13 @@ function ToastContainer({ toasts, onDismiss }: { toasts: Toast[]; onDismiss: (id
   );
 }
 
-function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string) => void }) {
+function ToastItem({
+  toast,
+  onDismiss,
+}: {
+  toast: Toast;
+  onDismiss: (id: string) => void;
+}) {
   const icons = {
     success: <CheckCircle className="w-5 h-5 text-green-600" />,
     error: <XCircle className="w-5 h-5 text-red-600" />,
@@ -81,17 +91,17 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
   };
 
   const colors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    info: 'bg-blue-50 border-blue-200',
-    warning: 'bg-yellow-50 border-yellow-200',
+    success: "bg-green-50 border-green-200",
+    error: "bg-red-50 border-red-200",
+    info: "bg-blue-50 border-blue-200",
+    warning: "bg-yellow-50 border-yellow-200",
   };
 
   const textColors = {
-    success: 'text-green-900',
-    error: 'text-red-900',
-    info: 'text-blue-900',
-    warning: 'text-yellow-900',
+    success: "text-green-900",
+    error: "text-red-900",
+    info: "text-blue-900",
+    warning: "text-yellow-900",
   };
 
   return (
@@ -107,7 +117,9 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
     >
       <div className="flex-shrink-0 mt-0.5">{icons[toast.type]}</div>
       <div className="flex-1 min-w-0">
-        <h4 className={`font-medium ${textColors[toast.type]}`}>{toast.title}</h4>
+        <h4 className={`font-medium ${textColors[toast.type]}`}>
+          {toast.title}
+        </h4>
         {toast.message && (
           <p className={`text-sm mt-1 ${textColors[toast.type]} opacity-90`}>
             {toast.message}
@@ -115,13 +127,13 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: (id: string)
         )}
       </div>
       <Button
-         variant="ghost"
-         size="icon"
-         onClick={() => onDismiss(toast.id)}
-         className="flex-shrink-0">
-  <X className="w-4 h-4" />
-</Button>
-
+        variant="ghost"
+        size="icon"
+        onClick={() => onDismiss(toast.id)}
+        className="flex-shrink-0"
+      >
+        <X className="w-4 h-4" />
+      </Button>
     </motion.div>
   );
 }

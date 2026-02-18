@@ -35,21 +35,21 @@ export const router = createBrowserRouter([
     path: "/reset-password",
     element: <ResetPasswordPage />,
   },
-   {
-  
-  path: "/app",
-  element: (
-    <ProtectedRoute>
-      <AppLayout />
-    </ProtectedRoute>
-  ),
+  {
+    path: "/app",
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
     children: [
       {
         index: true,
-        element:
-        <RoleRoute allowedRoles={["member", "expert","startup"]}>
-         <Dashboard />
-         </RoleRoute>
+        element: (
+          <RoleRoute allowedRoles={["member", "expert", "startup"]}>
+            <Dashboard />
+          </RoleRoute>
+        ),
       },
     ],
   },

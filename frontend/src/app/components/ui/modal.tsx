@@ -40,9 +40,7 @@ export function AppModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && (
-            <DialogDescription>{description}</DialogDescription>
-          )}
+          {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
 
         <form
@@ -53,9 +51,7 @@ export function AppModal({
             }
           }}
         >
-          <div className="py-4 space-y-4">
-            {children}
-          </div>
+          <div className="py-4 space-y-4">{children}</div>
 
           <DialogFooter>
             <Button
@@ -66,11 +62,7 @@ export function AppModal({
               {cancelText}
             </Button>
 
-            {onSubmit && (
-              <Button type="submit">
-                {submitText}
-              </Button>
-            )}
+            {onSubmit && <Button type="submit">{submitText}</Button>}
           </DialogFooter>
         </form>
       </DialogContent>

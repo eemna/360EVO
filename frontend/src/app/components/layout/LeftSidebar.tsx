@@ -1,7 +1,15 @@
 import { Link, useLocation } from "react-router";
 import { Card } from "../ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Home, User, Users, Briefcase, MessageSquare, Bell, Settings } from "lucide-react";
+import {
+  Home,
+  User,
+  Users,
+  Briefcase,
+  MessageSquare,
+  Bell,
+  Settings,
+} from "lucide-react";
 import { cn } from "../ui/utils";
 
 const menuItems = [
@@ -29,7 +37,10 @@ export default function LeftSidebar() {
               <AvatarFallback>JD</AvatarFallback>
             </Avatar>
             <div className="pt-10">
-              <Link to="/app/profile/me" className="font-semibold hover:text-blue-600">
+              <Link
+                to="/app/profile/me"
+                className="font-semibold hover:text-blue-600"
+              >
                 John Doe
               </Link>
               <p className="text-sm text-gray-500">Startup Founder</p>
@@ -61,7 +72,7 @@ export default function LeftSidebar() {
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                     isActive
                       ? "bg-blue-50 text-blue-600 font-medium"
-                      : "text-gray-700 hover:bg-gray-100"
+                      : "text-gray-700 hover:bg-gray-100",
                   )}
                 >
                   <Icon className="h-5 w-5" />

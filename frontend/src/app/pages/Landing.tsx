@@ -1,10 +1,5 @@
-
 function Landing() {
-  return (
-    <div>
-      helloo
-    </div>
-  )
+  return <div>helloo</div>;
 }
 
-export default Landing
+export default Landing;

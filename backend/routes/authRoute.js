@@ -16,7 +16,6 @@ import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
-
 router.post(
   "/register",
   [
@@ -27,7 +26,7 @@ router.post(
       .withMessage("Password must be at least 8 characters"),
     body("role").notEmpty().withMessage("Role is required"),
   ],
-  register
+  register,
 );
 router.post("/login", login);
 router.post("/logout", protect, logout);

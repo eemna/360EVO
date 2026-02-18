@@ -4,11 +4,10 @@ import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
-import { InputField } from '../components/ui/inputField';
+import { InputField } from "../components/ui/inputField";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useAuth } from "../../hooks/useAuth";
-
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -22,69 +21,58 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-const handleSubmit = async (
-  e: React.FormEvent<HTMLFormElement>
-) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  setError("");
-  setLoading(true);
+    setError("");
+    setLoading(true);
 
-  try {
-    const response = await api.post("/auth/login", {
-      email,
-      password
-    });
-    
-   login(response.data.user, response.data.accessToken);
+    try {
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+      });
 
-    console.log("Logged user:", response.data.user);
-    showToast({
-      type: "success",
-      title: "Login successful 🎉",
-      message: "Welcome back!",
-    });
-    navigate("/app");
-  } catch (err) {
-  const error = err as AxiosError<{ message: string }>;
+      login(response.data.user, response.data.accessToken);
 
-  if (error.response?.status === 401) {
-  localStorage.setItem("pendingEmail", email);
-  navigate("/verify-email");
-  return;
-}
+      console.log("Logged user:", response.data.user);
+      showToast({
+        type: "success",
+        title: "Login successful 🎉",
+        message: "Welcome back!",
+      });
+      navigate("/app");
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
 
+      if (error.response?.status === 401) {
+        localStorage.setItem("pendingEmail", email);
+        navigate("/verify-email");
+        return;
+      }
 
-  const message =
-  error.response?.data?.message || "Login failed";
+      const message = error.response?.data?.message || "Login failed";
 
-showToast({
-  type: "error",
-  title: "Login Failed",
-  message,
-});
+      showToast({
+        type: "error",
+        title: "Login Failed",
+        message,
+      });
 
-setError(message);
-
-}
- finally {
-    setLoading(false);
-  }
-};
-
-
-
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#e8eef5] flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        
         {/* Logo */}
         <div className="flex justify-center mb-6">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
-              <span className="font-bold text-white">360</span>
-            </div>
-          
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
+            <span className="font-bold text-white">360</span>
+          </div>
         </div>
 
         {/* Title */}
@@ -92,15 +80,12 @@ setError(message);
         <p className="text-center text-muted-foreground mb-6">
           Sign in to continue your journey
         </p>
-          {error && (
-          <p className="text-red-500 text-sm text-center mb-4">
-            {error}
-          </p>
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
         )}
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            
             <InputField
               id="email"
               label="Email"
@@ -109,26 +94,25 @@ setError(message);
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setEmail(e.target.value)
-                    }
-
+              }
               error={error}
-               required />
-
+              required
+            />
           </div>
 
           <div className="space-y-2">
-            
-           <InputField
-                 id="password"
-                 label="Password"
-                 type="password"
-                 placeholder="Enter your password"
-                 value={password}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                 setPassword(e.target.value)}
-
-                error={error}
-                required />
+            <InputField
+              id="password"
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
+              error={error}
+              required
+            />
           </div>
 
           {/* Forgot Password */}
@@ -148,16 +132,17 @@ setError(message);
             size="md"
             disabled={loading}
             className="w-full"
-            
           >
             {loading ? (
               <>
-              <LoadingSpinner size="sm" />
-              Signing in...
-              </> ) : ( "Sign In" )}
+                <LoadingSpinner size="sm" />
+                Signing in...
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
-
 
         {/* Sign Up */}
         <p className="text-center mt-6 text-muted-foreground">
@@ -172,11 +157,7 @@ setError(message);
 
         {/* Back to Home */}
         <div className="text-center mt-4">
-          <Button
-            onClick={() => navigate("/")}
-            variant="link"
-            size="sm"
-          >
+          <Button onClick={() => navigate("/")} variant="link" size="sm">
             ← Back to home
           </Button>
         </div>

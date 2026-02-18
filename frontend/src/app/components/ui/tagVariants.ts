@@ -1,6 +1,5 @@
 import { cva } from "class-variance-authority";
 
-
 export const tagVariants = cva(
   "inline-flex items-center justify-center rounded-md px-2.5 py-1 text-xs font-medium w-fit whitespace-nowrap shrink-0 transition-colors",
   {
