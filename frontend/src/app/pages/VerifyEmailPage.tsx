@@ -63,7 +63,6 @@ export default function VerifyEmailPage() {
     verify();
   }, [token, showToast]);
 
-
   //  Resend verification email
   const handleResend = async () => {
     const email = localStorage.getItem("pendingEmail");
