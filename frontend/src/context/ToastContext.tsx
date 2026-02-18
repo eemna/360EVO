@@ -48,7 +48,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         dismissToast(id);
       }, duration);
     }
-  }, []);
+  }, [dismissToast]);
+
 
   return (
     <ToastContext.Provider value={{ showToast, dismissToast }}>

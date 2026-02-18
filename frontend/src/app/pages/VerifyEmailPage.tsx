@@ -61,7 +61,8 @@ export default function VerifyEmailPage() {
     };
 
     verify();
-  }, [token]);
+  }, [token, showToast]);
+
 
   //  Resend verification email
   const handleResend = async () => {
