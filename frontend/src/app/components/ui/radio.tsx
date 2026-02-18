@@ -35,9 +35,7 @@ export function RadioGroup({
             onChange={() => onChange(option.value)}
             className="h-4 w-4 accent-primary"
           />
-          <span className="text-sm font-medium">
-            {option.label}
-          </span>
+          <span className="text-sm font-medium">{option.label}</span>
         </label>
       ))}
     </div>

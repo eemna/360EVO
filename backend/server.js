@@ -1,13 +1,12 @@
-import express from 'express';
+import express from "express";
 import dotenv from "dotenv";
-import cookieParser from 'cookie-parser';
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
-import rateLimiter from './middleware/rateLimiter.js';
-import job from './config/cron.js';
+import rateLimiter from "./middleware/rateLimiter.js";
+import job from "./config/cron.js";
 import helmet from "helmet";
-
 
 dotenv.config();
 const app = express();
@@ -15,22 +14,23 @@ app.use(helmet());
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://three60evo-frontend.onrender.com"
+  "https://three60evo-frontend.onrender.com",
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-}));
-
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -42,13 +42,10 @@ app.get("/api/health", (req, res) => {
 });
 app.use("/api/auth", rateLimiter, authRoutes);
 
-
-const PORT= process.env.PORT || 5001;
+const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);
 
-
-
-  app.listen(PORT, () => {
-    console.log("Server is up and running on PORT:", PORT);
-  });
+app.listen(PORT, () => {
+  console.log("Server is up and running on PORT:", PORT);
+});

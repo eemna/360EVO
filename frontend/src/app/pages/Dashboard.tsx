@@ -26,40 +26,37 @@ export default function Dashboard() {
       </h1>
 
       <p className="text-gray-600">Welcome to your dashboard</p>
-       <RadioGroup
-  name="role"
-  value={selectedRole}
-  onChange={setSelectedRole}
-  options={[
-    { value: "user", label: "User" },
-    { value: "admin", label: "Admin" },
-    { value: "moderator", label: "Moderator" },
-  ]}
-/>
- <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-sm font-semibold text-gray-900 mb-4">Tag Variants</h3>
-                <div className="flex flex-wrap gap-3">
-                  <Tag variant="default">Default Tag</Tag>
-                  <Tag variant="blue">Blue Tag</Tag>
-                  <Tag variant="green">Green Tag</Tag>
-                  <Tag variant="purple">Purple Tag</Tag>
-                  <Tag variant="orange">Orange Tag</Tag>
-                  <Tag variant="outline">Outline Tag</Tag>
-                </div>
-              </div>
+      <RadioGroup
+        name="role"
+        value={selectedRole}
+        onChange={setSelectedRole}
+        options={[
+          { value: "user", label: "User" },
+          { value: "admin", label: "Admin" },
+          { value: "moderator", label: "Moderator" },
+        ]}
+      />
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">
+          Tag Variants
+        </h3>
+        <div className="flex flex-wrap gap-3">
+          <Tag variant="default">Default Tag</Tag>
+          <Tag variant="blue">Blue Tag</Tag>
+          <Tag variant="green">Green Tag</Tag>
+          <Tag variant="purple">Purple Tag</Tag>
+          <Tag variant="orange">Orange Tag</Tag>
+          <Tag variant="outline">Outline Tag</Tag>
+        </div>
+      </div>
       {/* Buttons */}
       <section className="bg-card rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold">Modal Components</h2>
 
         <div className="flex gap-3">
-          <Button onClick={() => setIsModalOpen(true)}>
-            Open Modal
-          </Button>
+          <Button onClick={() => setIsModalOpen(true)}>Open Modal</Button>
 
-          <Button
-            variant="outline"
-            onClick={() => setIsConfirmOpen(true)}
-          >
+          <Button variant="outline" onClick={() => setIsConfirmOpen(true)}>
             Open Confirm Modal
           </Button>
         </div>

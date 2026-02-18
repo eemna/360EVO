@@ -5,7 +5,6 @@ import { badgeVariants } from "./badgeVariants";
 
 import { cn } from "./utils";
 
-
 function Badge({
   className,
   variant,

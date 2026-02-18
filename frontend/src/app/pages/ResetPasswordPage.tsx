@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Button } from '../components/ui/button';
-import { CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Button } from "../components/ui/button";
+import { CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useSearchParams } from "react-router";
 import api from "../../services/axios";
@@ -10,78 +10,75 @@ import { AxiosError } from "axios";
 import { useToast } from "../../context/ToastContext";
 import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 
-
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const [loading, setLoading] = useState(false);
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
 
-  if (newPassword !== confirmPassword) {
-    showToast({
-      type: "warning",
-      title: "Password Mismatch",
-      message: "Passwords do not match.",
-    });
-    return;
-  }
+    if (newPassword !== confirmPassword) {
+      showToast({
+        type: "warning",
+        title: "Password Mismatch",
+        message: "Passwords do not match.",
+      });
+      return;
+    }
 
-  if (newPassword.length < 8) {
-    showToast({
-      type: "warning",
-      title: "Weak Password",
-      message: "Password must be at least 8 characters.",
-    });
-    return;
-  }
+    if (newPassword.length < 8) {
+      showToast({
+        type: "warning",
+        title: "Weak Password",
+        message: "Password must be at least 8 characters.",
+      });
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    await api.post("/auth/reset-password", {
-      token,
-      newPassword,
-    });
+    try {
+      await api.post("/auth/reset-password", {
+        token,
+        newPassword,
+      });
 
-    showToast({
-      type: "success",
-      title: "Password Updated 🎉",
-      message: "Your password has been successfully updated.",
-    });
+      showToast({
+        type: "success",
+        title: "Password Updated 🎉",
+        message: "Your password has been successfully updated.",
+      });
 
-    setSuccess(true);
+      setSuccess(true);
 
-    // Optional: auto redirect after 2 seconds
-    setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+      // Optional: auto redirect after 2 seconds
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
 
-  } catch (err) {
-    const error = err as AxiosError<{ message: string }>;
+      const message =
+        error.response?.data?.message || "Invalid or expired token";
 
-    const message =
-      error.response?.data?.message || "Invalid or expired token";
+      showToast({
+        type: "error",
+        title: "Reset Failed",
+        message,
+      });
 
-    showToast({
-      type: "error",
-      title: "Reset Failed",
-      message,
-    });
-
-    setError(message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#e8eef5] flex items-center justify-center p-4">
@@ -92,10 +89,35 @@ const handleSubmit = async (e: React.FormEvent) => {
             {success ? (
               <CheckCircle className="w-6 h-6 text-white" />
             ) : (
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 17L12 22L22 17" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M2 12L12 17L22 12" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 2L2 7L12 12L22 7L12 2Z"
+                  fill="white"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M2 17L12 22L22 17"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M2 12L12 17L22 12"
+                  stroke="white"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
           </div>
@@ -119,9 +141,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                   placeholder="••••••••"
                   value={newPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setNewPassword(e.target.value)
-                    }
-
+                    setNewPassword(e.target.value)
+                  }
                   className="bg-input-background border-0"
                   required
                 />
@@ -136,9 +157,8 @@ const handleSubmit = async (e: React.FormEvent) => {
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setConfirmPassword(e.target.value)
+                    setConfirmPassword(e.target.value)
                   }
-
                   className="bg-input-background border-0"
                   required
                 />
@@ -151,14 +171,14 @@ const handleSubmit = async (e: React.FormEvent) => {
               )}
 
               <Button
-               type="submit"
-               variant="primary"
-               size="md"
-               disabled={loading}
-               className="w-full">
-              {loading ? "Updating..." : "Reset Password"}
+                type="submit"
+                variant="primary"
+                size="md"
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Updating..." : "Reset Password"}
               </Button>
-
             </form>
           </>
         ) : (
@@ -173,7 +193,8 @@ const handleSubmit = async (e: React.FormEvent) => {
               onClick={() => navigate("/login")}
               variant="primary"
               size="md"
-              className="w-full">
+              className="w-full"
+            >
               Return to Login
             </Button>
           </div>

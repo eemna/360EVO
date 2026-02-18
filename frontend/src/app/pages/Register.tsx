@@ -17,7 +17,7 @@ import { Card } from "../components/ui/card";
 import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 import { useToast } from "../../context/ToastContext";
 
-import { Briefcase, Users,User, CheckCircle2 } from "lucide-react";
+import { Briefcase, Users, User, CheckCircle2 } from "lucide-react";
 
 type Role = "member" | "startup" | "expert" | null;
 
@@ -50,7 +50,7 @@ export default function RegistrationPage() {
 
   const updateFormData = <K extends keyof FormData>(
     field: K,
-    value: FormData[K]
+    value: FormData[K],
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -61,9 +61,7 @@ export default function RegistrationPage() {
   const isPasswordStrong = (password: string) => {
     if (password.length < 8) return false;
     return (
-      /[A-Z]/.test(password) &&
-      /[a-z]/.test(password) &&
-      /[0-9]/.test(password)
+      /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password)
     );
   };
 
@@ -144,8 +142,7 @@ export default function RegistrationPage() {
       navigate("/login");
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
-      const message =
-        error.response?.data?.message || "Registration failed";
+      const message = error.response?.data?.message || "Registration failed";
 
       showToast({
         type: "error",
@@ -160,7 +157,6 @@ export default function RegistrationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 border-gray-200">
       <div className="w-full max-w-2xl">
-
         {/* PROGRESS */}
         <div className="mb-10 flex justify-center">
           <div className="flex items-center gap-4">
@@ -186,11 +182,7 @@ export default function RegistrationPage() {
                 {step < 3 && (
                   <div
                     className={`w-16 h-0.5 mx-2 transition-all
-                    ${
-                      currentStep > step
-                        ? "bg-blue-600"
-                        : "bg-gray-300"
-                    }`}
+                    ${currentStep > step ? "bg-blue-600" : "bg-gray-300"}`}
                   />
                 )}
               </div>
@@ -200,7 +192,6 @@ export default function RegistrationPage() {
 
         <Card className="p-8 shadow-md border border-gray-200">
           <form onSubmit={handleSubmit}>
-
             {/* STEP 1 */}
             {currentStep === 1 && (
               <div className="space-y-4">
@@ -271,9 +262,7 @@ export default function RegistrationPage() {
                   <Label>Full Name</Label>
                   <Input
                     value={formData.fullName}
-                    onChange={(e) =>
-                      updateFormData("fullName", e.target.value)
-                    }
+                    onChange={(e) => updateFormData("fullName", e.target.value)}
                   />
                 </div>
 
@@ -282,9 +271,7 @@ export default function RegistrationPage() {
                   <Input
                     type="email"
                     value={formData.email}
-                    onChange={(e) =>
-                      updateFormData("email", e.target.value)
-                    }
+                    onChange={(e) => updateFormData("email", e.target.value)}
                   />
                 </div>
 
@@ -293,9 +280,7 @@ export default function RegistrationPage() {
                   <Input
                     type="password"
                     value={formData.password}
-                    onChange={(e) =>
-                      updateFormData("password", e.target.value)
-                    }
+                    onChange={(e) => updateFormData("password", e.target.value)}
                   />
                   <PasswordStrengthBar password={formData.password} />
                 </div>
@@ -320,11 +305,7 @@ export default function RegistrationPage() {
                   >
                     Back
                   </Button>
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    className="flex-1"
-                  >
+                  <Button type="button" onClick={handleNext} className="flex-1">
                     Continue
                   </Button>
                 </div>
@@ -347,9 +328,7 @@ export default function RegistrationPage() {
                     <Label>Startup Stage</Label>
                     <Select
                       value={formData.stage}
-                      onValueChange={(value) =>
-                        updateFormData("stage", value)
-                      }
+                      onValueChange={(value) => updateFormData("stage", value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select stage" />
@@ -384,31 +363,36 @@ export default function RegistrationPage() {
                   </>
                 )}
                 {formData.role === "member" && (
-  <div className="text-center space-y-4 py-4">
-    <div className="flex justify-center">
-      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-        <User className="w-8 h-8 text-green-600" />
-      </div>
-    </div>
+                  <div className="text-center space-y-4 py-4">
+                    <div className="flex justify-center">
+                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                        <User className="w-8 h-8 text-green-600" />
+                      </div>
+                    </div>
 
-    <h3 className="text-xl font-semibold">
-      Ready to Join as a Member?
-    </h3>
+                    <h3 className="text-xl font-semibold">
+                      Ready to Join as a Member?
+                    </h3>
 
-    <p className="text-gray-600 text-sm">
-      You don’t need to provide additional details.
-      Please confirm your registration below.
-    </p>
+                    <p className="text-gray-600 text-sm">
+                      You don’t need to provide additional details. Please
+                      confirm your registration below.
+                    </p>
 
-    {/* Optional Summary */}
-    <div className="bg-gray-50 rounded-lg p-4 text-left text-sm space-y-2 border-gray-200">
-      <p><strong>Name:</strong> {formData.fullName}</p>
-      <p><strong>Email:</strong> {formData.email}</p>
-      <p><strong>Role:</strong> Member</p>
-    </div>
-  </div>
-)}
-
+                    {/* Optional Summary */}
+                    <div className="bg-gray-50 rounded-lg p-4 text-left text-sm space-y-2 border-gray-200">
+                      <p>
+                        <strong>Name:</strong> {formData.fullName}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {formData.email}
+                      </p>
+                      <p>
+                        <strong>Role:</strong> Member
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex gap-3">
                   <Button
@@ -419,11 +403,7 @@ export default function RegistrationPage() {
                   >
                     Back
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1"
-                  >
+                  <Button type="submit" disabled={loading} className="flex-1">
                     {loading ? "Creating..." : "Complete Registration"}
                   </Button>
                 </div>
