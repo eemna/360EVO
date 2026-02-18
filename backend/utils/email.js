@@ -14,7 +14,7 @@ export const transporter = nodemailer.createTransport({
     rejectUnauthorized: false,
   },
 });
-transporter.verify((error, success) => {
+transporter.verify((error) => {
   if (error) {
     console.log("SMTP ERROR:", error);
   } else {

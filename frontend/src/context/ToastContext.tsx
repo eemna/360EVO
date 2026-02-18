@@ -35,21 +35,23 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
-  const showToast = useCallback((toast: Omit<Toast, "id">) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    const newToast = { ...toast, id };
+  const showToast = useCallback(
+    (toast: Omit<Toast, "id">) => {
+      const id = Math.random().toString(36).substring(2, 9);
+      const newToast = { ...toast, id };
 
-    setToasts((prev) => [...prev, newToast]);
+      setToasts((prev) => [...prev, newToast]);
 
-    // Auto dismiss after duration (default 5 seconds)
-    const duration = toast.duration ?? 5000;
-    if (duration > 0) {
-      setTimeout(() => {
-        dismissToast(id);
-      }, duration);
-    }
-  }, [dismissToast]);
-
+      // Auto dismiss after duration (default 5 seconds)
+      const duration = toast.duration ?? 5000;
+      if (duration > 0) {
+        setTimeout(() => {
+          dismissToast(id);
+        }, duration);
+      }
+    },
+    [dismissToast],
+  );
 
   return (
     <ToastContext.Provider value={{ showToast, dismissToast }}>
