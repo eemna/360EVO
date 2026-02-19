@@ -43,7 +43,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       setToasts((prev) => [...prev, newToast]);
 
       // Auto dismiss after duration (default 5 seconds)
-      const duration = toast.duration ?? 5000;
+      const duration = toast.duration ?? 4000;
       if (duration > 0) {
         setTimeout(() => {
           dismissToast(id);

@@ -12,7 +12,7 @@ import {
   logout,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
-//import { authorize } from "../middleware/auth.js";
+import forgotPasswordRateLimit from "../middleware/forgotPasswordRateLimit.js";
 
 const router = express.Router();
 
@@ -33,7 +33,7 @@ router.post("/logout", protect, logout);
 router.get("/me", protect, getMe);
 router.post("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerification);
-router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password",forgotPasswordRateLimit, forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/refresh-token", refreshToken);
 
