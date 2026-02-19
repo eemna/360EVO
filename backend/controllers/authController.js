@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { validationResult } from "express-validator";
+//import { validationResult } from "express-validator";
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import {
@@ -10,35 +10,22 @@ import {
 import { sendEmail } from "../utils/email.js";
 import { cookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken";
+import { Prisma } from "@prisma/client";
 
 dotenv.config();
 
 // REGISTER
 
+
 export const register = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    const {
-      name,
-      email,
-      password,
-      role,
-      companyName,
-      stage,
-      expertise,
-      hourlyRate,
-    } = req.body;
+    const { name, email, password, role, companyName, stage, expertise, hourlyRate } = req.body;
 
     if (!name || !email || !password || !role) {
-      return res.status(400).json({
-        message: "All fields are required",
-      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUser = await prisma.users.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -46,57 +33,68 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    //  Ensure role is uppercase
+    const normalizedRole = role.toUpperCase();
 
+    if (!["MEMBER", "EXPERT", "STARTUP", "INVESTOR", "ADMIN"].includes(normalizedRole)) {
+      return res.status(400).json({ message: "Invalid role" });
+    }
+
+    // Role specific validation
+    if (normalizedRole === "STARTUP" && !companyName) {
+      return res.status(400).json({
+        message: "Company name is required for startups",
+      });
+    }
+
+    if (normalizedRole === "EXPERT" && (!expertise || expertise.length === 0)) {
+      return res.status(400).json({
+        message: "Expertise is required for experts",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12);
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    const newUser = await prisma.$transaction(async (tx) => {
-      const createdUser = await tx.users.create({
+    await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
         data: {
-          email,
-          password_hash: hashedPassword,
-          role,
           name,
+          email,
+          passwordHash: hashedPassword,
+          role: normalizedRole,
         },
       });
 
-      if (role === "startup") {
-        if (!companyName) {
-          throw new Error("Company name is required for startups");
-        }
+      //  Create ONLY ONE profile
+      await tx.profile.create({
+        data: {
+          userId: createdUser.id,
 
-        await tx.startup_profiles.create({
-          data: {
-            user_id: createdUser.id,
-            company_name: companyName,
-            stage: stage || null,
-          },
-        });
-      }
+          // Expert fields
+          expertise: normalizedRole === "EXPERT"
+          ? Array.isArray(expertise)
+          ? expertise
+          : [expertise]
+          : [],
 
-      if (role === "expert") {
-        if (!expertise) {
-          throw new Error("Expertise is required for experts");
-        }
 
-        await tx.tx.expert_profiles.create({
-          data: {
-            user_id: createdUser.id,
-            expertise,
-            hourly_rate: hourlyRate || null,
-          },
-        });
-      }
+          hourlyRate:
+            normalizedRole === "EXPERT" && hourlyRate
+              ? new Prisma.Decimal(hourlyRate)
+              : null,
 
-      await tx.email_verifications.deleteMany({
-        where: { user_id: createdUser.id },
+          // Startup fields
+          companyName: normalizedRole === "STARTUP" ? companyName : null,
+          stage: normalizedRole === "STARTUP" ? stage || null : null,
+        },
       });
 
-      await tx.email_verifications.create({
+      await tx.emailVerification.create({
         data: {
-          user_id: createdUser.id,
-          token: verificationToken,
-          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          userId: createdUser.id,
+          token: verificationToken, //  correct field
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
       });
 
@@ -105,31 +103,30 @@ export const register = async (req, res, next) => {
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-    try {
-      await sendEmail({
-        from: `"360EVO" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "Verify your email",
-        html: `
-          <p>Click below to verify your email:</p>
-          <a href="${verificationLink}">${verificationLink}</a>
-        `,
-      });
-    } catch (mailError) {
-      console.error("Email sending failed:", mailError.message);
-    }
+    await sendEmail({
+      from: `"360EVO" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Verify your email",
+      html: `
+        <p>Click below to verify your email:</p>
+        <a href="${verificationLink}">${verificationLink}</a>
+      `,
+    });
 
     res.status(201).json({
-      user: newUser,
       message:
         "Registration successful. Please check your email to verify your account.",
     });
+
   } catch (error) {
     next(error);
   }
 };
 
+
 // LOGIN
+
+
 
 export const login = async (req, res, next) => {
   try {
@@ -141,41 +138,48 @@ export const login = async (req, res, next) => {
       });
     }
 
-    const userData = await prisma.users.findUnique({
+    const userData = await prisma.user.findUnique({
       where: { email },
     });
 
-    if (!userData) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    if (
+      !userData ||
+      !(await bcrypt.compare(password, userData.passwordHash))
+    ) {
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const isMatch = await bcrypt.compare(password, userData.password_hash);
-
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-    if (!userData.is_verified) {
+    if (!userData.isVerified) {
       return res.status(401).json({
         message: "Please verify your email first",
       });
     }
+
+    if (userData.isSuspended) {
+      return res.status(403).json({
+        message: "Account is suspended",
+      });
+    }
+
     const accessToken = generateAccessToken(userData.id);
     const refreshToken = generateRefreshToken(userData.id);
 
-    // Save refresh token in DB
-    await prisma.sessions.create({
+    //  Hash refresh token before storing
+    const hashedRefreshToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    await prisma.refreshToken.create({
       data: {
-        user_id: userData.id,
-        token: refreshToken,
-        expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        device_info: req.headers["user-agent"],
+        userId: userData.id,
+        tokenHash: hashedRefreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
     });
 
-    // Send refresh token as httpOnly cookie
     res.cookie("refreshToken", refreshToken, cookieOptions);
 
-    // Send access token in response
     res.json({
       accessToken,
       user: {
@@ -190,6 +194,7 @@ export const login = async (req, res, next) => {
   }
 };
 
+
 // VERIFY EMAIL
 
 export const verifyEmail = async (req, res, next) => {
@@ -200,23 +205,20 @@ export const verifyEmail = async (req, res, next) => {
       return res.status(400).json({ message: "Token is required" });
     }
 
-    const verification = await prisma.email_verifications.findFirst({
-      where: {
-        token,
-        expires_at: { gt: new Date() },
-      },
+    const verification = await prisma.emailVerification.findUnique({
+      where: { token },
     });
 
     if (!verification) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
-    await prisma.users.update({
-      where: { id: verification.user_id },
-      data: { is_verified: true },
+    await prisma.user.update({
+      where: { id: verification.userId },
+      data: { isVerified: true },
     });
 
-    await prisma.email_verifications.delete({
+    await prisma.emailVerification.delete({
       where: { id: verification.id },
     });
 
@@ -232,10 +234,15 @@ export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const user = await prisma.users.findUnique({
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
+    // Prevent email enumeration
     if (!user) {
       return res.json({
         message: "If this email exists, a reset link has been sent",
@@ -243,44 +250,55 @@ export const forgotPassword = async (req, res, next) => {
     }
 
     const resetToken = crypto.randomBytes(32).toString("hex");
-    await prisma.password_resets.deleteMany({
-      where: { user_id: user.id },
-    });
 
-    await prisma.password_resets.create({
-      data: {
-        user_id: user.id,
-        token: resetToken,
-        expires_at: new Date(Date.now() + 60 * 60 * 1000),
+    const hashedResetToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+    //  TRUE UPSERT (Required by task)
+    await prisma.passwordReset.upsert({
+      where: { userId: user.id },
+      update: {
+        token: hashedResetToken,
+        expiresAt,
+      },
+      create: {
+        userId: user.id,
+        token: hashedResetToken,
+        expiresAt,
       },
     });
+
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-    try {
-      await sendEmail({
-        from: `"360EVO" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "Reset your password",
-        html: `
-      <p>Click below to reset your password:</p>
-      <a href="${resetLink}">${resetLink}</a>
-    `,
-      });
-    } catch (mailError) {
-      console.error("Forgot password email failed:", mailError.message);
-    }
+    await sendEmail({
+      from: `"360EVO" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Reset your password",
+      html: `
+        <p>Click below to reset your password:</p>
+        <a href="${resetLink}">${resetLink}</a>
+      `,
+    });
 
-    res.json({ message: "Password reset link sent to your email" });
+    res.json({
+      message: "If this email exists, a reset link has been sent",
+    });
+
   } catch (error) {
     next(error);
   }
 };
 
+
 export const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    const user = await prisma.users.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email },
     });
 
@@ -288,17 +306,17 @@ export const resendVerification = async (req, res, next) => {
       return res.status(400).json({ message: "User not found" });
     }
 
-    await prisma.email_verifications.deleteMany({
-      where: { user_id: user.id },
+    await prisma.emailVerification.deleteMany({
+      where: { userId: user.id },
     });
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
 
-    await prisma.email_verifications.create({
+    await prisma.emailVerification.create({
       data: {
-        user_id: user.id,
+        userId: user.id,
         token: verificationToken,
-        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       },
     });
 
@@ -322,33 +340,40 @@ export const resendVerification = async (req, res, next) => {
 
 export const refreshToken = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const token = req.cookies.refreshToken;
 
-    if (!refreshToken) {
+    if (!token) {
       return res.status(401).json({ message: "No refresh token" });
     }
 
-    // Check if refresh token exists in DB
-    const session = await prisma.sessions.findFirst({
-      where: {
-        token: refreshToken,
-        expires_at: { gt: new Date() },
-      },
-    });
+    //  HASH the incoming token
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Check DB using hashed version
+    const session = await prisma.refreshToken.findUnique({ where: { tokenHash: hashedToken } })
+
 
     if (!session) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_REFRESH_SECRET
+    );
 
     const newAccessToken = generateAccessToken(decoded.id);
 
     res.json({ accessToken: newAccessToken });
+
   } catch (error) {
     next(error);
   }
 };
+
 
 //  RESET PASSWORD
 export const resetPassword = async (req, res, next) => {
@@ -361,32 +386,39 @@ export const resetPassword = async (req, res, next) => {
       });
     }
 
-    const resetRecord = await prisma.password_resets.findFirst({
-      where: {
-        token,
-        expires_at: { gt: new Date() },
-      },
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    //  Correct field name
+    const resetRecord = await prisma.passwordReset.findUnique({
+      where: { token: hashedToken },
     });
 
-    if (!resetRecord) {
+    //  Check existence AND expiration
+    if (!resetRecord || resetRecord.expiresAt < new Date()) {
       return res.status(400).json({
         message: "Invalid or expired token",
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await prisma.users.update({
-      where: { id: resetRecord.user_id },
-      data: { password_hash: hashedPassword },
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await prisma.user.update({
+      where: { id: resetRecord.userId },
+      data: { passwordHash: hashedPassword },
     });
 
-    await prisma.password_resets.deleteMany({
-      where: { user_id: resetRecord.user_id },
+    //  Since userId is unique, delete by userId OR token
+    await prisma.passwordReset.delete({
+      where: { userId: resetRecord.userId },
     });
 
     res.json({ message: "Password reset successful" });
+
   } catch (error) {
-    next(error); // 👈 send error to global error handler
+    next(error);
   }
 };
 
@@ -402,18 +434,29 @@ export const getMe = async (req, res, next) => {
 //  LOGOUT
 export const logout = async (req, res, next) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const token = req.cookies.refreshToken;
 
-    if (refreshToken) {
-      await prisma.sessions.deleteMany({
-        where: { token: refreshToken },
+    if (token) {
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(token)
+        .digest("hex");
+
+      await prisma.refreshToken.delete({
+        where: { tokenHash: hashedToken },
       });
     }
 
-    res.cookie("refreshToken", "", { ...cookieOptions, maxAge: 1 });
+    res.cookie("refreshToken", "", {
+      ...cookieOptions,
+      maxAge: 1,
+    });
 
     res.json({ message: "Logged out successfully" });
+
   } catch (error) {
     next(error);
   }
 };
+
+

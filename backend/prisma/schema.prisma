@@ -8,78 +8,158 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model email_verifications {
-  id         Int       @id @default(autoincrement())
-  user_id    Int?
-  token      String
-  expires_at DateTime  @db.Timestamp(6)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model User {
+  id                 String              @id @default(uuid())
+  name               String
+  email              String              @unique
+  passwordHash       String
+  role               Role                @default(MEMBER)
+  isVerified         Boolean             @default(false)
+  isSuspended        Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset?
+  profile            Profile?
+  projects           Project[]
+  refreshTokens      RefreshToken[]
+
+  @@index([email])
 }
 
-model expert_profiles {
-  id          Int       @id @default(autoincrement())
-  user_id     Int?      @unique
-  expertise   String    @db.VarChar(255)
-  hourly_rate Decimal?  @db.Decimal
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model Profile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  bio         String?
+  phone       String?
+  location    String?
+  avatar      String?
+  linkedIn    String?
+  expertise   String[]
+  hourlyRate  Decimal?
+  createdAt   DateTime @default(now())
+  companyName String?
+  stage       String?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model password_resets {
-  id         Int       @id @default(autoincrement())
-  user_id    Int?
-  token      String
-  expires_at DateTime  @db.Timestamp(6)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
 }
 
-model profiles {
-  id         Int       @id @default(autoincrement())
-  user_id    Int?      @unique
-  bio        String?
-  phone      String?   @db.VarChar(20)
-  location   String?   @db.VarChar(100)
-  avatar     String?
-  linkedin   String?
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model sessions {
-  id          Int       @id @default(autoincrement())
-  user_id     Int?
-  token       String
-  expires_at  DateTime  @db.Timestamp(6)
-  device_info String?
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
-model startup_profiles {
-  id           Int       @id @default(autoincrement())
-  user_id      Int?      @unique
-  company_name String    @db.VarChar(255)
-  stage        String?   @db.VarChar(100)
-  created_at   DateTime? @default(now()) @db.Timestamp(6)
-  users        users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+model Project {
+  id            String                   @id @default(uuid())
+  ownerId       String
+  title         String
+  tagline       String
+  shortDesc     String
+  fullDesc      String
+  stage         ProjectStage
+  industry      String
+  technologies  String[]
+  fundingSought Decimal?
+  currency      String
+  location      String
+  status        ProjectStatus            @default(DRAFT)
+  visibility    ProjectVisibility        @default(PUBLIC)
+  viewCount     Int                      @default(0)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  search_vector Unsupported("tsvector")?
+  milestones    Milestone[]
+  owner         User                     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  documents     ProjectDocument[]
+  teamMembers   TeamMember[]
+
+  @@index([status, industry])
+  @@index([status, stage])
+  @@index([ownerId])
+  @@index([search_vector], type: Gin)
 }
 
-model users {
-  id                  Int                   @id @default(autoincrement())
-  email               String                @unique @db.VarChar(255)
-  password_hash       String
-  role                String?               @default("user") @db.VarChar(50)
-  name                String?               @db.VarChar(100)
-  is_verified         Boolean?              @default(false)
-  created_at          DateTime?             @default(now()) @db.Timestamp(6)
-  updated_at          DateTime?             @default(now()) @db.Timestamp(6)
-  email_verifications email_verifications[]
-  expert_profiles     expert_profiles?
-  password_resets     password_resets[]
-  profiles            profiles?
-  sessions            sessions[]
-  startup_profiles    startup_profiles?
+model TeamMember {
+  id        String   @id @default(uuid())
+  projectId String
+  name      String
+  role      String
+  photo     String?
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Milestone {
+  id          String    @id @default(uuid())
+  projectId   String
+  title       String
+  description String
+  targetDate  DateTime?
+  completedAt DateTime?
+  order       Int
+  createdAt   DateTime  @default(now())
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ProjectDocument {
+  id        String   @id @default(uuid())
+  projectId String
+  name      String
+  fileUrl   String
+  fileKey   String
+  fileType  String
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  MEMBER
+  EXPERT
+  STARTUP
+  INVESTOR
+  ADMIN
+}
+
+enum ProjectStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ProjectVisibility {
+  PUBLIC
+  CONNECTIONS
+}
+
+enum ProjectStage {
+  IDEA
+  PROTOTYPE
+  MVP
+  GROWTH
+  SCALING
 }

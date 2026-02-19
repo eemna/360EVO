@@ -11,7 +11,7 @@ export default [
     rules: {
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "no-console": "off",
-        },
+    },
   },
   prettier,
 ];

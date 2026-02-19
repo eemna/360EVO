@@ -7,6 +7,8 @@ import errorHandler from "./middleware/errorMiddleware.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 import job from "./config/cron.js";
 import helmet from "helmet";
+import uploadRoutes from "./routes/uploadRoute.js";
+
 
 dotenv.config();
 const app = express();
@@ -38,13 +40,14 @@ app.use(cookieParser());
 if (process.env.NODE_ENV === "production") job.start();
 
 app.get("/api/health", (req, res) => {
-  res.send("Backend is running 🚀");
+  res.send("Backend is running ");
 });
 app.use("/api/auth", rateLimiter, authRoutes);
 
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);
+app.use("/api/uploads", uploadRoutes);
 
 app.listen(PORT, () => {
   console.log("Server is up and running on PORT:", PORT);
