@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-//import { validationResult } from "express-validator";
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import {
@@ -16,10 +15,18 @@ dotenv.config();
 
 // REGISTER
 
-
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, role, companyName, stage, expertise, hourlyRate } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role,
+      companyName,
+      stage,
+      expertise,
+      hourlyRate,
+    } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
@@ -36,7 +43,11 @@ export const register = async (req, res, next) => {
     //  Ensure role is uppercase
     const normalizedRole = role.toUpperCase();
 
-    if (!["MEMBER", "EXPERT", "STARTUP", "INVESTOR", "ADMIN"].includes(normalizedRole)) {
+    if (
+      !["MEMBER", "EXPERT", "STARTUP", "INVESTOR", "ADMIN"].includes(
+        normalizedRole,
+      )
+    ) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
@@ -72,12 +83,12 @@ export const register = async (req, res, next) => {
           userId: createdUser.id,
 
           // Expert fields
-          expertise: normalizedRole === "EXPERT"
-          ? Array.isArray(expertise)
-          ? expertise
-          : [expertise]
-          : [],
-
+          expertise:
+            normalizedRole === "EXPERT"
+              ? Array.isArray(expertise)
+                ? expertise
+                : [expertise]
+              : [],
 
           hourlyRate:
             normalizedRole === "EXPERT" && hourlyRate
@@ -117,16 +128,12 @@ export const register = async (req, res, next) => {
       message:
         "Registration successful. Please check your email to verify your account.",
     });
-
   } catch (error) {
     next(error);
   }
 };
 
-
 // LOGIN
-
-
 
 export const login = async (req, res, next) => {
   try {
@@ -142,10 +149,7 @@ export const login = async (req, res, next) => {
       where: { email },
     });
 
-    if (
-      !userData ||
-      !(await bcrypt.compare(password, userData.passwordHash))
-    ) {
+    if (!userData || !(await bcrypt.compare(password, userData.passwordHash))) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
@@ -193,7 +197,6 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // VERIFY EMAIL
 
@@ -287,12 +290,10 @@ export const forgotPassword = async (req, res, next) => {
     res.json({
       message: "If this email exists, a reset link has been sent",
     });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 export const resendVerification = async (req, res, next) => {
   try {
@@ -347,33 +348,26 @@ export const refreshToken = async (req, res, next) => {
     }
 
     //  HASH the incoming token
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     // Check DB using hashed version
-    const session = await prisma.refreshToken.findUnique({ where: { tokenHash: hashedToken } })
-
+    const session = await prisma.refreshToken.findUnique({
+      where: { tokenHash: hashedToken },
+    });
 
     if (!session) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_REFRESH_SECRET
-    );
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 
     const newAccessToken = generateAccessToken(decoded.id);
 
     res.json({ accessToken: newAccessToken });
-
   } catch (error) {
     next(error);
   }
 };
-
 
 //  RESET PASSWORD
 export const resetPassword = async (req, res, next) => {
@@ -386,10 +380,7 @@ export const resetPassword = async (req, res, next) => {
       });
     }
 
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(token)
-      .digest("hex");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     //  Correct field name
     const resetRecord = await prisma.passwordReset.findUnique({
@@ -416,7 +407,6 @@ export const resetPassword = async (req, res, next) => {
     });
 
     res.json({ message: "Password reset successful" });
-
   } catch (error) {
     next(error);
   }
@@ -453,10 +443,7 @@ export const logout = async (req, res, next) => {
     });
 
     res.json({ message: "Logged out successfully" });
-
   } catch (error) {
     next(error);
   }
 };
-
-

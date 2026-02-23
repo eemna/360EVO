@@ -8,6 +8,8 @@ import rateLimiter from "./middleware/rateLimiter.js";
 import job from "./config/cron.js";
 import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
+import projectRoutes from "./routes/projectRoute.js";
+
 
 
 dotenv.config();
@@ -43,12 +45,14 @@ app.get("/api/health", (req, res) => {
   res.send("Backend is running ");
 });
 app.use("/api/auth", rateLimiter, authRoutes);
+app.use("/api/uploads", uploadRoutes);
+app.use("/api/projects", projectRoutes);
 
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);
-app.use("/api/uploads", uploadRoutes);
 
 app.listen(PORT, () => {
   console.log("Server is up and running on PORT:", PORT);
 });
+console.log("DATABASE_URL:", process.env.DATABASE_URL);

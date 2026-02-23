@@ -23,22 +23,23 @@ export function NotFoundPage() {
             Page Not Found
           </h1>
           <p className="text-gray-600 text-lg max-w-md mx-auto">
-            Oops! The page you're looking for doesn't exist. It might have been moved or deleted.
+            Oops! The page you're looking for doesn't exist. It might have been
+            moved or deleted.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button 
+          <Button
             onClick={() => window.history.back()}
-            variant="outline" 
+            variant="outline"
             className="w-full sm:w-auto"
           >
             <ArrowLeft className="size-4 mr-2" />
             Go Back
           </Button>
-          <Button 
-            onClick={() => window.location.href = '/'}
+          <Button
+            onClick={() => (window.location.href = "/")}
             className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto"
           >
             <Home className="size-4 mr-2" />
@@ -48,7 +49,9 @@ export function NotFoundPage() {
 
         {/* Helpful Links */}
         <div className="mt-12 pt-8 border-t border-gray-200">
-          <p className="text-sm text-gray-600 mb-4">Looking for something else?</p>
+          <p className="text-sm text-gray-600 mb-4">
+            Looking for something else?
+          </p>
           <div className="flex flex-wrap justify-center gap-4 text-sm">
             <a href="#" className="text-blue-600 hover:underline">
               Projects

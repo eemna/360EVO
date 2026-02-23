@@ -1,4 +1,4 @@
-import { Twitter, Linkedin, Github, Mail, MapPin, Phone } from 'lucide-react';
+import { Twitter, Linkedin, Github, Mail, MapPin, Phone } from "lucide-react";
 
 export default function Footer() {
   return (
@@ -14,19 +14,32 @@ export default function Footer() {
               <span className="font-semibold text-lg text-white">360EVO</span>
             </div>
             <p className="text-sm mb-4">
-              Empowering startups and experts to collaborate, innovate, and grow together.
+              Empowering startups and experts to collaborate, innovate, and grow
+              together.
             </p>
             <div className="flex gap-3">
-              <a href="#" className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+              <a
+                href="#"
+                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
                 <Twitter className="size-4" />
               </a>
-              <a href="#" className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+              <a
+                href="#"
+                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
                 <Linkedin className="size-4" />
               </a>
-              <a href="#" className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+              <a
+                href="#"
+                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
                 <Github className="size-4" />
               </a>
-              <a href="#" className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
+              <a
+                href="#"
+                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              >
                 <Mail className="size-4" />
               </a>
             </div>
@@ -102,7 +115,11 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
                 <MapPin className="size-4 mt-0.5 shrink-0" />
-                <span>123 Innovation Street<br />San Francisco, CA 94107</span>
+                <span>
+                  123 Innovation Street
+                  <br />
+                  San Francisco, CA 94107
+                </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="size-4 shrink-0" />
@@ -119,9 +136,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm">
-              © 2026 360EVO. All rights reserved.
-            </p>
+            <p className="text-sm">© 2026 360EVO. All rights reserved.</p>
             <div className="flex gap-6 text-sm">
               <a href="#" className="hover:text-white transition-colors">
                 Privacy Policy

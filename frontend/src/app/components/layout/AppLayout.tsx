@@ -9,14 +9,11 @@ export default function AppLayout() {
       <TopNav onMenuClick={() => setIsSidebarOpen(true)} />
 
       <div className="flex pt-16 ">
-        
-         <LeftSidebar
+        <LeftSidebar
           isOpen={SidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
         />
 
-
-        
         <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
           <Outlet />
         </main>

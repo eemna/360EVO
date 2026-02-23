@@ -13,7 +13,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
 
 export const router = createBrowserRouter([
-   {
+  {
     element: <PublicLayout />,
     children: [
       { path: "/", element: <Landing /> },
@@ -43,8 +43,7 @@ export const router = createBrowserRouter([
     ],
   },
   {
-  path: "*",
-  element: <NotFoundPage />,
-},
-
+    path: "*",
+    element: <NotFoundPage />,
+  },
 ]);

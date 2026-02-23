@@ -24,7 +24,7 @@ export const uploadImage = async (req, res, next) => {
           url: result.secure_url,
           publicId: result.public_id,
         });
-      }
+      },
     );
 
     stream.end(resizedImage);
@@ -34,32 +34,36 @@ export const uploadImage = async (req, res, next) => {
 };
 
 
-export const uploadDocumentController = async (req, res, next) => {
+
+export const uploadDocumentController = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "Document is required" });
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const stream = cloudinary.uploader.upload_stream(
+    const result = cloudinary.uploader.upload_stream(
       {
         folder: "360EVO/documents",
-        resource_type: "raw", // IMPORTANT for non-images
+        resource_type: "auto", 
       },
       (error, result) => {
-        if (error) return next(error);
+        if (error) {
+          return res.status(500).json({ message: "Upload failed" });
+        }
 
-        res.status(201).json({
-          url: result.secure_url,
-          publicId: result.public_id,
+        return res.status(200).json({
+          url: result.secure_url,      
+          publicId: result.public_id, 
           originalName: req.file.originalname,
-          size: req.file.size,
         });
       }
     );
 
-    stream.end(req.file.buffer);
+    // send buffer from multer memoryStorage
+    result.end(req.file.buffer);
+
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 export const deleteFileController = async (req, res, next) => {
@@ -82,4 +86,3 @@ export const deleteFileController = async (req, res, next) => {
     next(error);
   }
 };
-
