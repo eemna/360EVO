@@ -8,8 +8,7 @@
     "dev": "nodemon server.js",
     "build": "prisma generate && prisma migrate deploy",
     "lint": "eslint . --fix",
-    "format": "prettier --write .",
-    "prepare": "husky"
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "",

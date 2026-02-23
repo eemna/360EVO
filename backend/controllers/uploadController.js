@@ -33,9 +33,7 @@ export const uploadImage = async (req, res, next) => {
   }
 };
 
-
-
-export const uploadDocumentController = async (req, res) => {
+export const uploadDocumentController = async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
@@ -44,7 +42,7 @@ export const uploadDocumentController = async (req, res) => {
     const result = cloudinary.uploader.upload_stream(
       {
         folder: "360EVO/documents",
-        resource_type: "auto", 
+        resource_type: "auto",
       },
       (error, result) => {
         if (error) {
@@ -52,18 +50,17 @@ export const uploadDocumentController = async (req, res) => {
         }
 
         return res.status(200).json({
-          url: result.secure_url,      
-          publicId: result.public_id, 
+          url: result.secure_url,
+          publicId: result.public_id,
           originalName: req.file.originalname,
         });
-      }
+      },
     );
 
     // send buffer from multer memoryStorage
     result.end(req.file.buffer);
-
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    next(error);
   }
 };
 export const deleteFileController = async (req, res, next) => {

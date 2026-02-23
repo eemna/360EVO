@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { Prisma } from "@prisma/client";
-export const createProject = async (req, res, next) => {
+export const createProject = async (req, res, _next) => {
   try {
     console.log("REQ USER:", req.user);
     const { teamMembers, milestones, documents, ...projectData } = req.body;
@@ -10,17 +10,11 @@ export const createProject = async (req, res, next) => {
         ...projectData,
         ownerId: req.user.id,
 
-        teamMembers: teamMembers?.length
-  ? { create: teamMembers }
-  : undefined,
+        teamMembers: teamMembers?.length ? { create: teamMembers } : undefined,
 
-milestones: milestones?.length
-  ? { create: milestones }
-  : undefined,
+        milestones: milestones?.length ? { create: milestones } : undefined,
 
-documents: documents?.length
-  ? { create: documents }
-  : undefined,
+        documents: documents?.length ? { create: documents } : undefined,
       },
       include: {
         teamMembers: true,
@@ -31,9 +25,9 @@ documents: documents?.length
 
     res.status(201).json(project);
   } catch (error) {
-  console.error("CREATE PROJECT ERROR:", error);
-  res.status(500).json({ error: error.message });
-}
+    console.error("CREATE PROJECT ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
 export const getProjectById = async (req, res, next) => {
@@ -65,7 +59,6 @@ export const getProjectById = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const updateProject = async (req, res, next) => {
   try {
@@ -154,7 +147,7 @@ export const updateProject = async (req, res, next) => {
     next(error);
   }
 };
-export const getMyProjects = async (req, res, next) => {
+export const getMyProjects = async (req, res, _next) => {
   try {
     const projects = await prisma.project.findMany({
       where: { ownerId: req.user.id },
@@ -163,9 +156,9 @@ export const getMyProjects = async (req, res, next) => {
 
     res.json(projects);
   } catch (error) {
-  console.error("CREATE PROJECT ERROR:", error);
-  res.status(500).json({ error: error.message });
-}
+    console.error("CREATE PROJECT ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
 };
 
 export const deleteProject = async (req, res, next) => {
@@ -202,7 +195,7 @@ export const getFeaturedProjects = async (req, res, next) => {
     const projects = await prisma.project.findMany({
       where: {
         featured: true,
-        status: "APPROVED", 
+        status: "APPROVED",
       },
       take: 6,
       orderBy: { createdAt: "desc" },
@@ -233,7 +226,7 @@ export const getPublicProjects = async (req, res, next) => {
 
     if (q) {
       conditions.push(
-        `search_vector @@ plainto_tsquery('english', $${paramIndex})`
+        `search_vector @@ plainto_tsquery('english', $${paramIndex})`,
       );
       values.push(q);
       paramIndex++;
@@ -278,7 +271,6 @@ export const getPublicProjects = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const submitProject = async (req, res, next) => {
   try {
