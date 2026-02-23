@@ -45,15 +45,14 @@ api.interceptors.response.use(
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
           {},
-          { withCredentials: true }
+          { withCredentials: true },
         );
 
         console.log("✅ Refresh success:", res.data);
 
         localStorage.setItem("accessToken", res.data.accessToken);
 
-        originalRequest.headers.Authorization =
-          `Bearer ${res.data.accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
 
         return api(originalRequest);
       } catch (refreshError) {
@@ -65,7 +64,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

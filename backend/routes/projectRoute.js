@@ -15,8 +15,6 @@ import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
-
-
 // Public gallery (search + filters)
 router.get("/", getPublicProjects);
 
@@ -25,8 +23,6 @@ router.get("/featured", getFeaturedProjects);
 
 // Single project (increments viewCount)
 router.get("/:id", getProjectById);
-
-
 
 // My projects
 router.get("/mine", protect, getMyProjects);
@@ -47,7 +43,7 @@ router.post("/:id/submit", protect, submitProject);
 router.put(
   "/:projectId/team/:teamMemberId/photo",
   protect,
-  updateTeamMemberPhoto
+  updateTeamMemberPhoto,
 );
 
 export default router;

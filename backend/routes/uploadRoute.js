@@ -22,5 +22,4 @@ router.post(
 
 router.delete("/:key", deleteFileController);
 
-
 export default router;

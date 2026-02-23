@@ -1,4 +1,4 @@
-import { useState, useRef} from "react";
+import { useState, useRef } from "react";
 import type { DragEvent, ChangeEvent } from "react";
 import { Upload, X, File, Check, AlertCircle } from "lucide-react";
 import { Button } from "./button";
@@ -15,8 +15,6 @@ interface FileUploadProps {
   label?: string;
   description?: string;
 }
-
-
 
 export function FileUpload({
   onFileSelect,
@@ -35,37 +33,37 @@ export function FileUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateFile = (file: File): boolean => {
-  const fileSizeMB = file.size / (1024 * 1024);
+    const fileSizeMB = file.size / (1024 * 1024);
 
-  if (fileSizeMB > maxSize) {
-    setError(`File size exceeds ${maxSize}MB limit`);
-    return false;
-  }
-
-  if (accept !== "*") {
-    const acceptedTypes = accept.split(",").map((type) => type.trim());
-    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
-    const mimeType = file.type;
-
-    const isAccepted = acceptedTypes.some((type) => {
-      if (type.startsWith(".")) {
-        return fileExtension === type.toLowerCase();
-      }
-      if (type.endsWith("/*")) {
-        return mimeType.startsWith(type.replace("/*", ""));
-      }
-      return mimeType === type;
-    });
-
-    if (!isAccepted) {
-      setError(`File type not accepted. Accepted types: ${accept}`);
+    if (fileSizeMB > maxSize) {
+      setError(`File size exceeds ${maxSize}MB limit`);
       return false;
     }
-  }
 
-  setError("");
-  return true;
-};
+    if (accept !== "*") {
+      const acceptedTypes = accept.split(",").map((type) => type.trim());
+      const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+      const mimeType = file.type;
+
+      const isAccepted = acceptedTypes.some((type) => {
+        if (type.startsWith(".")) {
+          return fileExtension === type.toLowerCase();
+        }
+        if (type.endsWith("/*")) {
+          return mimeType.startsWith(type.replace("/*", ""));
+        }
+        return mimeType === type;
+      });
+
+      if (!isAccepted) {
+        setError(`File type not accepted. Accepted types: ${accept}`);
+        return false;
+      }
+    }
+
+    setError("");
+    return true;
+  };
 
   const generatePreview = (file: File) => {
     // Generate preview for images
@@ -79,75 +77,67 @@ export function FileUpload({
       setPreviewUrl("");
     }
   };
-const uploadToServer = async (selectedFile: File) => {
-  const formData = new FormData();
+  const uploadToServer = async (selectedFile: File) => {
+    const formData = new FormData();
 
-  
-  const isImage = selectedFile.type.startsWith("image/");
-  const fieldName = isImage ? "image" : "file";
-  const endpoint = isImage ? "/uploads/image" : "/uploads/document";
+    const isImage = selectedFile.type.startsWith("image/");
+    const fieldName = isImage ? "image" : "file";
+    const endpoint = isImage ? "/uploads/image" : "/uploads/document";
 
-  formData.append(fieldName, selectedFile);
+    formData.append(fieldName, selectedFile);
 
-  try {
-    setIsUploading(true);
-    setUploadProgress(0);
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
 
-    const response = await api.post(endpoint, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percent);
+      const response = await api.post(endpoint, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            setUploadProgress(percent);
+          }
+        },
+      });
+
+      setIsUploading(false);
+      setUploadProgress(100);
+
+      console.log("Uploaded:", response.data);
+
+      // return Cloudinary URL to parent
+      onFileSelect?.(response.data);
+    } catch (err) {
+      setIsUploading(false);
+      const error = err as AxiosError<{ message: string }>;
+      if (error) {
+        // 401 – Token expired
+        if (error.response?.status === 401) {
+          localStorage.removeItem("accessToken");
+          navigate("/login");
+          return;
         }
-      },
-    });
 
-    setIsUploading(false);
-    setUploadProgress(100);
-
-    console.log("Uploaded:", response.data);
-
-    // return Cloudinary URL to parent
-    onFileSelect?.(response.data);
-
-
-  } catch (err) {
-    setIsUploading(false);
-    const error = err as AxiosError<{ message: string }>;
-    if (error ) {
-
-      // 401 – Token expired
-      if (error.response?.status === 401) {
-        localStorage.removeItem("accessToken");
-        navigate("/login");
-        return;
+        // Backend validation error
+        const backendMessage = error.response?.data?.message;
+        setError(backendMessage || "Upload failed");
+      } else {
+        setError("Unexpected upload error");
       }
-
-      // Backend validation error
-      const backendMessage = error.response?.data?.message;
-      setError(backendMessage || "Upload failed");
-
-    } else {
-      setError("Unexpected upload error");
     }
-  } 
-};
-
- 
+  };
 
   const handleFile = async (selectedFile: File) => {
-  if (validateFile(selectedFile)) {
-    setFile(selectedFile);
-    generatePreview(selectedFile);
-    await uploadToServer(selectedFile);
-  }
-};
-
+    if (validateFile(selectedFile)) {
+      setFile(selectedFile);
+      generatePreview(selectedFile);
+      await uploadToServer(selectedFile);
+    }
+  };
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -204,7 +194,7 @@ const uploadToServer = async (selectedFile: File) => {
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (
@@ -260,8 +250,8 @@ const uploadToServer = async (selectedFile: File) => {
               {isDragging ? "Drop your file here" : description}
             </p>
             <p className="text-xs text-gray-500">
-              {accept !== "*" ? `Accepted formats: ${accept}` : "Any file type"} • Max
-              size: {maxSize}MB
+              {accept !== "*" ? `Accepted formats: ${accept}` : "Any file type"}{" "}
+              • Max size: {maxSize}MB
             </p>
           </div>
 
@@ -297,7 +287,9 @@ const uploadToServer = async (selectedFile: File) => {
                   <p className="text-sm font-medium text-gray-900 truncate">
                     {file.name}
                   </p>
-                  <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                  <p className="text-xs text-gray-500">
+                    {formatFileSize(file.size)}
+                  </p>
                 </div>
                 <Button
                   onClick={handleRemove}

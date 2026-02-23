@@ -10,8 +10,6 @@ import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
 
-
-
 dotenv.config();
 const app = express();
 app.use(helmet());
