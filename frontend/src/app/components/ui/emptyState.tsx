@@ -22,15 +22,9 @@ export function EmptyState({
 
       <h3 className="text-lg font-semibold">{title}</h3>
 
-      <p className="text-sm text-muted-foreground max-w-sm">
-        {subtitle}
-      </p>
+      <p className="text-sm text-muted-foreground max-w-sm">{subtitle}</p>
 
-      {ctaText && onCtaClick && (
-        <Button onClick={onCtaClick}>
-          {ctaText}
-        </Button>
-      )}
+      {ctaText && onCtaClick && <Button onClick={onCtaClick}>{ctaText}</Button>}
     </div>
   );
 }

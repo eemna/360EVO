@@ -43,22 +43,20 @@ export default function LeftSidebar({
       <div
         className={cn(
           "fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none",
         )}
         onClick={onClose}
       />
 
       {/* Sidebar */}
       <aside
-  className={cn(
-    "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out",
-    isOpen ? "translate-x-0" : "-translate-x-full",
-    "lg:static lg:translate-x-0"
-  )}
->
-
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:static lg:translate-x-0",
+        )}
+      >
         <div className="relative h-full overflow-y-auto p-4 bg-gray-50">
-
           {/* Close Button (mobile only) */}
           <Button
             onClick={onClose}
@@ -103,7 +101,7 @@ export default function LeftSidebar({
                       "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                       isActive
                         ? "bg-blue-50 text-blue-600 font-medium"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-gray-700 hover:bg-gray-100",
                     )}
                   >
                     <Icon className="h-5 w-5" />
@@ -118,5 +116,3 @@ export default function LeftSidebar({
     </>
   );
 }
-
-

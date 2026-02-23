@@ -12,21 +12,15 @@ import {
 
 const router = express.Router();
 
-
-router.post(
-  "/image",
-  uploadImageMiddleware.single("image"),
-  uploadImage
-);
-
+router.post("/image", uploadImageMiddleware.single("image"), uploadImage);
 
 router.post(
   "/document",
   uploadDocument.single("file"),
-  uploadDocumentController
+  uploadDocumentController,
 );
 
-
 router.delete("/:key", deleteFileController);
+
 
 export default router;

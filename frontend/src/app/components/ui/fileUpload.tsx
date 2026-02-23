@@ -1,0 +1,338 @@
+import { useState, useRef} from "react";
+import type { DragEvent, ChangeEvent } from "react";
+import { Upload, X, File, Check, AlertCircle } from "lucide-react";
+import { Button } from "./button";
+import { Input } from "./input";
+import api from "../../../services/axios";
+import { useNavigate } from "react-router";
+
+import { AxiosError } from "axios";
+
+interface FileUploadProps {
+  onFileSelect?: (data: { url: string; publicId: string } | null) => void;
+  accept?: string;
+  maxSize?: number;
+  label?: string;
+  description?: string;
+}
+
+
+
+export function FileUpload({
+  onFileSelect,
+  accept = "*",
+  maxSize = 5,
+  label = "Upload File",
+  description = "Drag and drop your file here or click to browse",
+}: FileUploadProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<string>("");
+  const navigate = useNavigate();
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const validateFile = (file: File): boolean => {
+  const fileSizeMB = file.size / (1024 * 1024);
+
+  if (fileSizeMB > maxSize) {
+    setError(`File size exceeds ${maxSize}MB limit`);
+    return false;
+  }
+
+  if (accept !== "*") {
+    const acceptedTypes = accept.split(",").map((type) => type.trim());
+    const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
+    const mimeType = file.type;
+
+    const isAccepted = acceptedTypes.some((type) => {
+      if (type.startsWith(".")) {
+        return fileExtension === type.toLowerCase();
+      }
+      if (type.endsWith("/*")) {
+        return mimeType.startsWith(type.replace("/*", ""));
+      }
+      return mimeType === type;
+    });
+
+    if (!isAccepted) {
+      setError(`File type not accepted. Accepted types: ${accept}`);
+      return false;
+    }
+  }
+
+  setError("");
+  return true;
+};
+
+  const generatePreview = (file: File) => {
+    // Generate preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl("");
+    }
+  };
+const uploadToServer = async (selectedFile: File) => {
+  const formData = new FormData();
+
+  
+  const isImage = selectedFile.type.startsWith("image/");
+  const fieldName = isImage ? "image" : "file";
+  const endpoint = isImage ? "/uploads/image" : "/uploads/document";
+
+  formData.append(fieldName, selectedFile);
+
+  try {
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    const response = await api.post(endpoint, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percent);
+        }
+      },
+    });
+
+    setIsUploading(false);
+    setUploadProgress(100);
+
+    console.log("Uploaded:", response.data);
+
+    // return Cloudinary URL to parent
+    onFileSelect?.(response.data);
+
+
+  } catch (err) {
+    setIsUploading(false);
+    const error = err as AxiosError<{ message: string }>;
+    if (error ) {
+
+      // 401 – Token expired
+      if (error.response?.status === 401) {
+        localStorage.removeItem("accessToken");
+        navigate("/login");
+        return;
+      }
+
+      // Backend validation error
+      const backendMessage = error.response?.data?.message;
+      setError(backendMessage || "Upload failed");
+
+    } else {
+      setError("Unexpected upload error");
+    }
+  } 
+};
+
+ 
+
+  const handleFile = async (selectedFile: File) => {
+  if (validateFile(selectedFile)) {
+    setFile(selectedFile);
+    generatePreview(selectedFile);
+    await uploadToServer(selectedFile);
+  }
+};
+
+
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile) {
+      handleFile(droppedFile);
+    }
+  };
+
+  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      handleFile(selectedFile);
+    }
+  };
+
+  const handleRemove = () => {
+    setFile(null);
+    setPreviewUrl("");
+    setUploadProgress(0);
+    setError("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+    onFileSelect?.(null);
+  };
+
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  };
+
+  return (
+    <div className="w-full">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        {label}
+      </label>
+
+      {!file ? (
+        <div
+          onClick={handleClick}
+          onDragEnter={handleDragEnter}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`
+            relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
+            transition-all duration-300
+            ${
+              isDragging
+                ? "border-blue-500 bg-blue-50"
+                : "border-gray-300 hover:border-gray-400 bg-gray-50"
+            }
+            ${error ? "border-red-300 bg-red-50" : ""}
+          `}
+        >
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept={accept}
+            onChange={handleFileInput}
+            className="hidden"
+          />
+
+          <div className="flex flex-col items-center">
+            <div
+              className={`
+              size-12 rounded-full flex items-center justify-center mb-4
+              ${isDragging ? "bg-blue-100" : "bg-gray-200"}
+              ${error ? "bg-red-100" : ""}
+            `}
+            >
+              {error ? (
+                <AlertCircle className="size-6 text-red-600" />
+              ) : (
+                <Upload
+                  className={`size-6 ${isDragging ? "text-blue-600" : "text-gray-600"}`}
+                />
+              )}
+            </div>
+
+            <p className="text-sm font-medium text-gray-900 mb-1">
+              {isDragging ? "Drop your file here" : description}
+            </p>
+            <p className="text-xs text-gray-500">
+              {accept !== "*" ? `Accepted formats: ${accept}` : "Any file type"} • Max
+              size: {maxSize}MB
+            </p>
+          </div>
+
+          {error && (
+            <div className="mt-4 text-sm text-red-600 flex items-center justify-center gap-2">
+              <AlertCircle className="size-4" />
+              {error}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="border border-gray-300 rounded-lg p-4 bg-white">
+          <div className="flex items-start gap-4">
+            {/* Preview */}
+            {previewUrl ? (
+              <div className="size-16 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                <img
+                  src={previewUrl}
+                  alt={file.name}
+                  className="size-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="size-16 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                <File className="size-8 text-blue-600" />
+              </div>
+            )}
+
+            {/* File Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                </div>
+                <Button
+                  onClick={handleRemove}
+                  className="bg-gray-100 hover:bg-gray-200 shadow-none transition-colors"
+                >
+                  <X className="size-4 text-red-500 " />
+                </Button>
+              </div>
+
+              {/* Progress Bar */}
+              {isUploading && (
+                <div className="space-y-1">
+                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="bg-blue-600 h-full transition-all duration-300 ease-out"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Uploading... {uploadProgress}%
+                  </p>
+                </div>
+              )}
+
+              {/* Success State */}
+              {!isUploading && uploadProgress === 100 && (
+                <div className="flex items-center gap-1 text-green-600">
+                  <Check className="size-4" />
+                  <span className="text-xs font-medium">Upload complete</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

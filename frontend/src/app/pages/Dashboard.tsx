@@ -7,12 +7,13 @@ import { Badge } from "../components/ui/badge";
 import { useToast } from "../../context/ToastContext";
 import { RadioGroup } from "../components/ui/radio";
 import { Tag } from "../components/ui/tag";
-
+import { ProjectCreationWizard } from "./ProjectCreationWizard";
 export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("user");
   const { showToast } = useToast();
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   return (
     <div className="p-6 space-y-6">
@@ -24,7 +25,7 @@ export default function Dashboard() {
         <Badge variant="destructive">Warning</Badge>
         <Badge variant="outline">Beta</Badge>
       </h1>
-
+      
       <p className="text-gray-600">Welcome to your dashboard</p>
       <RadioGroup
         name="role"
@@ -49,6 +50,9 @@ export default function Dashboard() {
           <Tag variant="outline">Outline Tag</Tag>
         </div>
       </div>
+      <Button onClick={() => setIsWizardOpen(true)}>
+  Create New Project
+</Button>
       {/* Buttons */}
       <section className="bg-card rounded-lg border p-6 space-y-4">
         <h2 className="text-lg font-semibold">Modal Components</h2>
@@ -61,7 +65,10 @@ export default function Dashboard() {
           </Button>
         </div>
       </section>
-
+      <ProjectCreationWizard
+  isOpen={isWizardOpen}
+  onClose={() => setIsWizardOpen(false)}
+/>
       {/* Main Modal */}
       <AppModal
         open={isModalOpen}

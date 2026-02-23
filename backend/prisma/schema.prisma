@@ -74,7 +74,7 @@ model RefreshToken {
 }
 
 model Project {
-  id            String                   @id @default(uuid())
+  id            String            @id @default(uuid())
   ownerId       String
   title         String
   tagline       String
@@ -85,22 +85,21 @@ model Project {
   technologies  String[]
   fundingSought Decimal?
   currency      String
-  location      String
-  status        ProjectStatus            @default(DRAFT)
-  visibility    ProjectVisibility        @default(PUBLIC)
-  viewCount     Int                      @default(0)
-  createdAt     DateTime                 @default(now())
-  updatedAt     DateTime                 @updatedAt
-  search_vector Unsupported("tsvector")?
+  location      String?
+  status        ProjectStatus     @default(DRAFT)
+  visibility    ProjectVisibility @default(PUBLIC)
+  viewCount     Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  featured      Boolean           @default(false)
   milestones    Milestone[]
-  owner         User                     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner         User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   documents     ProjectDocument[]
   teamMembers   TeamMember[]
 
   @@index([status, industry])
   @@index([status, stage])
   @@index([ownerId])
-  @@index([search_vector], type: Gin)
 }
 
 model TeamMember {

@@ -35,13 +35,13 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
     <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center gap-4">
-           {/* Hamburger ONLY on mobile */}
-      <Button
-        onClick={onMenuClick}
-        className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
-      >
-        <Menu className="size-6 text-gray-600" />
-      </Button>
+          {/* Hamburger ONLY on mobile */}
+          <Button
+            onClick={onMenuClick}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Menu className="size-6 text-gray-600" />
+          </Button>
           {/* Logo */}
           <Link to="/app" className="flex items-center gap-2 shrink-0">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
