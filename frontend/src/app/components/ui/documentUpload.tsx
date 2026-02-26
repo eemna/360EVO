@@ -24,7 +24,7 @@ interface CloudinaryResponse {
 
 interface UploadedFile {
   id: string;
-  file: File;
+  file?: File; 
   progress: number;
   status: "uploading" | "success" | "error";
   error?: string;
@@ -34,7 +34,7 @@ export type UploadedDocument = {
   name: string;
   fileUrl: string;
   fileKey: string;
-  fileType: string;
+
 };
 
 interface DocumentUploadProps {
@@ -44,18 +44,32 @@ interface DocumentUploadProps {
   acceptedTypes?: string[];
   label?: string;
   description?: string;
+  initialFiles?: UploadedDocument[];
 }
 
 export function DocumentUpload({
   onFilesChange,
+  initialFiles = [],
   maxFiles = 5,
   maxSize = 20,
   acceptedTypes = [".pdf", ".doc", ".docx"],
   label = "Upload Documents",
   description = "Drag and drop your files here or click to browse",
 }: DocumentUploadProps) {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
+const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(() => {
+  if (!initialFiles || initialFiles.length === 0) return [];
+
+  return initialFiles.map((file) => ({
+    id: file.fileKey,
+    progress: 100,
+    status: "success" as const,
+    cloudinaryData: {
+      url: file.fileUrl,
+      publicId: file.fileKey,
+      originalName: file.name,
+    },
+  }));
+});  const [isDragging, setIsDragging] = useState(false);
   const [globalError, setGlobalError] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const downloadFile = (url: string, filename: string) => {
@@ -72,6 +86,8 @@ export function DocumentUpload({
         window.URL.revokeObjectURL(blobUrl);
       });
   };
+
+
   useEffect(() => {
     if (!onFilesChange) return;
 
@@ -81,7 +97,7 @@ export function DocumentUpload({
         name: f.cloudinaryData!.originalName,
         fileUrl: f.cloudinaryData!.url,
         fileKey: f.cloudinaryData!.publicId,
-        fileType: f.file.type,
+        
       }));
 
     onFilesChange(successFiles);
@@ -118,7 +134,11 @@ export function DocumentUpload({
     }
 
     // Check for duplicates
-    const isDuplicate = uploadedFiles.some((uf) => uf.file.name === file.name);
+    const isDuplicate = uploadedFiles.some(
+  (uf) =>
+    uf.file?.name === file.name ||
+    uf.cloudinaryData?.originalName === file.name
+);
     if (isDuplicate) {
       return {
         valid: false,
@@ -131,28 +151,25 @@ export function DocumentUpload({
 
   const uploadFileToServer = async (uploadedFile: UploadedFile) => {
     const formData = new FormData();
-    formData.append("file", uploadedFile.file);
+if (!uploadedFile.file) return;
 
+formData.append("file", uploadedFile.file);
     try {
       const response = await api.post("/uploads/document", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
+  onUploadProgress: (progressEvent) => {
+    if (progressEvent.total) {
+      const percent = Math.round(
+        (progressEvent.loaded * 100) / progressEvent.total,
+      );
 
-            setUploadedFiles((prev) =>
-              prev.map((f) =>
-                f.id === uploadedFile.id ? { ...f, progress: percent } : f,
-              ),
-            );
-          }
-        },
-      });
-
+      setUploadedFiles((prev) =>
+        prev.map((f) =>
+          f.id === uploadedFile.id ? { ...f, progress: percent } : f,
+        ),
+      );
+    }
+  },
+});
       const responseData = response.data as CloudinaryResponse;
 
       setUploadedFiles((prev) =>
@@ -167,22 +184,29 @@ export function DocumentUpload({
             : f,
         ),
       );
-    } catch (err) {
-      let message = "Upload failed";
+    }  catch (err) {
+    console.error("UPLOAD ERROR:", err);
 
-      if (axios.isAxiosError<{ message: string }>(err)) {
-        message = err.response?.data?.message || message;
-      }
+    let message = "Upload failed";
 
-      setUploadedFiles((prev): UploadedFile[] =>
-        prev.map((f) =>
-          f.id === uploadedFile.id
-            ? { ...f, status: "error" as const, error: message }
-            : f,
-        ),
-      );
+    if (axios.isAxiosError<{ message: string }>(err)) {
+      console.error("Status:", err.response?.status);
+      console.error("Data:", err.response?.data);
+      message = err.response?.data?.message || message;
     }
-  };
+
+    setUploadedFiles((prev) =>
+      prev.map((f) =>
+        f.id === uploadedFile.id
+          ? { ...f, status: "error", error: message }
+          : f,
+      ),
+    );
+  }
+};
+
+
+
 
   const handleFiles = (files: FileList) => {
     const filesArray = Array.from(files);
@@ -253,7 +277,11 @@ export function DocumentUpload({
     // Delete from backend if exists
     if (fileToRemove?.cloudinaryData?.publicId) {
       try {
-        await api.delete(`/uploads/${fileToRemove.cloudinaryData.publicId}`);
+        await api.delete(
+  `/uploads?key=${encodeURIComponent(
+    fileToRemove.cloudinaryData.publicId
+  )}`
+);
       } catch (error) {
         console.error("Failed to delete from server", error);
       }
@@ -380,7 +408,11 @@ export function DocumentUpload({
               <div className="flex items-start gap-3">
                 {/* File Icon */}
                 <div className="size-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
-                  {getFileIcon(uploadedFile.file.name)}
+                  {getFileIcon(
+  uploadedFile.file?.name ||
+  uploadedFile.cloudinaryData?.originalName ||
+  ""
+)}
                 </div>
 
                 {/* File Info */}
@@ -388,10 +420,12 @@ export function DocumentUpload({
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 truncate">
-                        {uploadedFile.file.name}
+                        {uploadedFile.file?.name || uploadedFile.cloudinaryData?.originalName}
                       </p>
                       <p className="text-xs text-gray-500">
-                        {formatFileSize(uploadedFile.file.size)}
+                        {uploadedFile.file
+  ? formatFileSize(uploadedFile.file.size)
+  : ""}
                       </p>
                     </div>
                     <Button
@@ -435,7 +469,9 @@ export function DocumentUpload({
                           onClick={() =>
                             downloadFile(
                               uploadedFile.cloudinaryData!.url,
-                              uploadedFile.file.name,
+                              uploadedFile.file?.name ||
+uploadedFile.cloudinaryData?.originalName ||
+"document",
                             )
                           }
                           className="flex items-center gap-2"

@@ -8,10 +8,13 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
-import Dashboard from "./pages/Dashboard";
+import StartupDashboard from "./pages/StartupDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import RoleRoute from "./RoleRoute";
-
+import AdminDashboard from "./pages/AdminDashboard";
+import RoleRedirect from "./RoleRedirect";
+import ProjectDetailsPage from "./pages/ProjectDetails";
+import { ProjectGallery } from "./pages/ProjectGallery";
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -24,24 +27,52 @@ export const router = createBrowserRouter([
       { path: "/reset-password", element: <ResetPasswordPage /> },
     ],
   },
-  {
-    path: "/app",
-    element: (
-      <ProtectedRoute>
-        <AppLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        index: true,
-        element: (
-          <RoleRoute allowedRoles={["MEMBER", "EXPERT", "STARTUP"]}>
-            <Dashboard />
-          </RoleRoute>
-        ),
-      },
-    ],
-  },
+ {
+  path: "/app",
+  element: (
+    <ProtectedRoute>
+      <AppLayout />
+    </ProtectedRoute>
+  ),
+  children: [
+
+    
+    {
+      index: true,
+      element: <RoleRedirect />,
+    },
+
+    {
+      path: "admin",
+      element: (
+        <RoleRoute allowedRoles={["ADMIN"]}>
+          <AdminDashboard />
+        </RoleRoute>
+      ),
+    },
+    {
+      path: "startup",
+      element: (
+        <RoleRoute allowedRoles={["STARTUP"]}>
+          <StartupDashboard />
+        </RoleRoute>
+      ),
+      
+    },
+     {
+      path: "projects",  
+      element: <ProjectGallery />,
+    },
+    {
+  path: "startup/projects/:id",
+  element: (
+    <RoleRoute allowedRoles={["STARTUP", "ADMIN"]}>
+      <ProjectDetailsPage />
+    </RoleRoute>
+  ),
+},
+  ],
+},
   {
     path: "*",
     element: <NotFoundPage />,

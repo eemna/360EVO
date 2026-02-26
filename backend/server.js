@@ -9,6 +9,7 @@ import job from "./config/cron.js";
 import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -45,6 +46,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/auth", rateLimiter, authRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/projects", projectRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = process.env.PORT || 5001;
 
