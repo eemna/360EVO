@@ -15,6 +15,8 @@ export const createProject = async (req, res, _next) => {
         milestones: milestones?.length ? { create: milestones } : undefined,
 
         documents: documents?.length ? { create: documents } : undefined,
+        status: "DRAFT",
+        visibility: "CONNECTIONS", 
       },
       include: {
         teamMembers: true,
@@ -35,24 +37,30 @@ export const getProjectById = async (req, res, next) => {
     const { id } = req.params;
 
     const project = await prisma.project.findUnique({
-      where: { id },
-      include: {
-        teamMembers: true,
-        milestones: true,
-        documents: true,
-      },
-    });
+  where: { id },
+  include: {
+    owner: {
+      select: { name: true }
+    },
+    teamMembers: true,
+    milestones: true,
+    documents: true,
+  },
+});
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    await prisma.project.update({
-      where: { id },
-      data: {
-        viewCount: { increment: 1 },
-      },
-    });
+    // Only increment if viewer is NOT owner
+    if (!req.user || req.user.id !== project.ownerId) {
+      await prisma.project.update({
+        where: { id },
+        data: {
+          viewCount: { increment: 1 },
+        },
+      });
+    }
 
     res.json(project);
   } catch (error) {
@@ -63,7 +71,7 @@ export const getProjectById = async (req, res, next) => {
 export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { teamMembers, milestones, documents, ...projectData } = req.body;
+    const { teamMembers, milestones, documents, status, visibility, ...projectData } = req.body;
 
     const project = await prisma.project.findUnique({
       where: { id },
@@ -218,55 +226,49 @@ export const getPublicProjects = async (req, res, next) => {
       limit = 12,
     } = req.query;
 
-    const offset = (Number(page) - 1) * Number(limit);
+    const skip = (Number(page) - 1) * Number(limit);
 
-    const conditions = [`status = 'APPROVED'`];
-    const values = [];
-    let paramIndex = 1;
+    const where = {
+      status: "APPROVED",
+      visibility: "PUBLIC",
 
-    if (q) {
-      conditions.push(
-        `search_vector @@ plainto_tsquery('english', $${paramIndex})`,
-      );
-      values.push(q);
-      paramIndex++;
-    }
+      ...(industry && { industry }),
+      ...(stage && { stage }),
 
-    if (industry) {
-      conditions.push(`industry = $${paramIndex}`);
-      values.push(industry);
-      paramIndex++;
-    }
+      ...(minFunding && {
+        fundingSought: { gte: Number(minFunding) },
+      }),
 
-    if (stage) {
-      conditions.push(`stage = $${paramIndex}`);
-      values.push(stage);
-      paramIndex++;
-    }
+      ...(maxFunding && {
+        fundingSought: { lte: Number(maxFunding) },
+      }),
 
-    if (minFunding) {
-      conditions.push(`"fundingSought" >= $${paramIndex}`);
-      values.push(Number(minFunding));
-      paramIndex++;
-    }
+      ...(q && {
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { shortDesc: { contains: q, mode: "insensitive" } },
+          { tagline: { contains: q, mode: "insensitive" } },
+        ],
+      }),
+    };
 
-    if (maxFunding) {
-      conditions.push(`"fundingSought" <= $${paramIndex}`);
-      values.push(Number(maxFunding));
-      paramIndex++;
-    }
+   const projects = await prisma.project.findMany({
+  where,
+  orderBy: { createdAt: "desc" },
+  skip,
+  take: Number(limit),
+  include: {
+    owner: {
+      select: {
+        name: true,
+      },
+    },
+  },
+});
 
-    const whereClause = conditions.join(" AND ");
-
-    const projects = await prisma.$queryRaw`
-  SELECT *
-  FROM "Project"
-  WHERE ${Prisma.raw(whereClause)}
-  ORDER BY "createdAt" DESC
-  LIMIT ${Number(limit)} OFFSET ${offset}
-`;
-
+    
     res.json(projects);
+
   } catch (error) {
     next(error);
   }
@@ -294,7 +296,9 @@ export const submitProject = async (req, res, next) => {
 
     const updated = await prisma.project.update({
       where: { id },
-      data: { status: "PENDING" },
+      data: { status: "PENDING",
+              visibility: "CONNECTIONS",
+       },
     });
 
     res.json(updated);
@@ -326,6 +330,56 @@ export const updateTeamMemberPhoto = async (req, res, next) => {
     });
 
     res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getStartupDashboard = async (req, res, next) => {
+  try {
+    const ownerId = req.user.id;
+    const { q } = req.query;
+    const [
+  totalProjects,
+  totalViews,
+  pending,
+  approved,
+  draft,
+  projects
+] = await Promise.all([
+  prisma.project.count({ where: { ownerId } }),
+  prisma.project.aggregate({
+    where: { ownerId },
+    _sum: { viewCount: true }
+  }),
+  prisma.project.count({ where: { ownerId, status: "PENDING" } }),
+  prisma.project.count({ where: { ownerId, status: "APPROVED" } }),
+  prisma.project.count({ where: { ownerId, status: "DRAFT" } }),
+  prisma.project.findMany({
+     where: {
+    ownerId,
+    ...(q && {
+  OR: [
+    { title: { contains: q, mode: "insensitive" } },
+    { shortDesc: { contains: q, mode: "insensitive" } },
+    { tagline: { contains: q, mode: "insensitive" } },
+  ],
+}),
+  },
+    include: { teamMembers: true },
+    orderBy: { createdAt: "desc" },
+  })
+]);
+
+    res.json({
+      stats: {
+        totalProjects,
+        totalViews: totalViews._sum.viewCount || 0,
+        pending,
+        approved,
+        draft,
+      },
+      projects,
+    });
   } catch (error) {
     next(error);
   }

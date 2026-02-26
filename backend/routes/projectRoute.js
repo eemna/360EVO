@@ -9,6 +9,7 @@ import {
   getMyProjects,
   getFeaturedProjects,
   getPublicProjects,
+  getStartupDashboard,
 } from "../controllers/projectController.js";
 
 import { protect } from "../middleware/auth.js";
@@ -20,12 +21,11 @@ router.get("/", getPublicProjects);
 
 // Featured projects
 router.get("/featured", getFeaturedProjects);
-
-// Single project (increments viewCount)
-router.get("/:id", getProjectById);
-
+router.get("/dashboard", protect, getStartupDashboard);
 // My projects
 router.get("/mine", protect, getMyProjects);
+// Single project (increments viewCount)
+router.get("/:id",protect, getProjectById);
 
 // Create project
 router.post("/", protect, createProject);

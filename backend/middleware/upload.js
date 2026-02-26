@@ -19,6 +19,7 @@ export const uploadImage = multer({
 });
 
 const documentFilter = (req, file, cb) => {
+  console.log("MIME TYPE:", file.mimetype);
   const allowed = [
     "application/pdf",
     "application/msword", // .doc

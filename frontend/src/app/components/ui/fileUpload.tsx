@@ -10,6 +10,7 @@ import { AxiosError } from "axios";
 
 interface FileUploadProps {
   onFileSelect?: (data: { url: string; publicId: string } | null) => void;
+  existingFileUrl?: string; 
   accept?: string;
   maxSize?: number;
   label?: string;
@@ -18,6 +19,7 @@ interface FileUploadProps {
 
 export function FileUpload({
   onFileSelect,
+  existingFileUrl,
   accept = "*",
   maxSize = 5,
   label = "Upload File",
@@ -29,9 +31,10 @@ export function FileUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>(existingFileUrl || "");
+ 
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   const validateFile = (file: File): boolean => {
     const fileSizeMB = file.size / (1024 * 1024);
 
@@ -78,66 +81,70 @@ export function FileUpload({
     }
   };
   const uploadToServer = async (selectedFile: File) => {
-    const formData = new FormData();
+  const formData = new FormData();
 
-    const isImage = selectedFile.type.startsWith("image/");
-    const fieldName = isImage ? "image" : "file";
-    const endpoint = isImage ? "/uploads/image" : "/uploads/document";
+  const isImage = selectedFile.type.startsWith("image/");
+  const fieldName = isImage ? "image" : "file";
+  const endpoint = isImage ? "/uploads/image" : "/uploads/document";
 
-    formData.append(fieldName, selectedFile);
+  formData.append(fieldName, selectedFile);
 
-    try {
-      setIsUploading(true);
-      setUploadProgress(0);
+  try {
+    setIsUploading(true);
+    setUploadProgress(0);
+    setError("");
 
-      const response = await api.post(endpoint, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const percent = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
-            setUploadProgress(percent);
-          }
-        },
-      });
-
-      setIsUploading(false);
-      setUploadProgress(100);
-
-      console.log("Uploaded:", response.data);
-
-      // return Cloudinary URL to parent
-      onFileSelect?.(response.data);
-    } catch (err) {
-      setIsUploading(false);
-      const error = err as AxiosError<{ message: string }>;
-      if (error) {
-        // 401 – Token expired
-        if (error.response?.status === 401) {
-          localStorage.removeItem("accessToken");
-          navigate("/login");
-          return;
+    const response = await api.post(endpoint, formData, {
+      //  DO NOT set Content-Type manually
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percent);
         }
+      },
+    });
 
-        // Backend validation error
-        const backendMessage = error.response?.data?.message;
-        setError(backendMessage || "Upload failed");
-      } else {
-        setError("Unexpected upload error");
-      }
-    }
-  };
+    setUploadProgress(100);
+    setIsUploading(false);
 
-  const handleFile = async (selectedFile: File) => {
-    if (validateFile(selectedFile)) {
-      setFile(selectedFile);
-      generatePreview(selectedFile);
-      await uploadToServer(selectedFile);
+    // ✅ Only now confirm success
+    onFileSelect?.({
+      url: response.data.url,
+      publicId: response.data.publicId,
+    });
+
+  } catch (err) {
+    setIsUploading(false);
+    setUploadProgress(0);
+    setFile(null);
+    setPreviewUrl("");
+
+    const error = err as AxiosError<{ message: string }>;
+
+    if (error.response?.status === 401) {
+      localStorage.removeItem("accessToken");
+      navigate("/login");
+      return;
     }
-  };
+
+    const backendMessage = error.response?.data?.message;
+    setError(backendMessage || "Upload failed. Please try again.");
+  }
+};
+
+ const handleFile = async (selectedFile: File) => {
+  if (!validateFile(selectedFile)) return;
+
+  setFile(selectedFile);
+
+  //  Upload first
+  await uploadToServer(selectedFile);
+
+  // Only generate preview after upload starts (safe)
+  generatePreview(selectedFile);
+};
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -203,7 +210,7 @@ export function FileUpload({
         {label}
       </label>
 
-      {!file ? (
+      {!file && !previewUrl ? (
         <div
           onClick={handleClick}
           onDragEnter={handleDragEnter}
@@ -270,7 +277,7 @@ export function FileUpload({
               <div className="size-16 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
                 <img
                   src={previewUrl}
-                  alt={file.name}
+                  alt={file?.name || "Preview"}
                   className="size-full object-cover"
                 />
               </div>
@@ -285,10 +292,10 @@ export function FileUpload({
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">
-                    {file.name}
+                    {file?.name || "Uploaded file"}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {formatFileSize(file.size)}
+                    {file ? formatFileSize(file.size) : ""}
                   </p>
                 </div>
                 <Button

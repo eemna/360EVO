@@ -5,9 +5,11 @@ import {
 } from "../middleware/upload.js";
 
 import {
+
   uploadImage,
   uploadDocumentController,
   deleteFileController,
+  downloadDocumentController,
 } from "../controllers/uploadController.js";
 
 const router = express.Router();
@@ -20,6 +22,6 @@ router.post(
   uploadDocumentController,
 );
 
-router.delete("/:key", deleteFileController);
-
+router.delete("/", deleteFileController);
+router.get("/document/download", downloadDocumentController);
 export default router;

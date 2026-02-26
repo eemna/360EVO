@@ -121,7 +121,7 @@ export const register = async (req, res, next) => {
     <p>Click below to verify your email:</p>
     <a href="${verificationLink}">${verificationLink}</a>
   `,
-    }).catch(err => console.error("Email failed:", err));
+    }).catch((err) => console.error("Email failed:", err));
 
     res.status(201).json({
       message:
@@ -276,14 +276,14 @@ export const forgotPassword = async (req, res, next) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-     sendEmail({
+    sendEmail({
       to: email,
       subject: "Reset your password",
       html: `
     <p>Click below to reset your password:</p>
     <a href="${resetLink}">${resetLink}</a>
   `,
-    }).catch(err => console.error("Email failed:", err));
+    }).catch((err) => console.error("Email failed:", err));
 
     res.json({
       message: "If this email exists, a reset link has been sent",
@@ -328,7 +328,7 @@ export const resendVerification = async (req, res, next) => {
     <p>Click below to verify your email:</p>
     <a href="${verificationLink}">${verificationLink}</a>
   `,
-    }).catch(err => console.error("Email failed:", err));
+    }).catch((err) => console.error("Email failed:", err));
 
     res.json({ message: "Verification email resent" });
   } catch (error) {

@@ -32,12 +32,14 @@ import { Card } from "../components/ui/card";
 import { RichTextEditor } from "./RichTextEditor";
 import { FileUpload } from "../components/ui/fileUpload";
 import { DocumentUpload } from "../components/ui/documentUpload";
+import type { UploadedDocument } from "../components/ui/documentUpload";
 import api from "../../services/axios";
 
 interface ProjectCreationWizardProps {
   isOpen: boolean;
   onClose: () => void;
   projectId?: string | null;
+  onProjectSaved?: () => void; 
 }
 
 const STEPS = ["Basics", "Details", "Team", "Funding", "Media & Submit"];
@@ -137,6 +139,7 @@ const projectSchema = z.object({
   // Step 5: Media
   heroImage: z.any().optional(),
   documents: z.any().optional(),
+  location: z.string().min(2, "Location is required"),
 });
 
 type ProjectFormData = z.infer<typeof projectSchema>;
@@ -144,15 +147,51 @@ type UploadedFile = {
   name: string;
   fileUrl: string;
   fileKey: string;
-  fileType?: string;
+};
+type ProjectDocument = {
+  name: string;
+  fileUrl: string;
+  fileKey: string;
+  fileType: "HERO_IMAGE" | "DOCUMENT";
+};
+
+type ApiProject = {
+  id: string;
+  title: string;
+  tagline: string;
+  shortDesc: string;
+  fullDesc: string;
+  industry: string;
+  stage: string;
+  technologies: string[];
+  fundingSought: number | null;
+  currency: string;
+
+  teamMembers?: {
+    name: string;
+    role: string;
+    photo?: string | null;
+  }[];
+
+  milestones?: {
+    title: string;
+    targetDate?: string | null;
+    completedAt?: string | null;
+  }[];
+  documents?: ProjectDocument[];
 };
 export function ProjectCreationWizard({
   isOpen,
   onClose,
   projectId: externalProjectId,
+  onProjectSaved,
 }: ProjectCreationWizardProps) {
-  const [localProjectId, setLocalProjectId] = useState<string | null>(null);
-  const projectId = localProjectId ?? externalProjectId ?? null;
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  useEffect(() => {
+  if (isOpen) {
+    setCurrentProjectId(externalProjectId ?? null);
+  }
+}, [isOpen, externalProjectId]);
   const [currentStep, setCurrentStep] = useState(0);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -161,7 +200,7 @@ export function ProjectCreationWizard({
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [heroFile, setHeroFile] = useState<UploadedFile | null>(null);
-  const [supportingDocs, setSupportingDocs] = useState<UploadedFile[]>([]);
+  const [supportingDocs, setSupportingDocs] = useState<UploadedDocument[]>([]);
   const { showToast } = useToast();
   const {
     register,
@@ -186,6 +225,7 @@ export function ProjectCreationWizard({
       teamMembers: [{ name: "", role: "", photo: null }],
       fundingAmount: "",
       currency: "USD",
+      location: "",
       milestones: [{ title: "", targetDate: "", completedAt: "" }],
     },
   });
@@ -228,6 +268,7 @@ export function ProjectCreationWizard({
           "shortDescription",
           "industry",
           "stage",
+          "location",
         ];
         break;
       case 1:
@@ -262,6 +303,7 @@ export function ProjectCreationWizard({
       stage: values.stage,
       industry: values.industry,
       technologies: values.techTags,
+      location: values.location,
       fundingSought: values.fundingAmount ? Number(values.fundingAmount) : null,
       currency: values.currency,
 
@@ -319,21 +361,25 @@ export function ProjectCreationWizard({
 
       const payload = mapFormToApi(data);
 
-      let id = projectId;
+      let id = currentProjectId;
 
       if (!id) {
         // First time → create project
         const res = await api.post("/projects", payload);
+      
         id = res.data.id;
-        setLocalProjectId(id);
+        setCurrentProjectId(id);
       } else {
         //  Update existing draft
         await api.put(`/projects/${id}`, payload);
+        
       }
 
       // Submit project
       await api.post(`/projects/${id}/submit`);
-
+           if (onProjectSaved) {
+      await onProjectSaved();
+    }
       setSaveStatus("saved");
       showToast({
         type: "success",
@@ -354,7 +400,7 @@ export function ProjectCreationWizard({
     }
   };
   const handleNewProject = () => {
-    setLocalProjectId(null);
+    setCurrentProjectId(null); 
     setCurrentStep(0);
 
     reset({
@@ -385,7 +431,10 @@ export function ProjectCreationWizard({
       setValue("techTags", [...currentTags, tag]);
     }
   };
-
+const handleClose = () => {
+  handleNewProject();
+  onClose();
+};
   const saveDraft = async () => {
     if (isSubmitting) return;
 
@@ -394,16 +443,22 @@ export function ProjectCreationWizard({
 
       const payload = mapFormToApi(getValues());
 
-      let id = projectId;
+      let id = currentProjectId;
 
       if (!id) {
         //  First time → create draft
         const res = await api.post("/projects", payload);
+        if (onProjectSaved) {
+  await onProjectSaved();
+}
         id = res.data.id;
-        setLocalProjectId(id);
+        setCurrentProjectId(id);
       } else {
         //  Existing draft → update
         await api.put(`/projects/${id}`, payload);
+        if (onProjectSaved) {
+  await onProjectSaved();
+}
       }
 
       setSaveStatus("saved");
@@ -425,92 +480,210 @@ export function ProjectCreationWizard({
     }
   };
   /*useEffect(() => {
-  setProjectId(externalProjectId ?? null);
-}, [externalProjectId]);*/
+  if (isOpen) {
+    setProjectId(externalProjectId ?? null);
+  }
+}, [isOpen, externalProjectId]); */
   useEffect(() => {
-    if (!isOpen || !projectId) return;
-
-    const loadProject = async () => {
-      try {
-        const res = await api.get(`/projects/${projectId}`);
-        const project = res.data;
-
-        reset({
-          title: project.title,
-          tagline: project.tagline,
-          shortDescription: project.shortDesc,
-          industry: project.industry,
-          stage: project.stage,
-          fullDescription: project.fullDesc,
-          techTags: project.technologies || [],
-          teamMembers: project.teamMembers || [],
-          fundingAmount: project.fundingSought?.toString() || "",
-          currency: project.currency || "USD",
-          milestones:
-            project.milestones?.map(
-              (m: {
-                title: string;
-                targetDate?: string;
-                completedAt?: string;
-              }) => ({
-                title: m.title,
-                targetDate: m.targetDate
-                  ? new Date(m.targetDate).toISOString().split("T")[0]
-                  : "",
-                completedAt: m.completedAt
-                  ? new Date(m.completedAt).toISOString().split("T")[0]
-                  : "",
-              }),
-            ) || [],
-        });
-      } catch (error) {
-        console.error("Failed to load project", error);
-      }
-    };
-
-    loadProject();
-  }, [isOpen, projectId, reset]);
-  useEffect(() => {
-    if (!projectId) return;
-
-    const subscription = watch(() => {
-      const values = getValues();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-
-      if (isSubmitting) {
-        timeoutRef.current = null;
-        return;
-      }
-
-      timeoutRef.current = setTimeout(async () => {
-        // Re-check isSubmitting here to handle potential race conditions
-        if (isSubmitting) {
-          setSaveStatus("idle"); // If submitting started while in timeout, reset status
-          return;
-        }
-        try {
-          setSaveStatus("saving");
-
-          await api.put(`/projects/${projectId}`, mapFormToApi(values));
-
-          setSaveStatus("saved");
-        } catch (error) {
-          console.error(error);
-          setSaveStatus("error");
-        }
-      }, 60000);
+  if (isOpen && !externalProjectId) {
+    reset({
+      title: "",
+      tagline: "",
+      shortDescription: "",
+      industry: "",
+      stage: "",
+      fullDescription: "",
+      techTags: [],
+      teamMembers: [{ name: "", role: "", photo: null }],
+      fundingAmount: "",
+      currency: "USD",
+      milestones: [{ title: "", targetDate: "", completedAt: "" }],
     });
 
-    return () => {
-      subscription.unsubscribe();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [projectId, watch, getValues, isSubmitting, mapFormToApi]);
+    setHeroFile(null);
+    setSupportingDocs([]);
+  }
+}, [isOpen, externalProjectId, reset]);
+useEffect(() => {
+  if (!isOpen || !externalProjectId) return;
 
+  const loadProject = async () => {
+    try {
+      const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
+      const project = res.data;
+
+      reset({
+        title: project.title,
+        tagline: project.tagline,
+        shortDescription: project.shortDesc,
+        industry: project.industry,
+        stage: project.stage,
+        fullDescription: project.fullDesc,
+        techTags: project.technologies || [],
+        teamMembers:
+          project.teamMembers?.map((m) => ({
+            name: m.name,
+            role: m.role,
+            photo: m.photo || null,
+          })) || [{ name: "", role: "", photo: null }],
+        fundingAmount: project.fundingSought?.toString() || "",
+        currency: project.currency || "USD",
+        milestones:
+          project.milestones?.map((m) => ({
+            title: m.title,
+            targetDate: m.targetDate
+              ? new Date(m.targetDate).toISOString().split("T")[0]
+              : "",
+            completedAt: m.completedAt
+              ? new Date(m.completedAt).toISOString().split("T")[0]
+              : "",
+          })) || [],
+      });
+
+      const hero = project.documents?.find(
+        (doc) => doc.fileType === "HERO_IMAGE"
+      );
+
+      setHeroFile(
+        hero
+          ? {
+              name: hero.name,
+              fileUrl: hero.fileUrl,
+              fileKey: hero.fileKey,
+            }
+          : null
+      );
+
+      setSupportingDocs(
+        project.documents
+          ?.filter((doc) => doc.fileType === "DOCUMENT")
+          .map((doc) => ({
+            name: doc.name,
+            fileUrl: doc.fileUrl,
+            fileKey: doc.fileKey,
+          })) || []
+      );
+    } catch (error) {
+      console.error("Failed to load project", error);
+    }
+  };
+
+  loadProject();
+}, [isOpen, externalProjectId, reset]);
+
+ /* const loadProject = async () => {
+    try {
+      const res = await api.get<ApiProject>(`/projects/${projectId}`);
+const project = res.data;
+
+      // 1️⃣ Reset form fields
+      reset({
+        title: project.title,
+        tagline: project.tagline,
+        shortDescription: project.shortDesc,
+        industry: project.industry,
+        stage: project.stage,
+        fullDescription: project.fullDesc,
+        techTags: project.technologies || [],
+        teamMembers:
+  project.teamMembers?.map((m) => ({
+    name: m.name,
+    role: m.role,
+    photo: m.photo || null,
+  })) || [{ name: "", role: "", photo: null }],
+        fundingAmount: project.fundingSought?.toString() || "",
+        currency: project.currency || "USD",
+        milestones:
+          project.milestones?.map((m) => ({
+            title: m.title,
+            targetDate: m.targetDate
+              ? new Date(m.targetDate).toISOString().split("T")[0]
+              : "",
+            completedAt: m.completedAt
+              ? new Date(m.completedAt).toISOString().split("T")[0]
+              : "",
+          })) || [],
+      });
+
+      // 2️⃣ Restore HERO image (OUTSIDE reset)
+      const hero = project.documents?.find(
+        (doc: ProjectDocument) => doc.fileType === "HERO_IMAGE"
+      );
+
+      if (hero) {
+        setHeroFile({
+          name: hero.name,
+          fileUrl: hero.fileUrl,
+          fileKey: hero.fileKey,
+        });
+      } else {
+        setHeroFile(null);
+      }
+
+      // 3️⃣ Restore supporting docs (OUTSIDE reset)
+      const docs =
+        project.documents?.filter(
+          (doc) => doc.fileType === "DOCUMENT"
+        ) || [];
+
+      setSupportingDocs(
+  docs.map((doc) => ({
+    name: doc.name,
+    fileUrl: doc.fileUrl,
+    fileKey: doc.fileKey,
+    
+  }))
+);
+    } catch (error) {
+      console.error("Failed to load project", error);
+    }
+  };
+
+  loadProject();
+}, [isOpen, projectId, reset]);  */
+
+
+
+
+
+ useEffect(() => {
+  if (!isOpen) return;
+  if (!currentProjectId) return;
+  if (isSubmitting) return;
+
+  const subscription = watch(() => {
+    const values = getValues();
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(async () => {
+      if (isSubmitting) return;
+
+      try {
+        setSaveStatus("saving");
+
+        await api.put(
+          `/projects/${currentProjectId}`,
+          mapFormToApi(values)
+        );
+
+        setSaveStatus("saved");
+      } catch (error) {
+        console.error(error);
+        setSaveStatus("error");
+      }
+    }, 60000);
+  });
+
+  return () => {
+    subscription.unsubscribe();
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+  }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -519,7 +692,7 @@ export function ProjectCreationWizard({
         <div className="flex items-center justify-between px-8 py-6 border-b border-gray-50">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold">
-              {projectId ? "Edit Project" : "Create New Project"}
+              {currentProjectId ? "Edit Project" : "Create New Project"}
             </h2>
             {saveStatus === "saving" && (
               <span className="text-sm text-gray-500">Saving...</span>
@@ -535,7 +708,7 @@ export function ProjectCreationWizard({
           </div>
 
           <Button
-            onClick={onClose}
+            onClick={handleClose}
             variant="ghost"
             size="icon"
             className="bg-gray-100 hover:bg-gray-200 shadow-none transition-colors"
@@ -692,7 +865,20 @@ export function ProjectCreationWizard({
                         </p>
                       )}
                     </div>
-
+                    <div className="space-y-2">
+  <Label>
+    Location <span className="text-red-500">*</span>
+  </Label>
+  <Input
+    {...register("location")}
+    placeholder="e.g., Tunis, Tunisia"
+  />
+  {errors.location && (
+    <p className="text-sm text-red-600">
+      {errors.location.message}
+    </p>
+  )}
+</div>
                     <div className="space-y-3">
                       <Label>
                         Project Stage <span className="text-red-500">*</span>
@@ -866,22 +1052,22 @@ export function ProjectCreationWizard({
                           <div className="space-y-2">
                             <Label>Photo (Optional)</Label>
                             <FileUpload
-                              accept="image/*"
-                              maxSize={2}
-                              label=""
-                              description="Upload profile photo"
-                              onFileSelect={(file) => {
-                                if (!file) {
-                                  setValue(`teamMembers.${index}.photo`, null);
-                                  return;
-                                }
+  accept="image/*"
+  maxSize={5}
+  label=""
+  description="Upload member photo"
+  existingFileUrl={
+  watch(`teamMembers.${index}.photo`) || undefined
+}
+  onFileSelect={(file) => {
+    if (!file) {
+      setValue(`teamMembers.${index}.photo`, null);
+      return;
+    }
 
-                                setValue(
-                                  `teamMembers.${index}.photo`,
-                                  file.url,
-                                ); // ✅ only string
-                              }}
-                            />
+    setValue(`teamMembers.${index}.photo`, file.url);
+  }}
+/>
                           </div>
                         </div>
                       </Card>
@@ -1031,20 +1217,24 @@ export function ProjectCreationWizard({
                     <div className="space-y-2">
                       <Label>Hero Image</Label>
                       <FileUpload
-                        accept="image/*"
-                        maxSize={5}
-                        label=""
-                        description="Upload a cover image for your project"
-                        onFileSelect={(file) => {
-                          if (!file) return;
+  accept="image/*"
+  maxSize={5}
+  label=""
+  description="Upload a cover image for your project"
+  existingFileUrl={heroFile?.fileUrl}   
+  onFileSelect={(file) => {
+    if (!file) {
+      setHeroFile(null);
+      return;
+    }
 
-                          setHeroFile({
-                            name: "Hero Image",
-                            fileUrl: file.url,
-                            fileKey: file.publicId,
-                          });
-                        }}
-                      />
+    setHeroFile({
+      name: "Hero Image",
+      fileUrl: file.url,
+      fileKey: file.publicId,
+    });
+  }}
+/>
                     </div>
 
                     {/* SUPPORTING DOCUMENTS */}
@@ -1062,6 +1252,7 @@ export function ProjectCreationWizard({
                           ".ppt",
                           ".pptx",
                         ]}
+                        initialFiles={supportingDocs}
                         onFilesChange={(files) => {
                           setSupportingDocs(files);
                         }}
@@ -1241,7 +1432,7 @@ export function ProjectCreationWizard({
 
               {currentStep === STEPS.length - 1 ? (
                 <Button type="button" onClick={handleSubmit(onSubmit)}>
-                  Create Project
+                  {currentProjectId ? "Update Project" : "Create Project"}
                 </Button>
               ) : (
                 <Button type="button" onClick={handleNext}>
