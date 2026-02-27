@@ -153,7 +153,7 @@ export const login = async (req, res, next) => {
     }
 
     if (!userData.isVerified) {
-      return res.status(401).json({
+      return res.status(403).json({
         message: "Please verify your email first",
       });
     }
