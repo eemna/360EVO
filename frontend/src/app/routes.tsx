@@ -60,7 +60,7 @@ export const router = createBrowserRouter([
         path: "projects",
         element: <ProjectGallery />,
       },
-      
+
       {
         path: "startup/projects/:id",
         element: (

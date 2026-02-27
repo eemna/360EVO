@@ -162,6 +162,7 @@ type ApiProject = {
   shortDesc: string;
   fullDesc: string;
   industry: string;
+  location: string;
   stage: string;
   technologies: string[];
   fundingSought: number | null;
@@ -409,6 +410,7 @@ export function ProjectCreationWizard({
       industry: "",
       stage: "",
       fullDescription: "",
+      location:  "",
       techTags: [],
       teamMembers: [{ name: "", role: "", photo: null }],
       fundingAmount: "",
@@ -490,6 +492,7 @@ export function ProjectCreationWizard({
         tagline: "",
         shortDescription: "",
         industry: "",
+        location: "",
         stage: "",
         fullDescription: "",
         techTags: [],
@@ -516,6 +519,7 @@ export function ProjectCreationWizard({
           tagline: project.tagline,
           shortDescription: project.shortDesc,
           industry: project.industry,
+          location: project.location || "",
           stage: project.stage,
           fullDescription: project.fullDesc,
           techTags: project.technologies || [],
@@ -710,9 +714,9 @@ const project = res.data;
 
         {/* Progress Indicator */}
         <div className="border-b border-gray-300 px-8 py-4">
-          <div className="flex items-center justify-between mb-2 ">
+          <div className="flex items-center gap-6 overflow-x-auto pb-2">
             {STEPS.map((step, index) => (
-              <div key={step} className="flex items-center flex-1">
+              <div key={step} className="flex items-center flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div
                     className={`size-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
