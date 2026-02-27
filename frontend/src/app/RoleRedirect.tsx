@@ -1,8 +1,8 @@
 import { Navigate } from "react-router";
-import { useAuth } from "../hooks/useAuth"; 
+import { useAuth } from "../hooks/useAuth";
 
 export default function RoleRedirect() {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   if (!user) return null;
 

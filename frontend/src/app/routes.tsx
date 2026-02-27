@@ -27,52 +27,50 @@ export const router = createBrowserRouter([
       { path: "/reset-password", element: <ResetPasswordPage /> },
     ],
   },
- {
-  path: "/app",
-  element: (
-    <ProtectedRoute>
-      <AppLayout />
-    </ProtectedRoute>
-  ),
-  children: [
+  {
+    path: "/app",
+    element: (
+      <ProtectedRoute>
+        <AppLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <RoleRedirect />,
+      },
 
-    
-    {
-      index: true,
-      element: <RoleRedirect />,
-    },
-
-    {
-      path: "admin",
-      element: (
-        <RoleRoute allowedRoles={["ADMIN"]}>
-          <AdminDashboard />
-        </RoleRoute>
-      ),
-    },
-    {
-      path: "startup",
-      element: (
-        <RoleRoute allowedRoles={["STARTUP"]}>
-          <StartupDashboard />
-        </RoleRoute>
-      ),
+      {
+        path: "admin",
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <AdminDashboard />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "startup",
+        element: (
+          <RoleRoute allowedRoles={["STARTUP"]}>
+            <StartupDashboard />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "projects",
+        element: <ProjectGallery />,
+      },
       
-    },
-     {
-      path: "projects",  
-      element: <ProjectGallery />,
-    },
-    {
-  path: "startup/projects/:id",
-  element: (
-    <RoleRoute allowedRoles={["STARTUP", "ADMIN"]}>
-      <ProjectDetailsPage />
-    </RoleRoute>
-  ),
-},
-  ],
-},
+      {
+        path: "startup/projects/:id",
+        element: (
+          <RoleRoute allowedRoles={["STARTUP", "ADMIN"]}>
+            <ProjectDetailsPage />
+          </RoleRoute>
+        ),
+      },
+    ],
+  },
   {
     path: "*",
     element: <NotFoundPage />,

@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Users,
-  FolderOpen,
-  Clock,
-  Check,
-  X,
-  Loader2,
-} from "lucide-react";
+import { Users, FolderOpen, Clock, Check, X, Loader2 } from "lucide-react";
 
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -197,11 +190,9 @@ export default function AdminDashboard() {
       {/* PENDING PROJECTS */}
       <Card className="border border-gray-200 shadow-sm rounded-xl">
         <div className="p-6 border-b border-gray-400">
-          <h2 className="text-xl font-semibold">
-            Pending Project Approvals
-          </h2>
+          <h2 className="text-xl font-semibold">Pending Project Approvals</h2>
         </div>
-
+       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -223,9 +214,7 @@ export default function AdminDashboard() {
             ) : (
               projects.map((project) => (
                 <TableRow key={project.id}>
-                  <TableCell className="font-medium">
-                    {project.title}
-                  </TableCell>
+                  <TableCell className="font-medium">{project.title}</TableCell>
                   <TableCell>{project.owner?.name}</TableCell>
                   <TableCell>
                     {new Date(project.createdAt).toLocaleDateString()}
@@ -238,45 +227,43 @@ export default function AdminDashboard() {
 
                   {/* ✅ IMPROVED BUTTONS */}
                   <TableCell className="text-right">
-  <div className="flex justify-end gap-3">
-    
-    {/* APPROVE */}
-    <Button
-      size="sm"
-      variant="outline"
-      disabled={actionLoading === project.id}
-      onClick={() => handleApprove(project.id)}
-      className="border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
-    >
-      {actionLoading === project.id ? (
-        <Loader2 className="size-4 animate-spin" />
-      ) : (
-        <>
-          <Check className="size-4 mr-1" />
-          Approve
-        </>
-      )}
-    </Button>
+                    <div className="flex flex-col sm:flex-row justify-end gap-2">
+                      {/* APPROVE */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={actionLoading === project.id}
+                        onClick={() => handleApprove(project.id)}
+                        className="border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
+                      >
+                        {actionLoading === project.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Check className="size-4 mr-1" />
+                            Approve
+                          </>
+                        )}
+                      </Button>
 
-    {/* REJECT */}
-    <Button
-      size="sm"
-      variant="outline"
-      disabled={actionLoading === project.id}
-      onClick={() => handleReject(project.id)}
-      className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
-    >
-      <X className="size-4 mr-1" />
-      Reject
-    </Button>
-
-  </div>
-</TableCell>
+                      {/* REJECT */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={actionLoading === project.id}
+                        onClick={() => handleReject(project.id)}
+                        className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
+                      >
+                        <X className="size-4 mr-1" />
+                        Reject
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
-        </Table>
+        </Table> </div>
       </Card>
 
       {/* USER MANAGEMENT */}
@@ -284,7 +271,7 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-gray-400">
           <h2 className="text-xl font-semibold">User Management</h2>
         </div>
-
+       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -308,11 +295,9 @@ export default function AdminDashboard() {
                 <TableCell className="text-right">
                   <Select
                     value={user.role}
-                    onValueChange={(value) =>
-                      handleRoleChange(user.id, value)
-                    }
+                    onValueChange={(value) => handleRoleChange(user.id, value)}
                   >
-                    <SelectTrigger className="w-[160px] ml-auto">
+                    <SelectTrigger className="w-full sm:w-[160px] ml-auto">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -328,6 +313,7 @@ export default function AdminDashboard() {
             ))}
           </TableBody>
         </Table>
+        </div>
       </Card>
     </div>
   );

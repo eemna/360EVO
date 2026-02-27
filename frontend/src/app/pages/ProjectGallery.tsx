@@ -11,17 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import {
-  Search,
-  MapPin,
-  Target,
-  Eye,
-  Users,
-  Sparkles,
-} from "lucide-react";
+import { Search, MapPin, Target, Eye, Users, Sparkles } from "lucide-react";
 import { useEffect } from "react";
 import api from "../../services/axios";
-
 
 type Project = {
   id: string;
@@ -58,51 +50,55 @@ export function ProjectGallery() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
-  const fetchProjects = async () => {
-    try {
-      setLoading(true);
-      let minFunding: number | undefined;
-let maxFunding: number | undefined;
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        let minFunding: number | undefined;
+        let maxFunding: number | undefined;
 
-if (fundingRangeFilter === "0-500k") {
-  minFunding = 0;
-  maxFunding = 500000;
-} else if (fundingRangeFilter === "500k-1m") {
-  minFunding = 500000;
-  maxFunding = 1000000;
-} else if (fundingRangeFilter === "1m-5m") {
-  minFunding = 1000000;
-  maxFunding = 5000000;
-} else if (fundingRangeFilter === "5m+") {
-  minFunding = 5000000;
-}
-      const response = await api.get("/projects/", {
-  params: {
-    q: searchQuery || undefined,
-    industry: industryFilter !== "all" ? industryFilter : undefined,
-    stage: stageFilter !== "all" ? stageFilter : undefined,
-    minFunding,
-    maxFunding,
-    page: currentPage,
-    limit: ITEMS_PER_PAGE,
-  },
-});
+        if (fundingRangeFilter === "0-500k") {
+          minFunding = 0;
+          maxFunding = 500000;
+        } else if (fundingRangeFilter === "500k-1m") {
+          minFunding = 500000;
+          maxFunding = 1000000;
+        } else if (fundingRangeFilter === "1m-5m") {
+          minFunding = 1000000;
+          maxFunding = 5000000;
+        } else if (fundingRangeFilter === "5m+") {
+          minFunding = 5000000;
+        }
+        const response = await api.get("/projects/", {
+          params: {
+            q: searchQuery || undefined,
+            industry: industryFilter !== "all" ? industryFilter : undefined,
+            stage: stageFilter !== "all" ? stageFilter : undefined,
+            minFunding,
+            maxFunding,
+            page: currentPage,
+            limit: ITEMS_PER_PAGE,
+          },
+        });
 
-      setProjects(response.data);
+        setProjects(response.data);
+      } catch (error) {
+        console.error("Error fetching projects", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    } catch (error) {
-      console.error("Error fetching projects", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchProjects();
-}, [searchQuery, industryFilter, stageFilter, fundingRangeFilter, currentPage]);
-const industries = Array.from(
-  new Set(projects.map((p) => p.industry))
-).filter(Boolean);
- 
+    fetchProjects();
+  }, [
+    searchQuery,
+    industryFilter,
+    stageFilter,
+    fundingRangeFilter,
+    currentPage,
+  ]);
+  const industries = Array.from(
+    new Set(projects.map((p) => p.industry)),
+  ).filter(Boolean);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) {
@@ -130,10 +126,10 @@ const industries = Array.from(
         </p>
       </div>
       {loading && (
-  <div className="text-center py-6 text-gray-500">
-    Loading projects...
-  </div>
-)}
+        <div className="text-center py-6 text-gray-500">
+          Loading projects...
+        </div>
+      )}
       {/* Search and Filters */}
       <Card className="bg-white shadow-sm mb-6">
         <CardContent className="pt-6">
@@ -226,7 +222,6 @@ const industries = Array.from(
       </Card>
 
       {/* Results Count */}
-     
 
       {/* Project Grid */}
       {projects.length === 0 ? (
@@ -327,7 +322,6 @@ const industries = Array.from(
       )}
 
       {/* Pagination */}
-      
     </div>
   );
 }

@@ -5,7 +5,6 @@ import {
 } from "../middleware/upload.js";
 
 import {
-
   uploadImage,
   uploadDocumentController,
   deleteFileController,

@@ -39,7 +39,7 @@ interface ProjectCreationWizardProps {
   isOpen: boolean;
   onClose: () => void;
   projectId?: string | null;
-  onProjectSaved?: () => void; 
+  onProjectSaved?: () => void;
 }
 
 const STEPS = ["Basics", "Details", "Team", "Funding", "Media & Submit"];
@@ -188,10 +188,10 @@ export function ProjectCreationWizard({
 }: ProjectCreationWizardProps) {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   useEffect(() => {
-  if (isOpen) {
-    setCurrentProjectId(externalProjectId ?? null);
-  }
-}, [isOpen, externalProjectId]);
+    if (isOpen) {
+      setCurrentProjectId(externalProjectId ?? null);
+    }
+  }, [isOpen, externalProjectId]);
   const [currentStep, setCurrentStep] = useState(0);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -366,20 +366,19 @@ export function ProjectCreationWizard({
       if (!id) {
         // First time → create project
         const res = await api.post("/projects", payload);
-      
+
         id = res.data.id;
         setCurrentProjectId(id);
       } else {
         //  Update existing draft
         await api.put(`/projects/${id}`, payload);
-        
       }
 
       // Submit project
       await api.post(`/projects/${id}/submit`);
-           if (onProjectSaved) {
-      await onProjectSaved();
-    }
+      if (onProjectSaved) {
+        await onProjectSaved();
+      }
       setSaveStatus("saved");
       showToast({
         type: "success",
@@ -400,7 +399,7 @@ export function ProjectCreationWizard({
     }
   };
   const handleNewProject = () => {
-    setCurrentProjectId(null); 
+    setCurrentProjectId(null);
     setCurrentStep(0);
 
     reset({
@@ -431,10 +430,10 @@ export function ProjectCreationWizard({
       setValue("techTags", [...currentTags, tag]);
     }
   };
-const handleClose = () => {
-  handleNewProject();
-  onClose();
-};
+  const handleClose = () => {
+    handleNewProject();
+    onClose();
+  };
   const saveDraft = async () => {
     if (isSubmitting) return;
 
@@ -449,16 +448,16 @@ const handleClose = () => {
         //  First time → create draft
         const res = await api.post("/projects", payload);
         if (onProjectSaved) {
-  await onProjectSaved();
-}
+          await onProjectSaved();
+        }
         id = res.data.id;
         setCurrentProjectId(id);
       } else {
         //  Existing draft → update
         await api.put(`/projects/${id}`, payload);
         if (onProjectSaved) {
-  await onProjectSaved();
-}
+          await onProjectSaved();
+        }
       }
 
       setSaveStatus("saved");
@@ -485,93 +484,92 @@ const handleClose = () => {
   }
 }, [isOpen, externalProjectId]); */
   useEffect(() => {
-  if (isOpen && !externalProjectId) {
-    reset({
-      title: "",
-      tagline: "",
-      shortDescription: "",
-      industry: "",
-      stage: "",
-      fullDescription: "",
-      techTags: [],
-      teamMembers: [{ name: "", role: "", photo: null }],
-      fundingAmount: "",
-      currency: "USD",
-      milestones: [{ title: "", targetDate: "", completedAt: "" }],
-    });
-
-    setHeroFile(null);
-    setSupportingDocs([]);
-  }
-}, [isOpen, externalProjectId, reset]);
-useEffect(() => {
-  if (!isOpen || !externalProjectId) return;
-
-  const loadProject = async () => {
-    try {
-      const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
-      const project = res.data;
-
+    if (isOpen && !externalProjectId) {
       reset({
-        title: project.title,
-        tagline: project.tagline,
-        shortDescription: project.shortDesc,
-        industry: project.industry,
-        stage: project.stage,
-        fullDescription: project.fullDesc,
-        techTags: project.technologies || [],
-        teamMembers:
-          project.teamMembers?.map((m) => ({
+        title: "",
+        tagline: "",
+        shortDescription: "",
+        industry: "",
+        stage: "",
+        fullDescription: "",
+        techTags: [],
+        teamMembers: [{ name: "", role: "", photo: null }],
+        fundingAmount: "",
+        currency: "USD",
+        milestones: [{ title: "", targetDate: "", completedAt: "" }],
+      });
+
+      setHeroFile(null);
+      setSupportingDocs([]);
+    }
+  }, [isOpen, externalProjectId, reset]);
+  useEffect(() => {
+    if (!isOpen || !externalProjectId) return;
+
+    const loadProject = async () => {
+      try {
+        const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
+        const project = res.data;
+
+        reset({
+          title: project.title,
+          tagline: project.tagline,
+          shortDescription: project.shortDesc,
+          industry: project.industry,
+          stage: project.stage,
+          fullDescription: project.fullDesc,
+          techTags: project.technologies || [],
+          teamMembers: project.teamMembers?.map((m) => ({
             name: m.name,
             role: m.role,
             photo: m.photo || null,
           })) || [{ name: "", role: "", photo: null }],
-        fundingAmount: project.fundingSought?.toString() || "",
-        currency: project.currency || "USD",
-        milestones:
-          project.milestones?.map((m) => ({
-            title: m.title,
-            targetDate: m.targetDate
-              ? new Date(m.targetDate).toISOString().split("T")[0]
-              : "",
-            completedAt: m.completedAt
-              ? new Date(m.completedAt).toISOString().split("T")[0]
-              : "",
-          })) || [],
-      });
+          fundingAmount: project.fundingSought?.toString() || "",
+          currency: project.currency || "USD",
+          milestones:
+            project.milestones?.map((m) => ({
+              title: m.title,
+              targetDate: m.targetDate
+                ? new Date(m.targetDate).toISOString().split("T")[0]
+                : "",
+              completedAt: m.completedAt
+                ? new Date(m.completedAt).toISOString().split("T")[0]
+                : "",
+            })) || [],
+        });
 
-      const hero = project.documents?.find(
-        (doc) => doc.fileType === "HERO_IMAGE"
-      );
+        const hero = project.documents?.find(
+          (doc) => doc.fileType === "HERO_IMAGE",
+        );
 
-      setHeroFile(
-        hero
-          ? {
-              name: hero.name,
-              fileUrl: hero.fileUrl,
-              fileKey: hero.fileKey,
-            }
-          : null
-      );
+        setHeroFile(
+          hero
+            ? {
+                name: hero.name,
+                fileUrl: hero.fileUrl,
+                fileKey: hero.fileKey,
+              }
+            : null,
+        );
 
-      setSupportingDocs(
-        project.documents
-          ?.filter((doc) => doc.fileType === "DOCUMENT")
-          .map((doc) => ({
-            name: doc.name,
-            fileUrl: doc.fileUrl,
-            fileKey: doc.fileKey,
-          })) || []
-      );
-    } catch (error) {
-      console.error("Failed to load project", error);
-    }
-  };
+        setSupportingDocs(
+          project.documents
+            ?.filter((doc) => doc.fileType === "DOCUMENT")
+            .map((doc) => ({
+              name: doc.name,
+              fileUrl: doc.fileUrl,
+              fileKey: doc.fileKey,
+            })) || [],
+        );
+      } catch (error) {
+        console.error("Failed to load project", error);
+      }
+    };
 
-  loadProject();
-}, [isOpen, externalProjectId, reset]);
+    loadProject();
+  }, [isOpen, externalProjectId, reset]);
 
- /* const loadProject = async () => {
+  /* const loadProject = async () => {
     try {
       const res = await api.get<ApiProject>(`/projects/${projectId}`);
 const project = res.data;
@@ -642,52 +640,45 @@ const project = res.data;
   loadProject();
 }, [isOpen, projectId, reset]);  */
 
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!currentProjectId) return;
+    if (isSubmitting) return;
 
+    const subscription = watch(() => {
+      const values = getValues();
 
-
-
- useEffect(() => {
-  if (!isOpen) return;
-  if (!currentProjectId) return;
-  if (isSubmitting) return;
-
-  const subscription = watch(() => {
-    const values = getValues();
-
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(async () => {
-      if (isSubmitting) return;
-
-      try {
-        setSaveStatus("saving");
-
-        await api.put(
-          `/projects/${currentProjectId}`,
-          mapFormToApi(values)
-        );
-
-        setSaveStatus("saved");
-      } catch (error) {
-        console.error(error);
-        setSaveStatus("error");
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
-    }, 60000);
-  });
 
-  return () => {
-    subscription.unsubscribe();
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
+      timeoutRef.current = setTimeout(async () => {
+        if (isSubmitting) return;
+
+        try {
+          setSaveStatus("saving");
+
+          await api.put(`/projects/${currentProjectId}`, mapFormToApi(values));
+
+          setSaveStatus("saved");
+        } catch (error) {
+          console.error(error);
+          setSaveStatus("error");
+        }
+      }, 60000);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-50 w-full max-w-7xl max-h-[90vh] flex flex-col my-8">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-50 w-full max-w-7xl lg:max-w-6xl max-h-[95vh] flex flex-col my-8">
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-6 border-b border-gray-50">
           <div className="flex items-center gap-4">
@@ -765,10 +756,10 @@ const project = res.data;
           onSubmit={handleSubmit(onSubmit)}
           className="flex-1 overflow-y-auto"
         >
-          <div className="px-8 py-8">
-            <div className="grid grid-cols-3 gap-8">
+          <div className="px-4 py-6 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
               {/* Left Column - Form Fields */}
-              <div className="col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-6">
                 {/* STEP 1: BASICS */}
                 {currentStep === 0 && (
                   <>
@@ -866,24 +857,24 @@ const project = res.data;
                       )}
                     </div>
                     <div className="space-y-2">
-  <Label>
-    Location <span className="text-red-500">*</span>
-  </Label>
-  <Input
-    {...register("location")}
-    placeholder="e.g., Tunis, Tunisia"
-  />
-  {errors.location && (
-    <p className="text-sm text-red-600">
-      {errors.location.message}
-    </p>
-  )}
-</div>
+                      <Label>
+                        Location <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        {...register("location")}
+                        placeholder="e.g., Tunis, Tunisia"
+                      />
+                      {errors.location && (
+                        <p className="text-sm text-red-600">
+                          {errors.location.message}
+                        </p>
+                      )}
+                    </div>
                     <div className="space-y-3">
                       <Label>
                         Project Stage <span className="text-red-500">*</span>
                       </Label>
-                      <div className="grid grid-cols-5 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                         {PROJECT_STAGES.map(({ value, label, icon: Icon }) => (
                           <button
                             key={value}
@@ -983,7 +974,7 @@ const project = res.data;
                 {/* STEP 3: TEAM */}
                 {currentStep === 2 && (
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 overflow-x-auto">
                       <Label>
                         Team Members <span className="text-red-500">*</span>
                       </Label>
@@ -1021,7 +1012,7 @@ const project = res.data;
                             )}
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label>Name</Label>
                               <Input
@@ -1052,22 +1043,25 @@ const project = res.data;
                           <div className="space-y-2">
                             <Label>Photo (Optional)</Label>
                             <FileUpload
-  accept="image/*"
-  maxSize={5}
-  label=""
-  description="Upload member photo"
-  existingFileUrl={
-  watch(`teamMembers.${index}.photo`) || undefined
-}
-  onFileSelect={(file) => {
-    if (!file) {
-      setValue(`teamMembers.${index}.photo`, null);
-      return;
-    }
+                              accept="image/*"
+                              maxSize={5}
+                              label=""
+                              description="Upload member photo"
+                              existingFileUrl={
+                                watch(`teamMembers.${index}.photo`) || undefined
+                              }
+                              onFileSelect={(file) => {
+                                if (!file) {
+                                  setValue(`teamMembers.${index}.photo`, null);
+                                  return;
+                                }
 
-    setValue(`teamMembers.${index}.photo`, file.url);
-  }}
-/>
+                                setValue(
+                                  `teamMembers.${index}.photo`,
+                                  file.url,
+                                );
+                              }}
+                            />
                           </div>
                         </div>
                       </Card>
@@ -1084,7 +1078,7 @@ const project = res.data;
                 {/* STEP 4: FUNDING */}
                 {currentStep === 3 && (
                   <>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label>
                           Funding Amount <span className="text-red-500">*</span>
@@ -1130,7 +1124,7 @@ const project = res.data;
                     </div>
 
                     <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4 overflow-x-auto">
                         <Label>
                           Milestones <span className="text-red-500">*</span>
                         </Label>
@@ -1154,7 +1148,7 @@ const project = res.data;
                       {milestoneFields.map((field, index) => (
                         <Card key={field.id} className="p-4">
                           <div className="space-y-4">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4 overflow-x-auto">
                               <h4 className="font-medium">
                                 Milestone {index + 1}
                               </h4>
@@ -1171,7 +1165,7 @@ const project = res.data;
                               )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label>Title</Label>
                                 <Input
@@ -1217,24 +1211,24 @@ const project = res.data;
                     <div className="space-y-2">
                       <Label>Hero Image</Label>
                       <FileUpload
-  accept="image/*"
-  maxSize={5}
-  label=""
-  description="Upload a cover image for your project"
-  existingFileUrl={heroFile?.fileUrl}   
-  onFileSelect={(file) => {
-    if (!file) {
-      setHeroFile(null);
-      return;
-    }
+                        accept="image/*"
+                        maxSize={5}
+                        label=""
+                        description="Upload a cover image for your project"
+                        existingFileUrl={heroFile?.fileUrl}
+                        onFileSelect={(file) => {
+                          if (!file) {
+                            setHeroFile(null);
+                            return;
+                          }
 
-    setHeroFile({
-      name: "Hero Image",
-      fileUrl: file.url,
-      fileKey: file.publicId,
-    });
-  }}
-/>
+                          setHeroFile({
+                            name: "Hero Image",
+                            fileUrl: file.url,
+                            fileKey: file.publicId,
+                          });
+                        }}
+                      />
                     </div>
 
                     {/* SUPPORTING DOCUMENTS */}
@@ -1406,8 +1400,8 @@ const project = res.data;
         </form>
 
         {/* Footer Navigation */}
-        <div className="border-t border-gray-200 px-8 py-6 bg-gray-50">
-          <div className="flex items-center justify-between">
+        <div className="border-t border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gray-50">
+          <div className="flex items-center gap-4 overflow-x-auto">
             <Button
               type="button"
               variant="outline"

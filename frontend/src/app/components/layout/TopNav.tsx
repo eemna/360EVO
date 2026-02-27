@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Input } from "../ui/input";
+// import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "../../../hooks/useAuth";
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {
-  Search,
+  // Search,
   Bell,
   MessageSquare,
   Home,
@@ -53,14 +53,14 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
           </Link>
 
           {/* Search */}
-          <div className="relative w-full max-w-xs">
+         { /* <div className="relative w-full max-w-xs">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <Input
+          <Input
               type="search"
               placeholder="Search..."
               className="w-full pl-10"
-            />
-          </div>
+            /> 
+          </div>*/}
 
           {/* Navigation Icons */}
           <div className="ml-auto flex items-center gap-2">

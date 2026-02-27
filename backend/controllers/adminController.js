@@ -26,9 +26,7 @@ export const approveProject = async (req, res, next) => {
 
     const updated = await prisma.project.update({
       where: { id },
-      data: { status: "APPROVED",
-              visibility: "PUBLIC",
-       },
+      data: { status: "APPROVED", visibility: "PUBLIC" },
     });
 
     res.json(updated);

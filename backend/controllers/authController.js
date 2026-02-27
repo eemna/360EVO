@@ -444,3 +444,72 @@ export const logout = async (req, res, next) => {
     next(error);
   }
 };
+// CHANGE PASSWORD (Logged in user)
+export const changePassword = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Current and new password are required",
+      });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    const isMatch = await bcrypt.compare(
+      currentPassword,
+      user.passwordHash
+    );
+
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Current password is incorrect",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: hashedPassword },
+    });
+
+    res.json({ message: "Password updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateEmail = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const existing = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existing) {
+      return res.status(400).json({
+        message: "Email already in use",
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { email, isVerified: false },
+    });
+
+    res.json({ message: "Email updated. Please verify again." });
+  } catch (error) {
+    next(error);
+  }
+};

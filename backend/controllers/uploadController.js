@@ -11,12 +11,11 @@ export const uploadImage = async (req, res, next) => {
       .resize({ width: 1200, withoutEnlargement: true })
       .jpeg({ quality: 85 })
       .toBuffer();
-    
+
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "360EVO",
         resource_type: "image",
-        
       },
       (error, result) => {
         if (error) return next(error);
@@ -85,7 +84,7 @@ export const deleteFileController = async (req, res, next) => {
     next(error);
   }
 };
-export const downloadDocumentController  = async (req, res, next) => {
+export const downloadDocumentController = async (req, res, next) => {
   try {
     const { url, originalName } = req.query;
 
@@ -95,11 +94,10 @@ export const downloadDocumentController  = async (req, res, next) => {
 
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${originalName}"`
+      `attachment; filename="${originalName}"`,
     );
 
     return res.redirect(url);
-
   } catch (error) {
     next(error);
   }

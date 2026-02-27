@@ -10,7 +10,7 @@ import { AxiosError } from "axios";
 
 interface FileUploadProps {
   onFileSelect?: (data: { url: string; publicId: string } | null) => void;
-  existingFileUrl?: string; 
+  existingFileUrl?: string;
   accept?: string;
   maxSize?: number;
   label?: string;
@@ -32,9 +32,9 @@ export function FileUpload({
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
   const [previewUrl, setPreviewUrl] = useState<string>(existingFileUrl || "");
- 
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const validateFile = (file: File): boolean => {
     const fileSizeMB = file.size / (1024 * 1024);
 
@@ -81,70 +81,69 @@ export function FileUpload({
     }
   };
   const uploadToServer = async (selectedFile: File) => {
-  const formData = new FormData();
+    const formData = new FormData();
 
-  const isImage = selectedFile.type.startsWith("image/");
-  const fieldName = isImage ? "image" : "file";
-  const endpoint = isImage ? "/uploads/image" : "/uploads/document";
+    const isImage = selectedFile.type.startsWith("image/");
+    const fieldName = isImage ? "image" : "file";
+    const endpoint = isImage ? "/uploads/image" : "/uploads/document";
 
-  formData.append(fieldName, selectedFile);
+    formData.append(fieldName, selectedFile);
 
-  try {
-    setIsUploading(true);
-    setUploadProgress(0);
-    setError("");
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+      setError("");
 
-    const response = await api.post(endpoint, formData, {
-      //  DO NOT set Content-Type manually
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.total) {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percent);
-        }
-      },
-    });
+      const response = await api.post(endpoint, formData, {
+        //  DO NOT set Content-Type manually
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total,
+            );
+            setUploadProgress(percent);
+          }
+        },
+      });
 
-    setUploadProgress(100);
-    setIsUploading(false);
+      setUploadProgress(100);
+      setIsUploading(false);
 
-    // ✅ Only now confirm success
-    onFileSelect?.({
-      url: response.data.url,
-      publicId: response.data.publicId,
-    });
+      // ✅ Only now confirm success
+      onFileSelect?.({
+        url: response.data.url,
+        publicId: response.data.publicId,
+      });
+    } catch (err) {
+      setIsUploading(false);
+      setUploadProgress(0);
+      setFile(null);
+      setPreviewUrl("");
 
-  } catch (err) {
-    setIsUploading(false);
-    setUploadProgress(0);
-    setFile(null);
-    setPreviewUrl("");
+      const error = err as AxiosError<{ message: string }>;
 
-    const error = err as AxiosError<{ message: string }>;
+      if (error.response?.status === 401) {
+        localStorage.removeItem("accessToken");
+        navigate("/login");
+        return;
+      }
 
-    if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken");
-      navigate("/login");
-      return;
+      const backendMessage = error.response?.data?.message;
+      setError(backendMessage || "Upload failed. Please try again.");
     }
+  };
 
-    const backendMessage = error.response?.data?.message;
-    setError(backendMessage || "Upload failed. Please try again.");
-  }
-};
+  const handleFile = async (selectedFile: File) => {
+    if (!validateFile(selectedFile)) return;
 
- const handleFile = async (selectedFile: File) => {
-  if (!validateFile(selectedFile)) return;
+    setFile(selectedFile);
 
-  setFile(selectedFile);
+    //  Upload first
+    await uploadToServer(selectedFile);
 
-  //  Upload first
-  await uploadToServer(selectedFile);
-
-  // Only generate preview after upload starts (safe)
-  generatePreview(selectedFile);
-};
+    // Only generate preview after upload starts (safe)
+    generatePreview(selectedFile);
+  };
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();

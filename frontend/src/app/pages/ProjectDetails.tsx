@@ -1,15 +1,25 @@
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { MessageSquare, DollarSign, UserPlus } from "lucide-react";
 import { Label } from "../components/ui/label";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";
-import { 
-  ArrowLeft, 
-   
+import {
+  ArrowLeft,
   Users,
   Calendar,
   Briefcase,
@@ -17,9 +27,16 @@ import {
   Sparkles,
   Target,
   Eye,
-  FileText
+  FileText,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import api from "../../services/axios";
@@ -31,13 +48,12 @@ interface TeamMember {
   photo?: string | null;
 }
 
-
 interface Milestone {
   id: string;
   title: string;
   description: string;
-  targetDate?: string;     
-  completedAt?: string;    
+  targetDate?: string;
+  completedAt?: string;
   order: number;
   createdAt: string;
 }
@@ -84,57 +100,55 @@ const stageColors = {
   PROTOTYPE: "bg-blue-100 text-blue-700",
   MVP: "bg-indigo-100 text-indigo-700",
   GROWTH: "bg-purple-100 text-purple-700",
-  SCALING: "bg-green-100 text-green-700"
+  SCALING: "bg-green-100 text-green-700",
 };
 
 const statusColors = {
   DRAFT: "bg-gray-100 text-gray-700",
   PENDING: "bg-yellow-100 text-yellow-700",
   APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700"
+  REJECTED: "bg-red-100 text-red-700",
 };
 
 export default function ProjectDetailsPage() {
-
   const { id } = useParams();
-const [project, setProject] = useState<Project | null>(null);
-const [loading, setLoading] = useState(true);
-const { user } = useAuth();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   const [connectModalOpen, setConnectModalOpen] = useState(false);
   const [investModalOpen, setInvestModalOpen] = useState(false);
   const [joinTeamModalOpen, setJoinTeamModalOpen] = useState(false);
-useEffect(() => {
-  const fetchProject = async () => {
-    try {
-      const res = await api.get(`/projects/${id}`);
-      setProject({
-  ...res.data,
-  fundingSought:
-    res.data.fundingSought !== null &&
-    res.data.fundingSought !== undefined
-      ? Number(res.data.fundingSought)
-      : 0,
-});
-    } catch (error) {
-      console.error("Error loading project:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await api.get(`/projects/${id}`);
+        setProject({
+          ...res.data,
+          fundingSought:
+            res.data.fundingSought !== null &&
+            res.data.fundingSought !== undefined
+              ? Number(res.data.fundingSought)
+              : 0,
+        });
+      } catch (error) {
+        console.error("Error loading project:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (id) fetchProject();
-}, [id]);
+    if (id) fetchProject();
+  }, [id]);
 
   const handleBack = () => {
     window.history.back();
   };
 
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric"
+      day: "numeric",
     });
   };
 
@@ -143,16 +157,16 @@ useEffect(() => {
       style: "currency",
       currency: currency,
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 0,
     }).format(amount);
   };
-if (loading) return <div className="p-6">Loading...</div>;
-if (!project) return <div className="p-6">Project not found</div>;
+  if (loading) return <div className="p-6">Loading...</div>;
+  if (!project) return <div className="p-6">Project not found</div>;
 
- const isOwner = String(user?.id) === project.ownerId;
+  const isOwner = String(user?.id) === project.ownerId;
   const isAdmin = user?.role === "ADMIN";
   const canInteract = user && !isOwner && !isAdmin;
-    const handleConnectSubmit = (e: React.FormEvent) => {
+  const handleConnectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Connect form submitted");
     setConnectModalOpen(false);
@@ -180,8 +194,8 @@ if (!project) return <div className="p-6">Project not found</div>;
           </Button>
         </div>
       </header>
-      
-        <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
+
+      <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
         <DialogContent className="sm:max-w-md shadow-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-2xl">
@@ -196,15 +210,15 @@ if (!project) return <div className="p-6">Project not found</div>;
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject (Optional)</Label>
-                <Input 
-                  id="subject" 
-                  placeholder="e.g., Partnership opportunity" 
+                <Input
+                  id="subject"
+                  placeholder="e.g., Partnership opportunity"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
-                <Textarea 
-                  id="message" 
+                <Textarea
+                  id="message"
                   placeholder="Introduce yourself and explain why you'd like to connect..."
                   rows={5}
                   required
@@ -212,14 +226,17 @@ if (!project) return <div className="p-6">Project not found</div>;
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setConnectModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
+              <Button
+                type="submit"
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
                 Send Message
               </Button>
             </DialogFooter>
@@ -252,17 +269,20 @@ if (!project) return <div className="p-6">Project not found</div>;
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-600">Target:</span>
                   <span className="font-medium text-green-600">
-                    {formatCurrency(project.fundingSought ?? 0, project.currency)}
+                    {formatCurrency(
+                      project.fundingSought ?? 0,
+                      project.currency,
+                    )}
                   </span>
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="investment-amount">Investment Amount ($)</Label>
-                <Input 
-                  id="investment-amount" 
+                <Input
+                  id="investment-amount"
                   type="number"
-                  placeholder="50000" 
+                  placeholder="50000"
                   required
                 />
               </div>
@@ -283,8 +303,8 @@ if (!project) return <div className="p-6">Project not found</div>;
 
               <div className="space-y-2">
                 <Label htmlFor="investment-message">Message</Label>
-                <Textarea 
-                  id="investment-message" 
+                <Textarea
+                  id="investment-message"
                   placeholder="Share your investment thesis and what value you can bring..."
                   rows={4}
                   required
@@ -292,9 +312,9 @@ if (!project) return <div className="p-6">Project not found</div>;
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setInvestModalOpen(false)}
               >
                 Cancel
@@ -339,8 +359,8 @@ if (!project) return <div className="p-6">Project not found</div>;
 
               <div className="space-y-2">
                 <Label htmlFor="portfolio">Portfolio / LinkedIn URL</Label>
-                <Input 
-                  id="portfolio" 
+                <Input
+                  id="portfolio"
                   type="url"
                   placeholder="https://linkedin.com/in/yourprofile"
                 />
@@ -348,8 +368,8 @@ if (!project) return <div className="p-6">Project not found</div>;
 
               <div className="space-y-2">
                 <Label htmlFor="motivation">Why do you want to join?</Label>
-                <Textarea 
-                  id="motivation" 
+                <Textarea
+                  id="motivation"
                   placeholder="Tell us about your motivation and what you can bring to the team..."
                   rows={4}
                   required
@@ -357,26 +377,29 @@ if (!project) return <div className="p-6">Project not found</div>;
               </div>
             </div>
             <DialogFooter className="gap-2">
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setJoinTeamModalOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type="submit" className="bg-purple-600 hover:bg-purple-700">
+              <Button
+                type="submit"
+                className="bg-purple-600 hover:bg-purple-700"
+              >
                 Submit Application
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
-     
+
       {/* Hero Section */}
       <section className="relative bg-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
-        
+
         {/* Decorative Elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-30"></div>
 
@@ -384,11 +407,15 @@ if (!project) return <div className="p-6">Project not found</div>;
           <div className="max-w-4xl">
             {/* Badges Row */}
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Badge className={`${stageColors[project.stage as keyof typeof stageColors]} px-4 py-2 text-sm flex items-center gap-2`}>
+              <Badge
+                className={`${stageColors[project.stage as keyof typeof stageColors]} px-4 py-2 text-sm flex items-center gap-2`}
+              >
                 <Sparkles className="size-4" />
                 {project.stage}
               </Badge>
-              <Badge className={`${statusColors[project.status as keyof typeof statusColors]} px-4 py-2 text-sm`}>
+              <Badge
+                className={`${statusColors[project.status as keyof typeof statusColors]} px-4 py-2 text-sm`}
+              >
                 {project.status}
               </Badge>
               {project.featured && (
@@ -408,7 +435,7 @@ if (!project) return <div className="p-6">Project not found</div>;
             <p className="text-lg text-gray-600 mb-4 leading-relaxed">
               {project.tagline}
             </p>
-            
+
             {/* Meta Info */}
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex items-center gap-2 text-gray-700">
@@ -427,7 +454,10 @@ if (!project) return <div className="p-6">Project not found</div>;
                 <div className="p-2 bg-green-100 rounded-lg">
                   <Target className="size-4 text-green-600" />
                 </div>
-                <span>Seeking {formatCurrency(project.fundingSought ?? 0, project.currency)}</span>
+                <span>
+                  Seeking{" "}
+                  {formatCurrency(project.fundingSought ?? 0, project.currency)}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-gray-700">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -446,9 +476,9 @@ if (!project) return <div className="p-6">Project not found</div>;
             {/* Technology Tags */}
             <div className="flex flex-wrap gap-2 mb-10">
               {project.technologies?.map((tech) => (
-                <Badge 
-                  key={tech} 
-                  variant="outline" 
+                <Badge
+                  key={tech}
+                  variant="outline"
                   className="bg-white border-indigo-200 text-indigo-700 px-4 py-1.5"
                 >
                   {tech}
@@ -457,36 +487,36 @@ if (!project) return <div className="p-6">Project not found</div>;
             </div>
 
             {/* Action Buttons */}
-           {canInteract && (
-     <div className="flex flex-wrap gap-4">
-              <Button 
-                size="lg" 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 gap-2"
-                onClick={() => setConnectModalOpen(true)}
-              >
-                <MessageSquare className="size-5" />
-                Connect with Founder
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 gap-2"
-                onClick={() => setInvestModalOpen(true)}
-              >
-                <DollarSign className="size-5" />
-                Invest
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 gap-2"
-                onClick={() => setJoinTeamModalOpen(true)}
-              >
-                <UserPlus className="size-5" />
-                Join Team
-              </Button>
-            </div>
-)}
+            {canInteract && (
+              <div className="flex flex-wrap gap-4">
+                <Button
+                  size="lg"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 gap-2"
+                  onClick={() => setConnectModalOpen(true)}
+                >
+                  <MessageSquare className="size-5" />
+                  Connect with Founder
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50 gap-2"
+                  onClick={() => setInvestModalOpen(true)}
+                >
+                  <DollarSign className="size-5" />
+                  Invest
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-2 border-purple-600 text-purple-600 hover:bg-purple-50 gap-2"
+                  onClick={() => setJoinTeamModalOpen(true)}
+                >
+                  <UserPlus className="size-5" />
+                  Join Team
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -505,9 +535,9 @@ if (!project) return <div className="p-6">Project not found</div>;
                 <div>
                   <p className="text-gray-600 mb-4">{project.shortDesc}</p>
                   <div
-  className="text-gray-600 leading-relaxed break-words"
-  dangerouslySetInnerHTML={{ __html: project.fullDesc }}
-/>
+                    className="text-gray-600 leading-relaxed break-words"
+                    dangerouslySetInnerHTML={{ __html: project.fullDesc }}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -524,21 +554,23 @@ if (!project) return <div className="p-6">Project not found</div>;
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {project.teamMembers?.map((member) => (
                     <div key={member.name} className="flex items-center gap-3">
-                     <Avatar className="size-14">
-  <AvatarImage
-    src={member.photo || ""}
-    alt={member.name}
-    className="object-cover"
-  />
-  <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg">
-    {member.name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")}
-  </AvatarFallback>
-</Avatar>
+                      <Avatar className="size-14">
+                        <AvatarImage
+                          src={member.photo || ""}
+                          alt={member.name}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg">
+                          {member.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
-                        <h4 className="font-medium text-gray-900">{member.name}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          {member.name}
+                        </h4>
                         <p className="text-sm text-gray-600">{member.role}</p>
                       </div>
                     </div>
@@ -561,29 +593,40 @@ if (!project) return <div className="p-6">Project not found</div>;
                   <div className="space-y-6">
                     {project.milestones?.map((milestone, index) => (
                       <div key={index} className="relative flex gap-4">
-                        <div className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                          milestone.completedAt 
-                            ? 'bg-green-100 text-green-600' 
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
+                        <div
+                          className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            milestone.completedAt
+                              ? "bg-green-100 text-green-600"
+                              : "bg-gray-100 text-gray-400"
+                          }`}
+                        >
                           <Calendar className="size-5" />
                         </div>
                         <div className="flex-1 pb-6">
                           <div className="flex flex-wrap items-center gap-3 mb-1">
-                            <h4 className="font-medium text-gray-900">{milestone.title}</h4>
+                            <h4 className="font-medium text-gray-900">
+                              {milestone.title}
+                            </h4>
                             {milestone.completedAt && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-200"
+                              >
                                 Completed
                               </Badge>
                             )}
                           </div>
                           <p className="text-sm text-gray-500 mb-2">
-                            Target: {milestone.targetDate
-  ? formatDate(milestone.targetDate)
-  : "No date"}
-                            {milestone.completedAt && ` • Completed: ${formatDate(milestone.completedAt)}`}
+                            Target:{" "}
+                            {milestone.targetDate
+                              ? formatDate(milestone.targetDate)
+                              : "No date"}
+                            {milestone.completedAt &&
+                              ` • Completed: ${formatDate(milestone.completedAt)}`}
                           </p>
-                          <p className="text-sm text-gray-600">{milestone.description}</p>
+                          <p className="text-sm text-gray-600">
+                            {milestone.description}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -607,10 +650,12 @@ if (!project) return <div className="p-6">Project not found</div>;
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Target Amount</p>
                   <p className="text-3xl font-semibold text-indigo-600">
-                    {formatCurrency(project.fundingSought ?? 0, project.currency)}
+                    {formatCurrency(
+                      project.fundingSought ?? 0,
+                      project.currency,
+                    )}
                   </p>
                 </div>
-                
               </CardContent>
             </Card>
 
@@ -622,27 +667,26 @@ if (!project) return <div className="p-6">Project not found</div>;
                   Documents
                 </CardTitle>
               </CardHeader>
-             <CardContent className="space-y-2">
-  {project.documents?.map((doc, index) => (
-    <Button
-      key={index}
-      variant="outline"
-      className="w-full justify-start gap-2"
-      onClick={() => {
-  window.open(
-    `${import.meta.env.VITE_API_URL}/uploads/document/download?url=${encodeURIComponent(doc.fileUrl)}&originalName=${encodeURIComponent(doc.name)}`
-  );
-}
-}
-    >
-      <FileText className="size-4" />
-      <span className="flex-1 text-left">{doc.name}</span>
-      <Badge variant="outline" className="text-xs">
-        {doc.fileType}
-      </Badge>
-    </Button>
-  ))}
-</CardContent>
+              <CardContent className="space-y-2">
+                {project.documents?.map((doc, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    className="w-full justify-start gap-2"
+                    onClick={() => {
+                      window.open(
+                        `${import.meta.env.VITE_API_URL}/uploads/document/download?url=${encodeURIComponent(doc.fileUrl)}&originalName=${encodeURIComponent(doc.name)}`,
+                      );
+                    }}
+                  >
+                    <FileText className="size-4" />
+                    <span className="flex-1 text-left">{doc.name}</span>
+                    <Badge variant="outline" className="text-xs">
+                      {doc.fileType}
+                    </Badge>
+                  </Button>
+                ))}
+              </CardContent>
             </Card>
 
             {/* Project Metadata */}
@@ -658,14 +702,19 @@ if (!project) return <div className="p-6">Project not found</div>;
                 <Separator />
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Visibility</p>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200"
+                  >
                     {project.visibility}
                   </Badge>
                 </div>
                 <Separator />
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Views</p>
-                  <p className="font-medium">{project.viewCount.toLocaleString()}</p>
+                  <p className="font-medium">
+                    {project.viewCount.toLocaleString()}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -674,13 +723,10 @@ if (!project) return <div className="p-6">Project not found</div>;
       </div>
 
       {/* Connect Modal */}
-      
 
       {/* Invest Modal */}
-      
 
       {/* Join Team Modal */}
-      
     </div>
   );
 }
