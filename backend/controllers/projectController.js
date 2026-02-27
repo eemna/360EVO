@@ -16,7 +16,7 @@ export const createProject = async (req, res, _next) => {
 
         documents: documents?.length ? { create: documents } : undefined,
         status: "DRAFT",
-        visibility: "CONNECTIONS", 
+        visibility: "CONNECTIONS",
       },
       include: {
         teamMembers: true,
@@ -37,16 +37,16 @@ export const getProjectById = async (req, res, next) => {
     const { id } = req.params;
 
     const project = await prisma.project.findUnique({
-  where: { id },
-  include: {
-    owner: {
-      select: { name: true }
-    },
-    teamMembers: true,
-    milestones: true,
-    documents: true,
-  },
-});
+      where: { id },
+      include: {
+        owner: {
+          select: { name: true },
+        },
+        teamMembers: true,
+        milestones: true,
+        documents: true,
+      },
+    });
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -71,7 +71,14 @@ export const getProjectById = async (req, res, next) => {
 export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { teamMembers, milestones, documents, status, visibility, ...projectData } = req.body;
+    const {
+      teamMembers,
+      milestones,
+      documents,
+      status,
+      visibility,
+      ...projectData
+    } = req.body;
 
     const project = await prisma.project.findUnique({
       where: { id },
@@ -252,23 +259,21 @@ export const getPublicProjects = async (req, res, next) => {
       }),
     };
 
-   const projects = await prisma.project.findMany({
-  where,
-  orderBy: { createdAt: "desc" },
-  skip,
-  take: Number(limit),
-  include: {
-    owner: {
-      select: {
-        name: true,
+    const projects = await prisma.project.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: Number(limit),
+      include: {
+        owner: {
+          select: {
+            name: true,
+          },
+        },
       },
-    },
-  },
-});
+    });
 
-    
     res.json(projects);
-
   } catch (error) {
     next(error);
   }
@@ -296,9 +301,7 @@ export const submitProject = async (req, res, next) => {
 
     const updated = await prisma.project.update({
       where: { id },
-      data: { status: "PENDING",
-              visibility: "CONNECTIONS",
-       },
+      data: { status: "PENDING", visibility: "CONNECTIONS" },
     });
 
     res.json(updated);
@@ -338,37 +341,31 @@ export const getStartupDashboard = async (req, res, next) => {
   try {
     const ownerId = req.user.id;
     const { q } = req.query;
-    const [
-  totalProjects,
-  totalViews,
-  pending,
-  approved,
-  draft,
-  projects
-] = await Promise.all([
-  prisma.project.count({ where: { ownerId } }),
-  prisma.project.aggregate({
-    where: { ownerId },
-    _sum: { viewCount: true }
-  }),
-  prisma.project.count({ where: { ownerId, status: "PENDING" } }),
-  prisma.project.count({ where: { ownerId, status: "APPROVED" } }),
-  prisma.project.count({ where: { ownerId, status: "DRAFT" } }),
-  prisma.project.findMany({
-     where: {
-    ownerId,
-    ...(q && {
-  OR: [
-    { title: { contains: q, mode: "insensitive" } },
-    { shortDesc: { contains: q, mode: "insensitive" } },
-    { tagline: { contains: q, mode: "insensitive" } },
-  ],
-}),
-  },
-    include: { teamMembers: true },
-    orderBy: { createdAt: "desc" },
-  })
-]);
+    const [totalProjects, totalViews, pending, approved, draft, projects] =
+      await Promise.all([
+        prisma.project.count({ where: { ownerId } }),
+        prisma.project.aggregate({
+          where: { ownerId },
+          _sum: { viewCount: true },
+        }),
+        prisma.project.count({ where: { ownerId, status: "PENDING" } }),
+        prisma.project.count({ where: { ownerId, status: "APPROVED" } }),
+        prisma.project.count({ where: { ownerId, status: "DRAFT" } }),
+        prisma.project.findMany({
+          where: {
+            ownerId,
+            ...(q && {
+              OR: [
+                { title: { contains: q, mode: "insensitive" } },
+                { shortDesc: { contains: q, mode: "insensitive" } },
+                { tagline: { contains: q, mode: "insensitive" } },
+              ],
+            }),
+          },
+          include: { teamMembers: true },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
 
     res.json({
       stats: {

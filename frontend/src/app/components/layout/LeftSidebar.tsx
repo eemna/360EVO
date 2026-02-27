@@ -50,12 +50,12 @@ export default function LeftSidebar({
 
       {/* Sidebar */}
       <aside
-  className={cn(
-    "fixed top-16 bottom-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out",
-    isOpen ? "translate-x-0" : "-translate-x-full",
-    "lg:static lg:translate-x-0",
-  )}
->
+        className={cn(
+          "fixed top-16 bottom-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          "lg:static lg:translate-x-0",
+        )}
+      >
         <div className="relative h-full overflow-y-auto p-4 bg-gray-50">
           {/* Close Button (mobile only) */}
           <Button
@@ -90,9 +90,9 @@ export default function LeftSidebar({
             <nav className="space-y-1">
               {menuItems.map((item) => {
                 const isActive =
-  item.path === "/app"
-    ? location.pathname === "/app"
-    : location.pathname.startsWith(item.path);
+                  item.path === "/app"
+                    ? location.pathname === "/app"
+                    : location.pathname.startsWith(item.path);
                 const Icon = item.icon;
 
                 return (
