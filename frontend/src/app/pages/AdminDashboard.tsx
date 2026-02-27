@@ -4,6 +4,7 @@ import { Users, FolderOpen, Clock, Check, X, Loader2 } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import { useNavigate } from "react-router";
 import {
   Table,
   TableBody,
@@ -43,6 +44,7 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // =============================
@@ -213,7 +215,7 @@ export default function AdminDashboard() {
                 </TableRow>
               ) : (
                 projects.map((project) => (
-                  <TableRow key={project.id}>
+                  <TableRow key={project.id} onClick={() => navigate(`/app/startup/projects/${project.id}`)}>
                     <TableCell className="font-medium">
                       {project.title}
                     </TableCell>
@@ -227,7 +229,7 @@ export default function AdminDashboard() {
                       </Badge>
                     </TableCell>
 
-                    {/* ✅ IMPROVED BUTTONS */}
+                    {/*  IMPROVED BUTTONS */}
                     <TableCell className="text-right">
                       <div className="flex flex-col sm:flex-row justify-end gap-2">
                         {/* APPROVE */}
