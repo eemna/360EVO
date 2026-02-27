@@ -192,78 +192,81 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-gray-400">
           <h2 className="text-xl font-semibold">Pending Project Approvals</h2>
         </div>
-       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Project</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {projects.length === 0 ? (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-6">
-                  No pending projects
-                </TableCell>
+                <TableHead>Project</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ) : (
-              projects.map((project) => (
-                <TableRow key={project.id}>
-                  <TableCell className="font-medium">{project.title}</TableCell>
-                  <TableCell>{project.owner?.name}</TableCell>
-                  <TableCell>
-                    {new Date(project.createdAt).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className="bg-yellow-100 text-yellow-700">
-                      {project.status}
-                    </Badge>
-                  </TableCell>
+            </TableHeader>
 
-                  {/* ✅ IMPROVED BUTTONS */}
-                  <TableCell className="text-right">
-                    <div className="flex flex-col sm:flex-row justify-end gap-2">
-                      {/* APPROVE */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={actionLoading === project.id}
-                        onClick={() => handleApprove(project.id)}
-                        className="border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
-                      >
-                        {actionLoading === project.id ? (
-                          <Loader2 className="size-4 animate-spin" />
-                        ) : (
-                          <>
-                            <Check className="size-4 mr-1" />
-                            Approve
-                          </>
-                        )}
-                      </Button>
-
-                      {/* REJECT */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={actionLoading === project.id}
-                        onClick={() => handleReject(project.id)}
-                        className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
-                      >
-                        <X className="size-4 mr-1" />
-                        Reject
-                      </Button>
-                    </div>
+            <TableBody>
+              {projects.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-6">
+                    No pending projects
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table> </div>
+              ) : (
+                projects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell className="font-medium">
+                      {project.title}
+                    </TableCell>
+                    <TableCell>{project.owner?.name}</TableCell>
+                    <TableCell>
+                      {new Date(project.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className="bg-yellow-100 text-yellow-700">
+                        {project.status}
+                      </Badge>
+                    </TableCell>
+
+                    {/* ✅ IMPROVED BUTTONS */}
+                    <TableCell className="text-right">
+                      <div className="flex flex-col sm:flex-row justify-end gap-2">
+                        {/* APPROVE */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={actionLoading === project.id}
+                          onClick={() => handleApprove(project.id)}
+                          className="border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
+                        >
+                          {actionLoading === project.id ? (
+                            <Loader2 className="size-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Check className="size-4 mr-1" />
+                              Approve
+                            </>
+                          )}
+                        </Button>
+
+                        {/* REJECT */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={actionLoading === project.id}
+                          onClick={() => handleReject(project.id)}
+                          className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
+                        >
+                          <X className="size-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>{" "}
+        </div>
       </Card>
 
       {/* USER MANAGEMENT */}
@@ -271,48 +274,50 @@ export default function AdminDashboard() {
         <div className="p-6 border-b border-gray-400">
           <h2 className="text-xl font-semibold">User Management</h2>
         </div>
-       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead className="text-right">Change Role</TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Badge className={getRoleBadgeColor(user.role)}>
-                    {user.role}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Select
-                    value={user.role}
-                    onValueChange={(value) => handleRoleChange(user.id, value)}
-                  >
-                    <SelectTrigger className="w-full sm:w-[160px] ml-auto">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MEMBER">Member</SelectItem>
-                      <SelectItem value="STARTUP">Startup</SelectItem>
-                      <SelectItem value="EXPERT">Expert</SelectItem>
-                      <SelectItem value="INVESTOR">Investor</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="text-right">Change Role</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>
+                    <Badge className={getRoleBadgeColor(user.role)}>
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Select
+                      value={user.role}
+                      onValueChange={(value) =>
+                        handleRoleChange(user.id, value)
+                      }
+                    >
+                      <SelectTrigger className="w-full sm:w-[160px] ml-auto">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="MEMBER">Member</SelectItem>
+                        <SelectItem value="STARTUP">Startup</SelectItem>
+                        <SelectItem value="EXPERT">Expert</SelectItem>
+                        <SelectItem value="INVESTOR">Investor</SelectItem>
+                        <SelectItem value="ADMIN">Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </Card>
     </div>

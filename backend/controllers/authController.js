@@ -460,10 +460,7 @@ export const changePassword = async (req, res, next) => {
       where: { id: userId },
     });
 
-    const isMatch = await bcrypt.compare(
-      currentPassword,
-      user.passwordHash
-    );
+    const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
 
     if (!isMatch) {
       return res.status(401).json({
