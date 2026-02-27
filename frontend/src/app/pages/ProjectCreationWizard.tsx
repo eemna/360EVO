@@ -410,7 +410,7 @@ export function ProjectCreationWizard({
       industry: "",
       stage: "",
       fullDescription: "",
-      location:  "",
+      location: "",
       techTags: [],
       teamMembers: [{ name: "", role: "", photo: null }],
       fundingAmount: "",

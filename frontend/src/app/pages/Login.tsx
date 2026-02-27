@@ -42,25 +42,50 @@ export default function LoginPage() {
         message: "Welcome back!",
       });
       navigate("/app");
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
+    } catch (err: unknown) {
+  if (err instanceof AxiosError) {
+    const status = err.response?.status;
+    const message = err.response?.data?.message;
 
-      if (error.response?.status === 401) {
-        localStorage.setItem("pendingEmail", email);
-        navigate("/verify-email");
-        return;
-      }
-
-      const message = error.response?.data?.message || "Login failed";
-
+    
+    if (status === 403 && message === "Email not verified") {
       showToast({
-        type: "error",
-        title: "Login Failed",
-        message,
+        type: "warning",
+        title: "Email Not Verified",
+        message:
+          "Please verify your email first. Check your inbox or spam folder.",
       });
 
-      setError(message);
-    } finally {
+      localStorage.setItem("pendingEmail", email);
+      navigate("/verify-email");
+      return;
+    }
+
+
+    if (status === 401) {
+      showToast({
+        type: "error",
+        title: "Invalid Credentials",
+        message: "Incorrect email or password. Please try again.",
+      });
+      return;
+    }
+
+  
+    showToast({
+      type: "error",
+      title: "Login Failed",
+      message: message || "Something went wrong",
+    });
+  } else {
+    // Non-Axios error
+    showToast({
+      type: "error",
+      title: "Unexpected Error",
+      message: "Something went wrong",
+    });
+  }
+}finally {
       setLoading(false);
     }
   };
