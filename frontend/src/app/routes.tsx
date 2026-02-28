@@ -59,7 +59,7 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
-       {
+      {
         path: "member",
         element: (
           <RoleRoute allowedRoles={["MEMBER"]}>
@@ -71,11 +71,11 @@ export const router = createBrowserRouter([
         path: "projects",
         element: <ProjectGallery />,
       },
-        {
+      {
         path: "profile/:id",
         element: <Profile />,
       },
-       {
+      {
         path: "settings",
         element: <Settings />,
       },

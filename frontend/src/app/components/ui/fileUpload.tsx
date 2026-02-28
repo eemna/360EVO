@@ -15,7 +15,7 @@ interface FileUploadProps {
   maxSize?: number;
   label?: string;
   description?: string;
-  children?: ReactNode; 
+  children?: ReactNode;
 }
 
 export function FileUpload({
@@ -205,38 +205,35 @@ export function FileUpload({
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
- return (
-  <div className="w-full">
+  return (
+    <div className="w-full">
+      {/* ALWAYS render hidden input */}
+      <Input
+        ref={fileInputRef}
+        type="file"
+        accept={accept}
+        onChange={handleFileInput}
+        className="hidden"
+      />
 
-    {/* ALWAYS render hidden input */}
-    <Input
-      ref={fileInputRef}
-      type="file"
-      accept={accept}
-      onChange={handleFileInput}
-      className="hidden"
-    />
+      {!children && (
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          {label}
+        </label>
+      )}
 
-    {!children && (
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        {label}
-      </label>
-    )}
-
-    {children ? (
-      <div onClick={handleClick}>
-        {children}
-      </div>
-    ) : (
-  <>
-      {!file && !previewUrl ? (
-        <div
-          onClick={handleClick}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`
+      {children ? (
+        <div onClick={handleClick}>{children}</div>
+      ) : (
+        <>
+          {!file && !previewUrl ? (
+            <div
+              onClick={handleClick}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`
             relative border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
             transition-all duration-300
             ${
@@ -246,107 +243,112 @@ export function FileUpload({
             }
             ${error ? "border-red-300 bg-red-50" : ""}
           `}
-        >
-         
-          <div className="flex flex-col items-center">
-            <div
-              className={`
+            >
+              <div className="flex flex-col items-center">
+                <div
+                  className={`
               size-12 rounded-full flex items-center justify-center mb-4
               ${isDragging ? "bg-blue-100" : "bg-gray-200"}
               ${error ? "bg-red-100" : ""}
             `}
-            >
-              {error ? (
-                <AlertCircle className="size-6 text-red-600" />
-              ) : (
-                <Upload
-                  className={`size-6 ${isDragging ? "text-blue-600" : "text-gray-600"}`}
-                />
+                >
+                  {error ? (
+                    <AlertCircle className="size-6 text-red-600" />
+                  ) : (
+                    <Upload
+                      className={`size-6 ${isDragging ? "text-blue-600" : "text-gray-600"}`}
+                    />
+                  )}
+                </div>
+
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  {isDragging ? "Drop your file here" : description}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {accept !== "*"
+                    ? `Accepted formats: ${accept}`
+                    : "Any file type"}{" "}
+                  • Max size: {maxSize}MB
+                </p>
+              </div>
+
+              {error && (
+                <div className="mt-4 text-sm text-red-600 flex items-center justify-center gap-2">
+                  <AlertCircle className="size-4" />
+                  {error}
+                </div>
               )}
             </div>
-
-            <p className="text-sm font-medium text-gray-900 mb-1">
-              {isDragging ? "Drop your file here" : description}
-            </p>
-            <p className="text-xs text-gray-500">
-              {accept !== "*" ? `Accepted formats: ${accept}` : "Any file type"}{" "}
-              • Max size: {maxSize}MB
-            </p>
-          </div>
-
-          {error && (
-            <div className="mt-4 text-sm text-red-600 flex items-center justify-center gap-2">
-              <AlertCircle className="size-4" />
-              {error}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="border border-gray-300 rounded-lg p-4 bg-white">
-          <div className="flex items-start gap-4">
-            {/* Preview */}
-            {previewUrl ? (
-              <div className="size-16 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
-                <img
-                  src={previewUrl}
-                  alt={file?.name || "Preview"}
-                  className="size-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="size-16 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <File className="size-8 text-blue-600" />
-              </div>
-            )}
-
-            {/* File Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2 mb-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {file?.name || "Uploaded file"}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {file ? formatFileSize(file.size) : ""}
-                  </p>
-                </div>
-                <Button
-  type="button"
-  size="icon"
-  variant="ghost"
-  onClick={handleRemove}
-  className="h-8 w-8"
->
-  <X className="size-4 text-red-500" />
-</Button>
-              </div>
-
-              {/* Progress Bar */}
-              {isUploading && (
-                <div className="space-y-1">
-                  <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="bg-blue-600 h-full transition-all duration-300 ease-out"
-                      style={{ width: `${uploadProgress}%` }}
+          ) : (
+            <div className="border border-gray-300 rounded-lg p-4 bg-white">
+              <div className="flex items-start gap-4">
+                {/* Preview */}
+                {previewUrl ? (
+                  <div className="size-16 rounded-lg overflow-hidden flex-shrink-0 border border-gray-200">
+                    <img
+                      src={previewUrl}
+                      alt={file?.name || "Preview"}
+                      className="size-full object-cover"
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Uploading... {uploadProgress}%
-                  </p>
-                </div>
-              )}
+                ) : (
+                  <div className="size-16 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <File className="size-8 text-blue-600" />
+                  </div>
+                )}
 
-              {/* Success State */}
-              {!isUploading && uploadProgress === 100 && (
-                <div className="flex items-center gap-1 text-green-600">
-                  <Check className="size-4" />
-                  <span className="text-xs font-medium">Upload complete</span>
+                {/* File Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {file?.name || "Uploaded file"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {file ? formatFileSize(file.size) : ""}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={handleRemove}
+                      className="h-8 w-8"
+                    >
+                      <X className="size-4 text-red-500" />
+                    </Button>
+                  </div>
+
+                  {/* Progress Bar */}
+                  {isUploading && (
+                    <div className="space-y-1">
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className="bg-blue-600 h-full transition-all duration-300 ease-out"
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Uploading... {uploadProgress}%
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Success State */}
+                  {!isUploading && uploadProgress === 100 && (
+                    <div className="flex items-center gap-1 text-green-600">
+                      <Check className="size-4" />
+                      <span className="text-xs font-medium">
+                        Upload complete
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      )} </> ) }
+          )}{" "}
+        </>
+      )}
     </div>
   );
 }

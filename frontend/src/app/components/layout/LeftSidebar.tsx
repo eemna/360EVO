@@ -15,15 +15,15 @@ import {
 } from "lucide-react";
 import { cn } from "../ui/utils";
 export interface Profile {
-  avatar?: string
+  avatar?: string;
 }
 
 export interface User {
-  id: string
-  name: string
-  email: string
-  role: string
-  profile?: Profile
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  profile?: Profile;
 }
 interface ResponsiveSidebarProps {
   isOpen: boolean;
@@ -81,9 +81,9 @@ export default function LeftSidebar({
             <div className="relative px-4 pb-4">
               <Avatar className="absolute -top-8 h-16 w-16 border-4 border-white">
                 <AvatarImage src={user?.profile?.avatar || undefined} />
-<AvatarFallback>
-  {user?.name?.charAt(0)?.toUpperCase() || "U"}
-</AvatarFallback>
+                <AvatarFallback>
+                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
               </Avatar>
               <div className="pt-10">
                 <Link

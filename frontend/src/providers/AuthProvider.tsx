@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("user", JSON.stringify(user));
     }
   }, [user]);
- 
+
   //const [loading] = useState(false);
   const login = (user: User, accessToken: string) => {
     setUser(user);

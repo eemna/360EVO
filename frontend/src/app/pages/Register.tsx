@@ -335,10 +335,10 @@ export default function RegistrationPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="IDEA">Idea</SelectItem>
-<SelectItem value="PROTOTYPE">Prototype</SelectItem>
-<SelectItem value="MVP">MVP</SelectItem>
-<SelectItem value="GROWTH">Growth</SelectItem>
-<SelectItem value="SCALING">Scaling</SelectItem>
+                        <SelectItem value="PROTOTYPE">Prototype</SelectItem>
+                        <SelectItem value="MVP">MVP</SelectItem>
+                        <SelectItem value="GROWTH">Growth</SelectItem>
+                        <SelectItem value="SCALING">Scaling</SelectItem>
                       </SelectContent>
                     </Select>
                   </>

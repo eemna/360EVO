@@ -27,8 +27,8 @@ export function MemberDashboard() {
             </h2>
 
             <p className="text-gray-600">
-              Member dashboard features are currently under development.
-              Stay tuned for updates!
+              Member dashboard features are currently under development. Stay
+              tuned for updates!
             </p>
           </CardContent>
         </Card>
