@@ -10,6 +10,7 @@ import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import userRoutes from "./routes/userRoute.js";
 
 dotenv.config();
 const app = express();
@@ -47,7 +48,7 @@ app.use("/api/auth", rateLimiter, authRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/admin", adminRoutes);
-
+app.use("/api/users", userRoutes);
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);

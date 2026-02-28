@@ -15,6 +15,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import RoleRedirect from "./RoleRedirect";
 import ProjectDetailsPage from "./pages/ProjectDetails";
 import { ProjectGallery } from "./pages/ProjectGallery";
+import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
+import { MemberDashboard } from "./pages/MemberDashboard";
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -56,11 +59,26 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+       {
+        path: "member",
+        element: (
+          <RoleRoute allowedRoles={["MEMBER"]}>
+            <MemberDashboard />
+          </RoleRoute>
+        ),
+      },
       {
         path: "projects",
         element: <ProjectGallery />,
       },
-
+        {
+        path: "profile/:id",
+        element: <Profile />,
+      },
+       {
+        path: "settings",
+        element: <Settings />,
+      },
       {
         path: "startup/projects/:id",
         element: (

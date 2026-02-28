@@ -334,9 +334,11 @@ export default function RegistrationPage() {
                         <SelectValue placeholder="Select stage" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="ideation">Ideation</SelectItem>
-                        <SelectItem value="mvp">MVP</SelectItem>
-                        <SelectItem value="growth">Growth</SelectItem>
+                        <SelectItem value="IDEA">Idea</SelectItem>
+<SelectItem value="PROTOTYPE">Prototype</SelectItem>
+<SelectItem value="MVP">MVP</SelectItem>
+<SelectItem value="GROWTH">Growth</SelectItem>
+<SelectItem value="SCALING">Scaling</SelectItem>
                       </SelectContent>
                     </Select>
                   </>

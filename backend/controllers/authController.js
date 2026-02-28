@@ -66,7 +66,7 @@ export const register = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const verificationToken = crypto.randomBytes(32).toString("hex");
-
+    
     await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
@@ -146,6 +146,9 @@ export const login = async (req, res, next) => {
 
     const userData = await prisma.user.findUnique({
       where: { email },
+      include: {
+    profile: true,
+  },
     });
 
     if (!userData || !(await bcrypt.compare(password, userData.passwordHash))) {
@@ -190,6 +193,7 @@ export const login = async (req, res, next) => {
         email: userData.email,
         role: userData.role,
         name: userData.name,
+        profile: userData.profile,
       },
     });
   } catch (error) {
@@ -412,7 +416,25 @@ export const resetPassword = async (req, res, next) => {
 // GET CURRENT USER
 export const getMe = async (req, res, next) => {
   try {
-    res.json(req.user);
+    let user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      include: { profile: true },
+    });
+
+    if (!user.profile) {
+      await prisma.profile.create({
+        data: {
+          userId: user.id,
+        },
+      });
+
+      user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        include: { profile: true },
+      });
+    }
+
+    res.json(user);
   } catch (error) {
     next(error);
   }
@@ -506,6 +528,86 @@ export const updateEmail = async (req, res, next) => {
     });
 
     res.json({ message: "Email updated. Please verify again." });
+  } catch (error) {
+    next(error);
+  }
+};
+export const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const {
+      name,
+      bio,
+      avatar,
+      phone,
+      location,
+      linkedIn,
+      companyName,
+      stage,
+      hourlyRate,
+      expertise,
+    } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    // Update user basic info
+    await prisma.user.update({
+      where: { id: userId },
+      data: { name },
+    });
+
+    //  Build profile update object dynamically
+    const profileData = {};
+
+    if (bio !== undefined) profileData.bio = bio;
+    if (avatar !== undefined) profileData.avatar = avatar;
+    if (phone !== undefined) profileData.phone = phone;
+    if (location !== undefined) profileData.location = location;
+    if (linkedIn !== undefined) profileData.linkedIn = linkedIn;
+    if (companyName !== undefined) profileData.companyName = companyName;
+    if (stage !== undefined) profileData.stage = stage;
+
+    if (hourlyRate !== undefined) {
+      profileData.hourlyRate =
+        hourlyRate !== null ? new Prisma.Decimal(hourlyRate) : null;
+    }
+
+    if (expertise !== undefined) {
+      profileData.expertise = Array.isArray(expertise)
+        ? expertise
+        : [];
+    }
+
+    //Upsert profile
+    await prisma.profile.upsert({
+      where: { userId },
+      update: profileData,
+      create: {
+        userId,
+        bio: bio || null,
+        avatar: avatar || null,
+        phone: phone || null,
+        location: location || null,
+        linkedIn: linkedIn || null,
+        companyName: companyName || null,
+        stage: stage || null,
+        hourlyRate: hourlyRate
+          ? new Prisma.Decimal(hourlyRate)
+          : null,
+        expertise: Array.isArray(expertise) ? expertise : [],
+      },
+    });
+
+    //  Return full updated user
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { profile: true },
+    });
+
+    res.json(updatedUser);
   } catch (error) {
     next(error);
   }

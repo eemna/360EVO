@@ -12,6 +12,7 @@ import {
   logout,
   changePassword,
   updateEmail,
+  updateProfile,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import forgotPasswordRateLimit from "../middleware/forgotPasswordRateLimit.js";
@@ -40,4 +41,5 @@ router.post("/reset-password", resetPassword);
 router.post("/refresh-token", refreshToken);
 router.put("/change-password", protect, changePassword);
 router.put("/update-email", protect, updateEmail);
+router.put("/update-profile", protect, updateProfile);
 export default router;

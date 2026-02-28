@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { AuthContext } from "../context/AuthContext";
 import type { User } from "../context/AuthContext";
@@ -8,8 +8,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const storedUser = localStorage.getItem("user");
     return storedUser ? (JSON.parse(storedUser) as User) : null;
   });
+  const [loading, setLoading] = useState(true);
 
-  const [loading] = useState(false);
+  // ✅ Fetch fresh user on app load
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await api.get("/auth/me");
+        setUser(data);
+      } catch (error) {
+        console.error("Failed to fetch user", error);
+        setUser(null);
+      }
+
+      setLoading(false);
+    };
+
+    fetchUser();
+  }, []);
+
+  // ✅ Auto sync user → localStorage
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem("user", JSON.stringify(user));
+    }
+  }, [user]);
+ 
+  //const [loading] = useState(false);
   const login = (user: User, accessToken: string) => {
     setUser(user);
     localStorage.setItem("accessToken", accessToken);
@@ -32,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         loading,
         login,
         logout,
