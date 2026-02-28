@@ -215,12 +215,13 @@ export default function StartupDashboard() {
         </div>
 
         {projects.length === 0 ? (
-          <div className="text-center py-16 border rounded-lg bg-gray-50">
+          <div className="text-center py-16  rounded-lg bg-gray-50">
             <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
             <p className="text-gray-500 mb-4">
               Start by creating your first startup project.
             </p>
-            <Button>Create Project</Button>
+            <Button  onClick={() => setIsWizardOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 w-fit" >Create Project</Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

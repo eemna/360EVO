@@ -215,7 +215,12 @@ export default function AdminDashboard() {
                 </TableRow>
               ) : (
                 projects.map((project) => (
-                  <TableRow key={project.id} onClick={() => navigate(`/app/startup/projects/${project.id}`)}>
+                  <TableRow
+                    key={project.id}
+                    onClick={() =>
+                      navigate(`/app/startup/projects/${project.id}`)
+                    }
+                  >
                     <TableCell className="font-medium">
                       {project.title}
                     </TableCell>
@@ -289,7 +294,11 @@ export default function AdminDashboard() {
 
             <TableBody>
               {users.map((user) => (
-                <TableRow key={user.id}>
+                <TableRow
+                  key={user.id}
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => navigate(`/app/profile/${user.id}`)}
+                    >
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
@@ -298,23 +307,24 @@ export default function AdminDashboard() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Select
-                      value={user.role}
-                      onValueChange={(value) =>
-                        handleRoleChange(user.id, value)
-                      }
-                    >
-                      <SelectTrigger className="w-full sm:w-[160px] ml-auto">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MEMBER">Member</SelectItem>
-                        <SelectItem value="STARTUP">Startup</SelectItem>
-                        <SelectItem value="EXPERT">Expert</SelectItem>
-                        <SelectItem value="INVESTOR">Investor</SelectItem>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <Select
+  value={user.role}
+  onValueChange={(value) => handleRoleChange(user.id, value)}
+>
+  <SelectTrigger
+    className="w-full sm:w-[160px] ml-auto"
+    onClick={(e) => e.stopPropagation()}
+  >
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent onClick={(e) => e.stopPropagation()}>
+    <SelectItem value="MEMBER">Member</SelectItem>
+    <SelectItem value="STARTUP">Startup</SelectItem>
+    <SelectItem value="EXPERT">Expert</SelectItem>
+    <SelectItem value="INVESTOR">Investor</SelectItem>
+    <SelectItem value="ADMIN">Admin</SelectItem>
+  </SelectContent>
+</Select>
                   </TableCell>
                 </TableRow>
               ))}

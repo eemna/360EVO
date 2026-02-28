@@ -5,7 +5,7 @@ import { Button } from "./button";
 import { Input } from "./input";
 import api from "../../../services/axios";
 import { useNavigate } from "react-router";
-
+import type { ReactNode } from "react";
 import { AxiosError } from "axios";
 
 interface FileUploadProps {
@@ -15,6 +15,7 @@ interface FileUploadProps {
   maxSize?: number;
   label?: string;
   description?: string;
+  children?: ReactNode; 
 }
 
 export function FileUpload({
@@ -24,6 +25,7 @@ export function FileUpload({
   maxSize = 5,
   label = "Upload File",
   description = "Drag and drop your file here or click to browse",
+  children,
 }: FileUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -203,12 +205,30 @@ export function FileUpload({
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  return (
-    <div className="w-full">
+ return (
+  <div className="w-full">
+
+    {/* ALWAYS render hidden input */}
+    <Input
+      ref={fileInputRef}
+      type="file"
+      accept={accept}
+      onChange={handleFileInput}
+      className="hidden"
+    />
+
+    {!children && (
       <label className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
+    )}
 
+    {children ? (
+      <div onClick={handleClick}>
+        {children}
+      </div>
+    ) : (
+  <>
       {!file && !previewUrl ? (
         <div
           onClick={handleClick}
@@ -227,14 +247,7 @@ export function FileUpload({
             ${error ? "border-red-300 bg-red-50" : ""}
           `}
         >
-          <Input
-            ref={fileInputRef}
-            type="file"
-            accept={accept}
-            onChange={handleFileInput}
-            className="hidden"
-          />
-
+         
           <div className="flex flex-col items-center">
             <div
               className={`
@@ -298,11 +311,14 @@ export function FileUpload({
                   </p>
                 </div>
                 <Button
-                  onClick={handleRemove}
-                  className="bg-gray-100 hover:bg-gray-200 shadow-none transition-colors"
-                >
-                  <X className="size-4 text-red-500 " />
-                </Button>
+  type="button"
+  size="icon"
+  variant="ghost"
+  onClick={handleRemove}
+  className="h-8 w-8"
+>
+  <X className="size-4 text-red-500" />
+</Button>
               </div>
 
               {/* Progress Bar */}
@@ -330,7 +346,7 @@ export function FileUpload({
             </div>
           </div>
         </div>
-      )}
+      )} </> ) }
     </div>
   );
 }
