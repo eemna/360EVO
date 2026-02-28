@@ -1,21 +1,21 @@
 import { createContext } from "react";
 
 export interface Profile {
-  bio: string
-  location: string
-  linkedIn: string | null
-  avatar: string | null
-  companyName: string | null
-  stage: string | null
-  hourlyRate: number | null
-  expertise: string[]
+  bio: string;
+  location: string;
+  linkedIn: string | null;
+  avatar: string | null;
+  companyName: string | null;
+  stage: string | null;
+  hourlyRate: number | null;
+  expertise: string[];
 }
 export interface User {
   id: string;
   name: string;
   email: string;
   role: "MEMBER" | "EXPERT" | "STARTUP" | "INVESTOR" | "ADMIN";
-  profile: Profile | null;   
+  profile: Profile | null;
 }
 
 export interface AuthContextType {

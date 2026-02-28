@@ -100,11 +100,11 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                   className="relative h-10 w-10 rounded-full"
                 >
                   <Avatar>
-  <AvatarImage src={user?.profile?.avatar} />
-  <AvatarFallback>
-    {user?.name?.charAt(0)?.toUpperCase() || "U"}
-  </AvatarFallback>
-</Avatar>
+                    <AvatarImage src={user?.profile?.avatar ?? undefined} />
+                    <AvatarFallback>
+                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">

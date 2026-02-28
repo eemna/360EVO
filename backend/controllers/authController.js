@@ -66,7 +66,7 @@ export const register = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const verificationToken = crypto.randomBytes(32).toString("hex");
-    
+
     await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
@@ -147,8 +147,8 @@ export const login = async (req, res, next) => {
     const userData = await prisma.user.findUnique({
       where: { email },
       include: {
-    profile: true,
-  },
+        profile: true,
+      },
     });
 
     if (!userData || !(await bcrypt.compare(password, userData.passwordHash))) {
@@ -576,9 +576,7 @@ export const updateProfile = async (req, res, next) => {
     }
 
     if (expertise !== undefined) {
-      profileData.expertise = Array.isArray(expertise)
-        ? expertise
-        : [];
+      profileData.expertise = Array.isArray(expertise) ? expertise : [];
     }
 
     //Upsert profile
@@ -594,9 +592,7 @@ export const updateProfile = async (req, res, next) => {
         linkedIn: linkedIn || null,
         companyName: companyName || null,
         stage: stage || null,
-        hourlyRate: hourlyRate
-          ? new Prisma.Decimal(hourlyRate)
-          : null,
+        hourlyRate: hourlyRate ? new Prisma.Decimal(hourlyRate) : null,
         expertise: Array.isArray(expertise) ? expertise : [],
       },
     });

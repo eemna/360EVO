@@ -220,8 +220,12 @@ export default function StartupDashboard() {
             <p className="text-gray-500 mb-4">
               Start by creating your first startup project.
             </p>
-            <Button  onClick={() => setIsWizardOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 w-fit" >Create Project</Button>
+            <Button
+              onClick={() => setIsWizardOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 w-fit"
+            >
+              Create Project
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

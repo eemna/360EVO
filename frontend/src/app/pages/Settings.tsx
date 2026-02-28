@@ -60,9 +60,7 @@ export default function Settings() {
         setCompanyName(data.profile?.companyName || "");
         setStage(data.profile?.stage || "");
         setHourlyRate(
-          data.profile?.hourlyRate
-            ? data.profile.hourlyRate.toString()
-            : ""
+          data.profile?.hourlyRate ? data.profile.hourlyRate.toString() : "",
         );
         setExpertise(data.profile?.expertise || []);
       } catch (error) {
@@ -75,43 +73,41 @@ export default function Settings() {
 
   // ---------------- UPDATE PROFILE ----------------
   const handleProfileUpdate = async () => {
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const { data } = await api.put("/auth/update-profile", {
-      name,
-      bio,
-      //avatar,
-      phone,
-      location,
-      linkedIn,
-      companyName,
-      stage,
-      hourlyRate: hourlyRate ? Number(hourlyRate) : null,
-      expertise,
-    });
-
-   
-setUser(data);
-
-    showToast({
-      type: "success",
-      title: "Profile Updated",
-      message: "Your profile has been updated successfully.",
-    });
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      showToast({
-        type: "error",
-        title: "Update Failed",
-        message:
-          error.response?.data?.message || "Error updating profile",
+    try {
+      const { data } = await api.put("/auth/update-profile", {
+        name,
+        bio,
+        //avatar,
+        phone,
+        location,
+        linkedIn,
+        companyName,
+        stage,
+        hourlyRate: hourlyRate ? Number(hourlyRate) : null,
+        expertise,
       });
-    }
-  }
 
-  setLoading(false);
-};
+      setUser(data);
+
+      showToast({
+        type: "success",
+        title: "Profile Updated",
+        message: "Your profile has been updated successfully.",
+      });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        showToast({
+          type: "error",
+          title: "Update Failed",
+          message: error.response?.data?.message || "Error updating profile",
+        });
+      }
+    }
+
+    setLoading(false);
+  };
   // ---------------- UPDATE EMAIL ----------------
   const handleEmailUpdate = async () => {
     setLoading(true);
@@ -129,8 +125,7 @@ setUser(data);
         showToast({
           type: "error",
           title: "Email Update Failed",
-          message:
-            error.response?.data?.message || "Error updating email",
+          message: error.response?.data?.message || "Error updating email",
         });
       }
     }
@@ -171,8 +166,7 @@ setUser(data);
         showToast({
           type: "error",
           title: "Password Update Failed",
-          message:
-            error.response?.data?.message || "Error updating password",
+          message: error.response?.data?.message || "Error updating password",
         });
       }
     }
@@ -198,19 +192,13 @@ setUser(data);
 
           {/* ================= PROFILE TAB ================= */}
           <TabsContent value="profile" className="space-y-8">
-
             {/* Avatar Section */}
-           
 
-          
             {/* Basic Info Grid */}
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Full Name</Label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
               </div>
 
               <div className="space-y-2">
@@ -236,47 +224,48 @@ setUser(data);
                   onChange={(e) => setLinkedIn(e.target.value)}
                 />
               </div>
-             {user?.role === "STARTUP" && (
-  <>
-              <div className="space-y-2">
-                <Label>Company Name</Label>
-                <Input
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                />
-              </div>
+              {user?.role === "STARTUP" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Company Name</Label>
+                    <Input
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Stage</Label>
+                    <Input
+                      value={stage}
+                      onChange={(e) => setStage(e.target.value)}
+                    />
+                  </div>{" "}
+                </>
+              )}
+              {user?.role === "EXPERT" && (
+                <>
+                  <div className="space-y-2">
+                    <Label>Hourly Rate ($)</Label>
+                    <Input
+                      type="number"
+                      value={hourlyRate}
+                      onChange={(e) => setHourlyRate(e.target.value)}
+                    />
+                  </div>
 
-              <div className="space-y-2">
-                <Label>Stage</Label>
-                <Input
-                  value={stage}
-                  onChange={(e) => setStage(e.target.value)}
-                />
-              </div> </> )}
-             {user?.role === "EXPERT" && (
-  <>
-              <div className="space-y-2">
-                <Label>Hourly Rate ($)</Label>
-                <Input
-                  type="number"
-                  value={hourlyRate}
-                  onChange={(e) => setHourlyRate(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Expertise (comma separated)</Label>
-                <Input
-                  value={expertise.join(", ")}
-                  onChange={(e) =>
-                    setExpertise(
-                      e.target.value
-                        .split(",")
-                        .map((item) => item.trim())
-                    )
-                  }
-                />
-              </div></>)}
+                  <div className="space-y-2">
+                    <Label>Expertise (comma separated)</Label>
+                    <Input
+                      value={expertise.join(", ")}
+                      onChange={(e) =>
+                        setExpertise(
+                          e.target.value.split(",").map((item) => item.trim()),
+                        )
+                      }
+                    />
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -295,7 +284,6 @@ setUser(data);
 
           {/* ================= ACCOUNT TAB ================= */}
           <TabsContent value="account" className="space-y-8">
-
             <div className="space-y-4">
               <Label>Email Address</Label>
               <Input
@@ -338,7 +326,6 @@ setUser(data);
                 Update Password
               </Button>
             </div>
-
           </TabsContent>
         </Tabs>
       </Card>
