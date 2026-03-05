@@ -1,14 +1,32 @@
 import { createContext } from "react";
-
+export interface WeeklyAvailability {
+  id?: string;
+  day: number;   
+  startTime: string | null;
+  endTime: string | null;
+  enabled: boolean;
+}
 export interface Profile {
-  bio: string;
-  location: string;
+  bio: string | null;
+  location: string | null;
   linkedIn: string | null;
   avatar: string | null;
+
+  phone: string | null;
+
   companyName: string | null;
   stage: string | null;
+
   hourlyRate: number | null;
+  yearsOfExperience: number | null;
+
   expertise: string[];
+  industries: string[] | null;
+  certifications: string[] | null;
+
+  availabilityStatus: string | null;
+
+  weeklyAvailability: WeeklyAvailability[] | null;
 }
 export interface User {
   id: string;
@@ -16,6 +34,7 @@ export interface User {
   email: string;
   role: "MEMBER" | "EXPERT" | "STARTUP" | "INVESTOR" | "ADMIN";
   profile: Profile | null;
+  computedStatus?: "AVAILABLE" | "BUSY" | "ON_LEAVE";
 }
 
 export interface AuthContextType {

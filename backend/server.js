@@ -1,3 +1,7 @@
+import { createServer } from "http";
+import { Server } from "socket.io";
+import { initializeSocket } from "./sockets/socket.js";
+
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -11,6 +15,7 @@ import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoute.js";
+import conversationRoutes from "./routes/conversationRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -49,11 +54,29 @@ app.use("/api/uploads", uploadRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
+
+app.use("/api/conversations", conversationRoutes);
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
+
+const server = createServer(app);
+
+const io = new Server(server, {
+   path: "/api/socket.io",
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+
+initializeSocket(io);
+
+global.io = io;
+
+server.listen(PORT, () => {
   console.log("Server is up and running on PORT:", PORT);
 });
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
+

@@ -8,6 +8,11 @@ import {
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import type { User } from "../../context/AuthContext";
+import ExpertProfile from "./ExpertProfile";
+import { useNavigate } from "react-router";
+import { useToast } from "../../context/ToastContext";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import TagInputSection from "../components/ui/TagInputSection";
 import {
   Dialog,
   DialogContent,
@@ -33,13 +38,16 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { AxiosError } from "axios";
+ // import { format } from "date-fns";
 import {
   MapPin,
   Linkedin,
+  Phone,
   Edit3,
-  DollarSign,
-  Award,
   Building,
+  CheckCircle,
+   DollarSign,
+  
 } from "lucide-react";
 
 import api from "../../services/axios";
@@ -58,69 +66,110 @@ const roleColors: Record<
 //const stageOptions = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 
 export default function Profile() {
+  const { showToast } = useToast();
+const [saving, setSaving] = useState(false);
   const { user, setUser } = useAuth();
-
+  const dayNames = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+const navigate = useNavigate();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [formData, setFormData] = useState<User | null>(null);
   const [newSkill, setNewSkill] = useState("");
+  const [newIndustry, setNewIndustry] = useState("");
+const [newCertification, setNewCertification] = useState("");
+
   const { id } = useParams();
   const [profileUser, setProfileUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
 
-        // If viewing own profile
-        if (!id || id === "me") {
-          setProfileUser(user);
-          return;
-        }
+      const targetId =
+        !id || id === "me"
+          ? user?.id
+          : id;
 
-        // If viewing another user
-        const { data } = await api.get(`/users/${id}`);
-        setProfileUser(data);
-      } catch (err) {
-        const error = err as AxiosError;
+      if (!targetId) return;
 
-        // 🚨 If user not found (404)
-        if (error.response?.status === 404) {
-          setProfileUser(null); // IMPORTANT
-        }
-      } finally {
-        setLoading(false);
+      const { data } = await api.get(`/users/${targetId}`);
+      setProfileUser(data);
+
+    } catch (err) {
+      const error = err as AxiosError;
+
+      if (error.response?.status === 404) {
+        setProfileUser(null);
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  if (user) {
     fetchProfile();
-  }, [id, user]);
+  }
+
+}, [id, user]);
   //  Fetch user
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData || !formData.profile) return;
+    setSaving(true);
 
     try {
       const { data } = await api.put("/auth/update-profile", {
-        name: formData.name,
-        bio: formData.profile.bio,
-        location: formData.profile.location,
-        linkedIn: formData.profile.linkedIn,
-        companyName: formData.profile.companyName,
-        stage: formData.profile.stage,
-        hourlyRate: formData.profile.hourlyRate,
-        expertise: formData.profile.expertise,
-      });
+  name: formData.name,
+  bio: formData.profile.bio,
+  phone: formData.profile.phone,
+  location: formData.profile.location,
+  linkedIn: formData.profile.linkedIn,
+  hourlyRate: Number(formData.profile.hourlyRate),
+  yearsOfExperience: formData.profile.yearsOfExperience,
+  expertise: formData.profile.expertise,
+  industries: formData.profile.industries,
+  certifications: formData.profile.certifications,
+  availabilityStatus: formData.profile.availabilityStatus,
+  weeklyAvailability: formData.profile.weeklyAvailability,
+});
 
       //  USE BACKEND RESPONSE
       setUser(data);
 
       setEditModalOpen(false);
       setProfileUser(data);
-    } catch (error) {
-      console.error(error);
+      showToast({
+      type: "success",
+      title: "Profile Updated ",
+      message: "Your profile has been updated successfully.",
+    });
+    } catch (err) {
+    if (err instanceof AxiosError) {
+      showToast({
+        type: "error",
+        title: "Update Failed",
+        message: err.response?.data?.message || "Something went wrong",
+      });
+    } else {
+      showToast({
+        type: "error",
+        title: "Unexpected Error",
+        message: "Something went wrong",
+      });
     }
-  };
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleAddSkill = () => {
     if (!formData || !formData.profile) return;
@@ -150,6 +199,69 @@ export default function Profile() {
     });
   };
 
+
+  const handleAddIndustry = () => {
+  if (!formData || !formData.profile) return;
+  const trimmed = newIndustry.trim();
+
+  if (trimmed && !(formData.profile.industries ?? []).includes(trimmed)) {
+    setFormData({
+      ...formData,
+      profile: {
+        ...formData.profile,
+        industries: [...(formData.profile.industries ?? []), trimmed],
+      },
+    });
+    setNewIndustry("");
+  }
+};
+
+const handleRemoveIndustry = (industry: string) => {
+  if (!formData || !formData.profile) return;
+
+  setFormData({
+    ...formData,
+    profile: {
+      ...formData.profile,
+      industries: (formData.profile.industries ?? []).filter(
+        (i) => i !== industry
+      ),
+    },
+  });
+};
+const handleAddCertification = () => {
+  if (!formData || !formData.profile) return;
+  const trimmed = newCertification.trim();
+
+  if (trimmed && !(formData.profile.certifications ?? []).includes(trimmed)) {
+    setFormData({
+      ...formData,
+      profile: {
+        ...formData.profile,
+        certifications: [
+          ...(formData.profile.certifications ?? []),
+          trimmed,
+        ],
+      },
+    });
+    setNewCertification("");
+  }
+};
+
+const handleRemoveCertification = (cert: string) => {
+  if (!formData || !formData.profile) return;
+
+  setFormData({
+    ...formData,
+    profile: {
+      ...formData.profile,
+      certifications: (formData.profile.certifications ?? []).filter(
+        (c) => c !== cert
+      ),
+    },
+  });
+};
+
   const getInitials = (name: string) =>
     name
       ?.split(" ")
@@ -162,8 +274,15 @@ export default function Profile() {
 
   const profile = profileUser.profile;
   const isOwnProfile = user?.id === profileUser.id;
+
+
+const computedStatus =
+  profileUser.role === "EXPERT"
+    ? profileUser.computedStatus ?? "AVAILABLE"
+    : null;
   return (
     <div>
+
       {/* Cover */}
       <div className="relative h-64 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl mb-20">
         <div className="absolute -bottom-16 left-8">
@@ -226,7 +345,7 @@ export default function Profile() {
               onClick={() => {
                 if (!profileUser.profile) return;
 
-                setFormData(profileUser);
+                setFormData(JSON.parse(JSON.stringify(profileUser)));
                 setEditModalOpen(true);
               }}
               className="bg-white/20 backdrop-blur-md hover:bg-white/30 
@@ -246,6 +365,20 @@ text-white border border-white/30 gap-2"
           <Badge className={roleColors[profileUser.role]}>
             {profileUser.role}
           </Badge>
+          {profileUser.role === "EXPERT" && computedStatus && (
+  <Badge
+    className={
+      computedStatus === "AVAILABLE"
+        ? "bg-green-100 text-green-700"
+        : computedStatus === "BUSY"
+        ? "bg-yellow-100 text-yellow-700"
+        : "bg-red-100 text-red-700"
+    }
+  >
+    <CheckCircle className="size-4" />
+    {computedStatus}
+  </Badge>
+)}
         </div>
 
         <div className="flex items-center gap-4 text-gray-600">
@@ -283,30 +416,10 @@ text-white border border-white/30 gap-2"
             </CardContent>
           </Card>
 
-          {profileUser.role === "EXPERT" && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="size-5" />
-                  Expertise
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-4">
-                  <p className="text-4xl font-semibold text-indigo-600 mb-1">
-                    ${profile.hourlyRate}
-                  </p>
-                  <p className="text-gray-600">per hour</p>
-                </div>
-              </CardContent>
-              <CardContent className="flex flex-wrap gap-2">
-                {profile.expertise.map((skill: string) => (
-                  <Badge key={skill}>{skill}</Badge>
-                ))}
-              </CardContent>
-            </Card>
-          )}
 
+          {profileUser.role === "EXPERT" && (
+  <ExpertProfile profileUser={profileUser} />
+)}
           {profileUser.role === "STARTUP" && (
             <Card>
               <CardHeader>
@@ -325,34 +438,11 @@ text-white border border-white/30 gap-2"
 
         <div className="space-y-6">
           {/* RATE CARD - Expert Only */}
-          {profileUser.role === "EXPERT" && (
-            <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-indigo-900">
-                  <DollarSign className="size-5" />
-                  Consulting Rate
-                </CardTitle>
-              </CardHeader>
-
-              <CardContent>
-                <div className="text-center py-4">
-                  <p className="text-4xl font-semibold text-indigo-600 mb-1">
-                    ${profile.hourlyRate}
-                  </p>
-                  <p className="text-gray-600">per hour</p>
-                </div>
-
-                <Button className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700">
-                  Book Consultation
-                </Button>
-              </CardContent>
-            </Card>
-          )}
 
           {/* CONTACT CARD - ALL USERS */}
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle >Contact Information</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-4">
@@ -360,7 +450,15 @@ text-white border border-white/30 gap-2"
                 <p className="text-sm text-gray-600 mb-1">Location</p>
                 <p className="font-medium text-gray-900">{profile.location}</p>
               </div>
-
+             {profile.phone && (
+  <div>
+    <p className="text-sm text-gray-600 mb-1">Phone</p>
+    <div className="flex items-center gap-2">
+      <Phone className="size-4 text-gray-500" />
+      <span className="font-medium text-gray-900">{profile.phone}</span>
+    </div>
+  </div>
+)}
               {profile.linkedIn && (
                 <div>
                   <p className="text-sm text-gray-600 mb-2">
@@ -379,12 +477,63 @@ text-white border border-white/30 gap-2"
               )}
             </CardContent>
           </Card>
+  {profileUser.role === "EXPERT" && (        
+  <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-indigo-900">
+                  <DollarSign className="size-5" />
+        Consulting Rate
+      </CardTitle>
+    </CardHeader>
+
+    <CardContent>
+      <div className="text-center py-4">
+                  <p className="text-4xl font-semibold text-indigo-600 mb-1">
+          {profile.hourlyRate
+            ? `$${profile.hourlyRate}`
+            : "Not specified"}
+        </p>
+        <p className="text-gray-600">per hour</p>
+      </div>
+{profileUser.role === "EXPERT" && (
+  user?.id === profileUser.id ? (
+
+    // Expert viewing own profile
+    <Button
+      className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700"
+      onClick={() => navigate("/app/expert/reservations")}
+    >
+      Manage Reservations
+    </Button>
+
+  ) : ["MEMBER", "ADMIN", "STARTUP"].includes(user?.role || "") ? (
+
+    // Other roles booking expert
+    <Button
+      disabled={computedStatus !== "AVAILABLE"}
+      className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+      onClick={() =>
+        navigate(`/app/experts/${profileUser.id}/book`)
+      }
+    >
+      {computedStatus === "AVAILABLE"
+        ? "Book Consultation"
+        : "Currently Unavailable"}
+    </Button>
+
+  ) : null
+)}
+    </CardContent>
+  </Card> )}
+
         </div>
       </div>
 
       {/* Modal */}
 
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
+      <Dialog open={editModalOpen} onOpenChange={(open) => {
+    if (!saving) setEditModalOpen(open);
+  }}>
         <DialogContent className="sm:max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-2xl">
@@ -400,12 +549,12 @@ text-white border border-white/30 gap-2"
             <form onSubmit={handleEditSubmit}>
               <div className="space-y-6 py-4">
                 {/* BASIC INFO */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-gray-900">
-                    Basic Information
-                  </h3>
+               <Card>
+  <CardHeader>
+    <CardTitle>Basic Information</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Name */}
                     <div className="space-y-2">
                       <Label>Full Name *</Label>
@@ -420,7 +569,6 @@ text-white border border-white/30 gap-2"
                         required
                       />
                     </div>
-                  </div>
 
                   {/* Location */}
                   <div className="space-y-2">
@@ -438,7 +586,18 @@ text-white border border-white/30 gap-2"
                       }
                     />
                   </div>
-
+                 <div className="space-y-2">
+                 <Label>Phone</Label>
+                 <Input
+                   type="tel"
+                   placeholder="+216 55 123 456"
+                   value={formData.profile?.phone ?? ""}
+                    onChange={(e) =>
+                    setFormData({
+                   ...formData,
+                   profile: {
+                    ...formData.profile!,
+                   phone: e.target.value,   }, }) } /> </div>
                   {/* Bio */}
                   <div className="space-y-2">
                     <Label>Bio *</Label>
@@ -475,75 +634,250 @@ text-white border border-white/30 gap-2"
                       placeholder="https://linkedin.com/in/yourprofile"
                     />
                   </div>
-                </div>
-
+                </CardContent>
+</Card>
                 {/* EXPERT SECTION */}
-                {formData.role === "EXPERT" && (
-                  <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-semibold text-gray-900">
-                      Expert Information
-                    </h3>
+         {/* EXPERT SECTION */}
+{formData.role === "EXPERT" && (
+ <Card>
+  <CardHeader>
+    <CardTitle>Expert Information</CardTitle>
+  </CardHeader>
 
-                    {/* Hourly Rate */}
-                    <div className="space-y-2">
-                      <Label>Hourly Rate ($) *</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        value={formData.profile?.hourlyRate ?? ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            profile: {
-                              ...formData.profile!,
-                              hourlyRate: Number(e.target.value),
-                            },
-                          })
-                        }
-                        required
-                      />
-                    </div>
+  <CardContent className="space-y-6">
+    
+    {/* Top Grid Section */}
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      {/* Years of Experience */}
+      <div className="space-y-2">
+        <Label>Years of Experience *</Label>
+        <Input
+          type="number"
+          min="0"
+          value={formData.profile?.yearsOfExperience ?? ""}
+          onChange={(e) =>
+            setFormData({
+              ...formData,
+              profile: {
+                ...formData.profile!,
+                yearsOfExperience: Number(e.target.value),
+              },
+            })
+          }
+          required
+        />
+      </div>
 
-                    {/* Expertise */}
-                    <div className="space-y-2">
-                      <Label>Areas of Expertise *</Label>
+      {/* Availability Status */}
+      <div className="space-y-2">
+        <Label>Availability Status *</Label>
+       <Select
+  value={formData.profile?.availabilityStatus ?? "AVAILABLE"}
+  onValueChange={(value) =>
+    setFormData({
+      ...formData,
+      profile: {
+        ...formData.profile!,
+        availabilityStatus: value as "AVAILABLE" | "BUSY" | "ON_LEAVE",
+      },
+    })
+  }
+>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
 
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Add expertise area..."
-                          value={newSkill}
-                          onChange={(e) => setNewSkill(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddSkill();
-                            }
-                          }}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleAddSkill}
-                        >
-                          Add
-                        </Button>
-                      </div>
+  <SelectContent>
+    <SelectItem value="AVAILABLE">Available</SelectItem>
+    <SelectItem value="BUSY">Busy</SelectItem>
+    <SelectItem value="ON_LEAVE">On Leave</SelectItem>
+  </SelectContent>
+</Select>
+      </div>
+    </div>
 
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {formData.profile?.expertise.map((skill) => (
-                          <Badge
-                            key={skill}
-                            variant="outline"
-                            className="bg-indigo-50 border-indigo-200 text-indigo-700 px-3 py-1 cursor-pointer hover:bg-red-50 hover:border-red-200 hover:text-red-700"
-                            onClick={() => handleRemoveSkill(skill)}
-                          >
-                            {skill} ×
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+    {/* Hourly Rate */}
+    <div className="space-y-2">
+      <Label>Hourly Rate ($) *</Label>
+      <Input
+        type="number"
+        min="0"
+        value={formData.profile?.hourlyRate ?? ""}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            profile: {
+              ...formData.profile!,
+              hourlyRate: Number(e.target.value),
+            },
+          })
+        }
+        required
+      />
+    </div>
+
+{/* Expertise */}
+<TagInputSection
+  label="Areas of Expertise *"
+  items={formData.profile?.expertise || []}
+  newValue={newSkill}
+  setNewValue={setNewSkill}
+  onAdd={handleAddSkill}
+  onRemove={handleRemoveSkill}
+  emptyMessage="Please add at least one area of expertise"
+  variant="purple"
+/>
+
+{/* Industries */}
+<TagInputSection
+  label="Industries Covered *"
+  items={formData.profile?.industries || []}
+  newValue={newIndustry}
+  setNewValue={setNewIndustry}
+  onAdd={handleAddIndustry}
+  onRemove={handleRemoveIndustry}
+  emptyMessage="Please add at least one industry"
+  variant="blue"
+/>
+
+{/* Certifications */}
+<TagInputSection
+  label="Certifications *"
+  items={formData.profile?.certifications || []}
+  newValue={newCertification}
+  setNewValue={setNewCertification}
+  onAdd={handleAddCertification}
+  onRemove={handleRemoveCertification}
+  emptyMessage="Please add at least one certification"
+  variant="outline"
+/>
+
+ 
+
+      {/* Weekly Availability */}
+<div className="space-y-2 pt-4 border-t">
+  <Label className="text-base font-semibold">
+    Weekly Availability *
+  </Label>
+
+  <div className="overflow-x-auto rounded-lg ">
+    <table className="w-full text-sm ">
+      <thead>
+        <tr className="border-b border-gray-200">
+          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+            Day
+          </th>
+          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+            Start Time
+          </th>
+          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+            End Time
+          </th>
+          <th className="text-left py-3 px-4 font-semibold text-gray-700">
+            Status
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {dayNames.map((dayName, index) => {
+          const dayData =
+            formData.profile?.weeklyAvailability?.find(
+              (d) => d.day === index
+            ) || {
+              day: index,
+              enabled: false,
+              startTime: "",
+              endTime: "",
+            };
+
+          const updateDay = (updates: Partial<typeof dayData>) => {
+            const updated =
+              formData.profile!.weeklyAvailability?.filter(
+                (d) => d.day !== index
+              ) || [];
+
+            updated.push({ ...dayData, ...updates });
+
+            setFormData({
+              ...formData,
+              profile: {
+                ...formData.profile!,
+                weeklyAvailability: updated,
+              },
+            });
+          };
+
+          return (
+            <tr
+              key={index}
+              className={`border-b border-gray-200 ${
+                !dayData.enabled ? "bg-gray-50" : ""
+              }`}
+            >
+              {/* Day */}
+              <td className="py-3 px-4 font-medium text-gray-900">
+                {dayName}
+              </td>
+
+              {/* Start Time */}
+              <td className="py-3 px-4">
+                <Input
+                  type="time"
+                  disabled={!dayData.enabled}
+                  value={dayData.startTime || ""}
+                  onChange={(e) =>
+                    updateDay({ startTime: e.target.value })
+                  }
+                />
+              </td>
+
+              {/* End Time */}
+              <td className="py-3 px-4">
+                <Input
+                  type="time"
+                  disabled={!dayData.enabled}
+                  value={dayData.endTime || ""}
+                  onChange={(e) =>
+                    updateDay({ endTime: e.target.value })
+                  }
+                />
+              </td>
+
+              {/* Status */}
+              <td className="py-3 px-4 w-48">
+                <Select
+                  value={
+                    dayData.enabled ? "available" : "unavailable"
+                  }
+                  onValueChange={(value) =>
+                    updateDay({ enabled: value === "available" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="available">
+                      Available
+                    </SelectItem>
+                    <SelectItem value="unavailable">
+                      Unavailable
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+</div>
+    </CardContent>
+  </Card>
+)}
 
                 {/* STARTUP SECTION */}
                 {formData.role === "STARTUP" && (
@@ -610,16 +944,26 @@ text-white border border-white/30 gap-2"
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
-                  className="bg-indigo-600 hover:bg-indigo-700"
-                >
-                  Save Changes
-                </Button>
+  type="submit"
+  disabled={saving}
+  className="bg-indigo-600 hover:bg-indigo-700 w-40"
+>
+  {saving ? (
+    <>
+      <LoadingSpinner size="sm" />
+      Saving...
+    </>
+  ) : (
+    "Save Changes"
+  )}
+</Button>
               </DialogFooter>
             </form>
           )}
         </DialogContent>
       </Dialog>
+      
     </div>
   );
 }
+ 

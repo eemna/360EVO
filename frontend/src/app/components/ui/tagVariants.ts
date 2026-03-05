@@ -11,6 +11,7 @@ export const tagVariants = cva(
         purple: "bg-purple-50 text-purple-700 hover:bg-purple-100",
         orange: "bg-orange-50 text-orange-700 hover:bg-orange-100",
         outline: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+        indigo: "bg-indigo-50 text-indigo-700 hover:bg-indigo-100",
       },
     },
     defaultVariants: {
