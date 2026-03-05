@@ -547,63 +547,367 @@ export const updateProfile = async (req, res, next) => {
       stage,
       hourlyRate,
       expertise,
+      industries,
+      certifications,
+      yearsOfExperience,
+      availabilityStatus,
+      weeklyAvailability,
     } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ message: "Name is required" });
-    }
+    const result = await prisma.$transaction(async (tx) => {
+      // Update user only if name provided
+      if (name !== undefined) {
+        await tx.user.update({
+          where: { id: userId },
+          data: { name },
+        });
+      }
 
-    // Update user basic info
-    await prisma.user.update({
-      where: { id: userId },
-      data: { name },
+      const profileData = {};
+
+      if (bio !== undefined) profileData.bio = bio;
+      if (avatar !== undefined) profileData.avatar = avatar;
+      if (phone !== undefined) profileData.phone = phone;
+      if (location !== undefined) profileData.location = location;
+      if (linkedIn !== undefined) profileData.linkedIn = linkedIn;
+      if (companyName !== undefined) profileData.companyName = companyName;
+      if (stage !== undefined) profileData.stage = stage;
+
+     if (hourlyRate !== undefined) {
+     profileData.hourlyRate =
+     hourlyRate !== null ? Number(hourlyRate) : null;
+      }
+
+      if (yearsOfExperience !== undefined)
+        profileData.yearsOfExperience = yearsOfExperience;
+
+      if (availabilityStatus !== undefined)
+        profileData.availabilityStatus = availabilityStatus;
+
+      if (Array.isArray(expertise))
+        profileData.expertise = expertise;
+
+      if (Array.isArray(industries))
+        profileData.industries = industries;
+
+      if (Array.isArray(certifications))
+        profileData.certifications = certifications;
+
+      const profile = await tx.profile.upsert({
+        where: { userId },
+        update: profileData,
+        create: {
+          userId,
+          ...profileData,
+        },
+      });
+
+      if (Array.isArray(weeklyAvailability)) {
+        await tx.weeklyAvailability.deleteMany({
+          where: { profileId: profile.id },
+        });
+const validAvailability = weeklyAvailability
+  .filter((d) => d.enabled && d.startTime && d.endTime);
+
+if (validAvailability.length) {
+  await tx.weeklyAvailability.createMany({
+    data: validAvailability.map((day) => ({
+      profileId: profile.id,
+      day: day.day,
+      startTime: day.startTime,
+      endTime: day.endTime,
+      enabled: true,
+    })),
+  });
+}
+      }
+
+      return tx.user.findUnique({
+        where: { id: userId },
+        include: {
+          profile: {
+            include: {
+              weeklyAvailability: true,
+            },
+          },
+        },
+      });
     });
 
-    //  Build profile update object dynamically
-    const profileData = {};
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+// GET /api/experts/:id
+export const getPublicExpertProfile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
 
-    if (bio !== undefined) profileData.bio = bio;
-    if (avatar !== undefined) profileData.avatar = avatar;
-    if (phone !== undefined) profileData.phone = phone;
-    if (location !== undefined) profileData.location = location;
-    if (linkedIn !== undefined) profileData.linkedIn = linkedIn;
-    if (companyName !== undefined) profileData.companyName = companyName;
-    if (stage !== undefined) profileData.stage = stage;
-
-    if (hourlyRate !== undefined) {
-      profileData.hourlyRate =
-        hourlyRate !== null ? new Prisma.Decimal(hourlyRate) : null;
-    }
-
-    if (expertise !== undefined) {
-      profileData.expertise = Array.isArray(expertise) ? expertise : [];
-    }
-
-    //Upsert profile
-    await prisma.profile.upsert({
-      where: { userId },
-      update: profileData,
-      create: {
-        userId,
-        bio: bio || null,
-        avatar: avatar || null,
-        phone: phone || null,
-        location: location || null,
-        linkedIn: linkedIn || null,
-        companyName: companyName || null,
-        stage: stage || null,
-        hourlyRate: hourlyRate ? new Prisma.Decimal(hourlyRate) : null,
-        expertise: Array.isArray(expertise) ? expertise : [],
+    const expert = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        profile: {
+          include: {
+            weeklyAvailability: true,
+          },
+        },
       },
     });
 
-    //  Return full updated user
-    const updatedUser = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { profile: true },
+    if (!expert || expert.role !== "EXPERT") {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    let computedStatus = "AVAILABLE";
+
+    //  Manual override
+    if (expert.profile?.availabilityStatus === "ON_LEAVE") {
+      computedStatus = "ON_LEAVE";
+    } else {
+      const today = new Date();
+      const todayDay = today.getDay();
+
+      const todayAvailability =
+        expert.profile.weeklyAvailability.find(
+          (slot) => slot.day === todayDay && slot.enabled
+        );
+
+      if (!todayAvailability) {
+        computedStatus = "BUSY";
+      } else {
+        // Check if fully booked today
+        const [startHour, startMinute] =
+          todayAvailability.startTime.split(":").map(Number);
+
+        const [endHour, endMinute] =
+          todayAvailability.endTime.split(":").map(Number);
+
+        const availableStart = new Date(today);
+        availableStart.setHours(startHour, startMinute, 0, 0);
+
+        const availableEnd = new Date(today);
+        availableEnd.setHours(endHour, endMinute, 0, 0);
+
+        const bookingsToday = await prisma.booking.findMany({
+          where: {
+            expertId: expert.id,
+            status: { in: ["PENDING", "ACCEPTED"] },
+            startDateTime: {
+              gte: availableStart,
+              lt: availableEnd,
+            },
+          },
+        });
+
+        const bookedMinutes = bookingsToday.reduce(
+          (total, booking) => total + booking.duration,
+          0
+        );
+
+        const totalAvailableMinutes =
+          (availableEnd - availableStart) / (1000 * 60);
+
+        if (bookedMinutes >= totalAvailableMinutes) {
+          computedStatus = "BUSY";
+        }
+      }
+    }
+
+    res.json({
+      ...expert,
+      computedStatus,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+export const createBooking = async (req, res, next) => {
+  try {
+    const memberId = req.user.id;
+    const { expertId, date, timeSlot, duration, message, topic } = req.body;
+
+    if (!expertId || !date || !timeSlot || !duration) {
+      return res.status(400).json({ message: "Missing booking info" });
+    }
+
+    const expert = await prisma.user.findUnique({
+      where: { id: expertId },
+      include: {
+        profile: {
+          include: { weeklyAvailability: true },
+        },
+      },
     });
 
-    res.json(updatedUser);
+    if (!expert || expert.role !== "EXPERT") {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    if (!expert.profile?.hourlyRate) {
+      return res.status(400).json({ message: "Expert has no hourly rate set" });
+    }
+
+    // Build start datetime
+    const bookingDate = new Date(date);
+    const [hour, minute] = timeSlot.split(":").map(Number);
+
+    const startDateTime = new Date(bookingDate);
+    startDateTime.setHours(hour, minute, 0, 0);
+
+    if (startDateTime < new Date()) {
+      return res.status(400).json({
+        message: "Cannot book past time",
+      });
+    }
+
+    // Build end datetime
+    const endDateTime = new Date(startDateTime);
+    endDateTime.setMinutes(endDateTime.getMinutes() + duration);
+
+    // Check weekly availability
+    const day = startDateTime.getDay();
+
+    const availability = expert.profile.weeklyAvailability.find(
+      (slot) => slot.day === day && slot.enabled
+    );
+
+    if (!availability || !availability.startTime || !availability.endTime) {
+      return res.status(400).json({
+        message: "Expert not available this day",
+      });
+    }
+
+    const [startHour, startMinute] = availability.startTime.split(":").map(Number);
+    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
+
+    const availableStart = new Date(startDateTime);
+    availableStart.setHours(startHour, startMinute, 0, 0);
+
+    const availableEnd = new Date(startDateTime);
+    availableEnd.setHours(endHour, endMinute, 0, 0);
+
+    if (startDateTime < availableStart || endDateTime > availableEnd) {
+      return res.status(400).json({
+        message: "Booking exceeds expert availability window",
+      });
+    }
+
+    // Check overlap (PROFESSIONAL WAY)
+    const overlapping = await prisma.booking.findFirst({
+      where: {
+        expertId,
+        status: { in: ["PENDING", "ACCEPTED"] },
+        AND: [
+          { startDateTime: { lt: endDateTime } },
+          { endDateTime: { gt: startDateTime } },
+        ],
+      },
+    });
+
+    if (overlapping) {
+      return res.status(400).json({
+        message: "Time overlaps with another booking",
+      });
+    }
+
+    // Calculate price
+    const price =
+      (Number(expert.profile.hourlyRate) * duration) / 60;
+
+    // Create booking
+    const booking = await prisma.booking.create({
+      data: {
+        expertId,
+        memberId,
+        startDateTime,
+        endDateTime,
+        duration,
+        price,
+        message,
+        topic, 
+      },
+    });
+
+    res.status(201).json(booking);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getExpertBookings = async (req, res, next) => { 
+  try {
+    const { expertId } = req.params;
+
+    const bookings = await prisma.booking.findMany({
+      where: {
+        expertId,
+        status: { in: ["PENDING", "ACCEPTED"] },
+        startDateTime: {
+          gte: new Date(),
+        },
+      },
+      include: {
+        member: true,
+      },
+      orderBy: {
+        startDateTime: "asc",
+      },
+    });
+
+    res.json(bookings);
+  } catch (error) {
+    next(error);
+  }
+};
+export const acceptBooking = async (req, res, next) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.expertId !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id: req.params.id },
+      data: { status: "ACCEPTED" },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+export const rejectBooking = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.expertId !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id: req.params.id },
+      data: {
+        status: "REJECTED",
+        rejectionReason: reason || null,
+      },
+    });
+
+    res.json(updated);
   } catch (error) {
     next(error);
   }

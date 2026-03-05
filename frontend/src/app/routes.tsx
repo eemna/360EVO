@@ -18,6 +18,10 @@ import { ProjectGallery } from "./pages/ProjectGallery";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import { MemberDashboard } from "./pages/MemberDashboard";
+//import { MessagesPage } from "./pages/MessagesPage";
+import { ExpertDashboard } from "./pages/ExpertDashboard";
+import { BookConsultationPage } from "./pages/BookConsultationPage";
+import { ManageReservations } from "./pages/ManageReservations";
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -68,9 +72,37 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "expert",
+        element: (
+          <RoleRoute allowedRoles={["EXPERT"]}>
+            <ExpertDashboard  />
+          </RoleRoute>
+        ),
+      },
+      {
+  path: "expert/reservations",
+  element: (
+    <RoleRoute allowedRoles={["EXPERT"]}>
+      <ManageReservations />
+    </RoleRoute>
+  ),
+},
+      {
+  path: "experts/:expertId/book",
+  element: (
+    <RoleRoute allowedRoles={["MEMBER", "STARTUP","ADMIN"]}>
+      <BookConsultationPage />
+    </RoleRoute>
+  ),
+},
+      {
         path: "projects",
         element: <ProjectGallery />,
       },
+       /*{
+        path: "conversation",
+        element: <MessagesPage />,
+      },*/
       {
         path: "profile/:id",
         element: <Profile />,
@@ -82,11 +114,12 @@ export const router = createBrowserRouter([
       {
         path: "startup/projects/:id",
         element: (
-          <RoleRoute allowedRoles={["STARTUP", "ADMIN"]}>
+          <RoleRoute allowedRoles={["STARTUP", "ADMIN", "EXPERT","MEMBER"]}>
             <ProjectDetailsPage />
           </RoleRoute>
         ),
       },
+    
     ],
   },
   {

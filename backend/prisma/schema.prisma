@@ -23,7 +23,15 @@ model User {
   profile            Profile?
   projects           Project[]
   refreshTokens      RefreshToken[]
-
+    conversations   ConversationParticipant[]
+  messages        Message[]
+  notifications   Notification[]
+  organizedEvents Event[] @relation("UserOrganizedEvents")
+  eventRegistrations EventRegistration[]
+  bookmarks       Bookmark[]
+  projectInterests ProjectInterest[]
+  expertBookings Booking[] @relation("ExpertBookings")
+  memberBookings Booking[] @relation("MemberBookings")
   @@index([email])
 }
 
@@ -35,9 +43,17 @@ model Profile {
   location    String?
   avatar      String?
   linkedIn    String?
-  expertise   String[]
+
+  expertise        String[] @default([])
+  industries       String[] @default([])
+  certifications   String[] @default([])
+  updatedAt DateTime @default(now()) @updatedAt
   hourlyRate  Decimal?
+  yearsOfExperience Int?
+  availabilityStatus AvailabilityStatus @default(AVAILABLE)
+  weeklyAvailability WeeklyAvailability[]
   createdAt   DateTime @default(now())
+  
   companyName String?
   stage       String?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -92,11 +108,14 @@ model Project {
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   featured      Boolean           @default(false)
+  search_vector Unsupported("tsvector")?
   milestones    Milestone[]
   owner         User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   documents     ProjectDocument[]
   teamMembers   TeamMember[]
-
+    bookmarks       Bookmark[]
+  interests       ProjectInterest[]
+  updates         ProjectUpdate[]
   @@index([status, industry])
   @@index([status, stage])
   @@index([ownerId])
@@ -134,7 +153,55 @@ model ProjectDocument {
   createdAt DateTime @default(now())
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
+model WeeklyAvailability {
+  id        String   @id @default(uuid())
+  profileId String
+  day       Int      // 0 = Sunday, 1 = Monday ...
+  startTime String?  // "09:00"
+  endTime   String?  // "17:00"
+  enabled   Boolean  @default(true)
 
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, day])
+}
+model Booking {
+  id        String   @id @default(uuid())
+
+  expertId  String
+  memberId  String
+
+  startDateTime DateTime
+  endDateTime   DateTime
+
+  duration  Int        // in minutes
+  price     Decimal
+
+  topic     String?        
+  message   String?
+  rejectionReason String? 
+
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  expert User @relation("ExpertBookings", fields: [expertId], references: [id], onDelete: Cascade)
+  member User @relation("MemberBookings", fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([expertId, startDateTime])
+  @@index([memberId])
+}
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+enum AvailabilityStatus {
+  AVAILABLE
+  BUSY
+  ON_LEAVE
+}
 enum Role {
   MEMBER
   EXPERT
@@ -161,4 +228,133 @@ enum ProjectStage {
   MVP
   GROWTH
   SCALING
+}
+enum NotificationType {
+  MESSAGE
+  EVENT
+  PROJECT_UPDATE
+  SYSTEM
+}
+
+enum EventType {
+  CONFERENCE
+  NETWORKING
+  PITCH_DAY
+  WORKSHOP
+}
+
+enum HostType {
+  ADMIN
+  EXPERT
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+model Conversation {
+  id           String                     @id @default(uuid())
+  createdAt    DateTime                   @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+model ConversationParticipant {
+  id             String        @id @default(uuid())
+  conversationId String
+  userId         String
+  lastReadAt     DateTime?
+
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+model Message {
+  id             String        @id @default(uuid())
+  conversationId String
+  senderId       String
+  content        String
+  hasAttachment  Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  conversation   Conversation  @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  @@index([conversationId, createdAt])
+}
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+model Event {
+  id           String        @id @default(uuid())
+  title        String
+  description  String
+  type         EventType
+  date         DateTime
+  endDate      DateTime?
+  location     String?
+  virtualLink  String?
+  capacity     Int?
+  organizerId  String
+  hostType     HostType
+  coverImage   String?
+  status       EventStatus   @default(DRAFT)
+  createdAt    DateTime      @default(now())
+
+  organizer User @relation("UserOrganizedEvents", fields: [organizerId], references: [id], onDelete: Cascade)
+  registrations EventRegistration[]
+}
+model EventRegistration {
+  id       String  @id @default(uuid())
+  eventId  String
+  userId   String
+
+  event    Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
+model Bookmark {
+  id        String   @id @default(uuid())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+model ProjectInterest {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+model ProjectUpdate {
+  id        String   @id @default(uuid())
+  projectId String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }

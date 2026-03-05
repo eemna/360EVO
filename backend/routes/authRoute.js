@@ -13,6 +13,11 @@ import {
   changePassword,
   updateEmail,
   updateProfile,
+  getPublicExpertProfile, 
+  createBooking,
+  getExpertBookings,
+  acceptBooking,
+  rejectBooking,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import forgotPasswordRateLimit from "../middleware/forgotPasswordRateLimit.js";
@@ -42,4 +47,9 @@ router.post("/refresh-token", refreshToken);
 router.put("/change-password", protect, changePassword);
 router.put("/update-email", protect, updateEmail);
 router.put("/update-profile", protect, updateProfile);
+router.get("/experts/:id", getPublicExpertProfile);
+router.post("/bookings", protect, createBooking);
+router.get("/bookings/expert/:expertId", getExpertBookings);
+router.patch("/:id/accept", protect, acceptBooking);
+router.patch("/:id/reject", protect, rejectBooking);
 export default router;

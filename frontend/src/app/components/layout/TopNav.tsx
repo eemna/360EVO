@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router";
 import { Menu } from "lucide-react";
+import { useSocket } from "../../../hooks/useSocket";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,11 +26,15 @@ interface TopNavProps {
   onMenuClick: () => void;
 }
 export default function TopNav({ onMenuClick }: TopNavProps) {
+  
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { onlineUsers } = useSocket();
+  const isOnline = onlineUsers.has(user?.id ?? "");
   const handleLogout = () => {
     logout();
     navigate("/login");
+    
   };
   return (
     <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
@@ -99,12 +104,19 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                   variant="ghost"
                   className="relative h-10 w-10 rounded-full"
                 >
-                  <Avatar>
-                    <AvatarImage src={user?.profile?.avatar ?? undefined} />
-                    <AvatarFallback>
-                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+                 <div className="relative">
+  <Avatar>
+    <AvatarImage src={user?.profile?.avatar ?? undefined} />
+    <AvatarFallback>
+      {user?.name?.charAt(0)?.toUpperCase() || "U"}
+      
+    </AvatarFallback>
+  </Avatar>
+
+  {isOnline && (
+    <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
+  )}
+</div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
