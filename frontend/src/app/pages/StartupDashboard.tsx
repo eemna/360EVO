@@ -95,12 +95,12 @@ export default function StartupDashboard() {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
 
-const [wizardLoading, setWizardLoading] = useState(false);
+  const [wizardLoading, setWizardLoading] = useState(false);
   const confirmDelete = async () => {
     if (!deleteProjectId) return;
 
     try {
-       setDeleting(true);
+      setDeleting(true);
       await api.delete(`/projects/${deleteProjectId}`);
       setProjects((prev) => prev.filter((p) => p.id !== deleteProjectId));
       showToast({
@@ -122,9 +122,9 @@ const [wizardLoading, setWizardLoading] = useState(false);
         title: "Delete failed",
         message,
       });
-     } finally {
-    setDeleting(false);
-  }
+    } finally {
+      setDeleting(false);
+    }
   };
   const handleEdit = (id: string) => {
     setEditingProjectId(id);
@@ -150,40 +150,39 @@ const [wizardLoading, setWizardLoading] = useState(false);
     fetchDashboard();
   }, [fetchDashboard]);
 
- if (loading) {
-  return (
-    <div className="space-y-10 p-6">
-      
-      {/* Header skeleton */}
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-4 w-80" />
-      </div>
+  if (loading) {
+    return (
+      <div className="space-y-10 p-6">
+        {/* Header skeleton */}
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80" />
+        </div>
 
-      {/* Stats skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[...Array(3)].map((_, i) => (
-          <Card key={i} className="p-6">
-            <Skeleton className="h-4 w-24 mb-3" />
-            <Skeleton className="h-8 w-20" />
-          </Card>
-        ))}
-      </div>
+        {/* Stats skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="h-4 w-24 mb-3" />
+              <Skeleton className="h-8 w-20" />
+            </Card>
+          ))}
+        </div>
 
-      {/* Projects skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[...Array(4)].map((_, i) => (
-          <Card key={i} className="p-6 space-y-4">
-            <Skeleton className="h-6 w-48" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-40" />
-            <Skeleton className="h-10 w-full" />
-          </Card>
-        ))}
+        {/* Projects skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="p-6 space-y-4">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-40" />
+              <Skeleton className="h-10 w-full" />
+            </Card>
+          ))}
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   if (!stats) return null;
 
@@ -207,7 +206,7 @@ const [wizardLoading, setWizardLoading] = useState(false);
           }}
           projectId={editingProjectId}
           loading={wizardLoading}
-  setLoading={setWizardLoading}
+          setLoading={setWizardLoading}
           onProjectSaved={fetchDashboard}
         />
         <Button
@@ -389,11 +388,11 @@ const [wizardLoading, setWizardLoading] = useState(false);
         onSubmit={confirmDelete}
       >
         <p className="text-sm text-gray-600">This action cannot be undone.</p>
-         {deleting && (
-    <div className="flex justify-center mt-4">
-      <LoadingSpinner size="md" />
-    </div>
-  )}
+        {deleting && (
+          <div className="flex justify-center mt-4">
+            <LoadingSpinner size="md" />
+          </div>
+        )}
       </AppModal>
     </div>
   );

@@ -217,36 +217,36 @@ export function ProjectGallery() {
         </CardContent>
       </Card>
 
-  {loading ? (
-    /* Skeleton */
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      {Array.from({ length: 6 }).map((_, i) => (
-        <Card key={i} className="bg-white shadow-sm">
-          <CardContent className="pt-6 space-y-4">
-            <Skeleton className="h-5 w-3/4" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
+      {loading ? (
+        /* Skeleton */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="bg-white shadow-sm">
+              <CardContent className="pt-6 space-y-4">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
 
-            <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-6 w-20 rounded-full" />
 
-            <div className="flex gap-2">
-              <Skeleton className="h-5 w-16 rounded-full" />
-              <Skeleton className="h-5 w-16 rounded-full" />
-              <Skeleton className="h-5 w-16 rounded-full" />
-            </div>
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
 
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-1/3" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-1/3" />
 
-            <div className="flex justify-between pt-4 border-t">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-12" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  ) : projects.length === 0 ? (
+                <div className="flex justify-between pt-4 border-t">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : projects.length === 0 ? (
         <Card className="bg-white shadow-sm">
           <CardContent className="py-16 text-center">
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">

@@ -262,38 +262,35 @@ export default function Profile() {
       .toUpperCase();
 
   if (loading) {
-  return (
-    <div className="space-y-6">
+    return (
+      <div className="space-y-6">
+        {/* Cover skeleton */}
+        <Skeleton className="h-64 w-full rounded-xl" />
 
-      {/* Cover skeleton */}
-      <Skeleton className="h-64 w-full rounded-xl" />
+        {/* Avatar + name */}
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-32 w-32 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </div>
 
-      {/* Avatar + name */}
-      <div className="flex items-center gap-4">
-        <Skeleton className="h-32 w-32 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-4 w-32" />
+        {/* Main content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-64 w-full rounded-xl" />
+          </div>
+
+          <div className="space-y-6">
+            <Skeleton className="h-40 w-full rounded-xl" />
+            <Skeleton className="h-40 w-full rounded-xl" />
+          </div>
         </div>
       </div>
-
-      {/* Main content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <div className="lg:col-span-2 space-y-6">
-          <Skeleton className="h-40 w-full rounded-xl" />
-          <Skeleton className="h-64 w-full rounded-xl" />
-        </div>
-
-        <div className="space-y-6">
-          <Skeleton className="h-40 w-full rounded-xl" />
-          <Skeleton className="h-40 w-full rounded-xl" />
-        </div>
-
-      </div>
-    </div>
-  );
-}
+    );
+  }
   if (!profileUser || !profileUser.profile) return <div>User not found</div>;
 
   const profile = profileUser.profile;
@@ -330,7 +327,7 @@ export default function Profile() {
                     if (!file || !profileUser?.profile || !isOwnProfile) return;
 
                     try {
-                       setUploading(true);
+                      setUploading(true);
                       const { data } = await api.put("/auth/update-profile", {
                         name: profileUser.name,
                         bio: profileUser.profile.bio,
@@ -346,23 +343,21 @@ export default function Profile() {
                       setUser(data); // update auth
                       setProfileUser(data); // update profile page
                     } catch (err) {
-                      
                       console.error(err);
-                    
-                     } finally {
-                       setUploading(false); 
-  
-                  }} }
+                    } finally {
+                      setUploading(false);
+                    }
+                  }}
                 >
                   <Button
                     size="icon"
                     className="rounded-full bg-white shadow hover:bg-gray-100 transition"
                   >
                     {uploading ? (
-    <LoadingSpinner size="sm" />
-  ) : (
-    <Camera className="size-4 text-gray-700" />
-  )}
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <Camera className="size-4 text-gray-700" />
+                    )}
                   </Button>
                 </FileUpload>
               )}

@@ -1,5 +1,10 @@
+
 function MessagesPage() {
-  return <div></div>;
+  return (
+    <div>
+      
+    </div>
+  )
 }
 
-export default MessagesPage;
+export default MessagesPage

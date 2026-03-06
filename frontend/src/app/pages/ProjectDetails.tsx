@@ -161,101 +161,95 @@ export default function ProjectDetailsPage() {
       maximumFractionDigits: 0,
     }).format(amount);
   };
-if (loading) {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="px-6 pt-6">
-        <Skeleton className="h-8 w-40 mb-4" />
-      </div>
-
-      {/* Hero */}
-      <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
-          
-          {/* badges */}
-          <div className="flex gap-2">
-            <Skeleton className="h-6 w-24 rounded-full" />
-            <Skeleton className="h-6 w-20 rounded-full" />
-          </div>
-
-          {/* title */}
-          <Skeleton className="h-10 w-2/3" />
-
-          {/* tagline */}
-          <Skeleton className="h-6 w-1/2" />
-
-          {/* meta row */}
-          <div className="flex gap-4 flex-wrap">
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-8 w-28" />
-            <Skeleton className="h-8 w-40" />
-          </div>
-
-          {/* buttons */}
-          <div className="flex gap-4">
-            <Skeleton className="h-10 w-44" />
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-        </div>
-      </section>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* left column */}
-        <div className="lg:col-span-2 space-y-6">
-
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-40" />
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-5/6" />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              <Skeleton className="h-14 w-full" />
-              <Skeleton className="h-14 w-full" />
-            </CardContent>
-          </Card>
-
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="px-6 pt-6">
+          <Skeleton className="h-8 w-40 mb-4" />
         </div>
 
-        {/* right column */}
-        <div className="space-y-6">
+        {/* Hero */}
+        <section className="bg-white">
+          <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
+            {/* badges */}
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
 
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-10 w-40" />
-            </CardContent>
-          </Card>
+            {/* title */}
+            <Skeleton className="h-10 w-2/3" />
 
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </CardContent>
-          </Card>
+            {/* tagline */}
+            <Skeleton className="h-6 w-1/2" />
 
+            {/* meta row */}
+            <div className="flex gap-4 flex-wrap">
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-8 w-28" />
+              <Skeleton className="h-8 w-40" />
+            </div>
+
+            {/* buttons */}
+            <div className="flex gap-4">
+              <Skeleton className="h-10 w-44" />
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-32" />
+            </div>
+          </div>
+        </section>
+
+        {/* Content */}
+        <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* left column */}
+          <div className="lg:col-span-2 space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* right column */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-10 w-40" />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
   if (!project) return <div className="p-6">Project not found</div>;
 
   const isOwner = String(user?.id) === project.ownerId;
