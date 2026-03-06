@@ -206,7 +206,7 @@ export function ProjectCreationWizard({
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [heroFile, setHeroFile] = useState<UploadedFile | null>(null);
   const [loadingProject, setLoadingProject] = useState(false);
-  
+
   const [supportingDocs, setSupportingDocs] = useState<UploadedDocument[]>([]);
   const { showToast } = useToast();
   const {
@@ -442,44 +442,43 @@ export function ProjectCreationWizard({
     handleNewProject();
     onClose();
   };
-useEffect(() => {
-  if (!isOpen || !externalProjectId) return;
+  useEffect(() => {
+    if (!isOpen || !externalProjectId) return;
 
-  const loadProject = async () => {
-    try {
-      setLoadingProject(true);
+    const loadProject = async () => {
+      try {
+        setLoadingProject(true);
 
-      const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
-      const project = res.data;
+        const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
+        const project = res.data;
 
-      reset({
-        title: project.title,
-        tagline: project.tagline,
-        shortDescription: project.shortDesc,
-        industry: project.industry,
-        location: project.location || "",
-        stage: project.stage,
-        fullDescription: project.fullDesc,
-        techTags: project.technologies || [],
-        teamMembers:
-          project.teamMembers?.map((m) => ({
+        reset({
+          title: project.title,
+          tagline: project.tagline,
+          shortDescription: project.shortDesc,
+          industry: project.industry,
+          location: project.location || "",
+          stage: project.stage,
+          fullDescription: project.fullDesc,
+          techTags: project.technologies || [],
+          teamMembers: project.teamMembers?.map((m) => ({
             name: m.name,
             role: m.role,
             photo: m.photo || null,
           })) || [{ name: "", role: "", photo: null }],
-        fundingAmount: project.fundingSought?.toString() || "",
-        currency: project.currency || "USD",
-        milestones:
-          project.milestones?.map((m) => ({
-            title: m.title,
-            targetDate: m.targetDate
-              ? new Date(m.targetDate).toISOString().split("T")[0]
-              : "",
-            completedAt: m.completedAt
-              ? new Date(m.completedAt).toISOString().split("T")[0]
-              : "",
-          })) || [],
-      });
+          fundingAmount: project.fundingSought?.toString() || "",
+          currency: project.currency || "USD",
+          milestones:
+            project.milestones?.map((m) => ({
+              title: m.title,
+              targetDate: m.targetDate
+                ? new Date(m.targetDate).toISOString().split("T")[0]
+                : "",
+              completedAt: m.completedAt
+                ? new Date(m.completedAt).toISOString().split("T")[0]
+                : "",
+            })) || [],
+        });
         const hero = project.documents?.find(
           (doc) => doc.fileType === "HERO_IMAGE",
         );
@@ -503,15 +502,15 @@ useEffect(() => {
               fileKey: doc.fileKey,
             })) || [],
         );
-    } catch (error) {
-      console.error("Failed to load project", error);
-    } finally {
-      setLoadingProject(false);
-    }
-  };
+      } catch (error) {
+        console.error("Failed to load project", error);
+      } finally {
+        setLoadingProject(false);
+      }
+    };
 
-  loadProject();
-}, [isOpen, externalProjectId, reset]);
+    loadProject();
+  }, [isOpen, externalProjectId, reset]);
   const saveDraft = async () => {
     if (isSubmitting) return;
 
@@ -582,7 +581,7 @@ useEffect(() => {
       setSupportingDocs([]);
     }
   }, [isOpen, externalProjectId, reset]);
- /* useEffect(() => {
+  /* useEffect(() => {
     if (!isOpen || !externalProjectId) return;
 
     const loadProject = async () => {
@@ -835,363 +834,93 @@ const project = res.data;
 
         {/* Form Content */}
         {loadingProject ? (
-  <div className="p-8 space-y-6">
-    <Skeleton className="h-10 w-full" />
-    <Skeleton className="h-10 w-full" />
-    <Skeleton className="h-24 w-full" />
-    <Skeleton className="h-10 w-1/2" />
-    <Skeleton className="h-40 w-full" />
-  </div>
-) : (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex-1 overflow-y-auto"
-        >
-          <div className="px-4 py-6 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              {/* Left Column - Form Fields */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* STEP 1: BASICS */}
-                {currentStep === 0 && (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="title">
-                        Project Title <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="title"
-                        {...register("title")}
-                        placeholder="Enter your project name"
-                        maxLength={60}
-                      />
-                      {errors.title && (
-                        <p className="text-sm text-red-600">
-                          {errors.title.message}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        {title?.length || 0}/60
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="tagline">
-                        Tagline <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        id="tagline"
-                        {...register("tagline")}
-                        placeholder="A catchy one-liner"
-                        maxLength={100}
-                      />
-                      {errors.tagline && (
-                        <p className="text-sm text-red-600">
-                          {errors.tagline.message}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        {tagline?.length || 0}/100
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="shortDescription">
-                        Short Description{" "}
-                        <span className="text-red-500">*</span>
-                      </Label>
-                      <Textarea
-                        id="shortDescription"
-                        {...register("shortDescription")}
-                        placeholder="Describe your project in 2-3 sentences"
-                        maxLength={500}
-                        rows={4}
-                      />
-                      {errors.shortDescription && (
-                        <p className="text-sm text-red-600">
-                          {errors.shortDescription.message}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        {shortDescription?.length || 0}/500
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>
-                        Industry <span className="text-red-500">*</span>
-                      </Label>
-                      <Controller
-                        name="industry"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select industry" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {INDUSTRIES.map((industry) => (
-                                <SelectItem key={industry} value={industry}>
-                                  {industry}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {errors.industry && (
-                        <p className="text-sm text-red-600">
-                          {errors.industry.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>
-                        Location <span className="text-red-500">*</span>
-                      </Label>
-                      <Input
-                        {...register("location")}
-                        placeholder="e.g., Tunis, Tunisia"
-                      />
-                      {errors.location && (
-                        <p className="text-sm text-red-600">
-                          {errors.location.message}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-3">
-                      <Label>
-                        Project Stage <span className="text-red-500">*</span>
-                      </Label>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                        {PROJECT_STAGES.map(({ value, label, icon: Icon }) => (
-                          <button
-                            key={value}
-                            type="button"
-                            onClick={() => setValue("stage", value)}
-                            className={`p-4 rounded-xl border-2 transition-all ${
-                              stage === value
-                                ? "border-blue-600 bg-blue-50"
-                                : "border-gray-200 hover:bg-gray-50"
-                            }`}
-                          >
-                            <Icon
-                              className={`size-6 mx-auto mb-2 ${
-                                stage === value
-                                  ? "text-blue-600"
-                                  : "text-gray-400"
-                              }`}
-                            />
-                            <div
-                              className={`text-sm font-medium ${
-                                stage === value
-                                  ? "text-blue-600"
-                                  : "text-gray-700"
-                              }`}
-                            >
-                              {label}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                      {errors.stage && (
-                        <p className="text-sm text-red-600">
-                          {errors.stage.message}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                )}
-
-                {/* STEP 2: DETAILS */}
-                {currentStep === 1 && (
-                  <>
-                    <div className="space-y-2">
-                      <Label>
-                        Full Description <span className="text-red-500">*</span>
-                      </Label>
-                      <Controller
-                        name="fullDescription"
-                        control={control}
-                        render={({ field }) => (
-                          <RichTextEditor
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Provide a detailed description of your project, including the problem you're solving, your solution, target market, and unique value proposition..."
-                            minHeight="300px"
-                          />
-                        )}
-                      />
-                      {errors.fullDescription && (
-                        <p className="text-sm text-red-600">
-                          {errors.fullDescription.message}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-3">
-                      <Label>
-                        Technology Tags <span className="text-red-500">*</span>
-                      </Label>
-                      <div className="flex flex-wrap gap-2">
-                        {TECH_TAGS.map((tag) => (
-                          <Badge
-                            key={tag}
-                            onClick={() => toggleTechTag(tag)}
-                            className={`cursor-pointer px-4 py-2 text-sm ${
-                              techTags?.includes(tag)
-                                ? "bg-blue-600 text-white hover:bg-blue-700"
-                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      {errors.techTags && (
-                        <p className="text-sm text-red-600">
-                          {errors.techTags.message}
-                        </p>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        Selected: {techTags?.length || 0}
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {/* STEP 3: TEAM */}
-                {currentStep === 2 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-4 overflow-x-auto">
-                      <Label>
-                        Team Members <span className="text-red-500">*</span>
-                      </Label>
-                      <Button
-                        type="button"
-                        onClick={() =>
-                          appendTeam({ name: "", role: "", photo: null })
-                        }
-                        size="sm"
-                        variant="outline"
-                      >
-                        <Plus className="size-4 mr-2" />
-                        Add Member
-                      </Button>
-                    </div>
-
-                    {teamFields.map((field, index) => (
-                      <Card key={field.id} className="p-4">
-                        <div className="space-y-4">
-                          <div className="flex items-start justify-between">
-                            <h4 className="font-medium flex items-center gap-2">
-                              <UserIcon className="size-4" />
-                              Member {index + 1}
-                            </h4>
-                            {teamFields.length > 1 && (
-                              <Button
-                                type="button"
-                                onClick={() => removeTeam(index)}
-                                size="sm"
-                                variant="ghost"
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                            )}
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>Name</Label>
-                              <Input
-                                {...register(`teamMembers.${index}.name`)}
-                                placeholder="Full name"
-                              />
-                              {errors.teamMembers?.[index]?.name && (
-                                <p className="text-sm text-red-600">
-                                  {errors.teamMembers[index]?.name?.message}
-                                </p>
-                              )}
-                            </div>
-
-                            <div className="space-y-2">
-                              <Label>Role</Label>
-                              <Input
-                                {...register(`teamMembers.${index}.role`)}
-                                placeholder="e.g., CEO, CTO"
-                              />
-                              {errors.teamMembers?.[index]?.role && (
-                                <p className="text-sm text-red-600">
-                                  {errors.teamMembers[index]?.role?.message}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>Photo (Optional)</Label>
-                            <FileUpload
-                              accept="image/*"
-                              maxSize={5}
-                              label=""
-                              description="Upload member photo"
-                              existingFileUrl={
-                                watch(`teamMembers.${index}.photo`) || undefined
-                              }
-                              onFileSelect={(file) => {
-                                if (!file) {
-                                  setValue(`teamMembers.${index}.photo`, null);
-                                  return;
-                                }
-
-                                setValue(
-                                  `teamMembers.${index}.photo`,
-                                  file.url,
-                                );
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                    {errors.teamMembers &&
-                      typeof errors.teamMembers.message === "string" && (
-                        <p className="text-sm text-red-600">
-                          {errors.teamMembers.message}
-                        </p>
-                      )}
-                  </div>
-                )}
-
-                {/* STEP 4: FUNDING */}
-                {currentStep === 3 && (
-                  <>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-8 space-y-6">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-10 w-1/2" />
+            <Skeleton className="h-40 w-full" />
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex-1 overflow-y-auto"
+          >
+            <div className="px-4 py-6 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                {/* Left Column - Form Fields */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* STEP 1: BASICS */}
+                  {currentStep === 0 && (
+                    <>
                       <div className="space-y-2">
-                        <Label>
-                          Funding Amount <span className="text-red-500">*</span>
+                        <Label htmlFor="title">
+                          Project Title <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                          {...register("fundingAmount")}
-                          type="number"
-                          placeholder="e.g., 100000"
+                          id="title"
+                          {...register("title")}
+                          placeholder="Enter your project name"
+                          maxLength={60}
                         />
-                        {errors.fundingAmount && (
+                        {errors.title && (
                           <p className="text-sm text-red-600">
-                            {errors.fundingAmount.message}
+                            {errors.title.message}
                           </p>
                         )}
+                        <p className="text-sm text-gray-500">
+                          {title?.length || 0}/60
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="tagline">
+                          Tagline <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="tagline"
+                          {...register("tagline")}
+                          placeholder="A catchy one-liner"
+                          maxLength={100}
+                        />
+                        {errors.tagline && (
+                          <p className="text-sm text-red-600">
+                            {errors.tagline.message}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {tagline?.length || 0}/100
+                        </p>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="shortDescription">
+                          Short Description{" "}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                          id="shortDescription"
+                          {...register("shortDescription")}
+                          placeholder="Describe your project in 2-3 sentences"
+                          maxLength={500}
+                          rows={4}
+                        />
+                        {errors.shortDescription && (
+                          <p className="text-sm text-red-600">
+                            {errors.shortDescription.message}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {shortDescription?.length || 0}/500
+                        </p>
                       </div>
 
                       <div className="space-y-2">
                         <Label>
-                          Currency <span className="text-red-500">*</span>
+                          Industry <span className="text-red-500">*</span>
                         </Label>
                         <Controller
-                          name="currency"
+                          name="industry"
                           control={control}
                           render={({ field }) => (
                             <Select
@@ -1199,57 +928,178 @@ const project = res.data;
                               onValueChange={field.onChange}
                             >
                               <SelectTrigger>
-                                <SelectValue />
+                                <SelectValue placeholder="Select industry" />
                               </SelectTrigger>
                               <SelectContent>
-                                {CURRENCIES.map((currency) => (
-                                  <SelectItem key={currency} value={currency}>
-                                    {currency}
+                                {INDUSTRIES.map((industry) => (
+                                  <SelectItem key={industry} value={industry}>
+                                    {industry}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
                           )}
                         />
+                        {errors.industry && (
+                          <p className="text-sm text-red-600">
+                            {errors.industry.message}
+                          </p>
+                        )}
                       </div>
-                    </div>
+                      <div className="space-y-2">
+                        <Label>
+                          Location <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          {...register("location")}
+                          placeholder="e.g., Tunis, Tunisia"
+                        />
+                        {errors.location && (
+                          <p className="text-sm text-red-600">
+                            {errors.location.message}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-3">
+                        <Label>
+                          Project Stage <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                          {PROJECT_STAGES.map(
+                            ({ value, label, icon: Icon }) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() => setValue("stage", value)}
+                                className={`p-4 rounded-xl border-2 transition-all ${
+                                  stage === value
+                                    ? "border-blue-600 bg-blue-50"
+                                    : "border-gray-200 hover:bg-gray-50"
+                                }`}
+                              >
+                                <Icon
+                                  className={`size-6 mx-auto mb-2 ${
+                                    stage === value
+                                      ? "text-blue-600"
+                                      : "text-gray-400"
+                                  }`}
+                                />
+                                <div
+                                  className={`text-sm font-medium ${
+                                    stage === value
+                                      ? "text-blue-600"
+                                      : "text-gray-700"
+                                  }`}
+                                >
+                                  {label}
+                                </div>
+                              </button>
+                            ),
+                          )}
+                        </div>
+                        {errors.stage && (
+                          <p className="text-sm text-red-600">
+                            {errors.stage.message}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
 
+                  {/* STEP 2: DETAILS */}
+                  {currentStep === 1 && (
+                    <>
+                      <div className="space-y-2">
+                        <Label>
+                          Full Description{" "}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <Controller
+                          name="fullDescription"
+                          control={control}
+                          render={({ field }) => (
+                            <RichTextEditor
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Provide a detailed description of your project, including the problem you're solving, your solution, target market, and unique value proposition..."
+                              minHeight="300px"
+                            />
+                          )}
+                        />
+                        {errors.fullDescription && (
+                          <p className="text-sm text-red-600">
+                            {errors.fullDescription.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label>
+                          Technology Tags{" "}
+                          <span className="text-red-500">*</span>
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {TECH_TAGS.map((tag) => (
+                            <Badge
+                              key={tag}
+                              onClick={() => toggleTechTag(tag)}
+                              className={`cursor-pointer px-4 py-2 text-sm ${
+                                techTags?.includes(tag)
+                                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                              }`}
+                            >
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                        {errors.techTags && (
+                          <p className="text-sm text-red-600">
+                            {errors.techTags.message}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          Selected: {techTags?.length || 0}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {/* STEP 3: TEAM */}
+                  {currentStep === 2 && (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4 overflow-x-auto">
                         <Label>
-                          Milestones <span className="text-red-500">*</span>
+                          Team Members <span className="text-red-500">*</span>
                         </Label>
                         <Button
                           type="button"
                           onClick={() =>
-                            appendMilestone({
-                              title: "",
-                              targetDate: "",
-                              completedAt: "",
-                            })
+                            appendTeam({ name: "", role: "", photo: null })
                           }
                           size="sm"
                           variant="outline"
                         >
                           <Plus className="size-4 mr-2" />
-                          Add Milestone
+                          Add Member
                         </Button>
                       </div>
 
-                      {milestoneFields.map((field, index) => (
+                      {teamFields.map((field, index) => (
                         <Card key={field.id} className="p-4">
                           <div className="space-y-4">
-                            <div className="flex items-center gap-4 overflow-x-auto">
-                              <h4 className="font-medium">
-                                Milestone {index + 1}
+                            <div className="flex items-start justify-between">
+                              <h4 className="font-medium flex items-center gap-2">
+                                <UserIcon className="size-4" />
+                                Member {index + 1}
                               </h4>
-                              {milestoneFields.length > 1 && (
+                              {teamFields.length > 1 && (
                                 <Button
                                   type="button"
-                                  onClick={() => removeMilestone(index)}
+                                  onClick={() => removeTeam(index)}
                                   size="sm"
                                   variant="ghost"
-                                  className="text-red-600"
+                                  className="text-red-600 hover:text-red-700"
                                 >
                                   <Trash2 className="size-4" />
                                 </Button>
@@ -1258,238 +1108,401 @@ const project = res.data;
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               <div className="space-y-2">
-                                <Label>Title</Label>
+                                <Label>Name</Label>
                                 <Input
-                                  {...register(`milestones.${index}.title`)}
-                                  placeholder="Milestone description"
+                                  {...register(`teamMembers.${index}.name`)}
+                                  placeholder="Full name"
                                 />
-                                {errors.milestones?.[index]?.title && (
+                                {errors.teamMembers?.[index]?.name && (
                                   <p className="text-sm text-red-600">
-                                    {errors.milestones[index]?.title?.message}
+                                    {errors.teamMembers[index]?.name?.message}
                                   </p>
                                 )}
                               </div>
 
                               <div className="space-y-2">
-                                <Label>Target Date</Label>
+                                <Label>Role</Label>
                                 <Input
-                                  {...register(
-                                    `milestones.${index}.targetDate`,
-                                  )}
-                                  type="date"
+                                  {...register(`teamMembers.${index}.role`)}
+                                  placeholder="e.g., CEO, CTO"
                                 />
-                                {errors.milestones?.[index]?.targetDate && (
+                                {errors.teamMembers?.[index]?.role && (
                                   <p className="text-sm text-red-600">
-                                    {
-                                      errors.milestones[index]?.targetDate
-                                        ?.message
-                                    }
+                                    {errors.teamMembers[index]?.role?.message}
                                   </p>
                                 )}
                               </div>
                             </div>
+
+                            <div className="space-y-2">
+                              <Label>Photo (Optional)</Label>
+                              <FileUpload
+                                accept="image/*"
+                                maxSize={5}
+                                label=""
+                                description="Upload member photo"
+                                existingFileUrl={
+                                  watch(`teamMembers.${index}.photo`) ||
+                                  undefined
+                                }
+                                onFileSelect={(file) => {
+                                  if (!file) {
+                                    setValue(
+                                      `teamMembers.${index}.photo`,
+                                      null,
+                                    );
+                                    return;
+                                  }
+
+                                  setValue(
+                                    `teamMembers.${index}.photo`,
+                                    file.url,
+                                  );
+                                }}
+                              />
+                            </div>
                           </div>
                         </Card>
                       ))}
+                      {errors.teamMembers &&
+                        typeof errors.teamMembers.message === "string" && (
+                          <p className="text-sm text-red-600">
+                            {errors.teamMembers.message}
+                          </p>
+                        )}
                     </div>
-                  </>
-                )}
+                  )}
 
-                {/* STEP 5: MEDIA & SUBMIT */}
-                {currentStep === 4 && (
-                  <>
-                    {/* HERO IMAGE */}
-                    <div className="space-y-2">
-                      <Label>Hero Image</Label>
-                      <FileUpload
-                        accept="image/*"
-                        maxSize={5}
-                        label=""
-                        description="Upload a cover image for your project"
-                        existingFileUrl={heroFile?.fileUrl}
-                        onFileSelect={(file) => {
-                          if (!file) {
-                            setHeroFile(null);
-                            return;
-                          }
+                  {/* STEP 4: FUNDING */}
+                  {currentStep === 3 && (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>
+                            Funding Amount{" "}
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Input
+                            {...register("fundingAmount")}
+                            type="number"
+                            placeholder="e.g., 100000"
+                          />
+                          {errors.fundingAmount && (
+                            <p className="text-sm text-red-600">
+                              {errors.fundingAmount.message}
+                            </p>
+                          )}
+                        </div>
 
-                          setHeroFile({
-                            name: "Hero Image",
-                            fileUrl: file.url,
-                            fileKey: file.publicId,
-                          });
-                        }}
-                      />
-                    </div>
-
-                    {/* SUPPORTING DOCUMENTS */}
-                    <div className="space-y-2">
-                      <Label>Supporting Documents</Label>
-                      <DocumentUpload
-                        label=""
-                        description="Upload pitch decks, business plans, or other documents"
-                        maxFiles={5}
-                        maxSize={10}
-                        acceptedTypes={[
-                          ".pdf",
-                          ".doc",
-                          ".docx",
-                          ".ppt",
-                          ".pptx",
-                        ]}
-                        initialFiles={supportingDocs}
-                        onFilesChange={(files) => {
-                          setSupportingDocs(files);
-                        }}
-                      />
-                    </div>
-
-                    {/* REVIEW SUMMARY */}
-                    <Card className="p-6 bg-blue-50 border-gray-300">
-                      <h3 className="font-semibold mb-4">
-                        Review Your Project
-                      </h3>
-                      <div className="space-y-3 text-sm">
-                        <div>
-                          <span className="font-medium">Title:</span>{" "}
-                          {title || "Not set"}
-                        </div>
-                        <div>
-                          <span className="font-medium">Industry:</span>{" "}
-                          {industry || "Not set"}
-                        </div>
-                        <div>
-                          <span className="font-medium">Stage:</span>{" "}
-                          {PROJECT_STAGES.find((s) => s.value === stage)
-                            ?.label || "Not set"}
-                        </div>
-                        <div>
-                          <span className="font-medium">Team Members:</span>{" "}
-                          {teamMembers?.length || 0}
-                        </div>
-                        <div>
-                          <span className="font-medium">Funding:</span>{" "}
-                          {currency} {fundingAmount || "0"}
+                        <div className="space-y-2">
+                          <Label>
+                            Currency <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name="currency"
+                            control={control}
+                            render={({ field }) => (
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {CURRENCIES.map((currency) => (
+                                    <SelectItem key={currency} value={currency}>
+                                      {currency}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
                         </div>
                       </div>
-                    </Card>
-                  </>
-                )}
-              </div>
 
-              {/* Right Column - Preview & Tips */}
-              <div className="space-y-6">
-                <Card className="p-6 bg-blue-50 border-blue-200 sticky top-0">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2">
-                    <Lightbulb className="size-5 text-blue-600" />
-                    Tips for Step {currentStep + 1}
-                  </h4>
-                  <ul className="space-y-2 text-sm text-gray-700">
-                    {currentStep === 0 && (
-                      <>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            Choose a memorable and descriptive project name
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            Your tagline should explain what you do in one
-                            sentence
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            Be honest about your current project stage
-                          </span>
-                        </li>
-                      </>
-                    )}
-                    {currentStep === 1 && (
-                      <>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            Use formatting to make your description easy to read
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            Include problem, solution, and target market
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>Select 3-5 core technologies</span>
-                        </li>
-                      </>
-                    )}
-                    {currentStep === 2 && (
-                      <>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>Include key team members and their roles</span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>Photos help build trust with investors</span>
-                        </li>
-                      </>
-                    )}
-                    {currentStep === 3 && (
-                      <>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>Be transparent about funding needs</span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>Set realistic milestone dates</span>
-                        </li>
-                      </>
-                    )}
-                    {currentStep === 4 && (
-                      <>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>
-                            A great hero image makes your project stand out
-                          </span>
-                        </li>
-                        <li className="flex gap-2">
-                          <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
-                          <span>Review all information before submitting</span>
-                        </li>
-                      </>
-                    )}
-                  </ul>
-                </Card>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-4 overflow-x-auto">
+                          <Label>
+                            Milestones <span className="text-red-500">*</span>
+                          </Label>
+                          <Button
+                            type="button"
+                            onClick={() =>
+                              appendMilestone({
+                                title: "",
+                                targetDate: "",
+                                completedAt: "",
+                              })
+                            }
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Plus className="size-4 mr-2" />
+                            Add Milestone
+                          </Button>
+                        </div>
 
-                <Card className="p-4 bg-gray-50 border border-gray-300">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="font-medium">Progress</span>
-                    <span className="text-gray-600">
-                      {Math.round(((currentStep + 1) / STEPS.length) * 100)}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-blue-600 transition-all duration-300"
-                      style={{
-                        width: `${((currentStep + 1) / STEPS.length) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </Card>
+                        {milestoneFields.map((field, index) => (
+                          <Card key={field.id} className="p-4">
+                            <div className="space-y-4">
+                              <div className="flex items-center gap-4 overflow-x-auto">
+                                <h4 className="font-medium">
+                                  Milestone {index + 1}
+                                </h4>
+                                {milestoneFields.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    onClick={() => removeMilestone(index)}
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="size-4" />
+                                  </Button>
+                                )}
+                              </div>
+
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <Label>Title</Label>
+                                  <Input
+                                    {...register(`milestones.${index}.title`)}
+                                    placeholder="Milestone description"
+                                  />
+                                  {errors.milestones?.[index]?.title && (
+                                    <p className="text-sm text-red-600">
+                                      {errors.milestones[index]?.title?.message}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <div className="space-y-2">
+                                  <Label>Target Date</Label>
+                                  <Input
+                                    {...register(
+                                      `milestones.${index}.targetDate`,
+                                    )}
+                                    type="date"
+                                  />
+                                  {errors.milestones?.[index]?.targetDate && (
+                                    <p className="text-sm text-red-600">
+                                      {
+                                        errors.milestones[index]?.targetDate
+                                          ?.message
+                                      }
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {/* STEP 5: MEDIA & SUBMIT */}
+                  {currentStep === 4 && (
+                    <>
+                      {/* HERO IMAGE */}
+                      <div className="space-y-2">
+                        <Label>Hero Image</Label>
+                        <FileUpload
+                          accept="image/*"
+                          maxSize={5}
+                          label=""
+                          description="Upload a cover image for your project"
+                          existingFileUrl={heroFile?.fileUrl}
+                          onFileSelect={(file) => {
+                            if (!file) {
+                              setHeroFile(null);
+                              return;
+                            }
+
+                            setHeroFile({
+                              name: "Hero Image",
+                              fileUrl: file.url,
+                              fileKey: file.publicId,
+                            });
+                          }}
+                        />
+                      </div>
+
+                      {/* SUPPORTING DOCUMENTS */}
+                      <div className="space-y-2">
+                        <Label>Supporting Documents</Label>
+                        <DocumentUpload
+                          label=""
+                          description="Upload pitch decks, business plans, or other documents"
+                          maxFiles={5}
+                          maxSize={10}
+                          acceptedTypes={[
+                            ".pdf",
+                            ".doc",
+                            ".docx",
+                            ".ppt",
+                            ".pptx",
+                          ]}
+                          initialFiles={supportingDocs}
+                          onFilesChange={(files) => {
+                            setSupportingDocs(files);
+                          }}
+                        />
+                      </div>
+
+                      {/* REVIEW SUMMARY */}
+                      <Card className="p-6 bg-blue-50 border-gray-300">
+                        <h3 className="font-semibold mb-4">
+                          Review Your Project
+                        </h3>
+                        <div className="space-y-3 text-sm">
+                          <div>
+                            <span className="font-medium">Title:</span>{" "}
+                            {title || "Not set"}
+                          </div>
+                          <div>
+                            <span className="font-medium">Industry:</span>{" "}
+                            {industry || "Not set"}
+                          </div>
+                          <div>
+                            <span className="font-medium">Stage:</span>{" "}
+                            {PROJECT_STAGES.find((s) => s.value === stage)
+                              ?.label || "Not set"}
+                          </div>
+                          <div>
+                            <span className="font-medium">Team Members:</span>{" "}
+                            {teamMembers?.length || 0}
+                          </div>
+                          <div>
+                            <span className="font-medium">Funding:</span>{" "}
+                            {currency} {fundingAmount || "0"}
+                          </div>
+                        </div>
+                      </Card>
+                    </>
+                  )}
+                </div>
+
+                {/* Right Column - Preview & Tips */}
+                <div className="space-y-6">
+                  <Card className="p-6 bg-blue-50 border-blue-200 sticky top-0">
+                    <h4 className="font-semibold mb-3 flex items-center gap-2">
+                      <Lightbulb className="size-5 text-blue-600" />
+                      Tips for Step {currentStep + 1}
+                    </h4>
+                    <ul className="space-y-2 text-sm text-gray-700">
+                      {currentStep === 0 && (
+                        <>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Choose a memorable and descriptive project name
+                            </span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Your tagline should explain what you do in one
+                              sentence
+                            </span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Be honest about your current project stage
+                            </span>
+                          </li>
+                        </>
+                      )}
+                      {currentStep === 1 && (
+                        <>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Use formatting to make your description easy to
+                              read
+                            </span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Include problem, solution, and target market
+                            </span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>Select 3-5 core technologies</span>
+                          </li>
+                        </>
+                      )}
+                      {currentStep === 2 && (
+                        <>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Include key team members and their roles
+                            </span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>Photos help build trust with investors</span>
+                          </li>
+                        </>
+                      )}
+                      {currentStep === 3 && (
+                        <>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>Be transparent about funding needs</span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>Set realistic milestone dates</span>
+                          </li>
+                        </>
+                      )}
+                      {currentStep === 4 && (
+                        <>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              A great hero image makes your project stand out
+                            </span>
+                          </li>
+                          <li className="flex gap-2">
+                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <span>
+                              Review all information before submitting
+                            </span>
+                          </li>
+                        </>
+                      )}
+                    </ul>
+                  </Card>
+
+                  <Card className="p-4 bg-gray-50 border border-gray-300">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="font-medium">Progress</span>
+                      <span className="text-gray-600">
+                        {Math.round(((currentStep + 1) / STEPS.length) * 100)}%
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-600 transition-all duration-300"
+                        style={{
+                          width: `${((currentStep + 1) / STEPS.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </Card>
+                </div>
               </div>
             </div>
-          </div>
-        </form>
-)}
+          </form>
+        )}
         {/* Footer Navigation */}
         <div className="border-t border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gray-50">
           <div className="flex items-center gap-4 overflow-x-auto">
@@ -1515,27 +1528,27 @@ const project = res.data;
                 Save Draft
               </Button>
 
-  {currentStep === STEPS.length - 1 ? (
-  <Button
-    type="button"
-    onClick={handleSubmit(onSubmit)}
-    disabled={isSubmitting}
-    className="flex items-center gap-2"
-  >
-    {isSubmitting && <LoadingSpinner size="sm" />}
-    {isSubmitting
-      ? currentProjectId
-        ? "Updating..."
-        : "Creating..."
-      : currentProjectId
-      ? "Update Project"
-      : "Create Project"}
-  </Button>
-) : (
-  <Button type="button" onClick={handleNext}>
-    Next
-  </Button>
-)}
+              {currentStep === STEPS.length - 1 ? (
+                <Button
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting && <LoadingSpinner size="sm" />}
+                  {isSubmitting
+                    ? currentProjectId
+                      ? "Updating..."
+                      : "Creating..."
+                    : currentProjectId
+                      ? "Update Project"
+                      : "Create Project"}
+                </Button>
+              ) : (
+                <Button type="button" onClick={handleNext}>
+                  Next
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -67,9 +67,9 @@ export default function Settings() {
         setExpertise(data.profile?.expertise || []);
       } catch (error) {
         console.error("Failed to fetch profile", error);
-       } finally {
-      setLoading(false);
-    }
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchProfile();
@@ -178,36 +178,33 @@ export default function Settings() {
     setLoading(false);
   };
   if (loading) {
-  return (
-    <main className="flex-1 space-y-6 pb-10">
+    return (
+      <main className="flex-1 space-y-6 pb-10">
+        <Card className="p-6 space-y-3">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-4 w-64" />
+        </Card>
 
-      <Card className="p-6 space-y-3">
-        <Skeleton className="h-6 w-40" />
-        <Skeleton className="h-4 w-64" />
-      </Card>
+        <Card className="p-6 space-y-6">
+          <div className="flex gap-4">
+            <Skeleton className="h-10 w-28" />
+            <Skeleton className="h-10 w-28" />
+          </div>
 
-      <Card className="p-6 space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
 
-        <div className="flex gap-4">
-          <Skeleton className="h-10 w-28" />
-          <Skeleton className="h-10 w-28" />
-        </div>
+          <Skeleton className="h-28 w-full" />
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-          <Skeleton className="h-10 w-full" />
-        </div>
-
-        <Skeleton className="h-28 w-full" />
-
-        <Skeleton className="h-10 w-40" />
-      </Card>
-
-    </main>
-  );
-}
+          <Skeleton className="h-10 w-40" />
+        </Card>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 space-y-6 pb-10">
@@ -313,14 +310,14 @@ export default function Settings() {
             </div>
 
             <Button onClick={handleProfileUpdate} disabled={loading}>
-                {loading ? (
-    <div className="flex items-center gap-2">
-      <LoadingSpinner size="sm" />
-      Saving...
-    </div>
-  ) : (
-    "Save Profile"
-  )}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <LoadingSpinner size="sm" />
+                  Saving...
+                </div>
+              ) : (
+                "Save Profile"
+              )}
             </Button>
           </TabsContent>
 
@@ -334,11 +331,7 @@ export default function Settings() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <Button onClick={handleEmailUpdate} disabled={loading}>
-                 {loading ? (
-    <LoadingSpinner size="sm" />
-  ) : (
-    "Update Email"
-  )}
+                {loading ? <LoadingSpinner size="sm" /> : "Update Email"}
               </Button>
             </div>
 
@@ -369,11 +362,7 @@ export default function Settings() {
               />
 
               <Button onClick={handlePasswordUpdate} disabled={loading}>
-                {loading ? (
-    <LoadingSpinner size="sm" />
-  ) : (
-    "Update Password"
-  )}
+                {loading ? <LoadingSpinner size="sm" /> : "Update Password"}
               </Button>
             </div>
           </TabsContent>

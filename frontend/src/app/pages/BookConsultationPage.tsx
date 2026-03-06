@@ -192,6 +192,7 @@ export function BookConsultationPage() {
         title: "Booking Confirmed 🎉",
         message: "Your consultation has been scheduled.",
       });
+  
     } catch (err) {
       console.error(err);
     } finally {
@@ -206,56 +207,55 @@ export function BookConsultationPage() {
       .join("")
       .toUpperCase();
   if (loading) {
-  return (
-    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-      
-      {/* Left column skeleton */}
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="pt-6 flex flex-col items-center gap-4">
-            <Skeleton className="h-24 w-24 rounded-full" />
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-4 w-20" />
-          </CardContent>
-        </Card>
+    return (
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column skeleton */}
+        <div className="space-y-6">
+          <Card>
+            <CardContent className="pt-6 flex flex-col items-center gap-4">
+              <Skeleton className="h-24 w-24 rounded-full" />
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-20" />
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-40" />
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {[...Array(7)].map((_, i) => (
-              <Skeleton key={i} className="h-8 w-full" />
-            ))}
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {[...Array(7)].map((_, i) => (
+                <Skeleton key={i} className="h-8 w-full" />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right column skeleton */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-[300px] w-full rounded-lg" />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+            </CardHeader>
+            <CardContent className="grid grid-cols-4 gap-3">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       </div>
-
-      {/* Right column skeleton */}
-      <div className="lg:col-span-2 space-y-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-40" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-[300px] w-full rounded-lg" />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-5 w-40" />
-          </CardHeader>
-          <CardContent className="grid grid-cols-4 gap-3">
-            {[...Array(8)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
+    );
+  }
   if (!expert || !expert.profile) return <div>Expert not found</div>;
   return (
     <div className="max-w-7xl mx-auto">
