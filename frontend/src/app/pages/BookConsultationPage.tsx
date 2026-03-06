@@ -25,6 +25,8 @@ import {
   Calendar as CalendarIcon,
   Clock,
   ArrowLeft,
+  Video, 
+  MapPin,
   CheckCircle2,
   User as UserIcon,
   DollarSign,
@@ -65,7 +67,8 @@ export function BookConsultationPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
-
+  const [meetingType, setMeetingType] = useState<"VIDEO" | "IN_PERSON">("VIDEO");
+  const [location, setLocation] = useState("");
   const [expert, setExpert] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const price = expert?.profile?.hourlyRate
@@ -85,15 +88,15 @@ export function BookConsultationPage() {
 
     if (expertId) fetchExpert();
   }, [expertId]);
+const fetchBookings = async () => {
+  if (!expertId) return;
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      const { data } = await api.get(`auth/bookings/expert/${expertId}`);
-      setBookings(data);
-    };
-
-    if (expertId) fetchBookings();
-  }, [expertId]);
+  const { data } = await api.get(`/auth/bookings/expert/${expertId}`);
+  setBookings(data);
+};
+ useEffect(() => {
+  fetchBookings();
+}, [expertId]);
   // Check if a date is available based on weekly schedule
   const isDateAvailable = (date: Date) => {
     if (!expert?.profile?.weeklyAvailability) return false;
@@ -169,14 +172,24 @@ export function BookConsultationPage() {
     return slots.length === 0;
   };
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const handleConfirmBooking = async () => {
     if (!selectedDate || !selectedSlot || !expert) return;
 
-    setBooking(true);
+   
 
     try {
+      if (meetingType === "IN_PERSON" && !location.trim()) {
+  showToast({
+    type: "error",
+    title: "Location required",
+    message: "Please enter meeting location",
+  });
+  return;
+}
+ setBooking(true);
       // 1️ Create booking
       await api.post("/auth/bookings", {
         expertId: expert.id,
@@ -185,16 +198,31 @@ export function BookConsultationPage() {
         duration,
         message,
         topic,
+        meetingType,
+        location: meetingType === "IN_PERSON" ? location : null,
       });
+      await fetchBookings();
+     
+       
 
-      showToast({
+     showToast({
         type: "success",
         title: "Booking Confirmed 🎉",
         message: "Your consultation has been scheduled.",
       });
-  
-    } catch (err) {
-      console.error(err);
+     setSelectedSlot(null);
+  setSelectedDate(undefined);
+  setTopic("");
+  setMessage("");
+  setLocation("");
+
+} catch (error) {
+  showToast({
+    type: "error",
+    title: "Booking Failed",
+    message: "Something went wrong. Please try again.",
+  });
+      console.error(error);
     } finally {
       setBooking(false);
     }
@@ -536,6 +564,45 @@ export function BookConsultationPage() {
                     </div>
                   </div>
                 </div>
+                <div className="space-y-2">
+  <Label>Meeting Type</Label>
+
+  <div className="flex gap-3">
+<Button
+  type="button"
+  variant={meetingType === "VIDEO" ? "secondary" : "outline"}
+  onClick={() => {
+    setMeetingType("VIDEO");
+    setLocation("");
+  }}
+>
+  <Video className="size-4 mr-2" />
+  Video Call
+</Button>
+
+<Button
+  type="button"
+  variant={meetingType === "IN_PERSON" ? "secondary" : "outline"}
+  onClick={() => setMeetingType("IN_PERSON")}
+>
+  <MapPin className="size-4 mr-2" />
+  In Person
+</Button>
+  </div>
+</div>
+{meetingType === "IN_PERSON" && (
+  <div className="space-y-2">
+    <Label htmlFor="location">Meeting Location *</Label>
+    <Textarea
+      id="location"
+      placeholder="Enter meeting address or place"
+      value={location}
+      onChange={(e) => setLocation(e.target.value)}
+      rows={2}
+      className="resize-none"
+    />
+  </div>
+)}
                 <div className="space-y-2">
                   <Label htmlFor="topic">Topic *</Label>
                   <Textarea

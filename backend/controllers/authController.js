@@ -725,7 +725,7 @@ export const getPublicExpertProfile = async (req, res, next) => {
 export const createBooking = async (req, res, next) => {
   try {
     const memberId = req.user.id;
-    const { expertId, date, timeSlot, duration, message, topic } = req.body;
+    const { expertId, date, timeSlot, duration, message, topic, meetingType, location  } = req.body;
 
     if (!expertId || !date || !timeSlot || !duration) {
       return res.status(400).json({ message: "Missing booking info" });
@@ -812,7 +812,11 @@ export const createBooking = async (req, res, next) => {
         message: "Time overlaps with another booking",
       });
     }
-
+   if (meetingType === "IN_PERSON" && !location) {
+  return res.status(400).json({
+    message: "Location is required for in-person meetings",
+  });
+}
     // Calculate price
     const price = (Number(expert.profile.hourlyRate) * duration) / 60;
 
@@ -827,6 +831,8 @@ export const createBooking = async (req, res, next) => {
         price,
         message,
         topic,
+        meetingType,
+        location: meetingType === "IN_PERSON" ? location : null,
       },
     });
 
@@ -862,6 +868,7 @@ export const getExpertBookings = async (req, res, next) => {
 };
 export const acceptBooking = async (req, res, next) => {
   try {
+    
     const booking = await prisma.booking.findUnique({
       where: { id: req.params.id },
     });
@@ -873,11 +880,20 @@ export const acceptBooking = async (req, res, next) => {
     if (booking.expertId !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
-
-    const updated = await prisma.booking.update({
-      where: { id: req.params.id },
-      data: { status: "ACCEPTED" },
-    });
+const updated = await prisma.booking.update({
+  where: { id: req.params.id },
+  data: {
+    status: "ACCEPTED",
+    meetingLink:
+  
+  booking.meetingType && booking.meetingType === "VIDEO"
+    ? `https://meet.jit.si/startup-consult-${booking.id}`
+    : null,
+  },
+  include: {
+    member: true,
+  },
+});
 
     res.json(updated);
   } catch (error) {
@@ -904,6 +920,43 @@ export const rejectBooking = async (req, res, next) => {
       where: { id: req.params.id },
       data: {
         status: "REJECTED",
+        rejectionReason: reason || null,
+      },
+    });
+
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+export const cancelBooking = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Only the expert who owns the booking can cancel
+    if (booking.expertId !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    // Only accepted bookings can be cancelled
+    if (booking.status !== "ACCEPTED") {
+      return res
+        .status(400)
+        .json({ message: "Only confirmed bookings can be cancelled" });
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id: req.params.id },
+      data: {
+        status: "CANCELLED",
         rejectionReason: reason || null,
       },
     });

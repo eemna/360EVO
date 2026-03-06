@@ -30,6 +30,7 @@ import { Label } from "../components/ui/label";
 import {
   Calendar,
   Clock,
+  MapPin,
   CheckCircle2,
   XCircle,
   User,
@@ -38,7 +39,7 @@ import {
   DollarSign,
   AlertCircle,
   ChevronLeft,
-  // Video,
+  Video,
   // MapPin,
 } from "lucide-react";
 import { useEffect } from "react";
@@ -57,8 +58,9 @@ interface Booking {
   topic: string;
   description?: string;
 
-  //meetingType?: "Video Call" | "In Person";
-  //location?: string;
+ meetingType?: "VIDEO" | "IN_PERSON";
+ meetingLink?: string;
+ location?: string;
 
   founderName?: string;
 
@@ -68,7 +70,6 @@ interface Booking {
   };
 }
 
-
 export function ManageReservations() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -76,6 +77,9 @@ export function ManageReservations() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [processingAction, setProcessingAction] = useState<
+  "accept" | "reject" | "cancel" | null
+>(null);
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -112,34 +116,34 @@ export function ManageReservations() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [cancellationReason, setCancellationReason] = useState("");
 
-  const handleAcceptBooking = async (bookingId: string) => {
-    try {
-      setProcessingId(bookingId);
-      await api.patch(`/auth/${bookingId}/accept`);
+const handleAcceptBooking = async (bookingId: string) => {
+  try {
+    setProcessingId(bookingId);
+     setProcessingAction("accept");
+    const { data } = await api.patch(`/auth/${bookingId}/accept`);
 
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === bookingId ? { ...b, status: "ACCEPTED" } : b,
-        ),
-      );
+    setBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? data : b)),
+    );
 
-      showToast({
-        type: "success",
-        title: "Booking Accepted ",
-        message: "The session has been confirmed.",
-      });
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
+    showToast({
+      type: "success",
+      title: "Booking Accepted",
+      message: "The session has been confirmed.",
+    });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setProcessingId(null);
+     setProcessingAction(null);
+  }
+};
   const handleRejectBooking = async () => {
     if (!selectedBooking) return;
 
     try {
       setProcessingId(selectedBooking.id);
+      setProcessingAction("reject");
       await api.patch(`/auth/${selectedBooking.id}/reject`, {
         reason: rejectionReason,
       });
@@ -163,6 +167,7 @@ export function ManageReservations() {
       console.error(error);
     } finally {
       setProcessingId(null);
+      setProcessingAction(null);
     }
   };
 
@@ -329,8 +334,11 @@ export function ManageReservations() {
                   <p className="text-3xl font-semibold text-indigo-600 mt-1">
                     $
                     {confirmedBookings
-  .reduce((total, booking) => total + Number(booking.price), 0)
-  .toLocaleString()}
+                      .reduce(
+                        (total, booking) => total + Number(booking.price),
+                        0,
+                      )
+                      .toLocaleString()}
                   </p>
                 </div>
                 <div className="size-12 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -396,7 +404,7 @@ export function ManageReservations() {
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <CardTitle className="text-xl">
-                            {booking.member.name}
+                            {booking.member?.name || "Member"}
                           </CardTitle>
                           <Badge className="bg-orange-100 text-orange-700 border-orange-300 border">
                             Pending Review
@@ -420,9 +428,7 @@ export function ManageReservations() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
-                            <span>
-                              ({booking.price}/hr)
-                            </span>
+                            <span>({booking.price})</span>
                           </div>
                         </div>
                       </div>
@@ -437,29 +443,43 @@ export function ManageReservations() {
                         {booking.description}
                       </p>
                     </div>
+<div className="flex items-center justify-between">
 
-                    {/*  <div className="flex items-center gap-2">
-                      {booking.meetingType === "Video Call" ? (
-                        <>
-                          <Video className="size-4 text-gray-500" />
-                          <span className="text-sm text-gray-600">Video Call</span>
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="size-4 text-gray-500" />
-                          <span className="text-sm text-gray-600">
-                            In Person - {booking.location}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                   */}
+  {/* Meeting Type */}
+  <div className="flex items-center gap-2">
+    {booking.meetingType === "VIDEO" ? (
+      <>
+        <Video className="size-4 text-gray-500" />
+        <span className="text-sm text-gray-600">Video Call</span>
+      </>
+    ) : (
+      <>
+        <MapPin className="size-4 text-gray-500" />
+        <span className="text-sm text-gray-600">
+          In Person - {booking.location}
+        </span>
+      </>
+    )}
+  </div>
+
+  {/* Join Button */}
+  {booking.meetingType === "VIDEO" && booking.meetingLink && (
+    <Button
+      size="sm"
+      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+      onClick={() => window.open(booking.meetingLink, "_blank")}
+    >
+      <Video className="size-4 mr-1" />
+      Join
+    </Button>
+  )}
+</div>
                     <div className="flex gap-3 pt-4 ">
                       <Button
                         onClick={() => handleAcceptBooking(booking.id)}
                         className="flex-1 bg-green-600 hover:bg-green-700"
                       >
-                        {processingId === booking.id ? (
+                        {processingId === booking.id && processingAction === "accept" ? (
                           <LoadingSpinner size="sm" className="mr-2" />
                         ) : (
                           <CheckCircle2 className="size-4 mr-2" />
@@ -474,7 +494,7 @@ export function ManageReservations() {
                         variant="outline"
                         className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
                       >
-                        {processingId === booking.id ? (
+                        {processingId === booking.id && processingAction === "reject"  ? (
                           <LoadingSpinner size="sm" className="mr-2" />
                         ) : (
                           <XCircle className="size-4 mr-2" />
@@ -537,54 +557,90 @@ export function ManageReservations() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
-                            <span>
-                              {booking.price}
-                            </span>
+                            <span>{booking.price}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-1">
-                        Topic: {booking.topic}
-                      </p>
-                    </div>
+                 <CardContent className="space-y-4">
+  <div>
+    <p className="text-sm font-semibold text-gray-900 mb-1">
+      Topic: {booking.topic}
+    </p>
+  </div>
 
-                    {/*       <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                      <Video className="size-4 text-blue-600" />
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-blue-900">
-                          {booking.meetingType}
-                        </p>
-                        <a
-                          href={booking.meetingLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          {booking.meetingLink}
-                        </a>
-                      </div>
-                    </div>
+  {/* Video Call Box */}
+{/* Meeting Info */}
+{booking.meetingType === "VIDEO" && booking.meetingLink && (
+  <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+    <Video className="size-5 text-blue-600 mt-1" />
 
-                    <div className="flex gap-3 pt-4 border-t">
-                      <Button className="flex-1 bg-indigo-600 hover:bg-indigo-700">
-                        <Video className="size-4 mr-2" />
-                        Join Meeting
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedBooking(booking);
-                          setCancelDialogOpen(true);
-                        }}
-                        variant="outline"
-                        className="border-red-300 text-red-700 hover:bg-red-50"
-                      >
-                        Cancel
-                      </Button>
-                    </div> */}
+    <div className="flex flex-col">
+      <p className="text-sm font-medium text-gray-700">
+        Video Call
+      </p>
+
+      <a
+        href={booking.meetingLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm text-blue-600 hover:underline break-all"
+      >
+        {booking.meetingLink}
+      </a>
+    </div>
+  </div>
+)}
+{booking.meetingType === "IN_PERSON" && booking.location && (
+  <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+    <MapPin className="size-5 text-amber-600 mt-1" />
+
+    <div className="flex flex-col">
+      <p className="text-sm font-medium text-gray-700">
+        In-Person Meeting
+      </p>
+
+     <p className="text-sm text-gray-600">
+  {booking.location}
+</p>
+
+<a
+  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location || "")}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-sm text-orange-500 hover:underline"
+>
+  Open in Maps
+</a>
+    </div>
+  </div>
+)}
+
+<div className="flex items-center gap-3 pt-1">
+  
+{booking.meetingType === "VIDEO" && booking.meetingLink && (
+  <Button
+    onClick={() => window.open(booking.meetingLink, "_blank")}
+    className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-medium"
+  >
+    <Video className="size-4 mr-2" />
+    Join Meeting
+  </Button>
+)}
+
+  <Button
+    onClick={() => {
+      setSelectedBooking(booking);
+      setCancelDialogOpen(true);
+    }}
+    variant="outline"
+    className="border-red-300 text-red-600 hover:bg-red-50"
+  >
+    Cancel
+  </Button>
+
+</div>
                   </CardContent>
                 </Card>
               ))

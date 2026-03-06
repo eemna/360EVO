@@ -3,7 +3,7 @@ interface LoadingSpinnerProps {
   className?: string;
 }
 
-export function LoadingSpinner({
+export  function LoadingSpinner({
   size = "md",
   className = "",
 }: LoadingSpinnerProps) {

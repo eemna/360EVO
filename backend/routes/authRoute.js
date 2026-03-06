@@ -18,6 +18,7 @@ import {
   getExpertBookings,
   acceptBooking,
   rejectBooking,
+  cancelBooking,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import forgotPasswordRateLimit from "../middleware/forgotPasswordRateLimit.js";
@@ -52,4 +53,5 @@ router.post("/bookings", protect, createBooking);
 router.get("/bookings/expert/:expertId", getExpertBookings);
 router.patch("/:id/accept", protect, acceptBooking);
 router.patch("/:id/reject", protect, rejectBooking);
+router.patch("/:id/cancel", protect, cancelBooking);
 export default router;

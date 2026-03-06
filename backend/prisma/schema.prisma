@@ -180,7 +180,9 @@ model Booking {
   topic     String?        
   message   String?
   rejectionReason String? 
-
+  meetingType   String?
+  meetingLink   String?
+  location    String? 
   status    BookingStatus @default(PENDING)
   createdAt DateTime      @default(now())
 
