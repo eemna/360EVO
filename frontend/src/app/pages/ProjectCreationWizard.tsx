@@ -33,13 +33,17 @@ import { RichTextEditor } from "./RichTextEditor";
 import { FileUpload } from "../components/ui/fileUpload";
 import { DocumentUpload } from "../components/ui/documentUpload";
 import type { UploadedDocument } from "../components/ui/documentUpload";
+import { Skeleton } from "../components/ui/skeleton";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import api from "../../services/axios";
 
 interface ProjectCreationWizardProps {
   isOpen: boolean;
   onClose: () => void;
   projectId?: string | null;
-  onProjectSaved?: () => void;
+  loading: boolean;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  onProjectSaved: () => void;
 }
 
 const STEPS = ["Basics", "Details", "Team", "Funding", "Media & Submit"];
@@ -201,6 +205,8 @@ export function ProjectCreationWizard({
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [heroFile, setHeroFile] = useState<UploadedFile | null>(null);
+  const [loadingProject, setLoadingProject] = useState(false);
+  
   const [supportingDocs, setSupportingDocs] = useState<UploadedDocument[]>([]);
   const { showToast } = useToast();
   const {
@@ -436,6 +442,76 @@ export function ProjectCreationWizard({
     handleNewProject();
     onClose();
   };
+useEffect(() => {
+  if (!isOpen || !externalProjectId) return;
+
+  const loadProject = async () => {
+    try {
+      setLoadingProject(true);
+
+      const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
+      const project = res.data;
+
+      reset({
+        title: project.title,
+        tagline: project.tagline,
+        shortDescription: project.shortDesc,
+        industry: project.industry,
+        location: project.location || "",
+        stage: project.stage,
+        fullDescription: project.fullDesc,
+        techTags: project.technologies || [],
+        teamMembers:
+          project.teamMembers?.map((m) => ({
+            name: m.name,
+            role: m.role,
+            photo: m.photo || null,
+          })) || [{ name: "", role: "", photo: null }],
+        fundingAmount: project.fundingSought?.toString() || "",
+        currency: project.currency || "USD",
+        milestones:
+          project.milestones?.map((m) => ({
+            title: m.title,
+            targetDate: m.targetDate
+              ? new Date(m.targetDate).toISOString().split("T")[0]
+              : "",
+            completedAt: m.completedAt
+              ? new Date(m.completedAt).toISOString().split("T")[0]
+              : "",
+          })) || [],
+      });
+        const hero = project.documents?.find(
+          (doc) => doc.fileType === "HERO_IMAGE",
+        );
+
+        setHeroFile(
+          hero
+            ? {
+                name: hero.name,
+                fileUrl: hero.fileUrl,
+                fileKey: hero.fileKey,
+              }
+            : null,
+        );
+
+        setSupportingDocs(
+          project.documents
+            ?.filter((doc) => doc.fileType === "DOCUMENT")
+            .map((doc) => ({
+              name: doc.name,
+              fileUrl: doc.fileUrl,
+              fileKey: doc.fileKey,
+            })) || [],
+        );
+    } catch (error) {
+      console.error("Failed to load project", error);
+    } finally {
+      setLoadingProject(false);
+    }
+  };
+
+  loadProject();
+}, [isOpen, externalProjectId, reset]);
   const saveDraft = async () => {
     if (isSubmitting) return;
 
@@ -506,11 +582,12 @@ export function ProjectCreationWizard({
       setSupportingDocs([]);
     }
   }, [isOpen, externalProjectId, reset]);
-  useEffect(() => {
+ /* useEffect(() => {
     if (!isOpen || !externalProjectId) return;
 
     const loadProject = async () => {
       try {
+       
         const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
         const project = res.data;
 
@@ -571,7 +648,7 @@ export function ProjectCreationWizard({
     };
 
     loadProject();
-  }, [isOpen, externalProjectId, reset]);
+  }, [isOpen, externalProjectId, reset]); */
 
   /* const loadProject = async () => {
     try {
@@ -680,6 +757,7 @@ const project = res.data;
     };
   }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
   if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-50 w-full max-w-7xl lg:max-w-6xl max-h-[95vh] flex flex-col my-8">
@@ -756,6 +834,15 @@ const project = res.data;
         </div>
 
         {/* Form Content */}
+        {loadingProject ? (
+  <div className="p-8 space-y-6">
+    <Skeleton className="h-10 w-full" />
+    <Skeleton className="h-10 w-full" />
+    <Skeleton className="h-24 w-full" />
+    <Skeleton className="h-10 w-1/2" />
+    <Skeleton className="h-40 w-full" />
+  </div>
+) : (
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="flex-1 overflow-y-auto"
@@ -1402,7 +1489,7 @@ const project = res.data;
             </div>
           </div>
         </form>
-
+)}
         {/* Footer Navigation */}
         <div className="border-t border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 bg-gray-50">
           <div className="flex items-center gap-4 overflow-x-auto">
@@ -1428,15 +1515,27 @@ const project = res.data;
                 Save Draft
               </Button>
 
-              {currentStep === STEPS.length - 1 ? (
-                <Button type="button" onClick={handleSubmit(onSubmit)}>
-                  {currentProjectId ? "Update Project" : "Create Project"}
-                </Button>
-              ) : (
-                <Button type="button" onClick={handleNext}>
-                  Next
-                </Button>
-              )}
+  {currentStep === STEPS.length - 1 ? (
+  <Button
+    type="button"
+    onClick={handleSubmit(onSubmit)}
+    disabled={isSubmitting}
+    className="flex items-center gap-2"
+  >
+    {isSubmitting && <LoadingSpinner size="sm" />}
+    {isSubmitting
+      ? currentProjectId
+        ? "Updating..."
+        : "Creating..."
+      : currentProjectId
+      ? "Update Project"
+      : "Create Project"}
+  </Button>
+) : (
+  <Button type="button" onClick={handleNext}>
+    Next
+  </Button>
+)}
             </div>
           </div>
         </div>

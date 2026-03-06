@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
-//import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
+import { Skeleton } from "../components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -48,7 +48,7 @@ export function ProjectGallery() {
   const [fundingRangeFilter, setFundingRangeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -125,11 +125,7 @@ export function ProjectGallery() {
           Discover innovative startups and investment opportunities
         </p>
       </div>
-      {loading && (
-        <div className="text-center py-6 text-gray-500">
-          Loading projects...
-        </div>
-      )}
+
       {/* Search and Filters */}
       <Card className="bg-white shadow-sm mb-6">
         <CardContent className="pt-6">
@@ -221,10 +217,36 @@ export function ProjectGallery() {
         </CardContent>
       </Card>
 
-      {/* Results Count */}
+  {loading ? (
+    /* Skeleton */
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <Card key={i} className="bg-white shadow-sm">
+          <CardContent className="pt-6 space-y-4">
+            <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-2/3" />
 
-      {/* Project Grid */}
-      {projects.length === 0 ? (
+            <Skeleton className="h-6 w-20 rounded-full" />
+
+            <div className="flex gap-2">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </div>
+
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-1/3" />
+
+            <div className="flex justify-between pt-4 border-t">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-12" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  ) : projects.length === 0 ? (
         <Card className="bg-white shadow-sm">
           <CardContent className="py-16 text-center">
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">

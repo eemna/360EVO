@@ -17,6 +17,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "../components/ui/dialog";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import {
   Table,
   TableBody,
@@ -38,7 +39,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [showBookingCalendar] = useState(false);
-
+    const [booking] = useState(false);
   if (!profileUser.profile) return null;
 
   const profile = profileUser.profile;
@@ -58,6 +59,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
       (slot) => slot.day === dayNumber && slot.enabled,
     );
   };
+
 
   const generateSlots = (date: Date) => {
     const dayNumber = date.getDay();
@@ -245,7 +247,14 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                       className="w-full mt-4"
                       onClick={() => setBookingOpen(true)}
                     >
-                      Confirm Booking
+                       {booking ? (
+    <>
+      <LoadingSpinner size="sm" />
+      Booking...
+    </>
+  ) : (
+    "Confirm Booking"
+  )}
                     </Button>
                   )}
                 </>
