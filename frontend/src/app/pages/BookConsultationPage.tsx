@@ -1,14 +1,33 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { Calendar } from "../components/ui/calendar";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Calendar as CalendarIcon, Clock, ArrowLeft, CheckCircle2, User as UserIcon, DollarSign } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  ArrowLeft,
+  CheckCircle2,
+  User as UserIcon,
+  DollarSign,
+} from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "../components/ui/utils";
 import api from "../../services/axios";
@@ -16,7 +35,15 @@ import type { User, WeeklyAvailability } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 
-const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const dayNames = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 interface Booking {
   id: string;
   startDateTime: string;
@@ -27,7 +54,7 @@ export function BookConsultationPage() {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [duration, setDuration] = useState(30);
-  
+
   const { showToast } = useToast();
   const [booking, setBooking] = useState(false);
   const { expertId } = useParams();
@@ -38,145 +65,138 @@ export function BookConsultationPage() {
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
 
-const [expert, setExpert] = useState<User | null>(null);
-const [loading, setLoading] = useState(true);
-const price =
-  expert?.profile?.hourlyRate
+  const [expert, setExpert] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const price = expert?.profile?.hourlyRate
     ? (Number(expert.profile.hourlyRate) * duration) / 60
     : 0;
-useEffect(() => {
-  const fetchExpert = async () => {
-    try {
-      const { data } = await api.get(`/users/${expertId}`)
-      setExpert(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchExpert = async () => {
+      try {
+        const { data } = await api.get(`/users/${expertId}`);
+        setExpert(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (expertId) fetchExpert();
-}, [expertId]);
+    if (expertId) fetchExpert();
+  }, [expertId]);
 
-useEffect(() => {
-  const fetchBookings = async () => {
-    const { data } = await api.get(`auth/bookings/expert/${expertId}`);
-    setBookings(data);
-  };
+  useEffect(() => {
+    const fetchBookings = async () => {
+      const { data } = await api.get(`auth/bookings/expert/${expertId}`);
+      setBookings(data);
+    };
 
-  if (expertId) fetchBookings();
-}, [expertId]);
+    if (expertId) fetchBookings();
+  }, [expertId]);
   // Check if a date is available based on weekly schedule
-const isDateAvailable = (date: Date) => {
-  if (!expert?.profile?.weeklyAvailability) return false;
+  const isDateAvailable = (date: Date) => {
+    if (!expert?.profile?.weeklyAvailability) return false;
 
-  const dayNumber = date.getDay();
+    const dayNumber = date.getDay();
 
-  return expert.profile.weeklyAvailability.some(
-    (slot) => slot.day === dayNumber && slot.enabled
-  );
-};
+    return expert.profile.weeklyAvailability.some(
+      (slot) => slot.day === dayNumber && slot.enabled,
+    );
+  };
 
-const generateTimeSlots = (date: Date) => {
-  if (!expert?.profile?.weeklyAvailability) return [];
+  const generateTimeSlots = (date: Date) => {
+    if (!expert?.profile?.weeklyAvailability) return [];
 
-  const dayNumber = date.getDay();
+    const dayNumber = date.getDay();
 
-  const availability = expert.profile.weeklyAvailability.find(
-    (slot) => slot.day === dayNumber && slot.enabled
-  );
+    const availability = expert.profile.weeklyAvailability.find(
+      (slot) => slot.day === dayNumber && slot.enabled,
+    );
 
-  if (!availability?.startTime || !availability?.endTime) return [];
+    if (!availability?.startTime || !availability?.endTime) return [];
 
-  const slots: string[] = [];
+    const slots: string[] = [];
 
-  const [startHour, startMinute] = availability.startTime.split(":").map(Number);
-  const [endHour, endMinute] = availability.endTime.split(":").map(Number);
+    const [startHour, startMinute] = availability.startTime
+      .split(":")
+      .map(Number);
+    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
-  const start = new Date(date);
-  start.setHours(startHour, startMinute, 0, 0);
+    const start = new Date(date);
+    start.setHours(startHour, startMinute, 0, 0);
 
-  const end = new Date(date);
-  end.setHours(endHour, endMinute, 0, 0);
+    const end = new Date(date);
+    end.setHours(endHour, endMinute, 0, 0);
 
-  const current = new Date(start);
+    const current = new Date(start);
 
-  while (current < end) {
-    const slotStart = new Date(current);
-    const slotEnd = new Date(current);
-    slotEnd.setMinutes(slotEnd.getMinutes() + duration);
+    while (current < end) {
+      const slotStart = new Date(current);
+      const slotEnd = new Date(current);
+      slotEnd.setMinutes(slotEnd.getMinutes() + duration);
 
-    // Stop if duration exceeds availability window
-    if (slotEnd > end) break;
+      // Stop if duration exceeds availability window
+      if (slotEnd > end) break;
 
-    //  Remove past time
-    if (slotStart <= new Date()) {
+      //  Remove past time
+      if (slotStart <= new Date()) {
+        current.setMinutes(current.getMinutes() + 30);
+        continue;
+      }
+
+      //  Check overlap with existing bookings
+      const isOverlapping = bookings.some((booking) => {
+        const bookingStart = new Date(booking.startDateTime);
+        const bookingEnd = new Date(booking.endDateTime);
+
+        return slotStart < bookingEnd && slotEnd > bookingStart;
+      });
+
+      if (!isOverlapping) {
+        slots.push(slotStart.toTimeString().slice(0, 5));
+      }
+
       current.setMinutes(current.getMinutes() + 30);
-      continue;
     }
 
-    //  Check overlap with existing bookings
-    const isOverlapping = bookings.some((booking) => {
-      const bookingStart = new Date(booking.startDateTime);
-      const bookingEnd = new Date(booking.endDateTime);
+    return slots;
+  };
+  const isDateFullyBooked = (date: Date) => {
+    if (!isDateAvailable(date)) return true;
 
-      return (
-        slotStart < bookingEnd &&
-        slotEnd > bookingStart
-      );
-    });
-
-    if (!isOverlapping) {
-      slots.push(slotStart.toTimeString().slice(0, 5));
-    }
-
-    current.setMinutes(current.getMinutes() + 30);
-  }
-
-  return slots;
-};
-const isDateFullyBooked = (date: Date) => {
-  if (!isDateAvailable(date)) return true;
-
-  const slots = generateTimeSlots(date);
-  return slots.length === 0;
-};
+    const slots = generateTimeSlots(date);
+    return slots.length === 0;
+  };
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
- const today = new Date();
-today.setHours(0, 0, 0, 0);
-const handleConfirmBooking = async () => {
-  if (!selectedDate || !selectedSlot || !expert) return;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const handleConfirmBooking = async () => {
+    if (!selectedDate || !selectedSlot || !expert) return;
 
-  setBooking(true);
+    setBooking(true);
 
-  try {
-    // 1️ Create booking
-    await api.post("/auth/bookings", {
-      expertId: expert.id,
-      date: selectedDate,
-      timeSlot: selectedSlot,
-      duration,
-      message,
-      topic,
-    });
+    try {
+      // 1️ Create booking
+      await api.post("/auth/bookings", {
+        expertId: expert.id,
+        date: selectedDate,
+        timeSlot: selectedSlot,
+        duration,
+        message,
+        topic,
+      });
 
-
-
-    showToast({
-      type: "success",
-      title: "Booking Confirmed 🎉",
-      message: "Your consultation has been scheduled.",
-    });
-
-    
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setBooking(false);
-  }
-};
-
+      showToast({
+        type: "success",
+        title: "Booking Confirmed 🎉",
+        message: "Your consultation has been scheduled.",
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBooking(false);
+    }
+  };
 
   const getInitials = (name: string) =>
     name
@@ -184,8 +204,8 @@ const handleConfirmBooking = async () => {
       .map((n) => n[0])
       .join("")
       .toUpperCase();
-if (loading) return <div>Loading...</div>;
-if (!expert || !expert.profile) return <div>Expert not found</div>;
+  if (loading) return <div>Loading...</div>;
+  if (!expert || !expert.profile) return <div>Expert not found</div>;
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -198,7 +218,9 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
           <ArrowLeft className="size-4 mr-2" />
           Back to Profile
         </Button>
-        <h1 className="text-3xl font-semibold text-gray-900">Book a Consultation</h1>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          Book a Consultation
+        </h1>
         <p className="text-gray-600 mt-1">
           Schedule a session with {expert.name}
         </p>
@@ -217,9 +239,13 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                     {getInitials(expert.name)}
                   </AvatarFallback>
                 </Avatar>
-                <h3 className="font-semibold text-lg text-gray-900">{expert.name}</h3>
-                <Badge className="bg-green-100 text-green-700 mt-2">Expert</Badge>
-                
+                <h3 className="font-semibold text-lg text-gray-900">
+                  {expert.name}
+                </h3>
+                <Badge className="bg-green-100 text-green-700 mt-2">
+                  Expert
+                </Badge>
+
                 <div className="w-full mt-6 pt-6 border-t border-gray-300">
                   <div className="flex items-center justify-center gap-2 text-gray-600 mb-2">
                     <DollarSign className="size-4" />
@@ -259,29 +285,35 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {expert.profile.weeklyAvailability?.map((slot: WeeklyAvailability) => (
-                  <div
-                    key={slot.day}
-                    className={cn(
-                      "flex items-center justify-between p-2 rounded-lg text-sm",
-                      slot.enabled ? "bg-green-50" : "bg-gray-50"
-                    )}
-                  >
-                    <span className={cn(
-                      "font-medium",
-                      slot.enabled ? "text-gray-900" : "text-gray-400"
-                    )}>
-                      {dayNames[slot.day]}
-                    </span>
-                    {slot.enabled ? (
-                      <span className="text-gray-600 text-xs">
-                        {slot.startTime} - {slot.endTime}
+                {expert.profile.weeklyAvailability?.map(
+                  (slot: WeeklyAvailability) => (
+                    <div
+                      key={slot.day}
+                      className={cn(
+                        "flex items-center justify-between p-2 rounded-lg text-sm",
+                        slot.enabled ? "bg-green-50" : "bg-gray-50",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "font-medium",
+                          slot.enabled ? "text-gray-900" : "text-gray-400",
+                        )}
+                      >
+                        {dayNames[slot.day]}
                       </span>
-                    ) : (
-                      <span className="text-gray-400 text-xs">Unavailable</span>
-                    )}
-                  </div>
-                ))}
+                      {slot.enabled ? (
+                        <span className="text-gray-600 text-xs">
+                          {slot.startTime} - {slot.endTime}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-xs">
+                          Unavailable
+                        </span>
+                      )}
+                    </div>
+                  ),
+                )}
               </div>
             </CardContent>
           </Card>
@@ -304,49 +336,50 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                 <Calendar
                   mode="single"
                   selected={selectedDate}
-                 onSelect={(date) => {
-  if (!date) return;
+                  onSelect={(date) => {
+                    if (!date) return;
 
-  setLoadingSlots(true);
-  setSelectedSlot(null);
+                    setLoadingSlots(true);
+                    setSelectedSlot(null);
 
-  setTimeout(() => {
-    setSelectedDate(date);
-    setLoadingSlots(false);
-  }, 500);
-}}
-                 disabled={(date) =>
-                 date < today ||
-                 !isDateAvailable(date) ||
-                 isDateFullyBooked(date)
+                    setTimeout(() => {
+                      setSelectedDate(date);
+                      setLoadingSlots(false);
+                    }, 500);
+                  }}
+                  disabled={(date) =>
+                    date < today ||
+                    !isDateAvailable(date) ||
+                    isDateFullyBooked(date)
                   }
                   className="rounded-lg border border-gray-300 shadow-sm p-4"
                   modifiers={{
-                  available: (date) =>
-                  date >= today &&
-                  isDateAvailable(date) &&
-                  !isDateFullyBooked(date),
+                    available: (date) =>
+                      date >= today &&
+                      isDateAvailable(date) &&
+                      !isDateFullyBooked(date),
                   }}
                   modifiersClassNames={{
                     available: "bg-indigo-50 font-semibold",
                   }}
                 />
- 
               </div>
               <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                 <p className="text-sm text-blue-900 flex items-center gap-2">
                   <CalendarIcon className="size-4" />
-                  <span>Available dates are highlighted. Select a date to view time slots.</span>
+                  <span>
+                    Available dates are highlighted. Select a date to view time
+                    slots.
+                  </span>
                 </p>
               </div>
-              
             </CardContent>
           </Card>
-{loadingSlots && (
-  <div className="flex justify-center mt-4">
-    <LoadingSpinner size="md" />
-  </div>
-)}
+          {loadingSlots && (
+            <div className="flex justify-center mt-4">
+              <LoadingSpinner size="md" />
+            </div>
+          )}
           {/* Step 2: Select Time Slot */}
           {(selectedDate || loadingSlots) && (
             <Card className="shadow-md">
@@ -358,38 +391,43 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                   <CardTitle>Select a Time Slot</CardTitle>
                 </div>
                 <p className="text-sm text-gray-600 mt-2">
-                  Available times for {selectedDate && (
-  <span className="font-semibold">
-    {format(selectedDate, "EEEE, MMMM d, yyyy")}
-  </span>
-)}
+                  Available times for{" "}
+                  {selectedDate && (
+                    <span className="font-semibold">
+                      {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                    </span>
+                  )}
                 </p>
               </CardHeader>
               <CardContent>
-                          <div className="flex gap-3 mb-6">
-                          {[30, 60, 90].map((d) => (
-                         <Button
-                            key={d}
-                            variant={duration === d ? "secondary" : "outline"}
-                            onClick={() => {
-                              setDuration(d);
-                              setSelectedSlot(null);
-                               }} >
-                              {d} min
-                              </Button> ))}
-            </div>
-           
+                <div className="flex gap-3 mb-6">
+                  {[30, 60, 90].map((d) => (
+                    <Button
+                      key={d}
+                      variant={duration === d ? "secondary" : "outline"}
+                      onClick={() => {
+                        setDuration(d);
+                        setSelectedSlot(null);
+                      }}
+                    >
+                      {d} min
+                    </Button>
+                  ))}
+                </div>
+
                 {timeSlots.length > 0 ? (
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
                     {timeSlots.map((slot) => (
                       <Button
                         key={slot}
-                        variant={selectedSlot === slot ? "secondary" : "outline"}
+                        variant={
+                          selectedSlot === slot ? "secondary" : "outline"
+                        }
                         className={cn(
                           "h-auto py-3 flex flex-col items-center",
                           selectedSlot === slot
                             ? "bg-indigo-600 hover:bg-indigo-700"
-                            : "hover:bg-indigo-50 hover:border-indigo-300"
+                            : "hover:bg-indigo-50 hover:border-indigo-300",
                         )}
                         onClick={() => setSelectedSlot(slot)}
                       >
@@ -425,7 +463,8 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                     <div>
                       <p className="text-sm text-gray-600">Date & Time</p>
                       <p className="font-semibold text-gray-900">
-                        {format(selectedDate, "EEEE, MMMM d, yyyy")} at {selectedSlot}
+                        {format(selectedDate, "EEEE, MMMM d, yyyy")} at{" "}
+                        {selectedSlot}
                       </p>
                     </div>
                   </div>
@@ -433,7 +472,9 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                     <Clock className="size-5 text-indigo-600" />
                     <div>
                       <p className="text-sm text-gray-600">Duration</p>
-                      <p className="font-semibold text-gray-900">{duration} minutes</p>
+                      <p className="font-semibold text-gray-900">
+                        {duration} minutes
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -444,16 +485,16 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                     </div>
                   </div>
                 </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="topic">Topic *</Label>
-                    <Textarea
-                      id="topic"
-                      placeholder="What is this consultation about?"
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                       rows={2}
-                       className="resize-none"
-                        />
+                  <Textarea
+                    id="topic"
+                    placeholder="What is this consultation about?"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Message (Optional)</Label>
@@ -468,19 +509,21 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
                 </div>
 
                 <Button
-                   className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"
-                   onClick={handleConfirmBooking}
-                   disabled={booking || !topic.trim()} >
-                   {booking ? (
-                     <>
-                   <LoadingSpinner size="sm" />
-                     Processing...
-                   </>
-                   ) : (
-                     <>
-                    <CheckCircle2 className="size-4 mr-2" />
+                  className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"
+                  onClick={handleConfirmBooking}
+                  disabled={booking || !topic.trim()}
+                >
+                  {booking ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="size-4 mr-2" />
                       Confirm Booking
-                    </>)}
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -489,8 +532,12 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
       </div>
 
       {/* Confirmation Dialog */}
-      <Dialog open={confirmOpen}  onOpenChange={(open) => {
-    if (!booking) setConfirmOpen(open); }}>
+      <Dialog
+        open={confirmOpen}
+        onOpenChange={(open) => {
+          if (!booking) setConfirmOpen(open);
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Confirm Your Consultation</DialogTitle>
@@ -522,11 +569,15 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Time:</span>
-                <span className="font-medium text-gray-900">{selectedSlot}</span>
+                <span className="font-medium text-gray-900">
+                  {selectedSlot}
+                </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Duration:</span>
-                <span className="font-medium text-gray-900">{duration} minutes</span>
+                <span className="font-medium text-gray-900">
+                  {duration} minutes
+                </span>
               </div>
               <div className="flex justify-between text-sm pt-2 border-t">
                 <span className="text-gray-900 font-semibold">Total:</span>
@@ -548,7 +599,10 @@ if (!expert || !expert.profile) return <div>Expert not found</div>;
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               Cancel
             </Button>
-            <Button className="bg-indigo-600 hover:bg-indigo-700" onClick={handleConfirmBooking}>
+            <Button
+              className="bg-indigo-600 hover:bg-indigo-700"
+              onClick={handleConfirmBooking}
+            >
               <CheckCircle2 className="size-4 mr-2" />
               Confirm Booking
             </Button>

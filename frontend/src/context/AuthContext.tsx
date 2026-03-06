@@ -1,7 +1,7 @@
 import { createContext } from "react";
 export interface WeeklyAvailability {
   id?: string;
-  day: number;   
+  day: number;
   startTime: string | null;
   endTime: string | null;
   enabled: boolean;

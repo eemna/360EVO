@@ -573,9 +573,9 @@ export const updateProfile = async (req, res, next) => {
       if (companyName !== undefined) profileData.companyName = companyName;
       if (stage !== undefined) profileData.stage = stage;
 
-     if (hourlyRate !== undefined) {
-     profileData.hourlyRate =
-     hourlyRate !== null ? Number(hourlyRate) : null;
+      if (hourlyRate !== undefined) {
+        profileData.hourlyRate =
+          hourlyRate !== null ? Number(hourlyRate) : null;
       }
 
       if (yearsOfExperience !== undefined)
@@ -584,11 +584,9 @@ export const updateProfile = async (req, res, next) => {
       if (availabilityStatus !== undefined)
         profileData.availabilityStatus = availabilityStatus;
 
-      if (Array.isArray(expertise))
-        profileData.expertise = expertise;
+      if (Array.isArray(expertise)) profileData.expertise = expertise;
 
-      if (Array.isArray(industries))
-        profileData.industries = industries;
+      if (Array.isArray(industries)) profileData.industries = industries;
 
       if (Array.isArray(certifications))
         profileData.certifications = certifications;
@@ -606,20 +604,21 @@ export const updateProfile = async (req, res, next) => {
         await tx.weeklyAvailability.deleteMany({
           where: { profileId: profile.id },
         });
-const validAvailability = weeklyAvailability
-  .filter((d) => d.enabled && d.startTime && d.endTime);
+        const validAvailability = weeklyAvailability.filter(
+          (d) => d.enabled && d.startTime && d.endTime,
+        );
 
-if (validAvailability.length) {
-  await tx.weeklyAvailability.createMany({
-    data: validAvailability.map((day) => ({
-      profileId: profile.id,
-      day: day.day,
-      startTime: day.startTime,
-      endTime: day.endTime,
-      enabled: true,
-    })),
-  });
-}
+        if (validAvailability.length) {
+          await tx.weeklyAvailability.createMany({
+            data: validAvailability.map((day) => ({
+              profileId: profile.id,
+              day: day.day,
+              startTime: day.startTime,
+              endTime: day.endTime,
+              enabled: true,
+            })),
+          });
+        }
       }
 
       return tx.user.findUnique({
@@ -668,20 +667,21 @@ export const getPublicExpertProfile = async (req, res, next) => {
       const today = new Date();
       const todayDay = today.getDay();
 
-      const todayAvailability =
-        expert.profile.weeklyAvailability.find(
-          (slot) => slot.day === todayDay && slot.enabled
-        );
+      const todayAvailability = expert.profile.weeklyAvailability.find(
+        (slot) => slot.day === todayDay && slot.enabled,
+      );
 
       if (!todayAvailability) {
         computedStatus = "BUSY";
       } else {
         // Check if fully booked today
-        const [startHour, startMinute] =
-          todayAvailability.startTime.split(":").map(Number);
+        const [startHour, startMinute] = todayAvailability.startTime
+          .split(":")
+          .map(Number);
 
-        const [endHour, endMinute] =
-          todayAvailability.endTime.split(":").map(Number);
+        const [endHour, endMinute] = todayAvailability.endTime
+          .split(":")
+          .map(Number);
 
         const availableStart = new Date(today);
         availableStart.setHours(startHour, startMinute, 0, 0);
@@ -702,7 +702,7 @@ export const getPublicExpertProfile = async (req, res, next) => {
 
         const bookedMinutes = bookingsToday.reduce(
           (total, booking) => total + booking.duration,
-          0
+          0,
         );
 
         const totalAvailableMinutes =
@@ -769,7 +769,7 @@ export const createBooking = async (req, res, next) => {
     const day = startDateTime.getDay();
 
     const availability = expert.profile.weeklyAvailability.find(
-      (slot) => slot.day === day && slot.enabled
+      (slot) => slot.day === day && slot.enabled,
     );
 
     if (!availability || !availability.startTime || !availability.endTime) {
@@ -778,7 +778,9 @@ export const createBooking = async (req, res, next) => {
       });
     }
 
-    const [startHour, startMinute] = availability.startTime.split(":").map(Number);
+    const [startHour, startMinute] = availability.startTime
+      .split(":")
+      .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
     const availableStart = new Date(startDateTime);
@@ -812,8 +814,7 @@ export const createBooking = async (req, res, next) => {
     }
 
     // Calculate price
-    const price =
-      (Number(expert.profile.hourlyRate) * duration) / 60;
+    const price = (Number(expert.profile.hourlyRate) * duration) / 60;
 
     // Create booking
     const booking = await prisma.booking.create({
@@ -825,7 +826,7 @@ export const createBooking = async (req, res, next) => {
         duration,
         price,
         message,
-        topic, 
+        topic,
       },
     });
 
@@ -834,7 +835,7 @@ export const createBooking = async (req, res, next) => {
     next(error);
   }
 };
-export const getExpertBookings = async (req, res, next) => { 
+export const getExpertBookings = async (req, res, next) => {
   try {
     const { expertId } = req.params;
 

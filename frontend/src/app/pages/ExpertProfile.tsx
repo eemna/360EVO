@@ -25,12 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import {
-  Briefcase,
-  Calendar,
- 
-  
-} from "lucide-react";
+import { Briefcase, Calendar } from "lucide-react";
 import api from "../../services/axios";
 import type { User } from "../../context/AuthContext";
 
@@ -38,21 +33,17 @@ interface ExpertProfileProps {
   profileUser: User;
 }
 
-
-
-
 export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
-
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [bookingOpen, setBookingOpen] = useState(false);
   const [showBookingCalendar] = useState(false);
 
- if (!profileUser.profile) return null;
+  if (!profileUser.profile) return null;
 
-const profile = profileUser.profile;
+  const profile = profileUser.profile;
 
- const dayNames = [
+  const dayNames = [
     "Sunday",
     "Monday",
     "Tuesday",
@@ -64,7 +55,7 @@ const profile = profileUser.profile;
   const isDateAvailable = (date: Date) => {
     const dayNumber = date.getDay();
     return profile?.weeklyAvailability?.some(
-      (slot) => slot.day === dayNumber && slot.enabled
+      (slot) => slot.day === dayNumber && slot.enabled,
     );
   };
 
@@ -72,7 +63,7 @@ const profile = profileUser.profile;
     const dayNumber = date.getDay();
 
     const availability = profile?.weeklyAvailability?.find(
-      (slot) => slot.day === dayNumber && slot.enabled
+      (slot) => slot.day === dayNumber && slot.enabled,
     );
 
     if (!availability || !availability.startTime || !availability.endTime)
@@ -91,7 +82,6 @@ const profile = profileUser.profile;
 
   return (
     <div className="space-y-6">
-
       {/* PROFESSIONAL INFO */}
       <Card>
         <CardHeader>
@@ -113,9 +103,7 @@ const profile = profileUser.profile;
             </Card>
 
             <Card className="p-4">
-              <p className="text-sm text-muted-foreground">
-                Industries
-              </p>
+              <p className="text-sm text-muted-foreground">Industries</p>
               <div className="flex flex-wrap gap-2 mt-2">
                 {profile.industries?.map((ind: string) => (
                   <Badge key={ind} variant="secondary">
@@ -132,10 +120,7 @@ const profile = profileUser.profile;
             </p>
             <div className="flex flex-wrap gap-2">
               {profile.expertise?.map((skill: string) => (
-                <Badge
-                  key={skill}
-                  className="bg-indigo-100 text-indigo-700"
-                >
+                <Badge key={skill} className="bg-indigo-100 text-indigo-700">
                   {skill}
                 </Badge>
               ))}
@@ -143,9 +128,7 @@ const profile = profileUser.profile;
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground mb-2">
-              Certifications
-            </p>
+            <p className="text-sm text-muted-foreground mb-2">Certifications</p>
             <div className="flex flex-wrap gap-2">
               {profile.certifications?.map((cert: string) => (
                 <Badge key={cert} variant="outline">
@@ -157,69 +140,65 @@ const profile = profileUser.profile;
         </CardContent>
       </Card>
 
-      
+      {/* WEEKLY AVAILABILITY */}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="size-5 text-indigo-600" />
+            Weekly Availability
+          </CardTitle>
+        </CardHeader>
 
-     {/* WEEKLY AVAILABILITY */}
-<Card className="shadow-sm">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <Calendar className="size-5 text-indigo-600" />
-      Weekly Availability
-    </CardTitle>
-  </CardHeader>
+        <CardContent>
+          <div className="rounded-lg border border-gray-200 overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50">
+                  <TableHead className="font-semibold">Day</TableHead>
+                  <TableHead className="font-semibold">Start Time</TableHead>
+                  <TableHead className="font-semibold">End Time</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                </TableRow>
+              </TableHeader>
 
-  <CardContent>
-    <div className="rounded-lg border border-gray-200 overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead className="font-semibold">Day</TableHead>
-            <TableHead className="font-semibold">Start Time</TableHead>
-            <TableHead className="font-semibold">End Time</TableHead>
-            <TableHead className="font-semibold">Status</TableHead>
-          </TableRow>
-        </TableHeader>
+              <TableBody>
+                {(profile.weeklyAvailability ?? []).map((slot) => {
+                  const isAvailable = slot.enabled;
 
-        <TableBody>
-          {(profile.weeklyAvailability ?? []).map((slot) => {
-            const isAvailable = slot.enabled;
+                  return (
+                    <TableRow
+                      key={slot.id}
+                      className={!isAvailable ? "bg-gray-50" : ""}
+                    >
+                      <TableCell className="font-medium">
+                        {dayNames[slot.day]}
+                      </TableCell>
 
-            return (
-              <TableRow
-                key={slot.id}
-                className={!isAvailable ? "bg-gray-50" : ""}
-              >
-                <TableCell className="font-medium">
-                  {dayNames[slot.day]}
-                </TableCell>
+                      <TableCell>
+                        {isAvailable ? slot.startTime : "—"}
+                      </TableCell>
 
-                <TableCell>
-                  {isAvailable ? slot.startTime : "—"}
-                </TableCell>
+                      <TableCell>{isAvailable ? slot.endTime : "—"}</TableCell>
 
-                <TableCell>
-                  {isAvailable ? slot.endTime : "—"}
-                </TableCell>
-
-                <TableCell>
-                  {isAvailable ? (
-                    <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
-                      Available
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-gray-200 text-gray-600 hover:bg-gray-200">
-                      Unavailable
-                    </Badge>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
-  </CardContent>
-</Card>
+                      <TableCell>
+                        {isAvailable ? (
+                          <Badge className="bg-green-100 text-green-700 hover:bg-green-100">
+                            Available
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gray-200 text-gray-600 hover:bg-gray-200">
+                            Unavailable
+                          </Badge>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* BOOKING CALENDAR */}
       {showBookingCalendar && (
@@ -243,8 +222,7 @@ const profile = profileUser.profile;
               {selectedDate ? (
                 <>
                   <p className="mb-3">
-                    Available slots for{" "}
-                    {format(selectedDate, "EEEE, MMM d")}
+                    Available slots for {format(selectedDate, "EEEE, MMM d")}
                   </p>
 
                   <div className="grid grid-cols-3 gap-2">
@@ -253,9 +231,7 @@ const profile = profileUser.profile;
                         key={slot}
                         size="sm"
                         variant={
-                          selectedSlot === slot
-                            ? "secondary"
-                            : "outline"
+                          selectedSlot === slot ? "secondary" : "outline"
                         }
                         onClick={() => setSelectedSlot(slot)}
                       >
@@ -293,10 +269,7 @@ const profile = profileUser.profile;
           </DialogHeader>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setBookingOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setBookingOpen(false)}>
               Cancel
             </Button>
 
@@ -317,7 +290,6 @@ const profile = profileUser.profile;
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

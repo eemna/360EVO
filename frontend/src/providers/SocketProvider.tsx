@@ -17,11 +17,11 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     const baseURL = import.meta.env.VITE_API_URL.replace("/api", "");
 
-const newSocket = io(baseURL, {
-  path: "/api/socket.io",
-  auth: { token },
-  withCredentials: true,
-});
+    const newSocket = io(baseURL, {
+      path: "/api/socket.io",
+      auth: { token },
+      withCredentials: true,
+    });
 
     socketRef.current = newSocket;
 
@@ -34,11 +34,11 @@ const newSocket = io(baseURL, {
     });
 
     newSocket.on("user_online", (userId: string) => {
-      setOnlineUsers(prev => new Set(prev).add(userId));
+      setOnlineUsers((prev) => new Set(prev).add(userId));
     });
 
     newSocket.on("user_offline", (userId: string) => {
-      setOnlineUsers(prev => {
+      setOnlineUsers((prev) => {
         const updated = new Set(prev);
         updated.delete(userId);
         return updated;

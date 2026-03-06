@@ -34,10 +34,7 @@ export const createConversation = async (req, res, next) => {
       return tx.conversation.create({
         data: {
           participants: {
-            create: [
-              { userId: currentUserId },
-              { userId: otherUserId },
-            ],
+            create: [{ userId: currentUserId }, { userId: otherUserId }],
           },
         },
         include: { participants: true },
@@ -78,16 +75,16 @@ export const sendMessage = async (req, res, next) => {
         content: content.trim(),
       },
       include: {
-  sender: {
-    select: {
-      id: true,
-      name: true,
-      profile: {
-        select: { avatar: true },
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            profile: {
+              select: { avatar: true },
+            },
+          },
+        },
       },
-    },
-  },
-},
     });
 
     global.io.to(id).emit("new_message", message);
@@ -123,25 +120,23 @@ export const getMessages = async (req, res, next) => {
         skip: 1,
         cursor: { id: cursor },
       }),
-     include: {
-  sender: {
-    select: {
-      id: true,
-      name: true,
-      profile: {
-        select: { avatar: true },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            profile: {
+              select: { avatar: true },
+            },
+          },
+        },
       },
-    },
-  },
-},
     });
 
     res.json({
       messages: messages.reverse(),
       nextCursor:
-        messages.length === 50
-          ? messages[messages.length - 1].id
-          : null,
+        messages.length === 50 ? messages[messages.length - 1].id : null,
     });
   } catch (error) {
     next(error);
@@ -183,7 +178,7 @@ export const getConversations = async (req, res, next) => {
 
     const formatted = conversations.map((conv) => {
       const otherUser = conv.participants.find(
-        (p) => p.userId !== userId
+        (p) => p.userId !== userId,
       )?.user;
 
       return {

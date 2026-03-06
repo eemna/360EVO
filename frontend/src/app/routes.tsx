@@ -75,31 +75,31 @@ export const router = createBrowserRouter([
         path: "expert",
         element: (
           <RoleRoute allowedRoles={["EXPERT"]}>
-            <ExpertDashboard  />
+            <ExpertDashboard />
           </RoleRoute>
         ),
       },
       {
-  path: "expert/reservations",
-  element: (
-    <RoleRoute allowedRoles={["EXPERT"]}>
-      <ManageReservations />
-    </RoleRoute>
-  ),
-},
+        path: "expert/reservations",
+        element: (
+          <RoleRoute allowedRoles={["EXPERT"]}>
+            <ManageReservations />
+          </RoleRoute>
+        ),
+      },
       {
-  path: "experts/:expertId/book",
-  element: (
-    <RoleRoute allowedRoles={["MEMBER", "STARTUP","ADMIN"]}>
-      <BookConsultationPage />
-    </RoleRoute>
-  ),
-},
+        path: "experts/:expertId/book",
+        element: (
+          <RoleRoute allowedRoles={["MEMBER", "STARTUP", "ADMIN"]}>
+            <BookConsultationPage />
+          </RoleRoute>
+        ),
+      },
       {
         path: "projects",
         element: <ProjectGallery />,
       },
-       /*{
+      /*{
         path: "conversation",
         element: <MessagesPage />,
       },*/
@@ -114,12 +114,11 @@ export const router = createBrowserRouter([
       {
         path: "startup/projects/:id",
         element: (
-          <RoleRoute allowedRoles={["STARTUP", "ADMIN", "EXPERT","MEMBER"]}>
+          <RoleRoute allowedRoles={["STARTUP", "ADMIN", "EXPERT", "MEMBER"]}>
             <ProjectDetailsPage />
           </RoleRoute>
         ),
       },
-    
     ],
   },
   {

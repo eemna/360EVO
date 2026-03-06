@@ -186,14 +186,18 @@ export default function ProjectDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b border-gray-400 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <Button variant="ghost" onClick={handleBack} className="gap-2">
-            <ArrowLeft className="size-4" />
-            Back to Projects
-          </Button>
-        </div>
-      </header>
+         <div className="mb-0">
+                <Button
+                  variant="ghost"
+                  className="mb-4 -ml-2"
+                  onClick={handleBack}
+                >
+                  <ArrowLeft  className="size-4 mr-2" />
+                  Back to Projects
+                </Button>
+             
+              </div>
+     
 
       <Dialog open={connectModalOpen} onOpenChange={setConnectModalOpen}>
         <DialogContent className="sm:max-w-md shadow-2xl">
