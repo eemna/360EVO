@@ -14,6 +14,8 @@ import {
   TabsTrigger,
 } from "../components/ui/tabs";
 import { format } from "date-fns";
+import { Skeleton } from "../components/ui/skeleton";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +67,9 @@ interface Booking {
     name: string;
   };
 }
+function calculateSessionPrice(pricePerHour: number, duration: number) {
+  return pricePerHour * (duration / 60);
+}
 
 export function ManageReservations() {
   const navigate = useNavigate();
@@ -72,6 +77,7 @@ export function ManageReservations() {
   const { showToast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -110,6 +116,7 @@ export function ManageReservations() {
 
   const handleAcceptBooking = async (bookingId: string) => {
     try {
+       setProcessingId(bookingId);
       await api.patch(`/auth/${bookingId}/accept`);
 
       setBookings((prev) =>
@@ -125,13 +132,16 @@ export function ManageReservations() {
       });
     } catch (error) {
       console.error(error);
-    }
+     } finally {
+    setProcessingId(null);
+  }
   };
 
   const handleRejectBooking = async () => {
     if (!selectedBooking) return;
 
     try {
+      setProcessingId(selectedBooking.id);
       await api.patch(`/auth/${selectedBooking.id}/reject`, {
         reason: rejectionReason,
       });
@@ -153,7 +163,9 @@ export function ManageReservations() {
       setSelectedBooking(null);
     } catch (error) {
       console.error(error);
-    }
+    } finally {
+      setProcessingId(null);
+  }
   };
 
   const handleCancelReservation = async () => {
@@ -206,8 +218,52 @@ export function ManageReservations() {
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
   };
-  if (loading) return <div>Loading...</div>;
+if (loading)
   return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+
+        {/* Header skeleton */}
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-72" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+
+        {/* Stats cards skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="pt-6 space-y-3">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Booking cards skeleton */}
+        <div className="space-y-6">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <div className="flex gap-3">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+    return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -274,12 +330,16 @@ export function ManageReservations() {
                   <p className="text-sm font-medium text-gray-600">
                     Total Confirmed Earnings
                   </p>
-                  <p className="text-3xl font-semibold text-indigo-600 mt-1">
-                    $
-                    {confirmedBookings
-                      .reduce((total, booking) => total + booking.price, 0)
-                      .toLocaleString()}
-                  </p>
+                 <p className="text-3xl font-semibold text-indigo-600 mt-1">
+  $
+{confirmedBookings
+  .reduce(
+    (total, booking) =>
+      total + calculateSessionPrice(booking.price, booking.duration),
+    0
+  )
+  .toLocaleString()}
+</p>
                 </div>
                 <div className="size-12 bg-indigo-100 rounded-full flex items-center justify-center">
                   <DollarSign className="size-6 text-indigo-600" />
@@ -291,34 +351,33 @@ export function ManageReservations() {
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          
-<TabsList className="flex w-full gap-2 mb-6 overflow-x-auto px-1 justify-start">
-  <TabsTrigger
-    value="pending"
-    className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-  >
-    Pending Requests
-    {pendingBookings.length > 0 && (
-      <Badge className="ml-2 bg-orange-500 text-white">
-        {pendingBookings.length}
-      </Badge>
-    )}
-  </TabsTrigger>
+          <TabsList className="flex w-full gap-2 mb-6 overflow-x-auto px-1 justify-start">
+            <TabsTrigger
+              value="pending"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+            >
+              Pending Requests
+              {pendingBookings.length > 0 && (
+                <Badge className="ml-2 bg-orange-500 text-white">
+                  {pendingBookings.length}
+                </Badge>
+              )}
+            </TabsTrigger>
 
-  <TabsTrigger
-    value="confirmed"
-    className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-  >
-    Confirmed Sessions
-  </TabsTrigger>
+            <TabsTrigger
+              value="confirmed"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+            >
+              Confirmed Sessions
+            </TabsTrigger>
 
-  <TabsTrigger
-    value="schedule"
-    className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-  >
-    Schedule
-  </TabsTrigger>
-</TabsList>
+            <TabsTrigger
+              value="schedule"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+            >
+              Schedule
+            </TabsTrigger>
+          </TabsList>
 
           {/* Pending Requests Tab */}
           <TabsContent value="pending" className="space-y-6">
@@ -369,7 +428,7 @@ export function ManageReservations() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
-                            <span>${booking.price}/hr</span>
+                            <span> ${calculateSessionPrice(booking.price, booking.duration).toFixed(2)} ({booking.price}/hr)</span>
                           </div>
                         </div>
                       </div>
@@ -406,8 +465,12 @@ export function ManageReservations() {
                         onClick={() => handleAcceptBooking(booking.id)}
                         className="flex-1 bg-green-600 hover:bg-green-700"
                       >
-                        <CheckCircle2 className="size-4 mr-2" />
-                        Accept Booking
+                       {processingId === booking.id ? (
+    <LoadingSpinner size="sm" className="mr-2" />
+  ) : (
+    <CheckCircle2 className="size-4 mr-2" />
+  )}
+  Accept Booking
                       </Button>
                       <Button
                         onClick={() => {
@@ -417,7 +480,11 @@ export function ManageReservations() {
                         variant="outline"
                         className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
                       >
-                        <XCircle className="size-4 mr-2" />
+                         {processingId === booking.id ? (
+    <LoadingSpinner size="sm" className="mr-2" />
+  ) : (
+    <XCircle className="size-4 mr-2" />
+  )}
                         Reject
                       </Button>
                     </div>
@@ -476,7 +543,7 @@ export function ManageReservations() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
-                            <span>${booking.price}</span>
+                            <span>${calculateSessionPrice(booking.price, booking.duration)}</span>
                           </div>
                         </div>
                       </div>

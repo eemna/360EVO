@@ -5,7 +5,8 @@ import { Label } from "../components/ui/label";
 import { Separator } from "../components/ui/separator";
 import { useEffect, useState } from "react";
 import { Textarea } from "../components/ui/textarea";
-//import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
+import { Skeleton } from "../components/ui/skeleton";
+import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import {
   Tabs,
   TabsContent,
@@ -22,7 +23,7 @@ export default function Settings() {
   const { user, setUser } = useAuth();
   const { showToast } = useToast();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Basic
   const [name, setName] = useState(user?.name ?? "");
@@ -48,6 +49,7 @@ export default function Settings() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        setLoading(true);
         const { data } = await api.get("/auth/me");
 
         setName(data.name || "");
@@ -65,7 +67,9 @@ export default function Settings() {
         setExpertise(data.profile?.expertise || []);
       } catch (error) {
         console.error("Failed to fetch profile", error);
-      }
+       } finally {
+      setLoading(false);
+    }
     };
 
     fetchProfile();
@@ -173,6 +177,37 @@ export default function Settings() {
 
     setLoading(false);
   };
+  if (loading) {
+  return (
+    <main className="flex-1 space-y-6 pb-10">
+
+      <Card className="p-6 space-y-3">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-4 w-64" />
+      </Card>
+
+      <Card className="p-6 space-y-6">
+
+        <div className="flex gap-4">
+          <Skeleton className="h-10 w-28" />
+          <Skeleton className="h-10 w-28" />
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+
+        <Skeleton className="h-28 w-full" />
+
+        <Skeleton className="h-10 w-40" />
+      </Card>
+
+    </main>
+  );
+}
 
   return (
     <main className="flex-1 space-y-6 pb-10">
@@ -278,7 +313,14 @@ export default function Settings() {
             </div>
 
             <Button onClick={handleProfileUpdate} disabled={loading}>
-              {loading ? "Saving..." : "Save Profile"}
+                {loading ? (
+    <div className="flex items-center gap-2">
+      <LoadingSpinner size="sm" />
+      Saving...
+    </div>
+  ) : (
+    "Save Profile"
+  )}
             </Button>
           </TabsContent>
 
@@ -292,7 +334,11 @@ export default function Settings() {
                 onChange={(e) => setEmail(e.target.value)}
               />
               <Button onClick={handleEmailUpdate} disabled={loading}>
-                Update Email
+                 {loading ? (
+    <LoadingSpinner size="sm" />
+  ) : (
+    "Update Email"
+  )}
               </Button>
             </div>
 
@@ -323,7 +369,11 @@ export default function Settings() {
               />
 
               <Button onClick={handlePasswordUpdate} disabled={loading}>
-                Update Password
+                {loading ? (
+    <LoadingSpinner size="sm" />
+  ) : (
+    "Update Password"
+  )}
               </Button>
             </div>
           </TabsContent>

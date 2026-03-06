@@ -30,6 +30,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { Camera } from "lucide-react";
 import { FileUpload } from "../components/ui/fileUpload";
 import { useAuth } from "../../hooks/useAuth";
+import { Skeleton } from "../components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -65,6 +66,7 @@ const roleColors: Record<
 //const stageOptions = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 
 export default function Profile() {
+  const [uploading, setUploading] = useState(false);
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
   const { user, setUser } = useAuth();
@@ -259,7 +261,39 @@ export default function Profile() {
       .join("")
       .toUpperCase();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+  return (
+    <div className="space-y-6">
+
+      {/* Cover skeleton */}
+      <Skeleton className="h-64 w-full rounded-xl" />
+
+      {/* Avatar + name */}
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-32 w-32 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-6 w-48" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div className="lg:col-span-2 space-y-6">
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
+
+        <div className="space-y-6">
+          <Skeleton className="h-40 w-full rounded-xl" />
+          <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
+
+      </div>
+    </div>
+  );
+}
   if (!profileUser || !profileUser.profile) return <div>User not found</div>;
 
   const profile = profileUser.profile;
@@ -296,6 +330,7 @@ export default function Profile() {
                     if (!file || !profileUser?.profile || !isOwnProfile) return;
 
                     try {
+                       setUploading(true);
                       const { data } = await api.put("/auth/update-profile", {
                         name: profileUser.name,
                         bio: profileUser.profile.bio,
@@ -311,15 +346,23 @@ export default function Profile() {
                       setUser(data); // update auth
                       setProfileUser(data); // update profile page
                     } catch (err) {
+                      
                       console.error(err);
-                    }
-                  }}
+                    
+                     } finally {
+                       setUploading(false); 
+  
+                  }} }
                 >
                   <Button
                     size="icon"
                     className="rounded-full bg-white shadow hover:bg-gray-100 transition"
                   >
-                    <Camera className="size-4 text-gray-700" />
+                    {uploading ? (
+    <LoadingSpinner size="sm" />
+  ) : (
+    <Camera className="size-4 text-gray-700" />
+  )}
                   </Button>
                 </FileUpload>
               )}
@@ -547,7 +590,7 @@ text-white border border-white/30 gap-2"
                     <div className="space-y-2">
                       <Label>Full Name </Label>
                       <Input
-                      autoFocus={false}
+                        autoFocus={false}
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({
@@ -630,7 +673,7 @@ text-white border border-white/30 gap-2"
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 {/* EXPERT SECTION */}
                 {formData.role === "EXPERT" && (
                   <Card>
@@ -756,89 +799,106 @@ text-white border border-white/30 gap-2"
                       {/* Weekly Availability */}
                       <div className="space-y-2 pt-4 border-t">
                         <Label className="text-base font-semibold">
-                          Weekly Availability 
+                          Weekly Availability
                         </Label>
 
                         <div className="space-y-4">
-  {dayNames.map((dayName, index) => {
-    const dayData =
-      formData.profile?.weeklyAvailability?.find((d) => d.day === index) || {
-        day: index,
-        enabled: false,
-        startTime: "",
-        endTime: "",
-      };
+                          {dayNames.map((dayName, index) => {
+                            const dayData =
+                              formData.profile?.weeklyAvailability?.find(
+                                (d) => d.day === index,
+                              ) || {
+                                day: index,
+                                enabled: false,
+                                startTime: "",
+                                endTime: "",
+                              };
 
-    const updateDay = (updates: Partial<typeof dayData>) => {
-  const existing =
-    formData.profile!.weeklyAvailability?.filter((d) => d.day !== index) || [];
+                            const updateDay = (
+                              updates: Partial<typeof dayData>,
+                            ) => {
+                              const existing =
+                                formData.profile!.weeklyAvailability?.filter(
+                                  (d) => d.day !== index,
+                                ) || [];
 
-  const updated = [...existing, { ...dayData, ...updates }].sort(
-    (a, b) => a.day - b.day
-  );
+                              const updated = [
+                                ...existing,
+                                { ...dayData, ...updates },
+                              ].sort((a, b) => a.day - b.day);
 
-  setFormData({
-    ...formData,
-    profile: {
-      ...formData.profile!,
-      weeklyAvailability: updated,
-    },
-  });
-};
+                              setFormData({
+                                ...formData,
+                                profile: {
+                                  ...formData.profile!,
+                                  weeklyAvailability: updated,
+                                },
+                              });
+                            };
 
-    return (
-      <div
-        key={index}
-        className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center border-b border-gray-200 pb-4"
-      >
-        {/* Day */}
-        <p className="font-medium text-gray-900">{dayName}</p>
+                            return (
+                              <div
+                                key={index}
+                                className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center border-b border-gray-200 pb-4"
+                              >
+                                {/* Day */}
+                                <p className="font-medium text-gray-900">
+                                  {dayName}
+                                </p>
 
-        {/* Start Time */}
-        <Input
-          type="time"
-          disabled={!dayData.enabled}
-          value={dayData.startTime || ""}
-          onChange={(e) =>
-            updateDay({
-              startTime: e.target.value,
-            })
-          }
-        />
+                                {/* Start Time */}
+                                <Input
+                                  type="time"
+                                  disabled={!dayData.enabled}
+                                  value={dayData.startTime || ""}
+                                  onChange={(e) =>
+                                    updateDay({
+                                      startTime: e.target.value,
+                                    })
+                                  }
+                                />
 
-        {/* End Time */}
-        <Input
-          type="time"
-          disabled={!dayData.enabled}
-          value={dayData.endTime || ""}
-          onChange={(e) =>
-            updateDay({
-              endTime: e.target.value,
-            })
-          }
-        />
+                                {/* End Time */}
+                                <Input
+                                  type="time"
+                                  disabled={!dayData.enabled}
+                                  value={dayData.endTime || ""}
+                                  onChange={(e) =>
+                                    updateDay({
+                                      endTime: e.target.value,
+                                    })
+                                  }
+                                />
 
-        {/* Status */}
-        <Select
-          value={dayData.enabled ? "available" : "unavailable"}
-          onValueChange={(value) =>
-            updateDay({
-              enabled: value === "available",
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="unavailable">Unavailable</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    );
-  })}
-</div>
+                                {/* Status */}
+                                <Select
+                                  value={
+                                    dayData.enabled
+                                      ? "available"
+                                      : "unavailable"
+                                  }
+                                  onValueChange={(value) =>
+                                    updateDay({
+                                      enabled: value === "available",
+                                    })
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="available">
+                                      Available
+                                    </SelectItem>
+                                    <SelectItem value="unavailable">
+                                      Unavailable
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -901,31 +961,29 @@ text-white border border-white/30 gap-2"
               </div>
 
               <DialogFooter className="flex flex-col sm:flex-row gap-2 items-center sm:items-end">
-   <Button
-    type="button"
-    variant="outline"
-    onClick={() => setEditModalOpen(false)}
-    className="w-40"
-  >
-    Cancel
-  </Button>
-  <Button
-    type="submit"
-    disabled={saving}
-    className="bg-indigo-600 hover:bg-indigo-700 w-40"
-  >
-    {saving ? (
-      <>
-        <LoadingSpinner size="sm" />
-        Saving...
-      </>
-    ) : (
-      "Save Changes"
-    )}
-  </Button>
-
-  
-</DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditModalOpen(false)}
+                  className="w-40"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-indigo-600 hover:bg-indigo-700 w-40"
+                >
+                  {saving ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </DialogFooter>
             </form>
           )}
         </DialogContent>
