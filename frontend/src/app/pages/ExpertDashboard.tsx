@@ -27,9 +27,9 @@ export function ExpertDashboard() {
             </h2>
 
             <p className="text-gray-600">
-              Expert dashboard features are currently under development.
-              Soon you will be able to manage your consultations, client
-              requests and professional services here.
+              Expert dashboard features are currently under development. Soon
+              you will be able to manage your consultations, client requests and
+              professional services here.
             </p>
           </CardContent>
         </Card>

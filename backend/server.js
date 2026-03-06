@@ -65,7 +65,7 @@ console.log("JWT_SECRET:", process.env.JWT_SECRET);
 const server = createServer(app);
 
 const io = new Server(server, {
-   path: "/api/socket.io",
+  path: "/api/socket.io",
   cors: {
     origin: allowedOrigins,
     credentials: true,
@@ -79,4 +79,3 @@ global.io = io;
 server.listen(PORT, () => {
   console.log("Server is up and running on PORT:", PORT);
 });
-

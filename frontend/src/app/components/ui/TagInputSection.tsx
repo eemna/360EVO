@@ -6,7 +6,6 @@ import { X } from "lucide-react";
 import { tagVariants } from "./tagVariants";
 import type { VariantProps } from "class-variance-authority";
 
-
 type TagVariant = VariantProps<typeof tagVariants>["variant"];
 
 type Props = {
@@ -28,7 +27,7 @@ export default function TagInputSection({
   onAdd,
   onRemove,
   emptyMessage,
-  variant = "default", 
+  variant = "default",
 }: Props) {
   return (
     <div className="space-y-3">
@@ -47,14 +46,14 @@ export default function TagInputSection({
           }}
           placeholder="Type and press Enter"
         />
-       <Button
-  type="button"
-  variant="outline"
-  onClick={onAdd}
-  className="px-4"
->
-  Add
-</Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onAdd}
+          className="px-4"
+        >
+          Add
+        </Button>
       </div>
 
       {/* Tags */}
@@ -64,21 +63,17 @@ export default function TagInputSection({
         )}
 
         {items.map((item) => (
-          <Tag
-            key={item}
-            variant={variant}
-            className="flex items-center gap-1"
-          >
+          <Tag key={item} variant={variant} className="flex items-center gap-1">
             {item}
             <Button
-  type="button"
-  variant="ghost"
-  size="icon"
-  onClick={() => onRemove(item)}
-  className="h-5 w-5 p-0 ml-1 text-gray-400 hover:text-red-500 hover:bg-transparent"
->
-  <X size={12} />
-</Button>
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onRemove(item)}
+              className="h-5 w-5 p-0 ml-1 text-gray-400 hover:text-red-500 hover:bg-transparent"
+            >
+              <X size={12} />
+            </Button>
           </Tag>
         ))}
       </div>

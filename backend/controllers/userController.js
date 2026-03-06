@@ -5,50 +5,48 @@ export const getUserById = async (req, res, next) => {
     const user = await prisma.user.findUnique({
       where: { id: req.params.id },
       include: {
-  profile: {
-    include: {
-      weeklyAvailability: true,
-    },
-  },
-  projects: true,
-}
+        profile: {
+          include: {
+            weeklyAvailability: true,
+          },
+        },
+        projects: true,
+      },
     });
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
+    let computedStatus = null;
 
-   let computedStatus = null;
+    if (user.role === "EXPERT" && user.profile) {
+      if (user.profile.availabilityStatus === "ON_LEAVE") {
+        computedStatus = "ON_LEAVE";
+      } else {
+        computedStatus = "AVAILABLE"; // default when ACTIVE
 
-if (user.role === "EXPERT" && user.profile) {
+        const today = new Date();
+        const todayDay = today.getDay();
 
-  if (user.profile.availabilityStatus === "ON_LEAVE") {
-    computedStatus = "ON_LEAVE";
-  } else {
+        const todayAvailability = user.profile.weeklyAvailability?.find(
+          (slot) => slot.day === todayDay && slot.enabled,
+        );
 
-    computedStatus = "AVAILABLE"; // default when ACTIVE
+        if (
+          !todayAvailability ||
+          !todayAvailability.startTime ||
+          !todayAvailability.endTime
+        ) {
+          computedStatus = "BUSY";
+        } else {
+          const [startHour, startMinute] = todayAvailability.startTime
+            .split(":")
+            .map(Number);
 
-    const today = new Date();
-    const todayDay = today.getDay();
-
-    const todayAvailability =
-      user.profile.weeklyAvailability?.find(
-        (slot) => slot.day === todayDay && slot.enabled
-      );
-
-    if (
-      !todayAvailability ||
-      !todayAvailability.startTime ||
-      !todayAvailability.endTime
-    ) {
-      computedStatus = "BUSY";
-    } else {
-          const [startHour, startMinute] =
-            todayAvailability.startTime.split(":").map(Number);
-
-          const [endHour, endMinute] =
-            todayAvailability.endTime.split(":").map(Number);
+          const [endHour, endMinute] = todayAvailability.endTime
+            .split(":")
+            .map(Number);
 
           const availableStart = new Date(today);
           availableStart.setHours(startHour, startMinute, 0, 0);
@@ -69,7 +67,7 @@ if (user.role === "EXPERT" && user.profile) {
 
           const bookedMinutes = bookingsToday.reduce(
             (total, booking) => total + booking.duration,
-            0
+            0,
           );
 
           const totalAvailableMinutes =

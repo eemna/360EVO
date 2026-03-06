@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -17,42 +16,41 @@ function Calendar({
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
-  months: "flex flex-col sm:flex-row gap-2",
-  month: "flex flex-col gap-4",
+        months: "flex flex-col sm:flex-row gap-2",
+        month: "flex flex-col gap-4",
 
-  caption: "flex justify-center pt-1 relative items-center w-full",
-  caption_label: "text-sm font-medium",
+        caption: "flex justify-center pt-1 relative items-center w-full",
+        caption_label: "text-sm font-medium",
 
-  nav: "flex items-center gap-1",
-  nav_button: cn(
-    buttonVariants({ variant: "outline" }),
-    "size-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-  ),
-  nav_button_previous: "absolute left-1",
-  nav_button_next: "absolute right-1",
+        nav: "flex items-center gap-1",
+        nav_button: cn(
+          buttonVariants({ variant: "outline" }),
+          "size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
+        ),
+        nav_button_previous: "absolute left-1",
+        nav_button_next: "absolute right-1",
 
-  
-weekdays: "flex w-full justify-between",
-weekday: "w-8 text-center text-muted-foreground text-[0.8rem]",
+        weekdays: "flex w-full justify-between",
+        weekday: "w-8 text-center text-muted-foreground text-[0.8rem]",
 
- row: "flex w-full justify-between mt-2",
-cell: "w-8 h-8 text-center",
+        row: "flex w-full justify-between mt-2",
+        cell: "w-8 h-8 text-center",
 
-  day: cn(
-    buttonVariants({ variant: "ghost" }),
-    "size-8 p-0 font-normal aria-selected:opacity-100"
-  ),
+        day: cn(
+          buttonVariants({ variant: "ghost" }),
+          "size-8 p-0 font-normal aria-selected:opacity-100",
+        ),
 
-  ...classNames,
-}}
+        ...classNames,
+      }}
       components={{
-  Chevron: ({ orientation, className, ...props }) =>
-    orientation === "left" ? (
-      <ChevronLeft className={cn("size-4", className)} {...props} />
-    ) : (
-      <ChevronRight className={cn("size-4", className)} {...props} />
-    ),
-}}
+        Chevron: ({ orientation, className, ...props }) =>
+          orientation === "left" ? (
+            <ChevronLeft className={cn("size-4", className)} {...props} />
+          ) : (
+            <ChevronRight className={cn("size-4", className)} {...props} />
+          ),
+      }}
       {...props}
     />
   );

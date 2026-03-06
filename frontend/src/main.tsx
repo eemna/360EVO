@@ -11,7 +11,7 @@ createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <ToastProvider>
       <SocketProvider>
-      <App />
+        <App />
       </SocketProvider>
     </ToastProvider>
   </AuthProvider>,

@@ -13,7 +13,7 @@ import {
   changePassword,
   updateEmail,
   updateProfile,
-  getPublicExpertProfile, 
+  getPublicExpertProfile,
   createBooking,
   getExpertBookings,
   acceptBooking,

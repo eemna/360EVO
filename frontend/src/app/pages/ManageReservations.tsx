@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 import { format } from "date-fns";
 import {
   Dialog,
@@ -26,8 +36,8 @@ import {
   DollarSign,
   AlertCircle,
   ChevronLeft,
- // Video,
- // MapPin,
+  // Video,
+  // MapPin,
 } from "lucide-react";
 import { useEffect } from "react";
 import api from "../../services/axios";
@@ -56,144 +66,131 @@ interface Booking {
   };
 }
 
-
 export function ManageReservations() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-  const fetchBookings = async () => {
-    try {
-      const { data } = await api.get(
-        `/auth/bookings/expert/${user?.id}`
-      );
+    const fetchBookings = async () => {
+      try {
+        const { data } = await api.get(`/auth/bookings/expert/${user?.id}`);
 
-      setBookings(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setBookings(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  if (user?.id) fetchBookings();
-}, [user?.id]);
-  const pendingBookings = bookings.filter(
-  (b) => b.status === "PENDING"
-);
+    if (user?.id) fetchBookings();
+  }, [user?.id]);
+  const pendingBookings = bookings.filter((b) => b.status === "PENDING");
 
-const confirmedBookings = bookings.filter(
-  (b) => b.status === "ACCEPTED"
-);
+  const confirmedBookings = bookings.filter((b) => b.status === "ACCEPTED");
 
-const scheduleData = confirmedBookings.map((b) => ({
-  date: b.startDateTime,
-  time: format(new Date(b.startDateTime), "HH:mm"),
-  duration: b.duration,
-  client: b.member?.name || "Client",
-  topic: b.topic || "Consultation",
-  status: "confirmed",
-}));
-
+  const scheduleData = confirmedBookings.map((b) => ({
+    date: b.startDateTime,
+    time: format(new Date(b.startDateTime), "HH:mm"),
+    duration: b.duration,
+    client: b.member?.name || "Client",
+    topic: b.topic || "Consultation",
+    status: "confirmed",
+  }));
 
   const [activeTab, setActiveTab] = useState("pending");
-  
-  
+
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [cancellationReason, setCancellationReason] = useState("");
 
- const handleAcceptBooking = async (bookingId: string) => {
-  try {
-    await api.patch(`/auth/${bookingId}/accept`);
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      await api.patch(`/auth/${bookingId}/accept`);
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === bookingId ? { ...b, status: "ACCEPTED" } : b
-      )
-    );
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, status: "ACCEPTED" } : b,
+        ),
+      );
 
-   showToast({
-  type: "success",
-  title: "Booking Accepted ",
-  message: "The session has been confirmed.",
-});
-  } catch (error) {
-    console.error(error);
-  }
-};
+      showToast({
+        type: "success",
+        title: "Booking Accepted ",
+        message: "The session has been confirmed.",
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleRejectBooking = async () => {
-  if (!selectedBooking) return;
+    if (!selectedBooking) return;
 
-  try {
-    await api.patch(`/auth/${selectedBooking.id}/reject`, {
-      reason: rejectionReason,
-    });
+    try {
+      await api.patch(`/auth/${selectedBooking.id}/reject`, {
+        reason: rejectionReason,
+      });
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === selectedBooking.id
-          ? { ...b, status: "REJECTED" }
-          : b
-      )
-    );
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === selectedBooking.id ? { ...b, status: "REJECTED" } : b,
+        ),
+      );
 
-    showToast({
-  type: "success",
-  title: "Booking Rejected",
-  message: "The client has been notified.",
-});
+      showToast({
+        type: "success",
+        title: "Booking Rejected",
+        message: "The client has been notified.",
+      });
 
-    setRejectDialogOpen(false);
-    setRejectionReason("");
-    setSelectedBooking(null);
-  } catch (error) {
-    console.error(error);
-  }
-};
+      setRejectDialogOpen(false);
+      setRejectionReason("");
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleCancelReservation = async () => {
-  if (!selectedBooking || !cancellationReason.trim()) return;
+    if (!selectedBooking || !cancellationReason.trim()) return;
 
-  try {
-    await api.patch(`/auth/${selectedBooking.id}/cancel`, {
-      reason: cancellationReason,
-    });
+    try {
+      await api.patch(`/auth/${selectedBooking.id}/cancel`, {
+        reason: cancellationReason,
+      });
 
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === selectedBooking.id
-          ? { ...b, status: "CANCELLED" }
-          : b
-      )
-    );
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === selectedBooking.id ? { ...b, status: "CANCELLED" } : b,
+        ),
+      );
 
-    showToast({
-  type: "success",
-  title: "Reservation Cancelled",
-  message: "The session has been cancelled.",
-});
+      showToast({
+        type: "success",
+        title: "Reservation Cancelled",
+        message: "The session has been cancelled.",
+      });
 
-    setCancelDialogOpen(false);
-    setCancellationReason("");
-    setSelectedBooking(null);
-  } catch (error) {
-    console.error(error);
-  }
-};
+      setCancelDialogOpen(false);
+      setCancellationReason("");
+      setSelectedBooking(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -215,8 +212,8 @@ const scheduleData = confirmedBookings.map((b) => ({
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="mb-4 -ml-2"
             onClick={() => navigate(-1)}
           >
@@ -227,7 +224,8 @@ const scheduleData = confirmedBookings.map((b) => ({
             Manage Reservations
           </h1>
           <p className="text-gray-600">
-            Review pending requests, manage your schedule, and handle your consultations
+            Review pending requests, manage your schedule, and handle your
+            consultations
           </p>
         </div>
 
@@ -237,7 +235,9 @@ const scheduleData = confirmedBookings.map((b) => ({
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Pending Requests</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Pending Requests
+                  </p>
                   <p className="text-3xl font-semibold text-orange-600 mt-1">
                     {pendingBookings.length}
                   </p>
@@ -253,7 +253,9 @@ const scheduleData = confirmedBookings.map((b) => ({
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Confirmed Sessions</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Confirmed Sessions
+                  </p>
                   <p className="text-3xl font-semibold text-green-600 mt-1">
                     {confirmedBookings.length}
                   </p>
@@ -269,11 +271,14 @@ const scheduleData = confirmedBookings.map((b) => ({
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Confirmed Earnings</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Confirmed Earnings
+                  </p>
                   <p className="text-3xl font-semibold text-indigo-600 mt-1">
-                    ${confirmedBookings
-                    .reduce((total, booking) => total + booking.price, 0)
-                    .toLocaleString()}
+                    $
+                    {confirmedBookings
+                      .reduce((total, booking) => total + booking.price, 0)
+                      .toLocaleString()}
                   </p>
                 </div>
                 <div className="size-12 bg-indigo-100 rounded-full flex items-center justify-center">
@@ -286,22 +291,34 @@ const scheduleData = confirmedBookings.map((b) => ({
 
         {/* Main Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="pending" className="relative">
-              Pending Requests
-              {pendingBookings.length > 0 && (
-                <Badge className="ml-2 bg-orange-500 text-white">
-                  {pendingBookings.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="confirmed">
-              Confirmed Sessions
-            </TabsTrigger>
-            <TabsTrigger value="schedule">
-              Schedule
-            </TabsTrigger>
-          </TabsList>
+          
+<TabsList className="flex w-full gap-2 mb-6 overflow-x-auto px-1 justify-start">
+  <TabsTrigger
+    value="pending"
+    className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+  >
+    Pending Requests
+    {pendingBookings.length > 0 && (
+      <Badge className="ml-2 bg-orange-500 text-white">
+        {pendingBookings.length}
+      </Badge>
+    )}
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="confirmed"
+    className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+  >
+    Confirmed Sessions
+  </TabsTrigger>
+
+  <TabsTrigger
+    value="schedule"
+    className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+  >
+    Schedule
+  </TabsTrigger>
+</TabsList>
 
           {/* Pending Requests Tab */}
           <TabsContent value="pending" className="space-y-6">
@@ -319,12 +336,17 @@ const scheduleData = confirmedBookings.map((b) => ({
               </Card>
             ) : (
               pendingBookings.map((booking) => (
-                <Card key={booking.id} className="border-l-4 border-l-orange-500">
+                <Card
+                  key={booking.id}
+                  className="border-l-4 border-l-orange-500"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl">{booking.member.name}</CardTitle>
+                          <CardTitle className="text-xl">
+                            {booking.member.name}
+                          </CardTitle>
                           <Badge className="bg-orange-100 text-orange-700 border-orange-300 border">
                             Pending Review
                           </Badge>
@@ -340,7 +362,10 @@ const scheduleData = confirmedBookings.map((b) => ({
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Clock className="size-4" />
-                            <span>{format(new Date(booking.startDateTime), "HH:mm")} ({booking.duration} min)</span>
+                            <span>
+                              {format(new Date(booking.startDateTime), "HH:mm")}{" "}
+                              ({booking.duration} min)
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
@@ -360,7 +385,7 @@ const scheduleData = confirmedBookings.map((b) => ({
                       </p>
                     </div>
 
-                 {/*  <div className="flex items-center gap-2">
+                    {/*  <div className="flex items-center gap-2">
                       {booking.meetingType === "Video Call" ? (
                         <>
                           <Video className="size-4 text-gray-500" />
@@ -375,7 +400,7 @@ const scheduleData = confirmedBookings.map((b) => ({
                         </>
                       )}
                     </div>
-                   */}  
+                   */}
                     <div className="flex gap-3 pt-4 ">
                       <Button
                         onClick={() => handleAcceptBooking(booking.id)}
@@ -418,12 +443,17 @@ const scheduleData = confirmedBookings.map((b) => ({
               </Card>
             ) : (
               confirmedBookings.map((booking) => (
-                <Card key={booking.id} className="border-l-4 border-l-green-500">
+                <Card
+                  key={booking.id}
+                  className="border-l-4 border-l-green-500"
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl">{booking.member.name}</CardTitle>
+                          <CardTitle className="text-xl">
+                            {booking.member.name}
+                          </CardTitle>
                           <Badge className="bg-green-100 text-green-700 border-green-300 border">
                             <CheckCircle2 className="size-3 mr-1" />
                             Confirmed
@@ -440,7 +470,9 @@ const scheduleData = confirmedBookings.map((b) => ({
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Clock className="size-4" />
-                            <span>{format(new Date(booking.startDateTime), "HH:mm")}</span>
+                            <span>
+                              {format(new Date(booking.startDateTime), "HH:mm")}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
@@ -457,7 +489,7 @@ const scheduleData = confirmedBookings.map((b) => ({
                       </p>
                     </div>
 
-             {/*       <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    {/*       <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <Video className="size-4 text-blue-600" />
                       <div className="flex-1">
                         <p className="text-sm font-medium text-blue-900">
@@ -489,7 +521,7 @@ const scheduleData = confirmedBookings.map((b) => ({
                       >
                         Cancel
                       </Button>
-                    </div> */} 
+                    </div> */}
                   </CardContent>
                 </Card>
               ))
@@ -514,8 +546,8 @@ const scheduleData = confirmedBookings.map((b) => ({
                         slot.status === "confirmed"
                           ? "bg-green-50 border-green-200"
                           : slot.status === "pending"
-                          ? "bg-orange-50 border-orange-200"
-                          : "bg-blue-50 border-blue-200"
+                            ? "bg-orange-50 border-orange-200"
+                            : "bg-blue-50 border-blue-200"
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -524,14 +556,19 @@ const scheduleData = confirmedBookings.map((b) => ({
                             <p className="font-semibold text-gray-900">
                               {formatDate(slot.date)}
                             </p>
-                            <Badge className={`border ${getStatusColor(slot.status)}`}>
-                              {slot.status.charAt(0).toUpperCase() + slot.status.slice(1)}
+                            <Badge
+                              className={`border ${getStatusColor(slot.status)}`}
+                            >
+                              {slot.status.charAt(0).toUpperCase() +
+                                slot.status.slice(1)}
                             </Badge>
                           </div>
                           <div className="flex items-center gap-4 text-sm text-gray-600">
                             <div className="flex items-center gap-1.5">
                               <Clock className="size-4" />
-                              <span>{slot.time} ({slot.duration} min)</span>
+                              <span>
+                                {slot.time} ({slot.duration} min)
+                              </span>
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Building className="size-4" />
@@ -561,7 +598,8 @@ const scheduleData = confirmedBookings.map((b) => ({
                 Reject Booking Request
               </DialogTitle>
               <DialogDescription>
-                Please provide a reason for rejecting this booking. The client will be notified.
+                Please provide a reason for rejecting this booking. The client
+                will be notified.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -607,12 +645,15 @@ const scheduleData = confirmedBookings.map((b) => ({
                 Cancel Reservation
               </DialogTitle>
               <DialogDescription>
-                Please provide a reason for cancelling this session. The client will be notified and refunded.
+                Please provide a reason for cancelling this session. The client
+                will be notified and refunded.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="cancellation-reason">Reason for Cancellation *</Label>
+                <Label htmlFor="cancellation-reason">
+                  Reason for Cancellation *
+                </Label>
                 <Textarea
                   id="cancellation-reason"
                   value={cancellationReason}

@@ -35,7 +35,7 @@ const menuItems = [
   { icon: User, label: "My Profile", path: "/app/profile/me" },
   { icon: Users, label: "My Network", path: "/app/network" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
- { icon: MessageSquare, label: "Messages", path: "/app/conversation" },
+  { icon: MessageSquare, label: "Messages", path: "/app/conversation" },
   { icon: Bell, label: "Notifications", path: "/app/notifications" },
   { icon: Settings, label: "Settings", path: "/app/settings" },
 ];
