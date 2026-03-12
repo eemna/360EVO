@@ -577,7 +577,7 @@ export function ProjectCreationWizard({
       setSupportingDocs([]);
     }
   }, [isOpen, externalProjectId, reset]);
- 
+
   useEffect(() => {
     if (!isOpen) return;
     if (!currentProjectId) return;

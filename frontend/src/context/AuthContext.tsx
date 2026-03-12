@@ -29,7 +29,7 @@ export interface Profile {
   weeklyAvailability: WeeklyAvailability[] | null;
   avgRating: number;
   reviewCount: number;
-    settings?: {
+  settings?: {
     notifications?: {
       emailOnBooking?: boolean;
       emailOnMessage?: boolean;
@@ -55,8 +55,8 @@ export interface User {
   email: string;
   role: "MEMBER" | "EXPERT" | "STARTUP" | "INVESTOR" | "ADMIN";
   profile: Profile | null;
-   computedStatus?: "AVAILABLE" | "BUSY" | "UNAVAILABLE";
-   expertReviews?: Review[];
+  computedStatus?: "AVAILABLE" | "BUSY" | "UNAVAILABLE";
+  expertReviews?: Review[];
 }
 
 export interface AuthContextType {

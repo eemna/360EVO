@@ -68,7 +68,6 @@ const roleColors: Record<
   INVESTOR: "bg-yellow-100 text-yellow-700",
 };
 
-
 export default function Profile() {
   const [uploading, setUploading] = useState(false);
   const { showToast } = useToast();
@@ -141,12 +140,12 @@ export default function Profile() {
         weeklyAvailability: formData.profile.weeklyAvailability,
       });
 
-     const targetId = !id || id === "me" ? user?.id : id;
-     const { data: freshProfile } = await api.get(`/users/${targetId}`);
+      const targetId = !id || id === "me" ? user?.id : id;
+      const { data: freshProfile } = await api.get(`/users/${targetId}`);
 
-     setUser(freshProfile);
-     setProfileUser(freshProfile);
-     setEditModalOpen(false);
+      setUser(freshProfile);
+      setProfileUser(freshProfile);
+      setEditModalOpen(false);
       showToast({
         type: "success",
         title: "Profile Updated ",
@@ -298,29 +297,36 @@ export default function Profile() {
   if (!profileUser || !profileUser.profile) return <div>User not found</div>;
 
   const profile = profileUser.profile;
-const isOwnProfile = user?.id === profileUser.id;
-const isAdmin = user?.role === "ADMIN";
+  const isOwnProfile = user?.id === profileUser.id;
+  const isAdmin = user?.role === "ADMIN";
 
-// Read privacy from the viewed user's profile
-const privacySettings = (profile.settings as { privacy?: PrivacySettings } | null)?.privacy;
+  // Read privacy from the viewed user's profile
+  const privacySettings = (
+    profile.settings as { privacy?: PrivacySettings } | null
+  )?.privacy;
 
-// Private profile — only owner and admin can see it
-if (privacySettings?.profileVisible === false && !isOwnProfile && !isAdmin) {
-  return (
-    <div className="flex flex-col items-center justify-center h-64 gap-3 text-gray-500">
-      <p className="text-lg font-medium">This profile is private</p>
-      <p className="text-sm">The user has set their profile to private.</p>
-    </div>
-  );
-}
+  // Private profile — only owner and admin can see it
+  if (privacySettings?.profileVisible === false && !isOwnProfile && !isAdmin) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-3 text-gray-500">
+        <p className="text-lg font-medium">This profile is private</p>
+        <p className="text-sm">The user has set their profile to private.</p>
+      </div>
+    );
+  }
 
-// Show by default unless explicitly set to false
-const canSeePhone = isOwnProfile || isAdmin || privacySettings?.showPhone !== false;
-const canSeeEmail = isOwnProfile || isAdmin || privacySettings?.showEmail !== false;
+  // Show by default unless explicitly set to false
+  const canSeePhone =
+    isOwnProfile || isAdmin || privacySettings?.showPhone !== false;
+  const canSeeEmail =
+    isOwnProfile || isAdmin || privacySettings?.showEmail !== false;
 
-const computedStatus = profileUser.role === "EXPERT"
-  ? (profileUser.computedStatus ?? profileUser.profile?.availabilityStatus ?? "AVAILABLE")
-  : null;
+  const computedStatus =
+    profileUser.role === "EXPERT"
+      ? (profileUser.computedStatus ??
+        profileUser.profile?.availabilityStatus ??
+        "AVAILABLE")
+      : null;
   return (
     <div>
       {/* Cover */}
@@ -483,7 +489,6 @@ text-white border border-white/30 gap-2"
         </div>
 
         <div className="space-y-6">
-          
           <Card>
             <CardHeader>
               <CardTitle>Contact Information</CardTitle>
@@ -506,14 +511,16 @@ text-white border border-white/30 gap-2"
                 </div>
               )}
               {canSeeEmail && profileUser.email && (
-  <div>
-    <p className="text-sm text-gray-600 mb-1">Email</p>
-    <div className="flex items-center gap-2">
-      <Mail className="size-4 text-gray-500" />
-      <span className="font-medium text-gray-900">{profileUser.email}</span>
-    </div>
-  </div>
-)}
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Email</p>
+                  <div className="flex items-center gap-2">
+                    <Mail className="size-4 text-gray-500" />
+                    <span className="font-medium text-gray-900">
+                      {profileUser.email}
+                    </span>
+                  </div>
+                </div>
+              )}
               {profile.linkedIn && (
                 <div>
                   <p className="text-sm text-gray-600 mb-2">
@@ -550,7 +557,6 @@ text-white border border-white/30 gap-2"
                   </p>
                   <p className="text-gray-600">per hour</p>
                 </div>
-                
               </CardContent>
             </Card>
           )}
@@ -733,7 +739,9 @@ text-white border border-white/30 gap-2"
                                 Available
                               </SelectItem>
                               <SelectItem value="BUSY">Busy</SelectItem>
-                              <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
+                              <SelectItem value="UNAVAILABLE">
+                                Unavailable
+                              </SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

@@ -27,9 +27,7 @@ import axios from "axios";
 import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router";
 import { Input } from "../components/ui/input";
-/* 
-   TYPES
-*/
+
 
 interface TeamMember {
   id: string;
@@ -38,6 +36,8 @@ interface TeamMember {
 interface Project {
   id: string;
   title: string;
+  shortDesc?: string;
+  tagline?: string;
   status: string;
   stage: string;
   industry: string;
@@ -62,9 +62,6 @@ type StatCardProps = {
   icon: React.ReactNode;
 };
 
-/*
-   HELPERS
-*/
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -79,30 +76,38 @@ const getStatusColor = (status: string) => {
   }
 };
 
-/*
-   COMPONENT
-*/
+
 
 export default function StartupDashboard() {
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [allProjects, setAllProjects] = useState<Project[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
-
   const [wizardLoading, setWizardLoading] = useState(false);
+
+  // Filter: title, shortDesc, tagline
+  const q = search.toLowerCase().trim();
+  const projects = allProjects.filter(
+    (p) =>
+      !q ||
+      p.title?.toLowerCase().includes(q) ||
+      p.shortDesc?.toLowerCase().includes(q) ||
+      p.tagline?.toLowerCase().includes(q),
+  );
+
   const confirmDelete = async () => {
     if (!deleteProjectId) return;
 
     try {
       setDeleting(true);
       await api.delete(`/projects/${deleteProjectId}`);
-      setProjects((prev) => prev.filter((p) => p.id !== deleteProjectId));
+      setAllProjects((prev) => prev.filter((p) => p.id !== deleteProjectId));
       showToast({
         type: "success",
         title: "Project deleted",
@@ -126,6 +131,7 @@ export default function StartupDashboard() {
       setDeleting(false);
     }
   };
+
   const handleEdit = (id: string) => {
     setEditingProjectId(id);
     setWizardLoading(true);
@@ -135,17 +141,16 @@ export default function StartupDashboard() {
   const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("/projects/dashboard", {
-        params: { q: search },
-      });
+      const res = await api.get("/projects/dashboard");
       setStats(res.data.stats);
-      setProjects(res.data.projects);
+      setAllProjects(res.data.projects);
     } catch (error) {
       console.error("Dashboard error:", error);
     } finally {
       setLoading(false);
     }
-  }, [search]);
+  }, []); // no search dependency — fetch all once
+
   useEffect(() => {
     fetchDashboard();
   }, [fetchDashboard]);
@@ -256,17 +261,23 @@ export default function StartupDashboard() {
         </div>
 
         {projects.length === 0 ? (
-          <div className="text-center py-16  rounded-lg bg-gray-50">
-            <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
+          <div className="text-center py-16 rounded-lg bg-gray-50">
+            <h3 className="text-xl font-semibold mb-2">
+              {search ? "No projects match your search" : "No projects yet"}
+            </h3>
             <p className="text-gray-500 mb-4">
-              Start by creating your first startup project.
+              {search
+                ? "Try a different search term."
+                : "Start by creating your first startup project."}
             </p>
-            <Button
-              onClick={() => setIsWizardOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 w-fit"
-            >
-              Create Project
-            </Button>
+            {!search && (
+              <Button
+                onClick={() => setIsWizardOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 w-fit"
+              >
+                Create Project
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

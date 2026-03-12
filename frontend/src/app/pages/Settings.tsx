@@ -132,10 +132,10 @@ export default function Settings() {
         );
         setExpertise(data.profile?.expertise || []);
 
-       
-const { data: settingsData } = await api.get("/users/settings");
-if (settingsData.notifications) setNotifications(settingsData.notifications);
-if (settingsData.privacy) setPrivacy(settingsData.privacy);
+        const { data: settingsData } = await api.get("/users/settings");
+        if (settingsData.notifications)
+          setNotifications(settingsData.notifications);
+        if (settingsData.privacy) setPrivacy(settingsData.privacy);
       } catch (error) {
         console.error("Failed to fetch profile", error);
       } finally {
@@ -309,26 +309,41 @@ if (settingsData.privacy) setPrivacy(settingsData.privacy);
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Location</Label>
-                <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+                <Input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label>LinkedIn</Label>
-                <Input value={linkedIn} onChange={(e) => setLinkedIn(e.target.value)} />
+                <Input
+                  value={linkedIn}
+                  onChange={(e) => setLinkedIn(e.target.value)}
+                />
               </div>
 
               {user?.role === "STARTUP" && (
                 <>
                   <div className="space-y-2">
                     <Label>Company Name</Label>
-                    <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                    <Input
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Stage</Label>
-                    <Input value={stage} onChange={(e) => setStage(e.target.value)} />
+                    <Input
+                      value={stage}
+                      onChange={(e) => setStage(e.target.value)}
+                    />
                   </div>
                 </>
               )}
@@ -427,8 +442,12 @@ if (settingsData.privacy) setPrivacy(settingsData.privacy);
           {/* NOTIFICATIONS TAB */}
           <TabsContent value="notifications" className="space-y-6">
             <div>
-              <h2 className="text-lg font-semibold">Notification Preferences</h2>
-              <p className="text-sm text-gray-500">Choose what emails you receive</p>
+              <h2 className="text-lg font-semibold">
+                Notification Preferences
+              </h2>
+              <p className="text-sm text-gray-500">
+                Choose what emails you receive
+              </p>
             </div>
 
             {(
@@ -450,7 +469,10 @@ if (settingsData.privacy) setPrivacy(settingsData.privacy);
                 },
               ] as const
             ).map(({ key, label, desc }) => (
-              <div key={key} className="flex items-center justify-between py-3 border-b">
+              <div
+                key={key}
+                className="flex items-center justify-between py-3 border-b"
+              >
                 <div>
                   <p className="font-medium text-gray-900">{label}</p>
                   <p className="text-sm text-gray-500">{desc}</p>
@@ -480,7 +502,9 @@ if (settingsData.privacy) setPrivacy(settingsData.privacy);
           <TabsContent value="privacy" className="space-y-6">
             <div>
               <h2 className="text-lg font-semibold">Privacy Settings</h2>
-              <p className="text-sm text-gray-500">Control what others can see</p>
+              <p className="text-sm text-gray-500">
+                Control what others can see
+              </p>
             </div>
 
             {(
@@ -502,7 +526,10 @@ if (settingsData.privacy) setPrivacy(settingsData.privacy);
                 },
               ] as const
             ).map(({ key, label, desc }) => (
-              <div key={key} className="flex items-center justify-between py-3 border-b">
+              <div
+                key={key}
+                className="flex items-center justify-between py-3 border-b"
+              >
                 <div>
                   <p className="font-medium text-gray-900">{label}</p>
                   <p className="text-sm text-gray-500">{desc}</p>

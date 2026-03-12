@@ -24,7 +24,15 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Textarea } from "../components/ui/textarea";
-import { Briefcase, Calendar, Star, Clock, Video, MapPin, DollarSign } from "lucide-react";
+import {
+  Briefcase,
+  Calendar,
+  Star,
+  Clock,
+  Video,
+  MapPin,
+  DollarSign,
+} from "lucide-react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { format } from "date-fns";
@@ -42,7 +50,7 @@ interface Booking {
   meetingLink?: string;
   location?: string;
   expert?: { id: string; name: string };
-  review?: { id: string } | null;  
+  review?: { id: string } | null;
 }
 
 interface ExpertProfileProps {
@@ -53,13 +61,12 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  
   const [myBookings, setMyBookings] = useState<Booking[]>([]);
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState("");
   const [reviewHover, setReviewHover] = useState(0);
-  const [reviewedIds ] = useState<Set<string>>(new Set());
+  const [reviewedIds] = useState<Set<string>>(new Set());
 
   const isOwnProfile = user?.id === profileUser.id;
 
@@ -68,17 +75,20 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
     if (!["MEMBER", "STARTUP", "ADMIN"].includes(user.role)) return;
     let cancelled = false;
 
-    api.get("/consultations")
+    api
+      .get("/consultations")
       .then(({ data }) => {
         if (!cancelled) {
           setMyBookings(
-            data.filter((b: Booking) => b.expert?.id === profileUser.id)
+            data.filter((b: Booking) => b.expert?.id === profileUser.id),
           );
         }
       })
       .catch(console.error);
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user, profileUser.id, isOwnProfile]);
 
   // Early return AFTER all hooks
@@ -87,39 +97,42 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
   const profile = profileUser.profile;
   const computedStatus = profileUser.computedStatus ?? "AVAILABLE";
 
-  
   const dayNames = [
-    "Sunday", "Monday", "Tuesday", "Wednesday",
-    "Thursday", "Friday", "Saturday",
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
   ];
 
   const reviews = profileUser.expertReviews ?? [];
 
- 
-const handleSubmitReview = () => {
-  if (!reviewBooking || reviewRating === 0) return;
+  const handleSubmitReview = () => {
+    if (!reviewBooking || reviewRating === 0) return;
 
-  api.post(`/consultations/${reviewBooking.id}/review`, {
-    rating: reviewRating,
-    comment: reviewComment,
-  })
-    .then(({ data }) => {
-      // Mark booking as reviewed in state immediately
-      setMyBookings((prev) =>
-        prev.map((b) =>
-          b.id === reviewBooking.id ? { ...b, review: data } : b
-        )
-      );
-      setReviewBooking(null);
-      setReviewRating(0);
-      setReviewComment("");
-    })
-    .catch(console.error);
-};
+    api
+      .post(`/consultations/${reviewBooking.id}/review`, {
+        rating: reviewRating,
+        comment: reviewComment,
+      })
+      .then(({ data }) => {
+        // Mark booking as reviewed in state immediately
+        setMyBookings((prev) =>
+          prev.map((b) =>
+            b.id === reviewBooking.id ? { ...b, review: data } : b,
+          ),
+        );
+        setReviewBooking(null);
+        setReviewRating(0);
+        setReviewComment("");
+      })
+      .catch(console.error);
+  };
 
   return (
     <div className="space-y-6">
-
       {/* ── PROFESSIONAL INFO ── */}
       <Card>
         <CardHeader>
@@ -131,7 +144,9 @@ const handleSubmitReview = () => {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
             <Card className="p-4">
-              <p className="text-sm text-muted-foreground">Years of Experience</p>
+              <p className="text-sm text-muted-foreground">
+                Years of Experience
+              </p>
               <p className="text-3xl font-bold text-indigo-600">
                 {profile.yearsOfExperience ?? "—"}
               </p>
@@ -154,13 +169,17 @@ const handleSubmitReview = () => {
             <p className="text-sm text-muted-foreground mb-2">Industries</p>
             <div className="flex flex-wrap gap-2">
               {profile.industries?.map((ind: string) => (
-                <Badge key={ind} variant="secondary">{ind}</Badge>
+                <Badge key={ind} variant="secondary">
+                  {ind}
+                </Badge>
               ))}
             </div>
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground mb-2">Areas of Expertise</p>
+            <p className="text-sm text-muted-foreground mb-2">
+              Areas of Expertise
+            </p>
             <div className="flex flex-wrap gap-2">
               {profile.expertise?.map((skill: string) => (
                 <Badge key={skill} className="bg-indigo-100 text-indigo-700">
@@ -174,7 +193,9 @@ const handleSubmitReview = () => {
             <p className="text-sm text-muted-foreground mb-2">Certifications</p>
             <div className="flex flex-wrap gap-2">
               {profile.certifications?.map((cert: string) => (
-                <Badge key={cert} variant="outline">{cert}</Badge>
+                <Badge key={cert} variant="outline">
+                  {cert}
+                </Badge>
               ))}
             </div>
           </div>
@@ -250,7 +271,9 @@ const handleSubmitReview = () => {
                 onClick={() => navigate(`/app/experts/${profileUser.id}/book`)}
                 className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
               >
-                {computedStatus === "AVAILABLE" ? "Book Consultation" : "Unavailable"}
+                {computedStatus === "AVAILABLE"
+                  ? "Book Consultation"
+                  : "Unavailable"}
               </Button>
             </CardContent>
           </Card>
@@ -294,9 +317,14 @@ const handleSubmitReview = () => {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <p className="font-semibold text-gray-900">{booking.topic}</p>
+                    <p className="font-semibold text-gray-900">
+                      {booking.topic}
+                    </p>
                     <p className="text-sm text-gray-500">
-                      {format(new Date(booking.startDateTime), "EEEE, MMMM d yyyy")}
+                      {format(
+                        new Date(booking.startDateTime),
+                        "EEEE, MMMM d yyyy",
+                      )}
                       {" · "}
                       {format(new Date(booking.startDateTime), "HH:mm")}
                       {" · "}
@@ -369,25 +397,24 @@ const handleSubmitReview = () => {
                       </Button>
                     )}
 
-                 
-                 {/* Leave review */}
-{booking.status === "COMPLETED" && !booking.review && (
-  <Button
-    size="sm"
-    variant="outline"
-    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-    onClick={() => setReviewBooking(booking)}
-  >
-    ⭐ Leave a Review
-  </Button>
-)}
+                  {/* Leave review */}
+                  {booking.status === "COMPLETED" && !booking.review && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                      onClick={() => setReviewBooking(booking)}
+                    >
+                      ⭐ Leave a Review
+                    </Button>
+                  )}
 
-{/* Already reviewed */}
-{booking.status === "COMPLETED" && booking.review && (
-  <p className="text-sm text-green-600 font-medium">
-    ✅ Review submitted
-  </p>
-)}
+                  {/* Already reviewed */}
+                  {booking.status === "COMPLETED" && booking.review && (
+                    <p className="text-sm text-green-600 font-medium">
+                      ✅ Review submitted
+                    </p>
+                  )}
 
                   {/* Already reviewed */}
                   {booking.status === "COMPLETED" &&
@@ -414,7 +441,10 @@ const handleSubmitReview = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {reviews.map((review) => (
-              <div key={review.id} className="p-4 bg-gray-50 rounded-lg space-y-2">
+              <div
+                key={review.id}
+                className="p-4 bg-gray-50 rounded-lg space-y-2"
+              >
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
@@ -445,7 +475,10 @@ const handleSubmitReview = () => {
       )}
 
       {/* ── REVIEW MODAL ── */}
-      <Dialog open={!!reviewBooking} onOpenChange={() => setReviewBooking(null)}>
+      <Dialog
+        open={!!reviewBooking}
+        onOpenChange={() => setReviewBooking(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Review your session</DialogTitle>
@@ -493,7 +526,6 @@ const handleSubmitReview = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 }

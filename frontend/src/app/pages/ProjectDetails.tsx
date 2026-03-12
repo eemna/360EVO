@@ -808,8 +808,6 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
       </div>
-
-    
     </div>
   );
 }
