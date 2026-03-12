@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect} from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   Card,
@@ -11,21 +11,13 @@ import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { Calendar } from "../components/ui/calendar";
 import { Skeleton } from "../components/ui/skeleton";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import {
   Calendar as CalendarIcon,
   Clock,
   ArrowLeft,
-  Video, 
+  Video,
   MapPin,
   CheckCircle2,
   User as UserIcon,
@@ -49,12 +41,13 @@ const dayNames = [
 ];
 interface Booking {
   id: string;
+  expertId: string;
   startDateTime: string;
   endDateTime: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
 }
 export function BookConsultationPage() {
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [duration, setDuration] = useState(30);
 
@@ -64,10 +57,12 @@ export function BookConsultationPage() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
-  const [meetingType, setMeetingType] = useState<"VIDEO" | "IN_PERSON">("VIDEO");
+  const [meetingType, setMeetingType] = useState<"VIDEO" | "IN_PERSON">(
+    "VIDEO",
+  );
   const [location, setLocation] = useState("");
   const [expert, setExpert] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,14 +83,17 @@ export function BookConsultationPage() {
 
     if (expertId) fetchExpert();
   }, [expertId]);
-const fetchBookings = async () => {
+useEffect(() => {
   if (!expertId) return;
+  let cancelled = false;
 
-  const { data } = await api.get(`/auth/bookings/expert/${expertId}`);
-  setBookings(data);
-};
- useEffect(() => {
-  fetchBookings();
+  api.get("/consultations").then(({ data }) => {
+    if (!cancelled) {
+      setBookings(data.filter((b: Booking) => b.expertId === expertId));
+    }
+  }).catch(console.error);
+
+  return () => { cancelled = true; };
 }, [expertId]);
   // Check if a date is available based on weekly schedule
   const isDateAvailable = (date: Date) => {
@@ -172,26 +170,24 @@ const fetchBookings = async () => {
     return slots.length === 0;
   };
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
-  
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const handleConfirmBooking = async () => {
     if (!selectedDate || !selectedSlot || !expert) return;
 
-   
-
     try {
       if (meetingType === "IN_PERSON" && !location.trim()) {
-  showToast({
-    type: "error",
-    title: "Location required",
-    message: "Please enter meeting location",
-  });
-  return;
-}
- setBooking(true);
+        showToast({
+          type: "error",
+          title: "Location required",
+          message: "Please enter meeting location",
+        });
+        return;
+      }
+      setBooking(true);
       // 1️ Create booking
-      await api.post("/auth/bookings", {
+      await api.post("/consultations/request", {
         expertId: expert.id,
         date: selectedDate,
         timeSlot: selectedSlot,
@@ -201,27 +197,38 @@ const fetchBookings = async () => {
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
       });
-      await fetchBookings();
-     
-       
+      const { data: updatedBookings } = await api.get("/consultations");
+setBookings(updatedBookings.filter((b: Booking) => b.expertId === expert.id));
+    // 2 Create conversation (or get existing)
+    const { data: conversation } = await api.post("/conversations", {
+      otherUserId: expert.id,
+    });
 
-     showToast({
+    // 3️ Send automatic message
+    await api.post(`/conversations/${conversation.id}/messages`, {
+      content:
+        message ||
+        `📅 New consultation booked:
+Date: ${format(selectedDate, "MMMM d, yyyy")}
+Time: ${selectedSlot}
+Duration: ${duration} minutes`,
+    });
+      showToast({
         type: "success",
         title: "Booking Confirmed 🎉",
         message: "Your consultation has been scheduled.",
       });
-     setSelectedSlot(null);
-  setSelectedDate(undefined);
-  setTopic("");
-  setMessage("");
-  setLocation("");
-
-} catch (error) {
-  showToast({
-    type: "error",
-    title: "Booking Failed",
-    message: "Something went wrong. Please try again.",
-  });
+      setSelectedSlot(null);
+      setSelectedDate(undefined);
+      setTopic("");
+      setMessage("");
+      setLocation("");
+    } catch (error) {
+      showToast({
+        type: "error",
+        title: "Booking Failed",
+        message: "Something went wrong. Please try again.",
+      });
       console.error(error);
     } finally {
       setBooking(false);
@@ -416,16 +423,10 @@ const fetchBookings = async () => {
                   mode="single"
                   selected={selectedDate}
                   onSelect={(date) => {
-                    if (!date) return;
+                  if (!date) return;
 
-                    setLoadingSlots(true);
-                    setSelectedSlot(null);
-
-                    setTimeout(() => {
-                      setSelectedDate(date);
-                      setLoadingSlots(false);
-                    }, 500);
-                  }}
+                  setSelectedSlot(null);
+                  setSelectedDate(date); }}
                   disabled={(date) =>
                     date < today ||
                     !isDateAvailable(date) ||
@@ -454,13 +455,9 @@ const fetchBookings = async () => {
               </div>
             </CardContent>
           </Card>
-          {loadingSlots && (
-            <div className="flex justify-center mt-4">
-              <LoadingSpinner size="md" />
-            </div>
-          )}
+          
           {/* Step 2: Select Time Slot */}
-          {(selectedDate || loadingSlots) && (
+          {(selectedDate ) && (
             <Card className="shadow-md">
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -565,44 +562,48 @@ const fetchBookings = async () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-  <Label>Meeting Type</Label>
+                  <Label>Meeting Type</Label>
 
-  <div className="flex gap-3">
-<Button
-  type="button"
-  variant={meetingType === "VIDEO" ? "secondary" : "outline"}
-  onClick={() => {
-    setMeetingType("VIDEO");
-    setLocation("");
-  }}
->
-  <Video className="size-4 mr-2" />
-  Video Call
-</Button>
+                  <div className="flex gap-3">
+                    <Button
+                      type="button"
+                      variant={
+                        meetingType === "VIDEO" ? "secondary" : "outline"
+                      }
+                      onClick={() => {
+                        setMeetingType("VIDEO");
+                        setLocation("");
+                      }}
+                    >
+                      <Video className="size-4 mr-2" />
+                      Video Call
+                    </Button>
 
-<Button
-  type="button"
-  variant={meetingType === "IN_PERSON" ? "secondary" : "outline"}
-  onClick={() => setMeetingType("IN_PERSON")}
->
-  <MapPin className="size-4 mr-2" />
-  In Person
-</Button>
-  </div>
-</div>
-{meetingType === "IN_PERSON" && (
-  <div className="space-y-2">
-    <Label htmlFor="location">Meeting Location *</Label>
-    <Textarea
-      id="location"
-      placeholder="Enter meeting address or place"
-      value={location}
-      onChange={(e) => setLocation(e.target.value)}
-      rows={2}
-      className="resize-none"
-    />
-  </div>
-)}
+                    <Button
+                      type="button"
+                      variant={
+                        meetingType === "IN_PERSON" ? "secondary" : "outline"
+                      }
+                      onClick={() => setMeetingType("IN_PERSON")}
+                    >
+                      <MapPin className="size-4 mr-2" />
+                      In Person
+                    </Button>
+                  </div>
+                </div>
+                {meetingType === "IN_PERSON" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Meeting Location *</Label>
+                    <Textarea
+                      id="location"
+                      placeholder="Enter meeting address or place"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      rows={2}
+                      className="resize-none"
+                    />
+                  </div>
+                )}
                 <div className="space-y-2">
                   <Label htmlFor="topic">Topic *</Label>
                   <Textarea
@@ -649,84 +650,7 @@ const fetchBookings = async () => {
         </div>
       </div>
 
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={confirmOpen}
-        onOpenChange={(open) => {
-          if (!booking) setConfirmOpen(open);
-        }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Confirm Your Consultation</DialogTitle>
-            <DialogDescription>
-              Please review your booking details before confirming.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="size-12">
-                <AvatarImage src={expert.profile.avatar ?? undefined} />
-                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
-                  {getInitials(expert.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-semibold text-gray-900">{expert.name}</p>
-                <p className="text-sm text-gray-600">Expert Consultant</p>
-              </div>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Date:</span>
-                <span className="font-medium text-gray-900">
-                  {selectedDate && format(selectedDate, "MMM d, yyyy")}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Time:</span>
-                <span className="font-medium text-gray-900">
-                  {selectedSlot}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Duration:</span>
-                <span className="font-medium text-gray-900">
-                  {duration} minutes
-                </span>
-              </div>
-              <div className="flex justify-between text-sm pt-2 border-t">
-                <span className="text-gray-900 font-semibold">Total:</span>
-                <span className="text-indigo-600 font-bold text-lg">
-                  ${price}
-                </span>
-              </div>
-            </div>
-
-            {message && (
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-gray-600 mb-1">Your Message:</p>
-                <p className="text-sm text-gray-900">{message}</p>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-indigo-600 hover:bg-indigo-700"
-              onClick={handleConfirmBooking}
-            >
-              <CheckCircle2 className="size-4 mr-2" />
-              Confirm Booking
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+ 
     </div>
   );
 }

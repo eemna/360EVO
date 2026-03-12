@@ -12,7 +12,8 @@ export default function VerifyEmailPage() {
 
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
-
+const type = searchParams.get("type");
+const email = searchParams.get("email");
   const [message, setMessage] = useState("");
 
   const [error, setError] = useState("");
@@ -32,7 +33,11 @@ export default function VerifyEmailPage() {
 
     const verify = async () => {
       try {
-        await api.post("/auth/verify-email", { token });
+        if (type === "change-email") {
+  await api.post("/auth/verify-new-email", { token, email });
+} else {
+  await api.post("/auth/verify-email", { token });
+}
 
         showToast({
           type: "success",
@@ -41,6 +46,9 @@ export default function VerifyEmailPage() {
         });
 
         setMessage("Email successfully verified.");
+        if (type === "change-email") {
+  navigate("/app/settings");
+}
       } catch (err) {
         const error = err as AxiosError<{ message: string }>;
 
@@ -61,7 +69,7 @@ export default function VerifyEmailPage() {
     };
 
     verify();
-  }, [token, showToast]);
+ }, [token, showToast, type, email, navigate]);
 
   //  Resend verification email
   const handleResend = async () => {

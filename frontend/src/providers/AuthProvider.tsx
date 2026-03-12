@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch fresh user on app load
+  // Fetch fresh user on app load
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("accessToken");
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     fetchUser();
   }, []);
 
-  // ✅ Auto sync user → localStorage
+  //  Auto sync user → localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem("user", JSON.stringify(user));

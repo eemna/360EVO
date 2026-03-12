@@ -12,6 +12,7 @@ import {
   Bell,
   Settings,
   X,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "../ui/utils";
 export interface Profile {
@@ -35,6 +36,7 @@ const menuItems = [
   { icon: User, label: "My Profile", path: "/app/profile/me" },
   { icon: Users, label: "My Network", path: "/app/network" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
+   { icon: GraduationCap, label: "Find Experts", path: "/app/experts" },
   { icon: MessageSquare, label: "Messages", path: "/app/conversation" },
   { icon: Bell, label: "Notifications", path: "/app/notifications" },
   { icon: Settings, label: "Settings", path: "/app/settings" },

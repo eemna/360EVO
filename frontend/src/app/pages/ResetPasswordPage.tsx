@@ -58,7 +58,7 @@ export default function ResetPasswordPage() {
 
       setSuccess(true);
 
-      // Optional: auto redirect after 2 seconds
+     
       setTimeout(() => {
         navigate("/login");
       }, 2000);
