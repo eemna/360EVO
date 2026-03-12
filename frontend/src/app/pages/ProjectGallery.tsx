@@ -342,8 +342,6 @@ export function ProjectGallery() {
           ))}
         </div>
       )}
-
-    
     </div>
   );
 }

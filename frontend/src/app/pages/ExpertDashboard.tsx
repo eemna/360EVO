@@ -25,7 +25,7 @@ interface EarningsData {
   thisMonthSessions: number;
 }
 
-// Profile completeness helper 
+// Profile completeness helper
 
 interface ProfileFields {
   avatar?: string | null;
@@ -37,32 +37,32 @@ interface ProfileFields {
 }
 const getProfileCompleteness = (profile: ProfileFields | null | undefined) => {
   const fields = [
-    { label: "Profile photo",       done: !!profile?.avatar },
-    { label: "Bio",                  done: !!profile?.bio },
-    { label: "Hourly rate",          done: !!profile?.hourlyRate },
+    { label: "Profile photo", done: !!profile?.avatar },
+    { label: "Bio", done: !!profile?.bio },
+    { label: "Hourly rate", done: !!profile?.hourlyRate },
     { label: "Expertise areas", done: (profile?.expertise?.length ?? 0) > 0 },
-    { label: "Years of experience",  done: !!profile?.yearsOfExperience },
-    { label: "Location",             done: !!profile?.location },
+    { label: "Years of experience", done: !!profile?.yearsOfExperience },
+    { label: "Location", done: !!profile?.location },
   ];
 
   const completed = fields.filter((f) => f.done).length;
-  const percent   = Math.round((completed / fields.length) * 100);
-  const missing   = fields.filter((f) => !f.done);
+  const percent = Math.round((completed / fields.length) * 100);
+  const missing = fields.filter((f) => !f.done);
 
   return { percent, missing };
 };
 
-// Component 
+// Component
 export function ExpertDashboard() {
   const { user } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
   const [earnings, setEarnings] = useState<EarningsData>({
-    totalEarned:       0,
+    totalEarned: 0,
     completedSessions: 0,
-    pendingEarnings:   0,
-    upcomingSessions:  0,
-    thisMonthEarned:   0,
+    pendingEarnings: 0,
+    upcomingSessions: 0,
+    thisMonthEarned: 0,
     thisMonthSessions: 0,
   });
   const [loadingEarnings, setLoadingEarnings] = useState(true);
@@ -81,7 +81,6 @@ export function ExpertDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-5xl mx-auto space-y-8">
-
         {/* ── Header ── */}
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">
@@ -153,7 +152,6 @@ export function ExpertDashboard() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
             {/* Total Earned */}
             <Card className="border-l-4 border-l-green-500">
               <CardContent className="pt-6">
@@ -219,7 +217,6 @@ export function ExpertDashboard() {
                 </div>
               </CardContent>
             </Card>
-
           </div>
         </div>
 
@@ -231,7 +228,6 @@ export function ExpertDashboard() {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
             {/* Rating */}
             <Card>
               <CardContent className="pt-6">
@@ -283,7 +279,6 @@ export function ExpertDashboard() {
                         ? `$${user.profile.hourlyRate}/hr`
                         : "Not set"}
                     </p>
-                   
                   </div>
                   <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
                     <DollarSign className="size-6 text-purple-600" />
@@ -291,7 +286,6 @@ export function ExpertDashboard() {
                 </div>
               </CardContent>
             </Card>
-
           </div>
         </div>
 
@@ -316,7 +310,6 @@ export function ExpertDashboard() {
             </Button>
           </div>
         </div>
-
       </div>
     </div>
   );

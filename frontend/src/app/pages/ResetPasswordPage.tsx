@@ -58,7 +58,6 @@ export default function ResetPasswordPage() {
 
       setSuccess(true);
 
-     
       setTimeout(() => {
         navigate("/login");
       }, 2000);

@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   Card,
@@ -47,7 +47,6 @@ interface Booking {
   status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
 }
 export function BookConsultationPage() {
-  
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [duration, setDuration] = useState(30);
 
@@ -57,7 +56,7 @@ export function BookConsultationPage() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  
+
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
   const [meetingType, setMeetingType] = useState<"VIDEO" | "IN_PERSON">(
@@ -83,18 +82,23 @@ export function BookConsultationPage() {
 
     if (expertId) fetchExpert();
   }, [expertId]);
-useEffect(() => {
-  if (!expertId) return;
-  let cancelled = false;
+  useEffect(() => {
+    if (!expertId) return;
+    let cancelled = false;
 
-  api.get("/consultations").then(({ data }) => {
-    if (!cancelled) {
-      setBookings(data.filter((b: Booking) => b.expertId === expertId));
-    }
-  }).catch(console.error);
+    api
+      .get("/consultations")
+      .then(({ data }) => {
+        if (!cancelled) {
+          setBookings(data.filter((b: Booking) => b.expertId === expertId));
+        }
+      })
+      .catch(console.error);
 
-  return () => { cancelled = true; };
-}, [expertId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [expertId]);
   // Check if a date is available based on weekly schedule
   const isDateAvailable = (date: Date) => {
     if (!expert?.profile?.weeklyAvailability) return false;
@@ -198,21 +202,23 @@ useEffect(() => {
         location: meetingType === "IN_PERSON" ? location : null,
       });
       const { data: updatedBookings } = await api.get("/consultations");
-setBookings(updatedBookings.filter((b: Booking) => b.expertId === expert.id));
-    // 2 Create conversation (or get existing)
-    const { data: conversation } = await api.post("/conversations", {
-      otherUserId: expert.id,
-    });
+      setBookings(
+        updatedBookings.filter((b: Booking) => b.expertId === expert.id),
+      );
+      // 2 Create conversation (or get existing)
+      const { data: conversation } = await api.post("/conversations", {
+        otherUserId: expert.id,
+      });
 
-    // 3️ Send automatic message
-    await api.post(`/conversations/${conversation.id}/messages`, {
-      content:
-        message ||
-        `📅 New consultation booked:
+      // 3️ Send automatic message
+      await api.post(`/conversations/${conversation.id}/messages`, {
+        content:
+          message ||
+          `📅 New consultation booked:
 Date: ${format(selectedDate, "MMMM d, yyyy")}
 Time: ${selectedSlot}
 Duration: ${duration} minutes`,
-    });
+      });
       showToast({
         type: "success",
         title: "Booking Confirmed 🎉",
@@ -423,10 +429,11 @@ Duration: ${duration} minutes`,
                   mode="single"
                   selected={selectedDate}
                   onSelect={(date) => {
-                  if (!date) return;
+                    if (!date) return;
 
-                  setSelectedSlot(null);
-                  setSelectedDate(date); }}
+                    setSelectedSlot(null);
+                    setSelectedDate(date);
+                  }}
                   disabled={(date) =>
                     date < today ||
                     !isDateAvailable(date) ||
@@ -455,9 +462,9 @@ Duration: ${duration} minutes`,
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Step 2: Select Time Slot */}
-          {(selectedDate ) && (
+          {selectedDate && (
             <Card className="shadow-md">
               <CardHeader>
                 <div className="flex items-center gap-2">
@@ -649,8 +656,6 @@ Duration: ${duration} minutes`,
           )}
         </div>
       </div>
-
- 
     </div>
   );
 }

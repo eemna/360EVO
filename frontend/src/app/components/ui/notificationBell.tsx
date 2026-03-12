@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef} from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useSocket } from "../../../hooks/useSocket";
@@ -24,19 +24,20 @@ export function NotificationBell() {
   useEffect(() => {
     let cancelled = false; // prevent state update if component unmounts
 
-    api.get("/notifications").then(({ data }) => {
-      if (!cancelled) {
-        setNotifications(data.notifications);
-        setUnreadCount(data.unreadCount);
-      }
-    }).catch(console.error);
+    api
+      .get("/notifications")
+      .then(({ data }) => {
+        if (!cancelled) {
+          setNotifications(data.notifications);
+          setUnreadCount(data.unreadCount);
+        }
+      })
+      .catch(console.error);
 
     return () => {
       cancelled = true; // cleanup
     };
   }, []);
-
-
 
   // Real-time socket listener
   useEffect(() => {

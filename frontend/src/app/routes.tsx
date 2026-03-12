@@ -58,8 +58,7 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
-     {  path:"experts",
-       element:(<ExpertsPage />) },
+      { path: "experts", element: <ExpertsPage /> },
       {
         path: "startup",
         element: (
@@ -104,10 +103,8 @@ export const router = createBrowserRouter([
         path: "projects",
         element: <ProjectGallery />,
       },
-     { path: "notifications", element: <NotificationsPage /> },
-      {  path: "conversation",
-        element: <MessagesPage />,
-      },
+      { path: "notifications", element: <NotificationsPage /> },
+      { path: "conversation", element: <MessagesPage /> },
       {
         path: "profile/:id",
         element: <Profile />,

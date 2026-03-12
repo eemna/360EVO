@@ -1,4 +1,4 @@
-import { useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -39,13 +39,27 @@ interface Pagination {
 }
 
 const EXPERTISE_OPTIONS = [
-  "Business Strategy", "Marketing", "Finance", "Technology",
-  "Design", "Legal", "HR", "Sales", "Operations", "Product",
+  "Business Strategy",
+  "Marketing",
+  "Finance",
+  "Technology",
+  "Design",
+  "Legal",
+  "HR",
+  "Sales",
+  "Operations",
+  "Product",
 ];
 
 const INDUSTRY_OPTIONS = [
-  "Technology", "Healthcare", "Finance", "Education",
-  "E-commerce", "Manufacturing", "Media", "Real Estate",
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "E-commerce",
+  "Manufacturing",
+  "Media",
+  "Real Estate",
 ];
 
 export default function ExpertsPage() {
@@ -69,49 +83,51 @@ export default function ExpertsPage() {
   const [sort, setSort] = useState("rating");
   const [page, setPage] = useState(1);
 
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  const params = new URLSearchParams();
-  if (expertise) params.set("expertise", expertise);
-  if (industry) params.set("industry", industry);
-  if (maxRate < 500) params.set("maxRate", String(maxRate));
-  if (minRating > 0) params.set("minRating", String(minRating));
-  params.set("sort", sort);
-  params.set("page", String(page));
-  params.set("limit", "12");
+    const params = new URLSearchParams();
+    if (expertise) params.set("expertise", expertise);
+    if (industry) params.set("industry", industry);
+    if (maxRate < 500) params.set("maxRate", String(maxRate));
+    if (minRating > 0) params.set("minRating", String(minRating));
+    params.set("sort", sort);
+    params.set("page", String(page));
+    params.set("limit", "12");
 
-  // ✅ Use a timeout to avoid cascade — sets loading before paint
-  const timer = setTimeout(() => {
-    if (!cancelled) setLoading(true);
-  }, 0);
+    // ✅ Use a timeout to avoid cascade — sets loading before paint
+    const timer = setTimeout(() => {
+      if (!cancelled) setLoading(true);
+    }, 0);
 
-  api.get(`/experts?${params.toString()}`)
-    .then(({ data }) => {
-      if (!cancelled) {
-        setExperts(data.experts);
-        setPagination(data.pagination);
-        setLoading(false);
-      }
-    })
-    .catch((err) => {
-      if (!cancelled) {
-        console.error(err);
-        setLoading(false);
-      }
-    });
+    api
+      .get(`/experts?${params.toString()}`)
+      .then(({ data }) => {
+        if (!cancelled) {
+          setExperts(data.experts);
+          setPagination(data.pagination);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error(err);
+          setLoading(false);
+        }
+      });
 
-  return () => {
-    cancelled = true;
-    clearTimeout(timer);
-  };
-}, [expertise, industry, maxRate, minRating, sort, page]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [expertise, industry, maxRate, minRating, sort, page]);
   // Filter by name client-side
-  const filtered = experts.filter((e) =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.profile.expertise.some((ex) =>
-      ex.toLowerCase().includes(search.toLowerCase())
-    )
+  const filtered = experts.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.profile.expertise.some((ex) =>
+        ex.toLowerCase().includes(search.toLowerCase()),
+      ),
   );
 
   const hasActiveFilters =
@@ -127,7 +143,6 @@ useEffect(() => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-
       {/* ── HEADER ── */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Find an Expert</h1>
@@ -148,7 +163,13 @@ useEffect(() => {
           />
         </div>
 
-        <Select value={sort} onValueChange={(v) => { setSort(v); setPage(1); }}>
+        <Select
+          value={sort}
+          onValueChange={(v) => {
+            setSort(v);
+            setPage(1);
+          }}
+        >
           <SelectTrigger className="w-48">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -187,7 +208,6 @@ useEffect(() => {
         <Card className="border-indigo-100">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-
               {/* Expertise */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">Expertise</p>
@@ -204,7 +224,9 @@ useEffect(() => {
                   <SelectContent>
                     <SelectItem value="all">All expertise</SelectItem>
                     {EXPERTISE_OPTIONS.map((e) => (
-                      <SelectItem key={e} value={e}>{e}</SelectItem>
+                      <SelectItem key={e} value={e}>
+                        {e}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -226,7 +248,9 @@ useEffect(() => {
                   <SelectContent>
                     <SelectItem value="all">All industries</SelectItem>
                     {INDUSTRY_OPTIONS.map((i) => (
-                      <SelectItem key={i} value={i}>{i}</SelectItem>
+                      <SelectItem key={i} value={i}>
+                        {i}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -235,14 +259,18 @@ useEffect(() => {
               {/* Max Rate */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
-                  Max Rate: <span className="text-indigo-600">${maxRate}/hr</span>
+                  Max Rate:{" "}
+                  <span className="text-indigo-600">${maxRate}/hr</span>
                 </p>
                 <Slider
                   min={10}
                   max={500}
                   step={10}
                   value={[maxRate]}
-                  onValueChange={([v]) => { setMaxRate(v); setPage(1); }}
+                  onValueChange={([v]) => {
+                    setMaxRate(v);
+                    setPage(1);
+                  }}
                   className="mt-2"
                 />
               </div>
@@ -250,18 +278,21 @@ useEffect(() => {
               {/* Min Rating */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
-                  Min Rating: <span className="text-indigo-600">{minRating}★</span>
+                  Min Rating:{" "}
+                  <span className="text-indigo-600">{minRating}★</span>
                 </p>
                 <Slider
                   min={0}
                   max={5}
                   step={0.5}
                   value={[minRating]}
-                  onValueChange={([v]) => { setMinRating(v); setPage(1); }}
+                  onValueChange={([v]) => {
+                    setMinRating(v);
+                    setPage(1);
+                  }}
                   className="mt-2"
                 />
               </div>
-
             </div>
           </CardContent>
         </Card>
@@ -296,11 +327,7 @@ useEffect(() => {
           <p className="text-lg font-medium">No experts found</p>
           <p className="text-sm mt-1">Try adjusting your filters</p>
           {hasActiveFilters && (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={clearFilters}
-            >
+            <Button variant="outline" className="mt-4" onClick={clearFilters}>
               Clear filters
             </Button>
           )}
@@ -360,11 +387,11 @@ useEffect(() => {
 function ExpertCard({
   expert,
   onClick,
-  onBook, 
+  onBook,
 }: {
   expert: Expert;
   onClick: () => void;
-  onBook: () => void; 
+  onBook: () => void;
 }) {
   const { profile } = expert;
 
@@ -386,7 +413,6 @@ function ExpertCard({
       onClick={onClick}
     >
       <CardContent className="pt-6 space-y-4">
-
         {/* Header */}
         <div className="flex gap-3 items-start">
           {/* Avatar */}
@@ -484,15 +510,14 @@ function ExpertCard({
           className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
           disabled={profile.availabilityStatus !== "AVAILABLE"}
           onClick={(e) => {
-    e.stopPropagation();
-    onBook(); 
-  }}
+            e.stopPropagation();
+            onBook();
+          }}
         >
           {profile.availabilityStatus === "AVAILABLE"
             ? "Book Consultation"
             : "View Profile"}
         </Button>
-
       </CardContent>
     </Card>
   );

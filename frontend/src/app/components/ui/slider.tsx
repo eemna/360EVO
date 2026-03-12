@@ -1,15 +1,22 @@
-import * as SliderPrimitive from "@radix-ui/react-slider"
+import * as SliderPrimitive from "@radix-ui/react-slider";
 
 interface SliderProps {
-  min?: number
-  max?: number
-  step?: number
-  value?: number[]
-  onValueChange?: (value: number[]) => void
-  className?: string
+  min?: number;
+  max?: number;
+  step?: number;
+  value?: number[];
+  onValueChange?: (value: number[]) => void;
+  className?: string;
 }
 
-export function Slider({ min, max, step, value, onValueChange, className }: SliderProps) {
+export function Slider({
+  min,
+  max,
+  step,
+  value,
+  onValueChange,
+  className,
+}: SliderProps) {
   return (
     <SliderPrimitive.Root
       min={min}
@@ -24,5 +31,5 @@ export function Slider({ min, max, step, value, onValueChange, className }: Slid
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb className="block size-4 rounded-full border-2 border-indigo-600 bg-white shadow focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50" />
     </SliderPrimitive.Root>
-  )
+  );
 }

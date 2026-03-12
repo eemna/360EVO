@@ -79,62 +79,65 @@ export function ManageReservations() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
-const [reviewRating, setReviewRating] = useState(0);
-const [reviewComment, setReviewComment] = useState("");
-const [reviewHover, setReviewHover] = useState(0);
-const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
-const handleCompleteBooking = async (bookingId: string) => {
-  try {
-    setProcessingId(bookingId);
-    setProcessingAction("complete");
-    await api.patch(`/consultations/${bookingId}/complete`);
-    setBookings((prev) =>
-      prev.map((b) =>
-        b.id === bookingId ? { ...b, status: "COMPLETED" } : b
-      )
-    );
-    showToast({ type: "success", title: "Session marked complete!" });
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setProcessingId(null);
-    setProcessingAction(null); 
-  }
-};
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewHover, setReviewHover] = useState(0);
+  const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
+  const handleCompleteBooking = async (bookingId: string) => {
+    try {
+      setProcessingId(bookingId);
+      setProcessingAction("complete");
+      await api.patch(`/consultations/${bookingId}/complete`);
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === bookingId ? { ...b, status: "COMPLETED" } : b,
+        ),
+      );
+      showToast({ type: "success", title: "Session marked complete!" });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProcessingId(null);
+      setProcessingAction(null);
+    }
+  };
 
-const handleSubmitReview = async () => {
-  if (!reviewBooking || reviewRating === 0) return;
-  try {
-    await api.post(`/consultations/${reviewBooking.id}/review`, {
-      rating: reviewRating,
-      comment: reviewComment,
-    });
-    showToast({ type: "success", title: "Review submitted ⭐" });
-    setReviewBooking(null);
-    setReviewRating(0);
-    setReviewComment("");
-  } catch (error) {
-    console.error(error);
-  }
-};
+  const handleSubmitReview = async () => {
+    if (!reviewBooking || reviewRating === 0) return;
+    try {
+      await api.post(`/consultations/${reviewBooking.id}/review`, {
+        rating: reviewRating,
+        comment: reviewComment,
+      });
+      showToast({ type: "success", title: "Review submitted ⭐" });
+      setReviewBooking(null);
+      setReviewRating(0);
+      setReviewComment("");
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const [processingAction, setProcessingAction] = useState<
     "accept" | "reject" | "cancel" | "complete" | null
   >(null);
   useEffect(() => {
-  if (!user?.id) return;
-  let cancelled = false;
+    if (!user?.id) return;
+    let cancelled = false;
 
-  api.get("/consultations")
-    .then(({ data }) => {
-      if (!cancelled) setBookings(data);
-    })
-    .catch(console.error)
-    .finally(() => {
-      if (!cancelled) setLoading(false);
-    });
+    api
+      .get("/consultations")
+      .then(({ data }) => {
+        if (!cancelled) setBookings(data);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  return () => { cancelled = true; };
-}, [user?.id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
   const pendingBookings = bookings.filter((b) => b.status === "PENDING");
 
   const confirmedBookings = bookings.filter((b) => b.status === "ACCEPTED");
@@ -416,16 +419,16 @@ const handleSubmitReview = async () => {
               Schedule
             </TabsTrigger>
             <TabsTrigger
-  value="completed"
-  className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
->
-  Completed
-  {completedBookings.length > 0 && (
-    <Badge className="ml-2 bg-gray-500 text-white">
-      {completedBookings.length}
-    </Badge>
-  )}
-</TabsTrigger>
+              value="completed"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+            >
+              Completed
+              {completedBookings.length > 0 && (
+                <Badge className="ml-2 bg-gray-500 text-white">
+                  {completedBookings.length}
+                </Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           {/* Pending Requests Tab */}
@@ -626,7 +629,7 @@ const handleSubmitReview = async () => {
                     </div>
 
                     {/* Video Call Box */}
-                    
+
                     {booking.meetingType === "VIDEO" && booking.meetingLink && (
                       <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
                         <Video className="size-5 text-blue-600 mt-1" />
@@ -697,77 +700,85 @@ const handleSubmitReview = async () => {
                       >
                         Cancel
                       </Button>
-                     
-{user?.id === booking.expertId && booking.status === "ACCEPTED" && (
-  <Button
-    onClick={() => handleCompleteBooking(booking.id)}
-    className="bg-green-600 hover:bg-green-700 text-white"
-    disabled={processingId === booking.id}
-  >
-    {processingId === booking.id ? (
-      <LoadingSpinner size="sm" className="mr-2" />
-    ) : (
-      <CheckCircle2 className="size-4 mr-2" />
-    )}
-    Mark Complete
-  </Button>
-)}
+
+                      {user?.id === booking.expertId &&
+                        booking.status === "ACCEPTED" && (
+                          <Button
+                            onClick={() => handleCompleteBooking(booking.id)}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            disabled={processingId === booking.id}
+                          >
+                            {processingId === booking.id ? (
+                              <LoadingSpinner size="sm" className="mr-2" />
+                            ) : (
+                              <CheckCircle2 className="size-4 mr-2" />
+                            )}
+                            Mark Complete
+                          </Button>
+                        )}
                     </div>
                   </CardContent>
                 </Card>
               ))
             )}
           </TabsContent>
-<TabsContent value="completed" className="space-y-6">
-  {completedBookings.length === 0 ? (
-    <Card>
-      <CardContent className="py-12 text-center">
-        <p className="text-gray-600 text-lg">No completed sessions yet</p>
-      </CardContent>
-    </Card>
-  ) : (
-    completedBookings.map((booking) => (
-      <Card key={booking.id} className="border-l-4 border-l-gray-400">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <CardTitle className="text-xl">{booking.member?.name}</CardTitle>
-            <Badge className="bg-gray-100 text-gray-700 border">
-              Completed
-            </Badge>
-          </div>
-          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="size-4" />
-              <span>{formatDate(booking.startDateTime)}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="size-4" />
-              <span>{format(new Date(booking.startDateTime), "HH:mm")} ({booking.duration} min)</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <DollarSign className="size-4" />
-              <span>{booking.price}</span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm font-semibold text-gray-900 mb-3">
-            Topic: {booking.topic}
-          </p>
-      {user?.id === booking.member?.id && (
-  <Button
-    variant="outline"
-    onClick={() => setReviewBooking(booking)}
-    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-  >
-    ⭐ Leave a Review
-  </Button>
-)}
-        </CardContent>
-      </Card>
-    ))
-  )}
-</TabsContent>
+          <TabsContent value="completed" className="space-y-6">
+            {completedBookings.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center">
+                  <p className="text-gray-600 text-lg">
+                    No completed sessions yet
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              completedBookings.map((booking) => (
+                <Card key={booking.id} className="border-l-4 border-l-gray-400">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <CardTitle className="text-xl">
+                        {booking.member?.name}
+                      </CardTitle>
+                      <Badge className="bg-gray-100 text-gray-700 border">
+                        Completed
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="size-4" />
+                        <span>{formatDate(booking.startDateTime)}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="size-4" />
+                        <span>
+                          {format(new Date(booking.startDateTime), "HH:mm")} (
+                          {booking.duration} min)
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <DollarSign className="size-4" />
+                        <span>{booking.price}</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm font-semibold text-gray-900 mb-3">
+                      Topic: {booking.topic}
+                    </p>
+                    {user?.id === booking.member?.id && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setReviewBooking(booking)}
+                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                      >
+                        ⭐ Leave a Review
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
           {/* Schedule Tab */}
           <TabsContent value="schedule">
             <Card>
@@ -924,55 +935,58 @@ const handleSubmitReview = async () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Dialog open={!!reviewBooking} onOpenChange={() => setReviewBooking(null)}>
-  <DialogContent>
-    <DialogHeader>
-      <DialogTitle>Review your session</DialogTitle>
-      <DialogDescription>
-        How was your consultation with {reviewBooking?.expert?.name}?
-      </DialogDescription>
-    </DialogHeader>
-    <div className="py-4 space-y-4">
-      {/* Star picker */}
-      <div className="flex gap-2 justify-center">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            key={star}
-            type="button"
-            className={`text-3xl transition-colors ${
-              star <= (reviewHover || reviewRating)
-                ? "text-yellow-400"
-                : "text-gray-300"
-            }`}
-            onMouseEnter={() => setReviewHover(star)}
-            onMouseLeave={() => setReviewHover(0)}
-            onClick={() => setReviewRating(star)}
-          >
-            ★
-          </button>
-        ))}
-      </div>
-      <Textarea
-        placeholder="Share your experience (optional)..."
-        value={reviewComment}
-        onChange={(e) => setReviewComment(e.target.value)}
-        rows={3}
-      />
-    </div>
-    <DialogFooter>
-      <Button variant="outline" onClick={() => setReviewBooking(null)}>
-        Cancel
-      </Button>
-      <Button
-        onClick={handleSubmitReview}
-        disabled={reviewRating === 0}
-        className="bg-indigo-600 hover:bg-indigo-700"
-      >
-        Submit Review
-      </Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+        <Dialog
+          open={!!reviewBooking}
+          onOpenChange={() => setReviewBooking(null)}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Review your session</DialogTitle>
+              <DialogDescription>
+                How was your consultation with {reviewBooking?.expert?.name}?
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+              {/* Star picker */}
+              <div className="flex gap-2 justify-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    className={`text-3xl transition-colors ${
+                      star <= (reviewHover || reviewRating)
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                    onMouseEnter={() => setReviewHover(star)}
+                    onMouseLeave={() => setReviewHover(0)}
+                    onClick={() => setReviewRating(star)}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              <Textarea
+                placeholder="Share your experience (optional)..."
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setReviewBooking(null)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitReview}
+                disabled={reviewRating === 0}
+                className="bg-indigo-600 hover:bg-indigo-700"
+              >
+                Submit Review
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
