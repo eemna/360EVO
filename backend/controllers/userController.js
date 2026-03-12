@@ -21,8 +21,8 @@ export const getUserById = async (req, res, next) => {
     let computedStatus = null;
 
     if (user.role === "EXPERT" && user.profile) {
-      if (user.profile.availabilityStatus === "ON_LEAVE") {
-        computedStatus = "ON_LEAVE";
+      if (user.profile.availabilityStatus === "UNAVAILABLE") {
+        computedStatus = "UNAVAILABLE";
       } else {
         computedStatus = "AVAILABLE"; // default when ACTIVE
 
@@ -85,6 +85,36 @@ export const getUserById = async (req, res, next) => {
       computedStatus, // null for non-experts
     });
   } catch (error) {
+    next(error);
+  }
+};
+export const getUsers = async (req, res, next) => {
+  try {
+    const currentUserId = req.user.id;
+    console.log("getUsers called, currentUserId:", currentUserId);
+    const users = await prisma.user.findMany({
+      where: {
+        id: { not: currentUserId },
+        // isVerified: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        profile: {
+          select: {
+            avatar: true,
+          },
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+    console.log("getUsers success, count:", users.length);
+    res.json(users);
+  } catch (error) {
+    console.error("getUsers ERROR:", error.message);
+
     next(error);
   }
 };

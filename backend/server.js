@@ -15,7 +15,10 @@ import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoute.js";
+import expertRoute from "./routes/expertRoute.js";
+import consultationRoute from "./routes/consultationRoute.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
+import notificationRoutes from "./routes/notificationRoute.js";
 
 dotenv.config();
 const app = express();
@@ -54,8 +57,10 @@ app.use("/api/uploads", uploadRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
-
+app.use("/api/experts", expertRoute);
+app.use("/api/consultations", consultationRoute);
 app.use("/api/conversations", conversationRoutes);
+app.use("/api/notifications", notificationRoutes);
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);

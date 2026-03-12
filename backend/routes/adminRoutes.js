@@ -10,7 +10,6 @@ import {
 
 const router = express.Router();
 
-// All routes require ADMIN role
 router.use(protect, authorize("ADMIN"));
 
 router.get("/projects/pending", getPendingProjects);

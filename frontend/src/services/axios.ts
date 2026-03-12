@@ -37,7 +37,7 @@ api.interceptors.response.use(
       !originalRequest.url.includes("/auth/login") &&
       !originalRequest.url.includes("/auth/refresh-token")
     ) {
-      console.log("🔁 Attempting refresh token...");
+      console.log("Attempting refresh token...");
 
       originalRequest._retry = true;
 
@@ -48,7 +48,7 @@ api.interceptors.response.use(
           { withCredentials: true },
         );
 
-        console.log("✅ Refresh success:", res.data);
+        console.log("Refresh success:", res.data);
 
         localStorage.setItem("accessToken", res.data.accessToken);
 

@@ -1,5 +1,3 @@
-// routes/conversationRoutes.js
-
 import express from "express";
 import { protect } from "../middleware/auth.js";
 import {
@@ -8,6 +6,7 @@ import {
   getMessages,
   getConversations,
   markAsRead,
+  deleteConversation,
 } from "../controllers/conversationController.js";
 
 const router = express.Router();
@@ -20,5 +19,5 @@ router.put("/messages/read", protect, markAsRead);
 router.get("/me-test", protect, (req, res) => {
   res.json({ userId: req.user.id });
 });
-
+router.delete("/:id", protect, deleteConversation);
 export default router;

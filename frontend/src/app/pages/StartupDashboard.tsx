@@ -27,9 +27,9 @@ import axios from "axios";
 import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router";
 import { Input } from "../components/ui/input";
-/* =========================
+/* 
    TYPES
-========================= */
+*/
 
 interface TeamMember {
   id: string;
@@ -62,9 +62,9 @@ type StatCardProps = {
   icon: React.ReactNode;
 };
 
-/* =========================
+/*
    HELPERS
-========================= */
+*/
 
 const getStatusColor = (status: string) => {
   switch (status) {
@@ -79,9 +79,9 @@ const getStatusColor = (status: string) => {
   }
 };
 
-/* =========================
+/*
    COMPONENT
-========================= */
+*/
 
 export default function StartupDashboard() {
   const [search, setSearch] = useState("");
@@ -188,7 +188,7 @@ export default function StartupDashboard() {
 
   return (
     <div className="space-y-10">
-      {/* ================= HEADER ================= */}
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold text-foreground">
@@ -218,7 +218,7 @@ export default function StartupDashboard() {
         </Button>
       </div>
 
-      {/* ================= STATS ================= */}
+      {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 ">
         <StatCard
           title="Total Projects"
@@ -239,7 +239,7 @@ export default function StartupDashboard() {
         />
       </div>
 
-      {/* ================= PROJECTS ================= */}
+      {/* PROJECTS */}
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h2 className="text-2xl font-semibold text-foreground">
@@ -398,9 +398,9 @@ export default function StartupDashboard() {
   );
 }
 
-/* =========================
+/*
    STAT CARD
-========================= */
+ */
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (

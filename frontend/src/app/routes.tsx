@@ -18,10 +18,13 @@ import { ProjectGallery } from "./pages/ProjectGallery";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import { MemberDashboard } from "./pages/MemberDashboard";
-//import { MessagesPage } from "./pages/MessagesPage";
+import { MessagesPage } from "./pages/MessagesPage";
 import { ExpertDashboard } from "./pages/ExpertDashboard";
 import { BookConsultationPage } from "./pages/BookConsultationPage";
 import { ManageReservations } from "./pages/ManageReservations";
+import ExpertsPage from "./pages/ExpertsPage";
+import { NotificationsPage } from "./pages/NotificationsPage";
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -55,6 +58,8 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+     {  path:"experts",
+       element:(<ExpertsPage />) },
       {
         path: "startup",
         element: (
@@ -99,10 +104,10 @@ export const router = createBrowserRouter([
         path: "projects",
         element: <ProjectGallery />,
       },
-      /*{
-        path: "conversation",
+     { path: "notifications", element: <NotificationsPage /> },
+      {  path: "conversation",
         element: <MessagesPage />,
-      },*/
+      },
       {
         path: "profile/:id",
         element: <Profile />,

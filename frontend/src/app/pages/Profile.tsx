@@ -9,7 +9,7 @@ import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import type { User } from "../../context/AuthContext";
 import ExpertProfile from "./ExpertProfile";
-import { useNavigate } from "react-router";
+//import { useNavigate } from "react-router";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import TagInputSection from "../components/ui/TagInputSection";
@@ -39,10 +39,10 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { AxiosError } from "axios";
-// import { format } from "date-fns";
 import {
   MapPin,
   Linkedin,
+  Mail,
   Phone,
   Edit3,
   Building,
@@ -52,6 +52,11 @@ import {
 
 import api from "../../services/axios";
 
+interface PrivacySettings {
+  showEmail?: boolean;
+  showPhone?: boolean;
+  profileVisible?: boolean;
+}
 const roleColors: Record<
   "EXPERT" | "STARTUP" | "MEMBER" | "ADMIN" | "INVESTOR",
   string
@@ -63,7 +68,6 @@ const roleColors: Record<
   INVESTOR: "bg-yellow-100 text-yellow-700",
 };
 
-//const stageOptions = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 
 export default function Profile() {
   const [uploading, setUploading] = useState(false);
@@ -79,7 +83,6 @@ export default function Profile() {
     "Friday",
     "Saturday",
   ];
-  const navigate = useNavigate();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [formData, setFormData] = useState<User | null>(null);
   const [newSkill, setNewSkill] = useState("");
@@ -123,7 +126,7 @@ export default function Profile() {
     setSaving(true);
 
     try {
-      const { data } = await api.put("/auth/update-profile", {
+      await api.put("/auth/update-profile", {
         name: formData.name,
         bio: formData.profile.bio,
         phone: formData.profile.phone,
@@ -138,11 +141,12 @@ export default function Profile() {
         weeklyAvailability: formData.profile.weeklyAvailability,
       });
 
-      //  USE BACKEND RESPONSE
-      setUser(data);
+     const targetId = !id || id === "me" ? user?.id : id;
+     const { data: freshProfile } = await api.get(`/users/${targetId}`);
 
-      setEditModalOpen(false);
-      setProfileUser(data);
+     setUser(freshProfile);
+     setProfileUser(freshProfile);
+     setEditModalOpen(false);
       showToast({
         type: "success",
         title: "Profile Updated ",
@@ -294,12 +298,29 @@ export default function Profile() {
   if (!profileUser || !profileUser.profile) return <div>User not found</div>;
 
   const profile = profileUser.profile;
-  const isOwnProfile = user?.id === profileUser.id;
+const isOwnProfile = user?.id === profileUser.id;
+const isAdmin = user?.role === "ADMIN";
 
-  const computedStatus =
-    profileUser.role === "EXPERT"
-      ? (profileUser.computedStatus ?? "AVAILABLE")
-      : null;
+// Read privacy from the viewed user's profile
+const privacySettings = (profile.settings as { privacy?: PrivacySettings } | null)?.privacy;
+
+// Private profile — only owner and admin can see it
+if (privacySettings?.profileVisible === false && !isOwnProfile && !isAdmin) {
+  return (
+    <div className="flex flex-col items-center justify-center h-64 gap-3 text-gray-500">
+      <p className="text-lg font-medium">This profile is private</p>
+      <p className="text-sm">The user has set their profile to private.</p>
+    </div>
+  );
+}
+
+// Show by default unless explicitly set to false
+const canSeePhone = isOwnProfile || isAdmin || privacySettings?.showPhone !== false;
+const canSeeEmail = isOwnProfile || isAdmin || privacySettings?.showEmail !== false;
+
+const computedStatus = profileUser.role === "EXPERT"
+  ? (profileUser.computedStatus ?? profileUser.profile?.availabilityStatus ?? "AVAILABLE")
+  : null;
   return (
     <div>
       {/* Cover */}
@@ -462,9 +483,7 @@ text-white border border-white/30 gap-2"
         </div>
 
         <div className="space-y-6">
-          {/* RATE CARD - Expert Only */}
-
-          {/* CONTACT CARD - ALL USERS */}
+          
           <Card>
             <CardHeader>
               <CardTitle>Contact Information</CardTitle>
@@ -475,7 +494,7 @@ text-white border border-white/30 gap-2"
                 <p className="text-sm text-gray-600 mb-1">Location</p>
                 <p className="font-medium text-gray-900">{profile.location}</p>
               </div>
-              {profile.phone && (
+              {canSeePhone && profile.phone && (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Phone</p>
                   <div className="flex items-center gap-2">
@@ -486,6 +505,15 @@ text-white border border-white/30 gap-2"
                   </div>
                 </div>
               )}
+              {canSeeEmail && profileUser.email && (
+  <div>
+    <p className="text-sm text-gray-600 mb-1">Email</p>
+    <div className="flex items-center gap-2">
+      <Mail className="size-4 text-gray-500" />
+      <span className="font-medium text-gray-900">{profileUser.email}</span>
+    </div>
+  </div>
+)}
               {profile.linkedIn && (
                 <div>
                   <p className="text-sm text-gray-600 mb-2">
@@ -522,31 +550,7 @@ text-white border border-white/30 gap-2"
                   </p>
                   <p className="text-gray-600">per hour</p>
                 </div>
-                {profileUser.role === "EXPERT" &&
-                  (user?.id === profileUser.id ? (
-                    // Expert viewing own profile
-                    <Button
-                      className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700"
-                      onClick={() => navigate("/app/expert/reservations")}
-                    >
-                      Manage Reservations
-                    </Button>
-                  ) : ["MEMBER", "ADMIN", "STARTUP"].includes(
-                      user?.role || "",
-                    ) ? (
-                    // Other roles booking expert
-                    <Button
-                      disabled={computedStatus !== "AVAILABLE"}
-                      className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-                      onClick={() =>
-                        navigate(`/app/experts/${profileUser.id}/book`)
-                      }
-                    >
-                      {computedStatus === "AVAILABLE"
-                        ? "Book Consultation"
-                        : "Currently Unavailable"}
-                    </Button>
-                  ) : null)}
+                
               </CardContent>
             </Card>
           )}
@@ -715,7 +719,7 @@ text-white border border-white/30 gap-2"
                                   availabilityStatus: value as
                                     | "AVAILABLE"
                                     | "BUSY"
-                                    | "ON_LEAVE",
+                                    | "UNAVAILABLE",
                                 },
                               })
                             }
@@ -729,7 +733,7 @@ text-white border border-white/30 gap-2"
                                 Available
                               </SelectItem>
                               <SelectItem value="BUSY">Busy</SelectItem>
-                              <SelectItem value="ON_LEAVE">On Leave</SelectItem>
+                              <SelectItem value="UNAVAILABLE">Unavailable</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>

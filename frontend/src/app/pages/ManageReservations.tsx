@@ -51,16 +51,17 @@ interface Booking {
   id: string;
   startDateTime: string;
   endDateTime: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
-
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
+  expertId: string;
+  expert?: { id: string; name: string };
   duration: number;
   price: number;
   topic: string;
   description?: string;
 
- meetingType?: "VIDEO" | "IN_PERSON";
- meetingLink?: string;
- location?: string;
+  meetingType?: "VIDEO" | "IN_PERSON";
+  meetingLink?: string;
+  location?: string;
 
   founderName?: string;
 
@@ -77,24 +78,63 @@ export function ManageReservations() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
+const [reviewRating, setReviewRating] = useState(0);
+const [reviewComment, setReviewComment] = useState("");
+const [reviewHover, setReviewHover] = useState(0);
+const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
+const handleCompleteBooking = async (bookingId: string) => {
+  try {
+    setProcessingId(bookingId);
+    setProcessingAction("complete");
+    await api.patch(`/consultations/${bookingId}/complete`);
+    setBookings((prev) =>
+      prev.map((b) =>
+        b.id === bookingId ? { ...b, status: "COMPLETED" } : b
+      )
+    );
+    showToast({ type: "success", title: "Session marked complete!" });
+  } catch (error) {
+    console.error(error);
+  } finally {
+    setProcessingId(null);
+    setProcessingAction(null); 
+  }
+};
+
+const handleSubmitReview = async () => {
+  if (!reviewBooking || reviewRating === 0) return;
+  try {
+    await api.post(`/consultations/${reviewBooking.id}/review`, {
+      rating: reviewRating,
+      comment: reviewComment,
+    });
+    showToast({ type: "success", title: "Review submitted ⭐" });
+    setReviewBooking(null);
+    setReviewRating(0);
+    setReviewComment("");
+  } catch (error) {
+    console.error(error);
+  }
+};
   const [processingAction, setProcessingAction] = useState<
-  "accept" | "reject" | "cancel" | null
->(null);
+    "accept" | "reject" | "cancel" | "complete" | null
+  >(null);
   useEffect(() => {
-    const fetchBookings = async () => {
-      try {
-        const { data } = await api.get(`/auth/bookings/expert/${user?.id}`);
+  if (!user?.id) return;
+  let cancelled = false;
 
-        setBookings(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  api.get("/consultations")
+    .then(({ data }) => {
+      if (!cancelled) setBookings(data);
+    })
+    .catch(console.error)
+    .finally(() => {
+      if (!cancelled) setLoading(false);
+    });
 
-    if (user?.id) fetchBookings();
-  }, [user?.id]);
+  return () => { cancelled = true; };
+}, [user?.id]);
   const pendingBookings = bookings.filter((b) => b.status === "PENDING");
 
   const confirmedBookings = bookings.filter((b) => b.status === "ACCEPTED");
@@ -116,41 +156,39 @@ export function ManageReservations() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [cancellationReason, setCancellationReason] = useState("");
 
-const handleAcceptBooking = async (bookingId: string) => {
-  try {
-    setProcessingId(bookingId);
-     setProcessingAction("accept");
-    const { data } = await api.patch(`/auth/${bookingId}/accept`);
+  const handleAcceptBooking = async (bookingId: string) => {
+    try {
+      setProcessingId(bookingId);
+      setProcessingAction("accept");
+      const { data } = await api.patch(`/consultations/${bookingId}/accept`);
 
-    setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? data : b)),
-    );
+      setBookings((prev) => prev.map((b) => (b.id === bookingId ? data : b)));
 
-    showToast({
-      type: "success",
-      title: "Booking Accepted",
-      message: "The session has been confirmed.",
-    });
-  } catch (error) {
-    console.error(error);
-  } finally {
-    setProcessingId(null);
-     setProcessingAction(null);
-  }
-};
+      showToast({
+        type: "success",
+        title: "Booking Accepted",
+        message: "The session has been confirmed.",
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setProcessingId(null);
+      setProcessingAction(null);
+    }
+  };
   const handleRejectBooking = async () => {
     if (!selectedBooking) return;
 
     try {
       setProcessingId(selectedBooking.id);
       setProcessingAction("reject");
-      await api.patch(`/auth/${selectedBooking.id}/reject`, {
+      await api.patch(`/consultations/${selectedBooking.id}/reject`, {
         reason: rejectionReason,
       });
 
       setBookings((prev) =>
         prev.map((b) =>
-          b.id === selectedBooking.id ? { ...b, status: "REJECTED" } : b,
+          b.id === selectedBooking.id ? { ...b, status: "DECLINED" } : b,
         ),
       );
 
@@ -175,7 +213,7 @@ const handleAcceptBooking = async (bookingId: string) => {
     if (!selectedBooking || !cancellationReason.trim()) return;
 
     try {
-      await api.patch(`/auth/${selectedBooking.id}/cancel`, {
+      await api.patch(`/consultations/${selectedBooking.id}/cancel`, {
         reason: cancellationReason,
       });
 
@@ -377,6 +415,17 @@ const handleAcceptBooking = async (bookingId: string) => {
             >
               Schedule
             </TabsTrigger>
+            <TabsTrigger
+  value="completed"
+  className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+>
+  Completed
+  {completedBookings.length > 0 && (
+    <Badge className="ml-2 bg-gray-500 text-white">
+      {completedBookings.length}
+    </Badge>
+  )}
+</TabsTrigger>
           </TabsList>
 
           {/* Pending Requests Tab */}
@@ -443,43 +492,48 @@ const handleAcceptBooking = async (bookingId: string) => {
                         {booking.description}
                       </p>
                     </div>
-<div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
+                      {/* Meeting Type */}
+                      <div className="flex items-center gap-2">
+                        {booking.meetingType === "VIDEO" ? (
+                          <>
+                            <Video className="size-4 text-gray-500" />
+                            <span className="text-sm text-gray-600">
+                              Video Call
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <MapPin className="size-4 text-gray-500" />
+                            <span className="text-sm text-gray-600">
+                              In Person - {booking.location}
+                            </span>
+                          </>
+                        )}
+                      </div>
 
-  {/* Meeting Type */}
-  <div className="flex items-center gap-2">
-    {booking.meetingType === "VIDEO" ? (
-      <>
-        <Video className="size-4 text-gray-500" />
-        <span className="text-sm text-gray-600">Video Call</span>
-      </>
-    ) : (
-      <>
-        <MapPin className="size-4 text-gray-500" />
-        <span className="text-sm text-gray-600">
-          In Person - {booking.location}
-        </span>
-      </>
-    )}
-  </div>
-
-  {/* Join Button */}
-  {booking.meetingType === "VIDEO" && booking.meetingLink && (
-    <Button
-      size="sm"
-      className="bg-indigo-600 hover:bg-indigo-700 text-white"
-      onClick={() => window.open(booking.meetingLink, "_blank")}
-    >
-      <Video className="size-4 mr-1" />
-      Join
-    </Button>
-  )}
-</div>
+                      {/* Join Button */}
+                      {booking.meetingType === "VIDEO" &&
+                        booking.meetingLink && (
+                          <Button
+                            size="sm"
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                            onClick={() =>
+                              window.open(booking.meetingLink, "_blank")
+                            }
+                          >
+                            <Video className="size-4 mr-1" />
+                            Join
+                          </Button>
+                        )}
+                    </div>
                     <div className="flex gap-3 pt-4 ">
                       <Button
                         onClick={() => handleAcceptBooking(booking.id)}
                         className="flex-1 bg-green-600 hover:bg-green-700"
                       >
-                        {processingId === booking.id && processingAction === "accept" ? (
+                        {processingId === booking.id &&
+                        processingAction === "accept" ? (
                           <LoadingSpinner size="sm" className="mr-2" />
                         ) : (
                           <CheckCircle2 className="size-4 mr-2" />
@@ -494,7 +548,8 @@ const handleAcceptBooking = async (bookingId: string) => {
                         variant="outline"
                         className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
                       >
-                        {processingId === booking.id && processingAction === "reject"  ? (
+                        {processingId === booking.id &&
+                        processingAction === "reject" ? (
                           <LoadingSpinner size="sm" className="mr-2" />
                         ) : (
                           <XCircle className="size-4 mr-2" />
@@ -563,90 +618,156 @@ const handleAcceptBooking = async (bookingId: string) => {
                       </div>
                     </div>
                   </CardHeader>
-                 <CardContent className="space-y-4">
-  <div>
-    <p className="text-sm font-semibold text-gray-900 mb-1">
-      Topic: {booking.topic}
-    </p>
-  </div>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 mb-1">
+                        Topic: {booking.topic}
+                      </p>
+                    </div>
 
-  {/* Video Call Box */}
-{/* Meeting Info */}
-{booking.meetingType === "VIDEO" && booking.meetingLink && (
-  <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-    <Video className="size-5 text-blue-600 mt-1" />
+                    {/* Video Call Box */}
+                    
+                    {booking.meetingType === "VIDEO" && booking.meetingLink && (
+                      <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                        <Video className="size-5 text-blue-600 mt-1" />
 
-    <div className="flex flex-col">
-      <p className="text-sm font-medium text-gray-700">
-        Video Call
-      </p>
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium text-gray-700">
+                            Video Call
+                          </p>
 
-      <a
-        href={booking.meetingLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-sm text-blue-600 hover:underline break-all"
-      >
-        {booking.meetingLink}
-      </a>
-    </div>
-  </div>
-)}
-{booking.meetingType === "IN_PERSON" && booking.location && (
-  <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-    <MapPin className="size-5 text-amber-600 mt-1" />
+                          <a
+                            href={booking.meetingLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline break-all"
+                          >
+                            {booking.meetingLink}
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                    {booking.meetingType === "IN_PERSON" &&
+                      booking.location && (
+                        <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                          <MapPin className="size-5 text-amber-600 mt-1" />
 
-    <div className="flex flex-col">
-      <p className="text-sm font-medium text-gray-700">
-        In-Person Meeting
-      </p>
+                          <div className="flex flex-col">
+                            <p className="text-sm font-medium text-gray-700">
+                              In-Person Meeting
+                            </p>
 
-     <p className="text-sm text-gray-600">
-  {booking.location}
-</p>
+                            <p className="text-sm text-gray-600">
+                              {booking.location}
+                            </p>
 
-<a
-  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location || "")}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-sm text-orange-500 hover:underline"
->
-  Open in Maps
-</a>
-    </div>
-  </div>
-)}
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location || "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-orange-500 hover:underline"
+                            >
+                              Open in Maps
+                            </a>
+                          </div>
+                        </div>
+                      )}
 
-<div className="flex items-center gap-3 pt-1">
-  
-{booking.meetingType === "VIDEO" && booking.meetingLink && (
+                    <div className="flex items-center gap-3 pt-1">
+                      {booking.meetingType === "VIDEO" &&
+                        booking.meetingLink && (
+                          <Button
+                            onClick={() =>
+                              window.open(booking.meetingLink, "_blank")
+                            }
+                            className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-medium"
+                          >
+                            <Video className="size-4 mr-2" />
+                            Join Meeting
+                          </Button>
+                        )}
+
+                      <Button
+                        onClick={() => {
+                          setSelectedBooking(booking);
+                          setCancelDialogOpen(true);
+                        }}
+                        variant="outline"
+                        className="border-red-300 text-red-600 hover:bg-red-50"
+                      >
+                        Cancel
+                      </Button>
+                     
+{user?.id === booking.expertId && booking.status === "ACCEPTED" && (
   <Button
-    onClick={() => window.open(booking.meetingLink, "_blank")}
-    className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-medium"
+    onClick={() => handleCompleteBooking(booking.id)}
+    className="bg-green-600 hover:bg-green-700 text-white"
+    disabled={processingId === booking.id}
   >
-    <Video className="size-4 mr-2" />
-    Join Meeting
+    {processingId === booking.id ? (
+      <LoadingSpinner size="sm" className="mr-2" />
+    ) : (
+      <CheckCircle2 className="size-4 mr-2" />
+    )}
+    Mark Complete
   </Button>
 )}
-
-  <Button
-    onClick={() => {
-      setSelectedBooking(booking);
-      setCancelDialogOpen(true);
-    }}
-    variant="outline"
-    className="border-red-300 text-red-600 hover:bg-red-50"
-  >
-    Cancel
-  </Button>
-
-</div>
+                    </div>
                   </CardContent>
                 </Card>
               ))
             )}
           </TabsContent>
-
+<TabsContent value="completed" className="space-y-6">
+  {completedBookings.length === 0 ? (
+    <Card>
+      <CardContent className="py-12 text-center">
+        <p className="text-gray-600 text-lg">No completed sessions yet</p>
+      </CardContent>
+    </Card>
+  ) : (
+    completedBookings.map((booking) => (
+      <Card key={booking.id} className="border-l-4 border-l-gray-400">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-xl">{booking.member?.name}</CardTitle>
+            <Badge className="bg-gray-100 text-gray-700 border">
+              Completed
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="size-4" />
+              <span>{formatDate(booking.startDateTime)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="size-4" />
+              <span>{format(new Date(booking.startDateTime), "HH:mm")} ({booking.duration} min)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="size-4" />
+              <span>{booking.price}</span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm font-semibold text-gray-900 mb-3">
+            Topic: {booking.topic}
+          </p>
+      {user?.id === booking.member?.id && (
+  <Button
+    variant="outline"
+    onClick={() => setReviewBooking(booking)}
+    className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+  >
+    ⭐ Leave a Review
+  </Button>
+)}
+        </CardContent>
+      </Card>
+    ))
+  )}
+</TabsContent>
           {/* Schedule Tab */}
           <TabsContent value="schedule">
             <Card>
@@ -803,6 +924,55 @@ const handleAcceptBooking = async (bookingId: string) => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <Dialog open={!!reviewBooking} onOpenChange={() => setReviewBooking(null)}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Review your session</DialogTitle>
+      <DialogDescription>
+        How was your consultation with {reviewBooking?.expert?.name}?
+      </DialogDescription>
+    </DialogHeader>
+    <div className="py-4 space-y-4">
+      {/* Star picker */}
+      <div className="flex gap-2 justify-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            className={`text-3xl transition-colors ${
+              star <= (reviewHover || reviewRating)
+                ? "text-yellow-400"
+                : "text-gray-300"
+            }`}
+            onMouseEnter={() => setReviewHover(star)}
+            onMouseLeave={() => setReviewHover(0)}
+            onClick={() => setReviewRating(star)}
+          >
+            ★
+          </button>
+        ))}
+      </div>
+      <Textarea
+        placeholder="Share your experience (optional)..."
+        value={reviewComment}
+        onChange={(e) => setReviewComment(e.target.value)}
+        rows={3}
+      />
+    </div>
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setReviewBooking(null)}>
+        Cancel
+      </Button>
+      <Button
+        onClick={handleSubmitReview}
+        disabled={reviewRating === 0}
+        className="bg-indigo-600 hover:bg-indigo-700"
+      >
+        Submit Review
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
       </div>
     </div>
   );

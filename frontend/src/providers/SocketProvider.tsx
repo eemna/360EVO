@@ -28,7 +28,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSocket(newSocket);
 
-    // 🔥 LISTEN FOR ONLINE USERS
+    // LISTEN FOR ONLINE USERS
     newSocket.on("online_users", (users: string[]) => {
       setOnlineUsers(new Set(users));
     });

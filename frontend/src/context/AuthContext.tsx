@@ -27,6 +27,27 @@ export interface Profile {
   availabilityStatus: string | null;
 
   weeklyAvailability: WeeklyAvailability[] | null;
+  avgRating: number;
+  reviewCount: number;
+    settings?: {
+    notifications?: {
+      emailOnBooking?: boolean;
+      emailOnMessage?: boolean;
+      emailOnReview?: boolean;
+    };
+    privacy?: {
+      showEmail?: boolean;
+      showPhone?: boolean;
+      profileVisible?: boolean;
+    };
+  } | null;
+}
+export interface Review {
+  id: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+  reviewer?: { name: string };
 }
 export interface User {
   id: string;
@@ -34,7 +55,8 @@ export interface User {
   email: string;
   role: "MEMBER" | "EXPERT" | "STARTUP" | "INVESTOR" | "ADMIN";
   profile: Profile | null;
-  computedStatus?: "AVAILABLE" | "BUSY" | "ON_LEAVE";
+   computedStatus?: "AVAILABLE" | "BUSY" | "UNAVAILABLE";
+   expertReviews?: Review[];
 }
 
 export interface AuthContextType {

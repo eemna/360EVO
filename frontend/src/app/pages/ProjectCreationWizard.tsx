@@ -555,11 +555,7 @@ export function ProjectCreationWizard({
       });
     }
   };
-  /*useEffect(() => {
-  if (isOpen) {
-    setProjectId(externalProjectId ?? null);
-  }
-}, [isOpen, externalProjectId]); */
+
   useEffect(() => {
     if (isOpen && !externalProjectId) {
       reset({
@@ -581,145 +577,7 @@ export function ProjectCreationWizard({
       setSupportingDocs([]);
     }
   }, [isOpen, externalProjectId, reset]);
-  /* useEffect(() => {
-    if (!isOpen || !externalProjectId) return;
-
-    const loadProject = async () => {
-      try {
-       
-        const res = await api.get<ApiProject>(`/projects/${externalProjectId}`);
-        const project = res.data;
-
-        reset({
-          title: project.title,
-          tagline: project.tagline,
-          shortDescription: project.shortDesc,
-          industry: project.industry,
-          location: project.location || "",
-          stage: project.stage,
-          fullDescription: project.fullDesc,
-          techTags: project.technologies || [],
-          teamMembers: project.teamMembers?.map((m) => ({
-            name: m.name,
-            role: m.role,
-            photo: m.photo || null,
-          })) || [{ name: "", role: "", photo: null }],
-          fundingAmount: project.fundingSought?.toString() || "",
-          currency: project.currency || "USD",
-          milestones:
-            project.milestones?.map((m) => ({
-              title: m.title,
-              targetDate: m.targetDate
-                ? new Date(m.targetDate).toISOString().split("T")[0]
-                : "",
-              completedAt: m.completedAt
-                ? new Date(m.completedAt).toISOString().split("T")[0]
-                : "",
-            })) || [],
-        });
-
-        const hero = project.documents?.find(
-          (doc) => doc.fileType === "HERO_IMAGE",
-        );
-
-        setHeroFile(
-          hero
-            ? {
-                name: hero.name,
-                fileUrl: hero.fileUrl,
-                fileKey: hero.fileKey,
-              }
-            : null,
-        );
-
-        setSupportingDocs(
-          project.documents
-            ?.filter((doc) => doc.fileType === "DOCUMENT")
-            .map((doc) => ({
-              name: doc.name,
-              fileUrl: doc.fileUrl,
-              fileKey: doc.fileKey,
-            })) || [],
-        );
-      } catch (error) {
-        console.error("Failed to load project", error);
-      }
-    };
-
-    loadProject();
-  }, [isOpen, externalProjectId, reset]); */
-
-  /* const loadProject = async () => {
-    try {
-      const res = await api.get<ApiProject>(`/projects/${projectId}`);
-const project = res.data;
-
-      // 1️⃣ Reset form fields
-      reset({
-        title: project.title,
-        tagline: project.tagline,
-        shortDescription: project.shortDesc,
-        industry: project.industry,
-        stage: project.stage,
-        fullDescription: project.fullDesc,
-        techTags: project.technologies || [],
-        teamMembers:
-  project.teamMembers?.map((m) => ({
-    name: m.name,
-    role: m.role,
-    photo: m.photo || null,
-  })) || [{ name: "", role: "", photo: null }],
-        fundingAmount: project.fundingSought?.toString() || "",
-        currency: project.currency || "USD",
-        milestones:
-          project.milestones?.map((m) => ({
-            title: m.title,
-            targetDate: m.targetDate
-              ? new Date(m.targetDate).toISOString().split("T")[0]
-              : "",
-            completedAt: m.completedAt
-              ? new Date(m.completedAt).toISOString().split("T")[0]
-              : "",
-          })) || [],
-      });
-
-      // 2️⃣ Restore HERO image (OUTSIDE reset)
-      const hero = project.documents?.find(
-        (doc: ProjectDocument) => doc.fileType === "HERO_IMAGE"
-      );
-
-      if (hero) {
-        setHeroFile({
-          name: hero.name,
-          fileUrl: hero.fileUrl,
-          fileKey: hero.fileKey,
-        });
-      } else {
-        setHeroFile(null);
-      }
-
-      // 3️⃣ Restore supporting docs (OUTSIDE reset)
-      const docs =
-        project.documents?.filter(
-          (doc) => doc.fileType === "DOCUMENT"
-        ) || [];
-
-      setSupportingDocs(
-  docs.map((doc) => ({
-    name: doc.name,
-    fileUrl: doc.fileUrl,
-    fileKey: doc.fileKey,
-    
-  }))
-);
-    } catch (error) {
-      console.error("Failed to load project", error);
-    }
-  };
-
-  loadProject();
-}, [isOpen, projectId, reset]);  */
-
+ 
   useEffect(() => {
     if (!isOpen) return;
     if (!currentProjectId) return;

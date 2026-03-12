@@ -1,10 +1,6 @@
-// controllers/conversationController.js
-
 import { prisma } from "../config/prisma.js";
+import { createNotification } from "../utils/createNotification.js";
 
-/**
- * POST /api/conversations
- */
 export const createConversation = async (req, res, next) => {
   try {
     const currentUserId = req.user.id;
@@ -18,27 +14,29 @@ export const createConversation = async (req, res, next) => {
       return next({ statusCode: 400, message: "Cannot message yourself" });
     }
 
-    const conversation = await prisma.$transaction(async (tx) => {
-      const existing = await tx.conversation.findFirst({
-        where: {
-          AND: [
-            { participants: { some: { userId: currentUserId } } },
-            { participants: { some: { userId: otherUserId } } },
-          ],
-        },
-        include: { participants: true },
-      });
+    // find conversation where BOTH users are participants
+    const existing = await prisma.conversation.findFirst({
+      where: {
+        AND: [
+          { participants: { some: { userId: currentUserId } } },
+          { participants: { some: { userId: otherUserId } } },
+        ],
+      },
+      include: { participants: true },
+    });
 
-      if (existing) return existing;
+    if (existing && existing.participants.length === 2) {
+      return res.json(existing); // return existing, don't create new
+    }
 
-      return tx.conversation.create({
-        data: {
-          participants: {
-            create: [{ userId: currentUserId }, { userId: otherUserId }],
-          },
+    // Only reaches here if no conversation exists yet
+    const conversation = await prisma.conversation.create({
+      data: {
+        participants: {
+          create: [{ userId: currentUserId }, { userId: otherUserId }],
         },
-        include: { participants: true },
-      });
+      },
+      include: { participants: true },
     });
 
     res.json(conversation);
@@ -47,9 +45,6 @@ export const createConversation = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/conversations/:id/messages
- */
 export const sendMessage = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -88,6 +83,29 @@ export const sendMessage = async (req, res, next) => {
     });
 
     global.io.to(id).emit("new_message", message);
+    const otherParticipant = await prisma.conversationParticipant.findFirst({
+      where: { conversationId: id, userId: { not: senderId } },
+      select: { userId: true },
+    });
+
+    if (otherParticipant) {
+      const profile = await prisma.profile.findUnique({
+        where: { userId: otherParticipant.userId },
+        select: { settings: true },
+      });
+      const emailOnMessage =
+        profile?.settings?.notifications?.emailOnMessage ?? true;
+
+      if (emailOnMessage) {
+        await createNotification({
+          userId: otherParticipant.userId,
+          type: "MESSAGE",
+          title: "New Message 💬",
+          body: `${req.user.name || "Someone"} sent you a message`,
+          link: "/app/conversation",
+        });
+      }
+    }
 
     res.json(message);
   } catch (error) {
@@ -95,9 +113,6 @@ export const sendMessage = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/conversations/:id/messages
- */
 export const getMessages = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -143,9 +158,6 @@ export const getMessages = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/conversations, This returns conversation list for sidebar.
- */
 export const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -176,18 +188,33 @@ export const getConversations = async (req, res, next) => {
       },
     });
 
-    const formatted = conversations.map((conv) => {
-      const otherUser = conv.participants.find(
-        (p) => p.userId !== userId,
-      )?.user;
+    const formatted = await Promise.all(
+      conversations.map(async (conv) => {
+        const otherUser = conv.participants.find(
+          (p) => p.userId !== userId,
+        )?.user;
 
-      return {
-        id: conv.id,
-        createdAt: conv.createdAt,
-        otherUser,
-        lastMessage: conv.messages[0] || null,
-      };
-    });
+        const participant = conv.participants.find((p) => p.userId === userId);
+
+        const unread = await prisma.message.count({
+          where: {
+            conversationId: conv.id,
+            senderId: { not: userId },
+            createdAt: {
+              gt: participant.lastReadAt || new Date(0),
+            },
+          },
+        });
+
+        return {
+          id: conv.id,
+          createdAt: conv.createdAt,
+          otherUser,
+          lastMessage: conv.messages[0] || null,
+          unread,
+        };
+      }),
+    );
 
     res.json(formatted);
   } catch (error) {
@@ -195,9 +222,6 @@ export const getConversations = async (req, res, next) => {
   }
 };
 
-/**
- * PUT /api/conversations/messages/read
- */
 export const markAsRead = async (req, res, next) => {
   try {
     const { conversationId } = req.body;
@@ -231,6 +255,31 @@ export const markAsRead = async (req, res, next) => {
       conversationId,
       userId,
       lastReadAt: updated.lastReadAt,
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+export const deleteConversation = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const participant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId: id,
+        userId,
+      },
+    });
+
+    if (!participant) {
+      return next({ statusCode: 403, message: "Not allowed" });
+    }
+
+    await prisma.conversation.delete({
+      where: { id },
     });
 
     res.json({ success: true });

@@ -809,11 +809,7 @@ export default function ProjectDetailsPage() {
         </div>
       </div>
 
-      {/* Connect Modal */}
-
-      {/* Invest Modal */}
-
-      {/* Join Team Modal */}
+    
     </div>
   );
 }

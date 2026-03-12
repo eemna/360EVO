@@ -47,9 +47,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // =============================
   // Fetch Data
-  // =============================
   const fetchPendingProjects = async () => {
     try {
       const { data } = await api.get("/admin/projects/pending");
@@ -68,9 +66,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // =============================
   // Approve Project
-  // =============================
   const handleApprove = async (projectId: string) => {
     try {
       setActionLoading(projectId);
@@ -83,9 +79,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // =============================
   // Reject Project
-  // =============================
   const handleReject = async (projectId: string) => {
     try {
       setActionLoading(projectId);
@@ -98,9 +92,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // =============================
   // Change Role
-  // =============================
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await api.patch(`/admin/users/${userId}/role`, {

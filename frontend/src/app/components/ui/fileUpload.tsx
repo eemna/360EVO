@@ -111,7 +111,7 @@ export function FileUpload({
       setUploadProgress(100);
       setIsUploading(false);
 
-      // ✅ Only now confirm success
+      // Only now confirm success
       onFileSelect?.({
         url: response.data.url,
         publicId: response.data.publicId,

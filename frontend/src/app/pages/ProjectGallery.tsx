@@ -343,7 +343,7 @@ export function ProjectGallery() {
         </div>
       )}
 
-      {/* Pagination */}
+    
     </div>
   );
 }

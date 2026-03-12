@@ -32,6 +32,8 @@ model User {
   projectInterests ProjectInterest[]
   expertBookings Booking[] @relation("ExpertBookings")
   memberBookings Booking[] @relation("MemberBookings")
+  expertReviews   Review[] @relation("ExpertReviews")
+  writtenReviews  Review[] @relation("ReviewerReviews")
   @@index([email])
 }
 
@@ -54,8 +56,13 @@ model Profile {
   weeklyAvailability WeeklyAvailability[]
   createdAt   DateTime @default(now())
   
+  avgRating   Float @default(0)
+  reviewCount Int   @default(0)
+  currency    String?
+
   companyName String?
   stage       String?
+  settings  Json?
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
@@ -183,6 +190,7 @@ model Booking {
   meetingType   String?
   meetingLink   String?
   location    String? 
+  review    Review?
   status    BookingStatus @default(PENDING)
   createdAt DateTime      @default(now())
 
@@ -191,18 +199,32 @@ model Booking {
 
   @@index([expertId, startDateTime])
   @@index([memberId])
+  @@index([expertId, status])
+  @@index([memberId, status])
+}
+model Review {
+  id             String   @id @default(uuid())
+  expertId       String
+  reviewerId     String
+  consultationId String   @unique
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now())
+  expert   User @relation("ExpertReviews", fields: [expertId], references: [id])
+  reviewer User @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+ booking  Booking @relation(fields: [consultationId], references: [id])
 }
 enum BookingStatus {
   PENDING
   ACCEPTED
-  REJECTED
+  DECLINED
   COMPLETED
   CANCELLED
 }
 enum AvailabilityStatus {
   AVAILABLE
   BUSY
-  ON_LEAVE
+  UNAVAILABLE
 }
 enum Role {
   MEMBER
@@ -236,6 +258,7 @@ enum NotificationType {
   EVENT
   PROJECT_UPDATE
   SYSTEM
+  BOOKING
 }
 
 enum EventType {
