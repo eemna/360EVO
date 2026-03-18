@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, FolderOpen, Clock, Check, X, Loader2 } from "lucide-react";
+import { Users, FolderOpen, Clock, Check, X, Loader2, Calendar } from "lucide-react";
 import { Skeleton } from "../components/ui/skeleton";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -231,12 +231,10 @@ export default function AdminDashboard() {
               ) : (
                 projects.map((project) => (
                   <TableRow
-                    key={project.id}
-                    onClick={() =>
-                      navigate(`/app/startup/projects/${project.id}`)
-                    }
-                  >
-                    <TableCell className="font-medium">
+                    key={project.id} >
+                    <TableCell   className="cursor-pointer hover:bg-gray-50"
+                                onClick={() =>
+                                 navigate(`/app/startup/projects/${project.id}`) }>
                       {project.title}
                     </TableCell>
                     <TableCell>{project.owner?.name}</TableCell>
@@ -257,7 +255,9 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           disabled={actionLoading === project.id}
-                          onClick={() => handleApprove(project.id)}
+                          onClick={(e) => {
+                          e.stopPropagation();
+                          handleApprove(project.id); }}
                           className="border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
                         >
                           {actionLoading === project.id ? (
@@ -275,7 +275,9 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           disabled={actionLoading === project.id}
-                          onClick={() => handleReject(project.id)}
+                          onClick={(e) => {
+                          e.stopPropagation();
+                          handleReject(project.id); }}
                           className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
                         >
                           <X className="size-4 mr-1" />
@@ -311,10 +313,11 @@ export default function AdminDashboard() {
               {users.map((user) => (
                 <TableRow
                   key={user.id}
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => navigate(`/app/profile/${user.id}`)}
+                 
                 >
-                  <TableCell>{user.name}</TableCell>
+                  <TableCell  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => navigate(`/app/profile/${user.id}`)}>
+                    {user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
                     <Badge className={getRoleBadgeColor(user.role)}>
@@ -349,6 +352,23 @@ export default function AdminDashboard() {
           </Table>
         </div>
       </Card>
+      {/* QUICK ACTIONS */}
+<div className="flex flex-wrap gap-3">
+  <Button
+    onClick={() => navigate("/app/events/create")}
+    className="bg-blue-600 hover:bg-blue-700"
+  >
+    <Calendar className="size-4 mr-2" />
+    Create Event
+  </Button>
+  <Button
+    variant="outline"
+    onClick={() => navigate("/app/events/my")}
+  >
+    <Calendar className="size-4 mr-2" />
+    My Events
+  </Button>
+</div>
     </div>
   );
 }

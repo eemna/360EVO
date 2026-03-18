@@ -21,19 +21,23 @@ model User {
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset?
   profile            Profile?
-  projects           Project[]
   refreshTokens      RefreshToken[]
-    conversations   ConversationParticipant[]
+  
+  conversations   ConversationParticipant[]
   messages        Message[]
   notifications   Notification[]
   organizedEvents Event[] @relation("UserOrganizedEvents")
   eventRegistrations EventRegistration[]
+
+  projects           Project[]
   bookmarks       Bookmark[]
   projectInterests ProjectInterest[]
+
   expertBookings Booking[] @relation("ExpertBookings")
   memberBookings Booking[] @relation("MemberBookings")
   expertReviews   Review[] @relation("ExpertReviews")
   writtenReviews  Review[] @relation("ReviewerReviews")
+
   @@index([email])
 }
 
@@ -94,6 +98,21 @@ model RefreshToken {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+
+
+enum AvailabilityStatus {
+  AVAILABLE
+  BUSY
+  UNAVAILABLE
+}
+enum Role {
+  MEMBER
+  EXPERT
+  STARTUP
+  INVESTOR
+  ADMIN
 }
 
 model Project {
@@ -160,80 +179,38 @@ model ProjectDocument {
   createdAt DateTime @default(now())
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
-model WeeklyAvailability {
+model Bookmark {
   id        String   @id @default(uuid())
-  profileId String
-  day       Int      // 0 = Sunday, 1 = Monday ...
-  startTime String?  // "09:00"
-  endTime   String?  // "17:00"
-  enabled   Boolean  @default(true)
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
 
-  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@unique([profileId, day])
+  @@unique([userId, projectId])
 }
-model Booking {
+model ProjectInterest {
   id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
 
-  expertId  String
-  memberId  String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  startDateTime DateTime
-  endDateTime   DateTime
-
-  duration  Int        // in minutes
-  price     Decimal
-
-  topic     String?        
-  message   String?
-  rejectionReason String? 
-  meetingType   String?
-  meetingLink   String?
-  location    String? 
-  review    Review?
-  status    BookingStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-
-  expert User @relation("ExpertBookings", fields: [expertId], references: [id], onDelete: Cascade)
-  member User @relation("MemberBookings", fields: [memberId], references: [id], onDelete: Cascade)
-
-  @@index([expertId, startDateTime])
-  @@index([memberId])
-  @@index([expertId, status])
-  @@index([memberId, status])
+  @@unique([projectId, userId])
 }
-model Review {
-  id             String   @id @default(uuid())
-  expertId       String
-  reviewerId     String
-  consultationId String   @unique
-  rating         Int
-  comment        String?
-  createdAt      DateTime @default(now())
-  expert   User @relation("ExpertReviews", fields: [expertId], references: [id])
-  reviewer User @relation("ReviewerReviews", fields: [reviewerId], references: [id])
- booking  Booking @relation(fields: [consultationId], references: [id])
-}
-enum BookingStatus {
-  PENDING
-  ACCEPTED
-  DECLINED
-  COMPLETED
-  CANCELLED
-}
-enum AvailabilityStatus {
-  AVAILABLE
-  BUSY
-  UNAVAILABLE
-}
-enum Role {
-  MEMBER
-  EXPERT
-  STARTUP
-  INVESTOR
-  ADMIN
-}
+model ProjectUpdate {
+  id        String   @id @default(uuid())
+  projectId String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
 
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
 enum ProjectStatus {
   DRAFT
   PENDING
@@ -253,31 +230,7 @@ enum ProjectStage {
   GROWTH
   SCALING
 }
-enum NotificationType {
-  MESSAGE
-  EVENT
-  PROJECT_UPDATE
-  SYSTEM
-  BOOKING
-}
 
-enum EventType {
-  CONFERENCE
-  NETWORKING
-  PITCH_DAY
-  WORKSHOP
-}
-
-enum HostType {
-  ADMIN
-  EXPERT
-}
-
-enum EventStatus {
-  DRAFT
-  PUBLISHED
-  CANCELLED
-}
 model Conversation {
   id           String                     @id @default(uuid())
   createdAt    DateTime                   @default(now())
@@ -351,35 +304,90 @@ model EventRegistration {
 
   @@unique([eventId, userId])
 }
-model Bookmark {
-  id        String   @id @default(uuid())
-  userId    String
-  projectId String
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, projectId])
+enum NotificationType {
+  MESSAGE
+  EVENT
+  PROJECT_UPDATE
+  SYSTEM
+  BOOKING
 }
-model ProjectInterest {
-  id        String   @id @default(uuid())
-  projectId String
-  userId    String
-  message   String
-  createdAt DateTime @default(now())
 
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([projectId, userId])
+enum EventType {
+  CONFERENCE
+  NETWORKING
+  PITCH_DAY
+  WORKSHOP
 }
-model ProjectUpdate {
-  id        String   @id @default(uuid())
-  projectId String
-  content   String
-  imageUrl  String?
-  createdAt DateTime @default(now())
 
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+enum HostType {
+  ADMIN
+  EXPERT
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  CANCELLED
+}
+
+model WeeklyAvailability {
+  id        String   @id @default(uuid())
+  profileId String
+  day       Int      
+  startTime String?  
+  endTime   String?  
+  enabled   Boolean  @default(true)
+
+  profile   Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, day])
+}
+model Booking {
+  id        String   @id @default(uuid())
+
+  expertId  String
+  memberId  String
+
+  startDateTime DateTime
+  endDateTime   DateTime
+
+  duration  Int        
+  price     Decimal
+
+  topic     String?        
+  message   String?
+  rejectionReason String? 
+  meetingType   String?
+  meetingLink   String?
+  location    String? 
+  review    Review?
+  status    BookingStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+
+  expert User @relation("ExpertBookings", fields: [expertId], references: [id], onDelete: Cascade)
+  member User @relation("MemberBookings", fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([expertId, startDateTime])
+  @@index([memberId])
+  @@index([expertId, status])
+  @@index([memberId, status])
+}
+model Review {
+  id             String   @id @default(uuid())
+  expertId       String
+  reviewerId     String
+  consultationId String   @unique
+  rating         Int
+  comment        String?
+  createdAt      DateTime @default(now())
+  expert   User @relation("ExpertReviews", fields: [expertId], references: [id])
+  reviewer User @relation("ReviewerReviews", fields: [reviewerId], references: [id])
+ booking  Booking @relation(fields: [consultationId], references: [id])
+}
+enum BookingStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+  CANCELLED
 }

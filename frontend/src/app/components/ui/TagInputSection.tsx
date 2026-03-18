@@ -16,7 +16,7 @@ type Props = {
   onAdd: () => void;
   onRemove: (item: string) => void;
   emptyMessage?: string;
-  variant?: TagVariant; // ✅ Correct way
+  variant?: TagVariant; 
 };
 
 export default function TagInputSection({

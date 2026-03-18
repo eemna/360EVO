@@ -10,40 +10,29 @@ import {
   getFeaturedProjects,
   getPublicProjects,
   getStartupDashboard,
+  createProjectUpdate,
+  getProjectUpdates
 } from "../controllers/projectController.js";
 
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Public gallery (search + filters)
 router.get("/", getPublicProjects);
 
-// Featured projects
 router.get("/featured", getFeaturedProjects);
 router.get("/dashboard", protect, getStartupDashboard);
-// My projects
 router.get("/mine", protect, getMyProjects);
-// Single project (increments viewCount)
 router.get("/:id", protect, getProjectById);
-
-// Create project
 router.post("/", protect, createProject);
-
-// Update project
 router.put("/:id", protect, updateProject);
-
-// Delete project
 router.delete("/:id", protect, deleteProject);
-
-// Submit project
 router.post("/:id/submit", protect, submitProject);
-
-// Update team member photo
 router.put(
   "/:projectId/team/:teamMemberId/photo",
   protect,
   updateTeamMemberPhoto,
 );
-
+router.post("/:id/updates", protect, createProjectUpdate);  
+router.get("/:id/updates", protect, getProjectUpdates); 
 export default router;

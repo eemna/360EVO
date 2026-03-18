@@ -20,12 +20,14 @@ CREATE TABLE "Project" (
     "technologies" TEXT[],
     "fundingSought" DECIMAL(65,30),
     "currency" TEXT NOT NULL,
-    "location" TEXT NOT NULL,
+    "location" TEXT,
     "status" "ProjectStatus" NOT NULL DEFAULT 'DRAFT',
     "visibility" "ProjectVisibility" NOT NULL DEFAULT 'PUBLIC',
     "viewCount" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "featured" BOOLEAN NOT NULL DEFAULT false,
+    "search_vector" tsvector,
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
 );
@@ -69,6 +71,38 @@ CREATE TABLE "ProjectDocument" (
     CONSTRAINT "ProjectDocument_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Bookmark" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Bookmark_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProjectInterest" (
+    "id" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ProjectInterest_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ProjectUpdate" (
+    "id" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "imageUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ProjectUpdate_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE INDEX "Project_status_industry_idx" ON "Project"("status", "industry");
 
@@ -77,6 +111,12 @@ CREATE INDEX "Project_status_stage_idx" ON "Project"("status", "stage");
 
 -- CreateIndex
 CREATE INDEX "Project_ownerId_idx" ON "Project"("ownerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Bookmark_userId_projectId_key" ON "Bookmark"("userId", "projectId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProjectInterest_projectId_userId_key" ON "ProjectInterest"("projectId", "userId");
 
 -- AddForeignKey
 ALTER TABLE "Project" ADD CONSTRAINT "Project_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -90,41 +130,30 @@ ALTER TABLE "Milestone" ADD CONSTRAINT "Milestone_projectId_fkey" FOREIGN KEY ("
 -- AddForeignKey
 ALTER TABLE "ProjectDocument" ADD CONSTRAINT "ProjectDocument_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Add full-text search column
-ALTER TABLE "Project"
-ADD COLUMN search_vector tsvector;
+-- AddForeignKey
+ALTER TABLE "Bookmark" ADD CONSTRAINT "Bookmark_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- Fill existing rows
+-- AddForeignKey
+ALTER TABLE "Bookmark" ADD CONSTRAINT "Bookmark_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProjectInterest" ADD CONSTRAINT "ProjectInterest_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProjectInterest" ADD CONSTRAINT "ProjectInterest_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProjectUpdate" ADD CONSTRAINT "ProjectUpdate_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+
 UPDATE "Project"
-SET search_vector =
-  to_tsvector(
-    'english',
-    coalesce("title", '') || ' ' ||
-    coalesce("tagline", '') || ' ' ||
-    coalesce("shortDesc", '')
-  );
+SET search_vector = to_tsvector(
+  'english',
+  coalesce(title,'') || ' ' ||
+  coalesce(tagline,'') || ' ' ||
+  coalesce("shortDesc",'')
+);
 
--- Create GIN index for fast search
-CREATE INDEX "Project_search_vector_idx"
+CREATE INDEX project_search_idx
 ON "Project"
-USING GIN (search_vector);
-
--- Function to auto-update search_vector
-CREATE FUNCTION project_search_vector_update() RETURNS trigger AS $$
-BEGIN
-  NEW.search_vector :=
-    to_tsvector(
-      'english',
-      coalesce(NEW."title", '') || ' ' ||
-      coalesce(NEW."tagline", '') || ' ' ||
-      coalesce(NEW."shortDesc", '')
-    );
-  RETURN NEW;
-END
-$$ LANGUAGE plpgsql;
-
--- Trigger
-CREATE TRIGGER project_search_vector_trigger
-BEFORE INSERT OR UPDATE ON "Project"
-FOR EACH ROW
-EXECUTE FUNCTION project_search_vector_update();
+USING GIN(search_vector);

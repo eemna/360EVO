@@ -24,6 +24,11 @@ import { BookConsultationPage } from "./pages/BookConsultationPage";
 import { ManageReservations } from "./pages/ManageReservations";
 import ExpertsPage from "./pages/ExpertsPage";
 import { NotificationsPage } from "./pages/NotificationsPage";
+import EventsPage from "./pages/EventsPage";
+import EventDetailPage from "./pages/Eventdetailpage";
+import CreateEventForm from "./pages/Createeventform";
+import MyEventsPage from "./pages/Myeventspage";
+import SavedProjectsPage from "./pages/Bookmarkfeature";
 
 export const router = createBrowserRouter([
   {
@@ -103,12 +108,18 @@ export const router = createBrowserRouter([
         path: "projects",
         element: <ProjectGallery />,
       },
+      { path: "saved", element: <SavedProjectsPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "conversation", element: <MessagesPage /> },
       {
         path: "profile/:id",
         element: <Profile />,
       },
+      { path: "events",           element: <EventsPage /> },
+{ path: "events/create",    element: <CreateEventForm /> },
+{ path: "events/my",        element: <MyEventsPage /> },        
+{ path: "events/:id",       element: <EventDetailPage /> },     
+{ path: "events/:id/edit",  element: <CreateEventForm /> },  
       {
         path: "settings",
         element: <Settings />,

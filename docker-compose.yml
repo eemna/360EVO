@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  backend:
+    image: emna08/360evo-backend:latest
+    env_file:
+      - ./backend/.env
+
+  frontend:
+    image: emna08/360evo-frontend:latest
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

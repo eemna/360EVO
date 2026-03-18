@@ -28,7 +28,6 @@ import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router";
 import { Input } from "../components/ui/input";
 
-
 interface TeamMember {
   id: string;
 }
@@ -62,7 +61,6 @@ type StatCardProps = {
   icon: React.ReactNode;
 };
 
-
 const getStatusColor = (status: string) => {
   switch (status) {
     case "APPROVED":
@@ -75,8 +73,6 @@ const getStatusColor = (status: string) => {
       return "bg-blue-100 text-blue-700 border-blue-200";
   }
 };
-
-
 
 export default function StartupDashboard() {
   const [search, setSearch] = useState("");
@@ -149,7 +145,7 @@ export default function StartupDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []); // no search dependency — fetch all once
+  }, []); 
 
   useEffect(() => {
     fetchDashboard();
@@ -409,9 +405,7 @@ export default function StartupDashboard() {
   );
 }
 
-/*
-   STAT CARD
- */
+
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (

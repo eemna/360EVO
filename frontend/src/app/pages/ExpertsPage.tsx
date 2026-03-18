@@ -95,7 +95,6 @@ export default function ExpertsPage() {
     params.set("page", String(page));
     params.set("limit", "12");
 
-    // ✅ Use a timeout to avoid cascade — sets loading before paint
     const timer = setTimeout(() => {
       if (!cancelled) setLoading(true);
     }, 0);
@@ -121,7 +120,6 @@ export default function ExpertsPage() {
       clearTimeout(timer);
     };
   }, [expertise, industry, maxRate, minRating, sort, page]);
-  // Filter by name client-side
   const filtered = experts.filter(
     (e) =>
       e.name.toLowerCase().includes(search.toLowerCase()) ||

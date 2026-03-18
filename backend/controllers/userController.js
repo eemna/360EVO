@@ -24,7 +24,7 @@ export const getUserById = async (req, res, next) => {
       if (user.profile.availabilityStatus === "UNAVAILABLE") {
         computedStatus = "UNAVAILABLE";
       } else {
-        computedStatus = "AVAILABLE"; // default when ACTIVE
+        computedStatus = "AVAILABLE"; 
 
         const today = new Date();
         const todayDay = today.getDay();

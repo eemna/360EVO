@@ -39,7 +39,6 @@ interface Notification {
 
 export default function TopNav({ onMenuClick }: TopNavProps) {
   const { user, logout } = useAuth();
-  //const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
   const { onlineUsers, socket } = useSocket();
@@ -183,7 +182,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                 <Home className="h-5 w-5" />
               </Button>
             </Link>
-            <Link to="/app/network">
+            <Link to="/app/events">
               <Button variant="ghost" size="icon">
                 <Users className="h-5 w-5" />
               </Button>

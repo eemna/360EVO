@@ -1,7 +1,6 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { initializeSocket } from "./sockets/socket.js";
-
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -19,12 +18,14 @@ import expertRoute from "./routes/expertRoute.js";
 import consultationRoute from "./routes/consultationRoute.js";
 import conversationRoutes from "./routes/conversationRoutes.js";
 import notificationRoutes from "./routes/notificationRoute.js";
-
+import eventRoutes from "./routes/eventRoute.js";
+import bookmarkRoute from "./routes/bookmarkRoute.js";
 dotenv.config();
 const app = express();
 app.use(helmet());
 
 const allowedOrigins = [
+  "http://localhost",
   "http://localhost:5173",
   "https://three60evo-frontend.onrender.com",
 ];
@@ -61,6 +62,8 @@ app.use("/api/experts", expertRoute);
 app.use("/api/consultations", consultationRoute);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/bookmarks", bookmarkRoute);
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);

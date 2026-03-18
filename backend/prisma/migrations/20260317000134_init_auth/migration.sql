@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "AvailabilityStatus" AS ENUM ('AVAILABLE', 'BUSY', 'UNAVAILABLE');
+
+-- CreateEnum
 CREATE TYPE "Role" AS ENUM ('MEMBER', 'EXPERT', 'STARTUP', 'INVESTOR', 'ADMIN');
 
 -- CreateTable
@@ -25,9 +28,20 @@ CREATE TABLE "Profile" (
     "location" TEXT,
     "avatar" TEXT,
     "linkedIn" TEXT,
-    "expertise" TEXT[],
+    "expertise" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "industries" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "certifications" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "hourlyRate" DECIMAL(65,30),
+    "yearsOfExperience" INTEGER,
+    "availabilityStatus" "AvailabilityStatus" NOT NULL DEFAULT 'AVAILABLE',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "avgRating" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "reviewCount" INTEGER NOT NULL DEFAULT 0,
+    "currency" TEXT,
+    "companyName" TEXT,
+    "stage" TEXT,
+    "settings" JSONB,
 
     CONSTRAINT "Profile_pkey" PRIMARY KEY ("id")
 );
@@ -64,6 +78,7 @@ CREATE TABLE "RefreshToken" (
     CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
 );
 
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
@@ -80,10 +95,18 @@ CREATE UNIQUE INDEX "EmailVerification_token_key" ON "EmailVerification"("token"
 CREATE INDEX "EmailVerification_token_idx" ON "EmailVerification"("token");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "PasswordReset_userId_key" ON "PasswordReset"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "PasswordReset_token_key" ON "PasswordReset"("token");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "RefreshToken_tokenHash_key" ON "RefreshToken"("tokenHash");
+
+-- CreateIndex
 CREATE INDEX "RefreshToken_userId_idx" ON "RefreshToken"("userId");
+
+
 
 -- AddForeignKey
 ALTER TABLE "Profile" ADD CONSTRAINT "Profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -96,3 +119,4 @@ ALTER TABLE "PasswordReset" ADD CONSTRAINT "PasswordReset_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

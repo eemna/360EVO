@@ -59,7 +59,7 @@ export const uploadDocumentController = async (req, res, next) => {
       },
     );
 
-    // send buffer from multer memoryStorage
+    
     result.end(req.file.buffer);
   } catch (error) {
     next(error);
