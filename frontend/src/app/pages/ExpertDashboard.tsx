@@ -9,6 +9,7 @@ import {
   AlertCircle,
   ArrowRight,
   TrendingUp,
+  Bookmark,
 } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -84,7 +85,7 @@ export function ExpertDashboard() {
         {/* ── Header ── */}
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">
-            Welcome back, {user?.name?.split(" ")[0]} 👋
+            Welcome back, {user?.name?.split(" ")[0]} 
           </h1>
           <p className="text-gray-500 mt-1">
             Here's an overview of your consulting activity
@@ -308,6 +309,20 @@ export function ExpertDashboard() {
             >
               Edit Profile
             </Button>
+              <Button
+      variant="outline"
+      onClick={() => navigate("/app/saved")}
+    >
+      <Bookmark className="size-4 mr-2" />
+      Saved Projects
+    </Button>
+    <Button
+  variant="outline"
+  onClick={() => navigate("/app/events/my")}
+>
+  <Calendar className="size-4 mr-2" />
+  My Events
+</Button>
           </div>
         </div>
       </div>

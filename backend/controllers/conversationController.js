@@ -83,16 +83,20 @@ export const sendMessage = async (req, res, next) => {
     });
 
     global.io.to(id).emit("new_message", message);
+    
     const otherParticipant = await prisma.conversationParticipant.findFirst({
       where: { conversationId: id, userId: { not: senderId } },
       select: { userId: true },
     });
+   if (otherParticipant) {
+  // 1. Emit to recipient's personal room 
+  global.io.to(otherParticipant.userId).emit("new_message", message);
 
-    if (otherParticipant) {
-      const profile = await prisma.profile.findUnique({
-        where: { userId: otherParticipant.userId },
-        select: { settings: true },
-      });
+  // 2. Create notification
+  const profile = await prisma.profile.findUnique({
+    where: { userId: otherParticipant.userId },
+    select: { settings: true },
+  });
       const emailOnMessage =
         profile?.settings?.notifications?.emailOnMessage ?? true;
 

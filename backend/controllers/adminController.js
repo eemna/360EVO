@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import { createNotification } from "../utils/createNotification.js";
 
 //  Get pending projects
 export const getPendingProjects = async (req, res, next) => {
@@ -28,7 +29,13 @@ export const approveProject = async (req, res, next) => {
       where: { id },
       data: { status: "APPROVED", visibility: "PUBLIC" },
     });
-
+await createNotification({
+  userId: updated.ownerId,
+  type: "PROJECT_UPDATE",
+  title: "🎉 Project approved!",
+  body: `Your project "${updated.title}" has been approved and is now live.`,
+  link: `/app/startup/projects/${id}`,
+});
     res.json(updated);
   } catch (error) {
     next(error);
@@ -44,7 +51,13 @@ export const rejectProject = async (req, res, next) => {
       where: { id },
       data: { status: "REJECTED" },
     });
-
+await createNotification({
+  userId: updated.ownerId,
+  type: "PROJECT_UPDATE",
+  title: "Project rejected",
+  body: `Your project "${updated.title}" was not approved. Please review and resubmit.`,
+  link: `/app/startup/projects/${id}`,
+});
     res.json(updated);
   } catch (error) {
     next(error);

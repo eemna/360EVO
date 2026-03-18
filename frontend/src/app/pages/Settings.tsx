@@ -78,12 +78,11 @@ export default function Settings() {
 
   const [loading, setLoading] = useState(true);
 
-  // Basic
+  
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [bio, setBio] = useState("");
 
-  // Extra profile fields
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
   const [linkedIn, setLinkedIn] = useState("");
@@ -92,12 +91,10 @@ export default function Settings() {
   const [hourlyRate, setHourlyRate] = useState("");
   const [expertise, setExpertise] = useState<string[]>([]);
 
-  // Password
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Notifications & Privacy
   const [notifications, setNotifications] = useState<NotificationSettings>({
     emailOnBooking: true,
     emailOnMessage: true,
@@ -112,7 +109,6 @@ export default function Settings() {
 
   const [settingsSaving, setSettingsSaving] = useState(false);
 
-  // Fetch profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -146,7 +142,6 @@ export default function Settings() {
     fetchProfile();
   }, []);
 
-  // UPDATE PROFILE
   const handleProfileUpdate = async () => {
     setLoading(true);
     try {
@@ -179,7 +174,6 @@ export default function Settings() {
     setLoading(false);
   };
 
-  // UPDATE EMAIL
   const handleEmailUpdate = async () => {
     setLoading(true);
     try {
@@ -201,7 +195,6 @@ export default function Settings() {
     setLoading(false);
   };
 
-  // UPDATE PASSWORD
   const handlePasswordUpdate = async () => {
     if (newPassword !== confirmPassword) {
       showToast({
@@ -234,7 +227,6 @@ export default function Settings() {
     setLoading(false);
   };
 
-  // UPDATE SETTINGS
   const handleSettingsUpdate = async () => {
     setSettingsSaving(true);
     try {

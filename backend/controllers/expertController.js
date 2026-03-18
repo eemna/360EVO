@@ -129,7 +129,7 @@ export const getExperts = async (req, res, next) => {
           ? { profile: { hourlyRate: "desc" } }
           : sort === "experience"
             ? { profile: { yearsOfExperience: "desc" } }
-            : { profile: { avgRating: "desc" } }; // default: rating
+            : { profile: { avgRating: "desc" } }; 
 
     const [experts, total] = await Promise.all([
       prisma.user.findMany({

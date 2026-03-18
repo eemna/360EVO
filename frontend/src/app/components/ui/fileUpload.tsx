@@ -97,7 +97,7 @@ export function FileUpload({
       setError("");
 
       const response = await api.post(endpoint, formData, {
-        //  DO NOT set Content-Type manually
+        
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percent = Math.round(
@@ -111,7 +111,7 @@ export function FileUpload({
       setUploadProgress(100);
       setIsUploading(false);
 
-      // Only now confirm success
+      
       onFileSelect?.({
         url: response.data.url,
         publicId: response.data.publicId,

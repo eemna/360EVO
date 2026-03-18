@@ -215,9 +215,9 @@ export function BookConsultationPage() {
         content:
           message ||
           `📅 New consultation booked:
-Date: ${format(selectedDate, "MMMM d, yyyy")}
-Time: ${selectedSlot}
-Duration: ${duration} minutes`,
+           Date: ${format(selectedDate, "MMMM d, yyyy")}
+           Time: ${selectedSlot}
+           Duration: ${duration} minutes`,
       });
       showToast({
         type: "success",

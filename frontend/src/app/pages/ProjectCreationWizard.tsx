@@ -371,7 +371,7 @@ export function ProjectCreationWizard({
       let id = currentProjectId;
 
       if (!id) {
-        // First time → create project
+        // First time :create project
         const res = await api.post("/projects", payload);
 
         id = res.data.id;
@@ -1195,7 +1195,7 @@ export function ProjectCreationWizard({
                           label=""
                           description="Upload pitch decks, business plans, or other documents"
                           maxFiles={5}
-                          maxSize={10}
+                          maxSize={20}
                           acceptedTypes={[
                             ".pdf",
                             ".doc",

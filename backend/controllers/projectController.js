@@ -1,5 +1,7 @@
 import { prisma } from "../config/prisma.js";
-import { Prisma } from "@prisma/client";
+//import { Prisma } from "@prisma/client";
+import { createNotification } from "../utils/createNotification.js";
+
 export const createProject = async (req, res, _next) => {
   try {
     console.log("REQ USER:", req.user);
@@ -75,8 +77,6 @@ export const updateProject = async (req, res, next) => {
       teamMembers,
       milestones,
       documents,
-      status,
-      visibility,
       ...projectData
     } = req.body;
 
@@ -267,6 +267,7 @@ export const getPublicProjects = async (req, res, next) => {
       include: {
         owner: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -303,7 +304,22 @@ export const submitProject = async (req, res, next) => {
       where: { id },
       data: { status: "PENDING", visibility: "CONNECTIONS" },
     });
+   const admins = await prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { id: true },
+    });
 
+    await Promise.all(
+      admins.map((admin) =>
+        createNotification({
+          userId: admin.id,
+          type: "PROJECT_UPDATE",
+          title: "New project pending review",
+          body: `"${project.title}" was submitted for review`,
+          link: `/app/startup/projects/${id}`,
+        })
+      )
+    );
     res.json(updated);
   } catch (error) {
     next(error);
@@ -377,6 +393,65 @@ export const getStartupDashboard = async (req, res, next) => {
       },
       projects,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+export const createProjectUpdate = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { content, imageUrl } = req.body;
+    const userId = req.user.id;
+ 
+    if (!content?.trim()) {
+      return res.status(400).json({ message: "Content is required" });
+    }
+ 
+    const project = await prisma.project.findUnique({ where: { id } });
+ 
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+ 
+    if (project.ownerId !== userId) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+ 
+    if (project.status !== "APPROVED") {
+      return res.status(400).json({ message: "Can only post updates on approved projects" });
+    }
+ 
+    const update = await prisma.projectUpdate.create({
+      data: {
+        projectId: id,
+        content: content.trim(),
+        imageUrl: imageUrl || null,
+      },
+    });
+ 
+    res.status(201).json(update);
+  } catch (error) {
+    next(error);
+  }
+};
+ 
+
+export const getProjectUpdates = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+ 
+    const project = await prisma.project.findUnique({ where: { id } });
+ 
+    if (!project) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+ 
+    const updates = await prisma.projectUpdate.findMany({
+      where: { projectId: id },
+      orderBy: { createdAt: "desc" },
+    });
+ 
+    res.json(updates);
   } catch (error) {
     next(error);
   }

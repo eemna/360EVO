@@ -34,7 +34,7 @@ interface ResponsiveSidebarProps {
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/app" },
   { icon: User, label: "My Profile", path: "/app/profile/me" },
-  { icon: Users, label: "My Network", path: "/app/network" },
+  { icon: Users, label: "Events", path: "/app/events" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
   { icon: GraduationCap, label: "Find Experts", path: "/app/experts" },
   { icon: MessageSquare, label: "Messages", path: "/app/conversation" },

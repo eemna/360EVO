@@ -14,7 +14,7 @@ const imageFilter = (req, file, cb) => {
 
 export const uploadImage = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, 
   fileFilter: imageFilter,
 });
 
@@ -23,7 +23,7 @@ const documentFilter = (req, file, cb) => {
   const allowed = [
     "application/pdf",
     "application/msword", // .doc
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   ];
 
   if (allowed.includes(file.mimetype)) {
@@ -35,6 +35,6 @@ const documentFilter = (req, file, cb) => {
 
 export const uploadDocument = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+  limits: { fileSize: 20 * 1024 * 1024 }, 
   fileFilter: documentFilter,
 });
