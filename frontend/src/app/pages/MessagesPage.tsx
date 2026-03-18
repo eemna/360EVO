@@ -87,11 +87,11 @@ export function MessagesPage() {
     "conversations",
   );
 
-const [mentionQuery,  setMentionQuery]  = useState("");
-const [mentionOpen,   setMentionOpen]   = useState(false);
-const [mentionIndex,  setMentionIndex]  = useState(0);
-const [allUsers,      setAllUsers]      = useState<User[]>([]);
-const mentionDropdownRef = useRef<HTMLDivElement | null>(null);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const mentionDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const filteredUsers = users.filter(
     (u) =>
@@ -316,81 +316,98 @@ const mentionDropdownRef = useRef<HTMLDivElement | null>(null);
     };
   }, [socket, selectedConv, user?.id]);
 
+  // ── Fetch all users for @mention
+  useEffect(() => {
+    api
+      .get("/users")
+      .then(({ data }) => setAllUsers(data))
+      .catch(() => {});
+  }, []);
 
-  // ── Fetch all users for @mention 
-useEffect(() => {
-  api.get("/users")
-    .then(({ data }) => setAllUsers(data))
-    .catch(() => {});
-}, []);
+  // ── Users matching @query
+  const mentionMatches =
+    mentionQuery.length > 0
+      ? allUsers
+          .filter(
+            (u) =>
+              u.id !== user?.id &&
+              u.name.toLowerCase().includes(mentionQuery.toLowerCase()),
+          )
+          .slice(0, 5)
+      : [];
 
-// ── Users matching @query
-const mentionMatches = mentionQuery.length > 0
-  ? allUsers.filter((u) =>
-      u.id !== user?.id &&
-      u.name.toLowerCase().includes(mentionQuery.toLowerCase())
-    ).slice(0, 5)
-  : [];
+  // ── Handle input change — detects @
+  const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setMessageInput(val);
 
-// ── Handle input change — detects @ 
-const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const val = e.target.value;
-  setMessageInput(val);
+    const cursor = e.target.selectionStart ?? val.length;
+    const textBeforeCursor = val.substring(0, cursor);
+    const atMatch = textBeforeCursor.match(/@(\w*)$/);
 
-  const cursor = e.target.selectionStart ?? val.length;
-  const textBeforeCursor = val.substring(0, cursor);
-  const atMatch = textBeforeCursor.match(/@(\w*)$/);
+    if (atMatch) {
+      setMentionQuery(atMatch[1]);
+      setMentionOpen(true);
+      setMentionIndex(0);
+    } else {
+      setMentionOpen(false);
+      setMentionQuery("");
+    }
 
-  if (atMatch) {
-    setMentionQuery(atMatch[1]);
-    setMentionOpen(true);
-    setMentionIndex(0);
-  } else {
+    socket?.emit("typing_start", { conversationId: selectedConv });
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket?.emit("typing_stop", { conversationId: selectedConv });
+    }, 1000);
+  };
+
+  // ── Select user from dropdown
+  const handleMentionSelect = (selectedUser: User) => {
+    const cursor = inputRef.current?.selectionStart ?? messageInput.length;
+    const before = messageInput
+      .substring(0, cursor)
+      .replace(/@(\w*)$/, `@${selectedUser.name} `);
+    const after = messageInput.substring(cursor);
+    setMessageInput(before + after);
     setMentionOpen(false);
     setMentionQuery("");
-  }
+    setTimeout(() => inputRef.current?.focus(), 0);
+  };
 
-  socket?.emit("typing_start", { conversationId: selectedConv });
-  if (typingTimeout.current) clearTimeout(typingTimeout.current);
-  typingTimeout.current = setTimeout(() => {
-    socket?.emit("typing_stop", { conversationId: selectedConv });
-  }, 1000);
-};
-
-// ── Select user from dropdown 
-const handleMentionSelect = (selectedUser: User) => {
-  const cursor = inputRef.current?.selectionStart ?? messageInput.length;
-  const before = messageInput.substring(0, cursor).replace(/@(\w*)$/, `@${selectedUser.name} `);
-  const after  = messageInput.substring(cursor);
-  setMessageInput(before + after);
-  setMentionOpen(false);
-  setMentionQuery("");
-  setTimeout(() => inputRef.current?.focus(), 0);
-};
-
-// ── Keyboard navigation 
-const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (!mentionOpen || mentionMatches.length === 0) return;
-  if (e.key === "ArrowDown") { e.preventDefault(); setMentionIndex((i) => Math.min(i + 1, mentionMatches.length - 1)); }
-  else if (e.key === "ArrowUp") { e.preventDefault(); setMentionIndex((i) => Math.max(i - 1, 0)); }
-  else if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); handleMentionSelect(mentionMatches[mentionIndex]); }
-  else if (e.key === "Escape") { setMentionOpen(false); }
-};
-
-// ── Render @mentions as highlighted text 
-const renderMessageContent = (content: string) => {
-  const parts = content.split(/(@\w+(?:\s\w+)?)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("@")) {
-      return (
-        <span key={i} className="text-indigo-600 font-semibold bg-indigo-50 px-0.5 rounded">
-          {part}
-        </span>
-      );
+  // ── Keyboard navigation
+  const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!mentionOpen || mentionMatches.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setMentionIndex((i) => Math.min(i + 1, mentionMatches.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setMentionIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      handleMentionSelect(mentionMatches[mentionIndex]);
+    } else if (e.key === "Escape") {
+      setMentionOpen(false);
     }
-    return <span key={i}>{part}</span>;
-  });
-};
+  };
+
+  // ── Render @mentions as highlighted text
+  const renderMessageContent = (content: string) => {
+    const parts = content.split(/(@\w+(?:\s\w+)?)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith("@")) {
+        return (
+          <span
+            key={i}
+            className="text-indigo-600 font-semibold bg-indigo-50 px-0.5 rounded"
+          >
+            {part}
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
 
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedConv) return;
@@ -622,7 +639,9 @@ const renderMessageContent = (content: string) => {
                             : "bg-white border border-gray-200",
                         )}
                       >
-                        {isMe ? message.content : renderMessageContent(message.content)}
+                        {isMe
+                          ? message.content
+                          : renderMessageContent(message.content)}
                       </div>
 
                       {isMe &&
@@ -650,52 +669,52 @@ const renderMessageContent = (content: string) => {
                 <Paperclip className="h-5 w-5" />
               </Button>
               <div className="flex-1 relative">
-               <Input
-  value={messageInput}
-  onChange={handleMessageInputChange}
-  ref={inputRef}
-  placeholder="Type your message... use @ to mention"
-  className="pr-12 py-3 rounded-xl bg-gray-50 border-gray-200 focus:border-indigo-300 focus:ring-indigo-200 focus:bg-white"
-  onKeyDown={(e) => {
-    handleMentionKeyDown(e);
-    if (e.key === "Enter" && !e.shiftKey && !mentionOpen) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }}
-/>
+                <Input
+                  value={messageInput}
+                  onChange={handleMessageInputChange}
+                  ref={inputRef}
+                  placeholder="Type your message... use @ to mention"
+                  className="pr-12 py-3 rounded-xl bg-gray-50 border-gray-200 focus:border-indigo-300 focus:ring-indigo-200 focus:bg-white"
+                  onKeyDown={(e) => {
+                    handleMentionKeyDown(e);
+                    if (e.key === "Enter" && !e.shiftKey && !mentionOpen) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                />
 
-{/* @mention dropdown */}
-{mentionOpen && mentionMatches.length > 0 && (
-  <div
-    ref={mentionDropdownRef}
-    className="absolute bottom-14 left-0 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
-  >
-    <div className="px-3 py-2 text-xs text-gray-400 border-b border-gray-100">
-      Mention a user
-    </div>
-    {mentionMatches.map((u, idx) => (
-      <button
-        key={u.id}
-        type="button"
-        onMouseDown={(e) => {
-          e.preventDefault();
-          handleMentionSelect(u);
-        }}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors ${
-          idx === mentionIndex
-            ? "bg-indigo-50 text-indigo-700"
-            : "hover:bg-gray-50 text-gray-700"
-        }`}
-      >
-        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-xs flex-shrink-0">
-          {u.name.charAt(0).toUpperCase()}
-        </div>
-        <span className="font-medium">{u.name}</span>
-      </button>
-    ))}
-  </div>
-)}
+                {/* @mention dropdown */}
+                {mentionOpen && mentionMatches.length > 0 && (
+                  <div
+                    ref={mentionDropdownRef}
+                    className="absolute bottom-14 left-0 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
+                  >
+                    <div className="px-3 py-2 text-xs text-gray-400 border-b border-gray-100">
+                      Mention a user
+                    </div>
+                    {mentionMatches.map((u, idx) => (
+                      <button
+                        key={u.id}
+                        type="button"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleMentionSelect(u);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left transition-colors ${
+                          idx === mentionIndex
+                            ? "bg-indigo-50 text-indigo-700"
+                            : "hover:bg-gray-50 text-gray-700"
+                        }`}
+                      >
+                        <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-xs flex-shrink-0">
+                          {u.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-medium">{u.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {showEmoji && (
                   <div
                     ref={emojiPickerRef}
@@ -754,32 +773,34 @@ const renderMessageContent = (content: string) => {
                 <button
                   key={u.id}
                   onClick={async () => {
-  setShowNewConversation(false);
-  try {
-    const { data } = await api.post("/conversations", {
-      otherUserId: u.id,
-    });
+                    setShowNewConversation(false);
+                    try {
+                      const { data } = await api.post("/conversations", {
+                        otherUserId: u.id,
+                      });
 
-    setSelectedConv(data.id);
-    socket?.emit("join_conversation", data.id); // ← ADD THIS
+                      setSelectedConv(data.id);
+                      socket?.emit("join_conversation", data.id); // ← ADD THIS
 
-    const { data: convs } = await api.get("/conversations");
-    setConversations(
-      convs.map((conv: Conversation) => ({
-        ...conv,
-        timestamp: conv.lastMessage
-          ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : "",
-        typing: false,
-      })),
-    );
-  } catch (err) {
-    console.error(err);
-  }
-}}
+                      const { data: convs } = await api.get("/conversations");
+                      setConversations(
+                        convs.map((conv: Conversation) => ({
+                          ...conv,
+                          timestamp: conv.lastMessage
+                            ? new Date(
+                                conv.lastMessage.createdAt,
+                              ).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : "",
+                          typing: false,
+                        })),
+                      );
+                    } catch (err) {
+                      console.error(err);
+                    }
+                  }}
                   className="flex items-center gap-3 w-full p-2 hover:bg-gray-100 rounded-lg"
                 >
                   <Avatar className="h-8 w-8">

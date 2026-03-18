@@ -73,12 +73,7 @@ export const getProjectById = async (req, res, next) => {
 export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const {
-      teamMembers,
-      milestones,
-      documents,
-      ...projectData
-    } = req.body;
+    const { teamMembers, milestones, documents, ...projectData } = req.body;
 
     const project = await prisma.project.findUnique({
       where: { id },
@@ -304,7 +299,7 @@ export const submitProject = async (req, res, next) => {
       where: { id },
       data: { status: "PENDING", visibility: "CONNECTIONS" },
     });
-   const admins = await prisma.user.findMany({
+    const admins = await prisma.user.findMany({
       where: { role: "ADMIN" },
       select: { id: true },
     });
@@ -317,8 +312,8 @@ export const submitProject = async (req, res, next) => {
           title: "New project pending review",
           body: `"${project.title}" was submitted for review`,
           link: `/app/startup/projects/${id}`,
-        })
-      )
+        }),
+      ),
     );
     res.json(updated);
   } catch (error) {
@@ -402,25 +397,27 @@ export const createProjectUpdate = async (req, res, next) => {
     const { id } = req.params;
     const { content, imageUrl } = req.body;
     const userId = req.user.id;
- 
+
     if (!content?.trim()) {
       return res.status(400).json({ message: "Content is required" });
     }
- 
+
     const project = await prisma.project.findUnique({ where: { id } });
- 
+
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
- 
+
     if (project.ownerId !== userId) {
       return res.status(403).json({ message: "Not allowed" });
     }
- 
+
     if (project.status !== "APPROVED") {
-      return res.status(400).json({ message: "Can only post updates on approved projects" });
+      return res
+        .status(400)
+        .json({ message: "Can only post updates on approved projects" });
     }
- 
+
     const update = await prisma.projectUpdate.create({
       data: {
         projectId: id,
@@ -428,29 +425,28 @@ export const createProjectUpdate = async (req, res, next) => {
         imageUrl: imageUrl || null,
       },
     });
- 
+
     res.status(201).json(update);
   } catch (error) {
     next(error);
   }
 };
- 
 
 export const getProjectUpdates = async (req, res, next) => {
   try {
     const { id } = req.params;
- 
+
     const project = await prisma.project.findUnique({ where: { id } });
- 
+
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
- 
+
     const updates = await prisma.projectUpdate.findMany({
       where: { projectId: id },
       orderBy: { createdAt: "desc" },
     });
- 
+
     res.json(updates);
   } catch (error) {
     next(error);

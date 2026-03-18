@@ -63,7 +63,7 @@ function formatDate(date: string) {
 
 function formatTime(date: string) {
   const d = new Date(date.endsWith("Z") ? date : date + "Z");
-  const hours   = String(d.getUTCHours()).padStart(2, "0");
+  const hours = String(d.getUTCHours()).padStart(2, "0");
   const minutes = String(d.getUTCMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
@@ -131,7 +131,9 @@ function EventRow({
           </div>
         </div>
 
-        <h3 className="font-semibold text-gray-900 mt-1 truncate">{event.title}</h3>
+        <h3 className="font-semibold text-gray-900 mt-1 truncate">
+          {event.title}
+        </h3>
 
         <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
           <div className="flex items-center gap-1.5 text-xs text-gray-500">
@@ -231,7 +233,13 @@ function SkeletonRow() {
   );
 }
 
-function EmptyState({ message, action }: { message: string; action?: React.ReactNode }) {
+function EmptyState({
+  message,
+  action,
+}: {
+  message: string;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="text-center py-16 bg-gray-50 rounded-2xl">
       <Calendar className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -264,7 +272,11 @@ export default function MyEventsPage() {
         const { data } = await api.get("/events/user/mine");
         setOrganized(data.events ?? data);
       } catch {
-        showToast({ type: "error", title: "Failed to load your events", message: "" });
+        showToast({
+          type: "error",
+          title: "Failed to load your events",
+          message: "",
+        });
       } finally {
         setLoadingOrganized(false);
       }
@@ -279,7 +291,11 @@ export default function MyEventsPage() {
         const { data } = await api.get("/events/user/registered");
         setRegistered(data.events ?? data);
       } catch {
-        showToast({ type: "error", title: "Failed to load registrations", message: "" });
+        showToast({
+          type: "error",
+          title: "Failed to load registrations",
+          message: "",
+        });
       } finally {
         setLoadingRegistered(false);
       }
@@ -291,7 +307,7 @@ export default function MyEventsPage() {
     try {
       await api.post(`/events/${id}/publish`);
       setOrganized((prev) =>
-        prev.map((e) => (e.id === id ? { ...e, status: "PUBLISHED" } : e))
+        prev.map((e) => (e.id === id ? { ...e, status: "PUBLISHED" } : e)),
       );
       showToast({ type: "success", title: "Event published!", message: "" });
     } catch {
@@ -378,7 +394,9 @@ export default function MyEventsPage() {
         <div className="space-y-8">
           {loadingOrganized ? (
             <div className="space-y-3">
-              {[...Array(3)].map((_, i) => <SkeletonRow key={i} />)}
+              {[...Array(3)].map((_, i) => (
+                <SkeletonRow key={i} />
+              ))}
             </div>
           ) : organized.length === 0 ? (
             <EmptyState
@@ -436,7 +454,9 @@ export default function MyEventsPage() {
         <div className="space-y-8">
           {loadingRegistered ? (
             <div className="space-y-3">
-              {[...Array(3)].map((_, i) => <SkeletonRow key={i} />)}
+              {[...Array(3)].map((_, i) => (
+                <SkeletonRow key={i} />
+              ))}
             </div>
           ) : registered.length === 0 ? (
             <EmptyState

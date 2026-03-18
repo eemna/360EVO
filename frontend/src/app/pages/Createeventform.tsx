@@ -82,41 +82,49 @@ export default function CreateEventForm() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { id } = useParams();          
+  const { id } = useParams();
   const isEditing = !!id;
   const isExpert = user?.role === "EXPERT";
 
   const [form, setForm] = useState<FormData>(INITIAL);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [submitting, setSubmitting] = useState(false);
- 
+
   useEffect(() => {
-  if (isExpert) {
-    setForm((prev) => ({ ...prev, type: "WORKSHOP" }));
-  }
-}, [isExpert]);
-useEffect(() => {
-  if (!id) return;
-  api.get(`/events/${id}`).then(({ data }) => {
-    setForm({
-      title:       data.title,
-      description: data.description,
-      type:        data.type,
-      date:        data.date.slice(0, 16),
-      endDate:     data.endDate?.slice(0, 16) ?? "",
-      location:    data.location ?? "",
-      virtualLink: data.virtualLink ?? "",
-      capacity:    data.capacity ? String(data.capacity) : "",
-      coverImage:  data.coverImage ?? "",
-    });
-  }).catch(() => {
-    showToast({ type: "error", title: "Failed to load event", message: "" });
-    navigate("/app/events");
-  });
-}, [id, navigate, showToast]);
-  const set = (field: keyof FormData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    if (isExpert) {
+      setForm((prev) => ({ ...prev, type: "WORKSHOP" }));
+    }
+  }, [isExpert]);
+  useEffect(() => {
+    if (!id) return;
+    api
+      .get(`/events/${id}`)
+      .then(({ data }) => {
+        setForm({
+          title: data.title,
+          description: data.description,
+          type: data.type,
+          date: data.date.slice(0, 16),
+          endDate: data.endDate?.slice(0, 16) ?? "",
+          location: data.location ?? "",
+          virtualLink: data.virtualLink ?? "",
+          capacity: data.capacity ? String(data.capacity) : "",
+          coverImage: data.coverImage ?? "",
+        });
+      })
+      .catch(() => {
+        showToast({
+          type: "error",
+          title: "Failed to load event",
+          message: "",
+        });
+        navigate("/app/events");
+      });
+  }, [id, navigate, showToast]);
+  const set =
+    (field: keyof FormData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const setSelect = (field: keyof FormData) => (value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -129,7 +137,10 @@ useEffect(() => {
     if (!form.date) e.date = "Start date is required";
     if (form.endDate && form.endDate < form.date)
       e.endDate = "End date must be after start date";
-    if (form.capacity && (isNaN(Number(form.capacity)) || Number(form.capacity) < 1))
+    if (
+      form.capacity &&
+      (isNaN(Number(form.capacity)) || Number(form.capacity) < 1)
+    )
       e.capacity = "Capacity must be a positive number";
     if (!form.location.trim() && !form.virtualLink.trim())
       e.location = "Provide a location or virtual link";
@@ -140,56 +151,57 @@ useEffect(() => {
   const handleSubmit = async (publish: boolean) => {
     if (!validate()) return;
 
-    
-try {
-  setSubmitting(true);
+    try {
+      setSubmitting(true);
 
-  const payload: Record<string, unknown> = {
-    title:       form.title.trim(),
-    description: form.description.trim(),
-    type:        form.type,
-    date:        new Date(form.date).toISOString(),
-    location:    form.location.trim() || undefined,
-    virtualLink: form.virtualLink.trim() || undefined,
-    capacity:    form.capacity ? Number(form.capacity) : undefined,
-    coverImage:  form.coverImage.trim() || undefined,
-  };
-  if (form.endDate) payload.endDate = new Date(form.endDate).toISOString();
+      const payload: Record<string, unknown> = {
+        title: form.title.trim(),
+        description: form.description.trim(),
+        type: form.type,
+        date: new Date(form.date).toISOString(),
+        location: form.location.trim() || undefined,
+        virtualLink: form.virtualLink.trim() || undefined,
+        capacity: form.capacity ? Number(form.capacity) : undefined,
+        coverImage: form.coverImage.trim() || undefined,
+      };
+      if (form.endDate) payload.endDate = new Date(form.endDate).toISOString();
 
-if (isEditing) {
-    await api.put(`/events/${id}`, payload);
-    showToast({
-      type: "success",
-      title: "Event updated!",
-      message: "",
-    });
-    navigate(`/app/events/${id}`);
-  } else {
-    const { data } = await api.post("/events", payload);
-    if (publish) {
-      await api.post(`/events/${data.id}/publish`);
+      if (isEditing) {
+        await api.put(`/events/${id}`, payload);
+        showToast({
+          type: "success",
+          title: "Event updated!",
+          message: "",
+        });
+        navigate(`/app/events/${id}`);
+      } else {
+        const { data } = await api.post("/events", payload);
+        if (publish) {
+          await api.post(`/events/${data.id}/publish`);
+        }
+        showToast({
+          type: "success",
+          title: publish ? "Event published!" : "Event saved as draft",
+          message: publish
+            ? "Your event is now live."
+            : "You can publish it later from your events.",
+        });
+        navigate(`/app/events/${data.id}`);
+      }
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Something went wrong";
+      showToast({
+        type: "error",
+        title: isEditing ? "Failed to update event" : "Failed to create event",
+        message,
+      });
+    } finally {
+      setSubmitting(false);
     }
-    showToast({
-      type: "success",
-      title: publish ? "Event published!" : "Event saved as draft",
-      message: publish ? "Your event is now live." : "You can publish it later from your events.",
-    });
-    navigate(`/app/events/${data.id}`);
-  }
-} catch (err: unknown) {   
-  const message =
-    err instanceof Error
-      ? err.message
-      : (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message || "Something went wrong";
-  showToast({
-    type: "error",
-    title: isEditing ? "Failed to update event" : "Failed to create event",
-    message,
-  });
-} finally {
-  setSubmitting(false);
-}
   };
   const typeOptions = isExpert
     ? [{ label: "Workshop", value: "WORKSHOP" }]
@@ -213,20 +225,23 @@ if (isEditing) {
         </button>
 
         <h1 className="text-2xl font-semibold text-gray-900">
-  {isEditing ? "Edit Event" : isExpert ? "Create Workshop" : "Create Event"}
-</h1>
-<p className="text-gray-500 text-sm mt-1">
-  {isEditing
-    ? "Update your event details."
-    : isExpert
-    ? "Host a workshop and share your expertise with the community."
-    : "Organize an event for the 360EVO community."}
-</p>
+          {isEditing
+            ? "Edit Event"
+            : isExpert
+              ? "Create Workshop"
+              : "Create Event"}
+        </h1>
+        <p className="text-gray-500 text-sm mt-1">
+          {isEditing
+            ? "Update your event details."
+            : isExpert
+              ? "Host a workshop and share your expertise with the community."
+              : "Organize an event for the 360EVO community."}
+        </p>
       </div>
 
       {/* Form Card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-
         {/* Basic Info */}
         <div className="space-y-4">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
@@ -436,21 +451,33 @@ if (isEditing) {
         </Button>
 
         <div className="flex gap-3">
-  {isEditing ? (
-    <Button onClick={() => handleSubmit(false)} disabled={submitting} className="bg-blue-600 hover:bg-blue-700 text-white">
-      {submitting ? "Saving..." : "Save Changes"}
-    </Button>
-  ) : (
-    <>
-      <Button variant="outline" onClick={() => handleSubmit(false)} disabled={submitting}>
-        {submitting ? "Saving..." : "Save as Draft"}
-      </Button>
-      <Button onClick={() => handleSubmit(true)} disabled={submitting} className="bg-blue-600 hover:bg-blue-700 text-white">
-        {submitting ? "Publishing..." : "Publish Now"}
-      </Button>
-    </>
-  )}
-</div>
+          {isEditing ? (
+            <Button
+              onClick={() => handleSubmit(false)}
+              disabled={submitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {submitting ? "Saving..." : "Save Changes"}
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => handleSubmit(false)}
+                disabled={submitting}
+              >
+                {submitting ? "Saving..." : "Save as Draft"}
+              </Button>
+              <Button
+                onClick={() => handleSubmit(true)}
+                disabled={submitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {submitting ? "Publishing..." : "Publish Now"}
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

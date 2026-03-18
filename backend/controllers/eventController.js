@@ -1,13 +1,12 @@
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
 
-
 export const getEvents = async (req, res, next) => {
   try {
     const {
-      type,       // CONFERENCE | NETWORKING | PITCH_DAY | WORKSHOP
-      search,     // title / description search
-      date,       // ISO date string — filter events on or after this date
+      type, // CONFERENCE | NETWORKING | PITCH_DAY | WORKSHOP
+      search, // title / description search
+      date, // ISO date string — filter events on or after this date
       page = 1,
       limit = 12,
     } = req.query;
@@ -18,11 +17,11 @@ export const getEvents = async (req, res, next) => {
       status: "PUBLISHED",
       ...(type && { type }),
       ...(date && {
-  OR: [
-    { date:    { gte: new Date(date) } },  
-    { endDate: { gte: new Date(date) } },  
-  ],
-}),
+        OR: [
+          { date: { gte: new Date(date) } },
+          { endDate: { gte: new Date(date) } },
+        ],
+      }),
       ...(search && {
         OR: [
           { title: { contains: search, mode: "insensitive" } },
@@ -59,7 +58,6 @@ export const getEvents = async (req, res, next) => {
   }
 };
 
-
 export const getMyEvents = async (req, res, next) => {
   try {
     const events = await prisma.event.findMany({
@@ -75,7 +73,6 @@ export const getMyEvents = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getEventById = async (req, res, next) => {
   try {
@@ -110,7 +107,6 @@ export const getEventById = async (req, res, next) => {
   }
 };
 
-
 export const createEvent = async (req, res, next) => {
   try {
     const { role, id: organizerId } = req.user;
@@ -134,7 +130,9 @@ export const createEvent = async (req, res, next) => {
     }
 
     if (role !== "ADMIN" && role !== "EXPERT") {
-      return res.status(403).json({ message: "Not authorized to create events" });
+      return res
+        .status(403)
+        .json({ message: "Not authorized to create events" });
     }
 
     const hostType = role === "ADMIN" ? "ADMIN" : "EXPERT";
@@ -164,7 +162,6 @@ export const createEvent = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const updateEvent = async (req, res, next) => {
   try {
@@ -200,10 +197,14 @@ export const updateEvent = async (req, res, next) => {
         ...(description && { description }),
         ...(type && { type }),
         ...(date && { date: new Date(date) }),
-        ...(endDate !== undefined && { endDate: endDate ? new Date(endDate) : null }),
+        ...(endDate !== undefined && {
+          endDate: endDate ? new Date(endDate) : null,
+        }),
         ...(location !== undefined && { location }),
         ...(virtualLink !== undefined && { virtualLink }),
-        ...(capacity !== undefined && { capacity: capacity ? Number(capacity) : null }),
+        ...(capacity !== undefined && {
+          capacity: capacity ? Number(capacity) : null,
+        }),
         ...(coverImage !== undefined && { coverImage }),
         ...(status && { status }),
       },
@@ -214,7 +215,6 @@ export const updateEvent = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const deleteEvent = async (req, res, next) => {
   try {
@@ -237,7 +237,6 @@ export const deleteEvent = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const publishEvent = async (req, res, next) => {
   try {
@@ -264,7 +263,6 @@ export const publishEvent = async (req, res, next) => {
   }
 };
 
-
 export const registerForEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -280,7 +278,9 @@ export const registerForEvent = async (req, res, next) => {
     }
 
     if (event.status !== "PUBLISHED") {
-      return res.status(400).json({ message: "Event is not open for registration" });
+      return res
+        .status(400)
+        .json({ message: "Event is not open for registration" });
     }
 
     // Check capacity
@@ -288,13 +288,14 @@ export const registerForEvent = async (req, res, next) => {
       return res.status(400).json({ message: "Event is fully booked" });
     }
 
-    
     const existing = await prisma.eventRegistration.findUnique({
       where: { eventId_userId: { eventId: id, userId } },
     });
 
     if (existing) {
-      return res.status(400).json({ message: "Already registered for this event" });
+      return res
+        .status(400)
+        .json({ message: "Already registered for this event" });
     }
 
     const registration = await prisma.eventRegistration.create({
@@ -314,7 +315,6 @@ export const registerForEvent = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const cancelRegistration = async (req, res, next) => {
   try {
@@ -338,7 +338,6 @@ export const cancelRegistration = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getMyRegisteredEvents = async (req, res, next) => {
   try {

@@ -2,13 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../services/axios";
-import {
-  Search,
-  Plus,
-  Calendar,
-  MapPin,
-  Users,
-} from "lucide-react";
+import { Search, Plus, Calendar, MapPin, Users } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import {
@@ -78,7 +72,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 function formatTime(date: string) {
   const d = new Date(date);
-  const hours   = String(d.getUTCHours()).padStart(2, "0");
+  const hours = String(d.getUTCHours()).padStart(2, "0");
   const minutes = String(d.getUTCMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
@@ -99,9 +93,8 @@ function formatDateRange(date: string, endDate?: string) {
   const endTime = formatTime(endDate);
 
   // Only show end time if different from start time
-  const timeStr = startTime === endTime
-    ? startTime
-    : `${startTime} – ${endTime}`;
+  const timeStr =
+    startTime === endTime ? startTime : `${startTime} – ${endTime}`;
 
   return { date: dateStr, time: timeStr };
 }
@@ -237,8 +230,7 @@ export default function EventsPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
 
-  const canCreateEvent =
-    user?.role === "ADMIN" || user?.role === "EXPERT";
+  const canCreateEvent = user?.role === "ADMIN" || user?.role === "EXPERT";
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -335,7 +327,10 @@ export default function EventsPage() {
             </SelectTrigger>
             <SelectContent>
               {DATE_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value === "" ? "all" : opt.value}>
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value === "" ? "all" : opt.value}
+                >
                   {opt.label}
                 </SelectItem>
               ))}
@@ -348,11 +343,8 @@ export default function EventsPage() {
       {!loading && pagination && (
         <p className="text-sm text-gray-500">
           Showing{" "}
-          <span className="font-medium text-gray-700">{events.length}</span>{" "}
-          of{" "}
-          <span className="font-medium text-gray-700">
-            {pagination.total}
-          </span>{" "}
+          <span className="font-medium text-gray-700">{events.length}</span> of{" "}
+          <span className="font-medium text-gray-700">{pagination.total}</span>{" "}
           event{pagination.total !== 1 ? "s" : ""}
         </p>
       )}

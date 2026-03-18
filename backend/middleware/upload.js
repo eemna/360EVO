@@ -14,7 +14,7 @@ const imageFilter = (req, file, cb) => {
 
 export const uploadImage = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, 
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: imageFilter,
 });
 
@@ -35,6 +35,6 @@ const documentFilter = (req, file, cb) => {
 
 export const uploadDocument = multer({
   storage,
-  limits: { fileSize: 20 * 1024 * 1024 }, 
+  limits: { fileSize: 20 * 1024 * 1024 },
   fileFilter: documentFilter,
 });

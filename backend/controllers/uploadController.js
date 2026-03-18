@@ -59,7 +59,6 @@ export const uploadDocumentController = async (req, res, next) => {
       },
     );
 
-    
     result.end(req.file.buffer);
   } catch (error) {
     next(error);
