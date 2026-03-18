@@ -145,7 +145,7 @@ export default function StartupDashboard() {
     } finally {
       setLoading(false);
     }
-  }, []); 
+  }, []);
 
   useEffect(() => {
     fetchDashboard();
@@ -404,8 +404,6 @@ export default function StartupDashboard() {
     </div>
   );
 }
-
-
 
 function StatCard({ title, value, icon }: StatCardProps) {
   return (

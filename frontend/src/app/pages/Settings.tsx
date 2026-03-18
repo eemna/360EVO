@@ -78,7 +78,6 @@ export default function Settings() {
 
   const [loading, setLoading] = useState(true);
 
-  
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [bio, setBio] = useState("");

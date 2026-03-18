@@ -2,9 +2,13 @@ import { Outlet } from "react-router";
 import { useState } from "react";
 import TopNav from "./TopNav";
 import LeftSidebar from "./LeftSidebar";
+import { SocketProvider } from "../../../providers/SocketProvider";
+import { BookmarkProvider } from "../../../providers/BookmarkProvider";
 export default function AppLayout() {
   const [SidebarOpen, setIsSidebarOpen] = useState(false);
   return (
+     <SocketProvider>
+      <BookmarkProvider>
     <div className="min-h-screen bg-gray-50">
       <TopNav onMenuClick={() => setIsSidebarOpen(true)} />
 
@@ -19,5 +23,7 @@ export default function AppLayout() {
         </main>
       </div>
     </div>
+    </BookmarkProvider>
+    </SocketProvider>
   );
 }

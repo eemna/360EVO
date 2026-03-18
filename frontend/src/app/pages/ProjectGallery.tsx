@@ -28,29 +28,29 @@ type Project = {
   location: string;
   viewCount: number;
   owner: {
-    id: string;   
+    id: string;
     name: string;
   };
 };
 
 const stageColors = {
-  IDEA:      "bg-gray-100 text-gray-700",
+  IDEA: "bg-gray-100 text-gray-700",
   PROTOTYPE: "bg-blue-100 text-blue-700",
-  MVP:       "bg-indigo-100 text-indigo-700",
-  GROWTH:    "bg-purple-100 text-purple-700",
-  SCALING:   "bg-green-100 text-green-700",
+  MVP: "bg-indigo-100 text-indigo-700",
+  GROWTH: "bg-purple-100 text-purple-700",
+  SCALING: "bg-green-100 text-green-700",
 };
 
 const ITEMS_PER_PAGE = 6;
 
 export function ProjectGallery() {
-  const [searchQuery, setSearchQuery]           = useState("");
-  const [industryFilter, setIndustryFilter]     = useState("all");
-  const [stageFilter, setStageFilter]           = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [industryFilter, setIndustryFilter] = useState("all");
+  const [stageFilter, setStageFilter] = useState("all");
   const [fundingRangeFilter, setFundingRangeFilter] = useState("all");
-  const [currentPage, setCurrentPage]           = useState(1);
-  const [projects, setProjects]                 = useState<Project[]>([]);
-  const [loading, setLoading]                   = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -59,19 +59,27 @@ export function ProjectGallery() {
         let minFunding: number | undefined;
         let maxFunding: number | undefined;
 
-        if (fundingRangeFilter === "0-500k")  { minFunding = 0;         maxFunding = 500000;   }
-        else if (fundingRangeFilter === "500k-1m") { minFunding = 500000;  maxFunding = 1000000;  }
-        else if (fundingRangeFilter === "1m-5m")   { minFunding = 1000000; maxFunding = 5000000;  }
-        else if (fundingRangeFilter === "5m+")     { minFunding = 5000000; }
+        if (fundingRangeFilter === "0-500k") {
+          minFunding = 0;
+          maxFunding = 500000;
+        } else if (fundingRangeFilter === "500k-1m") {
+          minFunding = 500000;
+          maxFunding = 1000000;
+        } else if (fundingRangeFilter === "1m-5m") {
+          minFunding = 1000000;
+          maxFunding = 5000000;
+        } else if (fundingRangeFilter === "5m+") {
+          minFunding = 5000000;
+        }
 
         const response = await api.get("/projects/", {
           params: {
-            q:        searchQuery || undefined,
+            q: searchQuery || undefined,
             industry: industryFilter !== "all" ? industryFilter : undefined,
-            stage:    stageFilter   !== "all" ? stageFilter    : undefined,
+            stage: stageFilter !== "all" ? stageFilter : undefined,
             minFunding,
             maxFunding,
-            page:  currentPage,
+            page: currentPage,
             limit: ITEMS_PER_PAGE,
           },
         });
@@ -85,13 +93,21 @@ export function ProjectGallery() {
     };
 
     fetchProjects();
-  }, [searchQuery, industryFilter, stageFilter, fundingRangeFilter, currentPage]);
+  }, [
+    searchQuery,
+    industryFilter,
+    stageFilter,
+    fundingRangeFilter,
+    currentPage,
+  ]);
 
-  const industries = Array.from(new Set(projects.map((p) => p.industry))).filter(Boolean);
+  const industries = Array.from(
+    new Set(projects.map((p) => p.industry)),
+  ).filter(Boolean);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-    if (amount >= 1_000)     return `$${(amount / 1_000).toFixed(0)}K`;
+    if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
     return `$${amount}`;
   };
 
@@ -101,8 +117,12 @@ export function ProjectGallery() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900">Project Gallery</h1>
-        <p className="text-gray-600 mt-1">Discover innovative startups and investment opportunities</p>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          Project Gallery
+        </h1>
+        <p className="text-gray-600 mt-1">
+          Discover innovative startups and investment opportunities
+        </p>
       </div>
 
       {/* Filters */}
@@ -115,25 +135,48 @@ export function ProjectGallery() {
                 <Input
                   placeholder="Search projects by title or tagline or description..."
                   value={searchQuery}
-                  onChange={(e) => { setSearchQuery(e.target.value); handleFilterChange(); }}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    handleFilterChange();
+                  }}
                   className="pl-10"
                 />
               </div>
             </div>
 
             <div>
-              <Select value={industryFilter} onValueChange={(v) => { setIndustryFilter(v); handleFilterChange(); }}>
-                <SelectTrigger><SelectValue placeholder="All Industries" /></SelectTrigger>
+              <Select
+                value={industryFilter}
+                onValueChange={(v) => {
+                  setIndustryFilter(v);
+                  handleFilterChange();
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Industries" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Industries</SelectItem>
-                  {industries.map((ind) => <SelectItem key={ind} value={ind}>{ind}</SelectItem>)}
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>
+                      {ind}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Select value={stageFilter} onValueChange={(v) => { setStageFilter(v); handleFilterChange(); }}>
-                <SelectTrigger><SelectValue placeholder="All Stages" /></SelectTrigger>
+              <Select
+                value={stageFilter}
+                onValueChange={(v) => {
+                  setStageFilter(v);
+                  handleFilterChange();
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Stages" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Stages</SelectItem>
                   <SelectItem value="IDEA">Idea</SelectItem>
@@ -147,8 +190,16 @@ export function ProjectGallery() {
           </div>
 
           <div className="mt-4">
-            <Select value={fundingRangeFilter} onValueChange={(v) => { setFundingRangeFilter(v); handleFilterChange(); }}>
-              <SelectTrigger className="w-full md:w-64"><SelectValue placeholder="All Funding Ranges" /></SelectTrigger>
+            <Select
+              value={fundingRangeFilter}
+              onValueChange={(v) => {
+                setFundingRangeFilter(v);
+                handleFilterChange();
+              }}
+            >
+              <SelectTrigger className="w-full md:w-64">
+                <SelectValue placeholder="All Funding Ranges" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Funding Ranges</SelectItem>
                 <SelectItem value="0-500k">$0 - $500K</SelectItem>
@@ -191,8 +242,12 @@ export function ProjectGallery() {
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Search className="size-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No projects found
+            </h3>
+            <p className="text-gray-600">
+              Try adjusting your search or filter criteria
+            </p>
           </CardContent>
         </Card>
       ) : (
@@ -201,7 +256,6 @@ export function ProjectGallery() {
             <Link key={project.id} to={`/app/startup/projects/${project.id}`}>
               <Card className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group">
                 <CardContent className="pt-6">
-
                   {project.featured && (
                     <div className="flex items-center gap-2 mb-3">
                       <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
@@ -215,15 +269,23 @@ export function ProjectGallery() {
                     {project.title}
                   </h3>
 
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">{project.tagline}</p>
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                    {project.tagline}
+                  </p>
 
                   <div className="mb-4">
-                    <Badge className={stageColors[project.stage]}>{project.stage}</Badge>
+                    <Badge className={stageColors[project.stage]}>
+                      {project.stage}
+                    </Badge>
                   </div>
 
                   <div className="flex flex-wrap gap-2 mb-4">
                     {project.technologies?.slice(0, 3).map((tech) => (
-                      <Badge key={tech} variant="outline" className="text-xs border-indigo-200 text-indigo-700">
+                      <Badge
+                        key={tech}
+                        variant="outline"
+                        className="text-xs border-indigo-200 text-indigo-700"
+                      >
                         {tech}
                       </Badge>
                     ))}
@@ -267,7 +329,6 @@ export function ProjectGallery() {
                       />
                     </div>
                   </div>
-
                 </CardContent>
               </Card>
             </Link>

@@ -1,13 +1,14 @@
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
 
-
 export const addBookmark = async (req, res, next) => {
   try {
     const { projectId } = req.params;
     const userId = req.user.id;
 
-    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
     if (!project) return res.status(404).json({ message: "Project not found" });
 
     const bookmark = await prisma.bookmark.create({
@@ -23,7 +24,6 @@ export const addBookmark = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const removeBookmark = async (req, res, next) => {
   try {
@@ -43,7 +43,6 @@ export const removeBookmark = async (req, res, next) => {
   }
 };
 
-
 export const getBookmarks = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -54,7 +53,7 @@ export const getBookmarks = async (req, res, next) => {
       include: {
         project: {
           include: {
-           owner: { select: { id: true, name: true } }
+            owner: { select: { id: true, name: true } },
           },
         },
       },
@@ -65,7 +64,6 @@ export const getBookmarks = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getBookmarkIds = async (req, res, next) => {
   try {
@@ -81,7 +79,6 @@ export const getBookmarkIds = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const expressInterest = async (req, res, next) => {
   try {
@@ -100,7 +97,9 @@ export const expressInterest = async (req, res, next) => {
 
     if (!project) return res.status(404).json({ message: "Project not found" });
     if (project.ownerId === userId) {
-      return res.status(400).json({ message: "Cannot express interest in your own project" });
+      return res
+        .status(400)
+        .json({ message: "Cannot express interest in your own project" });
     }
 
     // 1. Save interest record
@@ -119,16 +118,15 @@ export const expressInterest = async (req, res, next) => {
       },
     });
 
-    const conversation = existing ?? await prisma.conversation.create({
-      data: {
-        participants: {
-          create: [
-            { userId },
-            { userId: project.ownerId },
-          ],
+    const conversation =
+      existing ??
+      (await prisma.conversation.create({
+        data: {
+          participants: {
+            create: [{ userId }, { userId: project.ownerId }],
+          },
         },
-      },
-    });
+      }));
 
     // 3. Send the message into the conversation
     const msg = await prisma.message.create({
@@ -159,19 +157,22 @@ export const expressInterest = async (req, res, next) => {
     res.status(201).json(interest);
   } catch (error) {
     if (error.code === "P2002") {
-      return res.status(400).json({ message: "You already expressed interest in this project" });
+      return res
+        .status(400)
+        .json({ message: "You already expressed interest in this project" });
     }
     next(error);
   }
 };
-
 
 export const getProjectInterests = async (req, res, next) => {
   try {
     const { projectId } = req.params;
     const userId = req.user.id;
 
-    const project = await prisma.project.findUnique({ where: { id: projectId } });
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+    });
     if (!project) return res.status(404).json({ message: "Project not found" });
     if (project.ownerId !== userId) {
       return res.status(403).json({ message: "Not authorized" });
@@ -182,7 +183,11 @@ export const getProjectInterests = async (req, res, next) => {
       orderBy: { createdAt: "desc" },
       include: {
         user: {
-          select: { id: true, name: true, profile: { select: { avatar: true } } },
+          select: {
+            id: true,
+            name: true,
+            profile: { select: { avatar: true } },
+          },
         },
       },
     });

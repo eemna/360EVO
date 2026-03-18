@@ -11,7 +11,7 @@ import {
   getPublicProjects,
   getStartupDashboard,
   createProjectUpdate,
-  getProjectUpdates
+  getProjectUpdates,
 } from "../controllers/projectController.js";
 
 import { protect } from "../middleware/auth.js";
@@ -33,6 +33,6 @@ router.put(
   protect,
   updateTeamMemberPhoto,
 );
-router.post("/:id/updates", protect, createProjectUpdate);  
-router.get("/:id/updates", protect, getProjectUpdates); 
+router.post("/:id/updates", protect, createProjectUpdate);
+router.get("/:id/updates", protect, getProjectUpdates);
 export default router;

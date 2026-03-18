@@ -1,6 +1,14 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { Bookmark, MessageSquarePlus, MapPin, Target, Eye, Users, Sparkles } from "lucide-react";
+import {
+  Bookmark,
+  MessageSquarePlus,
+  MapPin,
+  Target,
+  Eye,
+  Users,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent } from "../components/ui/card";
@@ -33,7 +41,10 @@ export function BookmarkButton({
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) { navigate("/login"); return; }
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     setAnimating(true);
     await toggle(projectId);
     setTimeout(() => setAnimating(false), 300);
@@ -56,12 +67,13 @@ export function BookmarkButton({
         }`}
       />
       {showLabel && (
-        <span className="text-sm font-medium">{isBookmarked ? "Saved" : "Save"}</span>
+        <span className="text-sm font-medium">
+          {isBookmarked ? "Saved" : "Save"}
+        </span>
       )}
     </button>
   );
 }
-
 
 interface ExpressInterestModalProps {
   projectId: string;
@@ -69,7 +81,6 @@ interface ExpressInterestModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 
 export function ExpressInterestModal({
   projectId,
@@ -82,57 +93,61 @@ export function ExpressInterestModal({
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-  if (!message.trim()) {
-    showToast({ type: "warning", title: "Message required", message: "Please write a short message." });
-    return;
-  }
-  try {
-    setSubmitting(true);
-    await api.post(`/bookmarks/interests/${projectId}`, { message });
-    showToast({ 
-      type: "success", 
-      title: "Interest sent!", 
-      message: "Your message was sent — check your Messages page to continue the conversation." 
-    });
-    setMessage("");
-    onClose();
-  } catch (err: unknown) {
-    const msg =
-      (err as { response?: { data?: { message?: string } } })
-        ?.response?.data?.message ?? "Something went wrong";
-    showToast({ type: "error", title: "Failed", message: msg });
-  } finally {
-    setSubmitting(false);
-  }
-};
+    if (!message.trim()) {
+      showToast({
+        type: "warning",
+        title: "Message required",
+        message: "Please write a short message.",
+      });
+      return;
+    }
+    try {
+      setSubmitting(true);
+      await api.post(`/bookmarks/interests/${projectId}`, { message });
+      showToast({
+        type: "success",
+        title: "Interest sent!",
+        message:
+          "Your message was sent — check your Messages page to continue the conversation.",
+      });
+      setMessage("");
+      onClose();
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Something went wrong";
+      showToast({ type: "error", title: "Failed", message: msg });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-
-return (
-  <div onClick={(e) => e.stopPropagation()}>
-    <AppModal
-      open={isOpen}
-      onOpenChange={(open) => { if (!open) onClose(); }}
-      title="Express Interest"
-      description={`Send a message to the team behind "${projectTitle}"`}
-      submitText={submitting ? "Sending..." : "Send Interest"}
-      cancelText="Cancel"
-      onSubmit={handleSubmit}
-    >
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        rows={5}
-        maxLength={500}
-        placeholder="Introduce yourself and explain why you're interested in this project..."
-        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
-      />
-      <p className="text-xs text-gray-400 text-right">{message.length}/500</p>
-    </AppModal>
-  </div>
-);
-  
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <AppModal
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+        title="Express Interest"
+        description={`Send a message to the team behind "${projectTitle}"`}
+        submitText={submitting ? "Sending..." : "Send Interest"}
+        cancelText="Cancel"
+        onSubmit={handleSubmit}
+      >
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          rows={5}
+          maxLength={500}
+          placeholder="Introduce yourself and explain why you're interested in this project..."
+          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
+        />
+        <p className="text-xs text-gray-400 text-right">{message.length}/500</p>
+      </AppModal>
+    </div>
+  );
 }
-
 
 export function InterestButton({
   projectId,
@@ -150,7 +165,10 @@ export function InterestButton({
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) { navigate("/login"); return; }
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     if (user.id === ownerId) return;
     setOpen(true);
   };
@@ -176,7 +194,6 @@ export function InterestButton({
   );
 }
 
-
 type Project = {
   id: string;
   title: string;
@@ -193,11 +210,11 @@ type Project = {
 };
 
 const stageColors: Record<string, string> = {
-  IDEA:      "bg-gray-100 text-gray-700",
+  IDEA: "bg-gray-100 text-gray-700",
   PROTOTYPE: "bg-blue-100 text-blue-700",
-  MVP:       "bg-indigo-100 text-indigo-700",
-  GROWTH:    "bg-purple-100 text-purple-700",
-  SCALING:   "bg-green-100 text-green-700",
+  MVP: "bg-indigo-100 text-indigo-700",
+  GROWTH: "bg-purple-100 text-purple-700",
+  SCALING: "bg-green-100 text-green-700",
 };
 
 function formatCurrency(amount: number) {
@@ -225,7 +242,9 @@ export default function SavedProjectsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold text-gray-900">Saved Projects</h1>
-        <p className="text-gray-500 text-sm mt-1">Projects you've bookmarked for later.</p>
+        <p className="text-gray-500 text-sm mt-1">
+          Projects you've bookmarked for later.
+        </p>
       </div>
 
       {loading ? (
@@ -244,9 +263,12 @@ export default function SavedProjectsPage() {
       ) : displayedProjects.length === 0 ? (
         <div className="text-center py-20 bg-gray-50 rounded-2xl">
           <Bookmark className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-1">No saved projects yet</h3>
+          <h3 className="text-lg font-semibold text-gray-700 mb-1">
+            No saved projects yet
+          </h3>
           <p className="text-gray-500 text-sm mb-4">
-            Browse the gallery and click the bookmark icon to save projects here.
+            Browse the gallery and click the bookmark icon to save projects
+            here.
           </p>
           <Link to="/app/projects">
             <Button variant="outline">Browse Projects</Button>
@@ -255,7 +277,9 @@ export default function SavedProjectsPage() {
       ) : (
         <>
           <p className="text-sm text-gray-500">
-            <span className="font-medium text-gray-700">{displayedProjects.length}</span>{" "}
+            <span className="font-medium text-gray-700">
+              {displayedProjects.length}
+            </span>{" "}
             saved project{displayedProjects.length !== 1 ? "s" : ""}
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -287,15 +311,23 @@ export default function SavedProjectsPage() {
                     <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors pr-8">
                       {project.title}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{project.tagline}</p>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      {project.tagline}
+                    </p>
 
                     <div className="mb-4">
-                      <Badge className={stageColors[project.stage]}>{project.stage}</Badge>
+                      <Badge className={stageColors[project.stage]}>
+                        {project.stage}
+                      </Badge>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-4">
                       {project.technologies?.slice(0, 3).map((tech) => (
-                        <Badge key={tech} variant="outline" className="text-xs border-indigo-200 text-indigo-700">
+                        <Badge
+                          key={tech}
+                          variant="outline"
+                          className="text-xs border-indigo-200 text-indigo-700"
+                        >
                           {tech}
                         </Badge>
                       ))}

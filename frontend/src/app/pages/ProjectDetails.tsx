@@ -91,30 +91,33 @@ interface Project {
 }
 
 const stageColors = {
-  IDEA:      "bg-gray-100 text-gray-700",
+  IDEA: "bg-gray-100 text-gray-700",
   PROTOTYPE: "bg-blue-100 text-blue-700",
-  MVP:       "bg-indigo-100 text-indigo-700",
-  GROWTH:    "bg-purple-100 text-purple-700",
-  SCALING:   "bg-green-100 text-green-700",
+  MVP: "bg-indigo-100 text-indigo-700",
+  GROWTH: "bg-purple-100 text-purple-700",
+  SCALING: "bg-green-100 text-green-700",
 };
 
 const statusColors = {
-  DRAFT:    "bg-gray-100 text-gray-700",
-  PENDING:  "bg-yellow-100 text-yellow-700",
+  DRAFT: "bg-gray-100 text-gray-700",
+  PENDING: "bg-yellow-100 text-yellow-700",
   APPROVED: "bg-green-100 text-green-700",
   REJECTED: "bg-red-100 text-red-700",
 };
 
 function timeAgo(dateString: string) {
   const diff = Date.now() - new Date(dateString).getTime();
-  const mins  = Math.floor(diff / 60000);
+  const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
-  const days  = Math.floor(diff / 86400000);
-  if (mins < 1)   return "just now";
-  if (mins < 60)  return `${mins}m ago`;
+  const days = Math.floor(diff / 86400000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
   if (hours < 24) return `${hours}h ago`;
-  if (days < 7)   return `${days}d ago`;
-  return new Date(dateString).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateString).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function ProjectDetailsPage() {
@@ -122,17 +125,15 @@ export default function ProjectDetailsPage() {
   const { user } = useAuth();
   const { showToast } = useToast();
 
-  const [project, setProject]   = useState<Project | null>(null);
-  const [loading, setLoading]   = useState(true);
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
 
-
-
-  const [updates,        setUpdates]        = useState<ProjectUpdateItem[]>([]);
+  const [updates, setUpdates] = useState<ProjectUpdateItem[]>([]);
   const [updatesLoading, setUpdatesLoading] = useState(false);
-  const [showPostForm,   setShowPostForm]   = useState(false);
-  const [postContent,    setPostContent]    = useState("");
-  const [postImageUrl,   setPostImageUrl]   = useState("");
-  const [posting,        setPosting]        = useState(false);
+  const [showPostForm, setShowPostForm] = useState(false);
+  const [postContent, setPostContent] = useState("");
+  const [postImageUrl, setPostImageUrl] = useState("");
+  const [posting, setPosting] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -141,9 +142,7 @@ export default function ProjectDetailsPage() {
         setProject({
           ...res.data,
           fundingSought:
-            res.data.fundingSought != null
-              ? Number(res.data.fundingSought)
-              : 0,
+            res.data.fundingSought != null ? Number(res.data.fundingSought) : 0,
         });
       } catch (error) {
         console.error("Error loading project:", error);
@@ -185,8 +184,8 @@ export default function ProjectDetailsPage() {
       showToast({ type: "success", title: "Update posted!", message: "" });
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Failed to post update";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to post update";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setPosting(false);
@@ -196,17 +195,26 @@ export default function ProjectDetailsPage() {
   const handleBack = () => window.history.back();
 
   const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    new Date(d).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
 
   const formatCurrency = (amount: number, currency: string) =>
     new Intl.NumberFormat("en-US", {
-      style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0,
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="px-6 pt-6"><Skeleton className="h-8 w-40 mb-4" /></div>
+        <div className="px-6 pt-6">
+          <Skeleton className="h-8 w-40 mb-4" />
+        </div>
         <section className="bg-white">
           <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
             <div className="flex gap-2">
@@ -229,12 +237,43 @@ export default function ProjectDetailsPage() {
         </section>
         <div className="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card><CardHeader><Skeleton className="h-6 w-40" /></CardHeader><CardContent className="space-y-3"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /></CardContent></Card>
-            <Card><CardHeader><Skeleton className="h-6 w-32" /></CardHeader><CardContent className="grid grid-cols-2 gap-4"><Skeleton className="h-14 w-full" /><Skeleton className="h-14 w-full" /></CardContent></Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-40" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-14 w-full" />
+                <Skeleton className="h-14 w-full" />
+              </CardContent>
+            </Card>
           </div>
           <div className="space-y-6">
-            <Card><CardHeader><Skeleton className="h-6 w-32" /></CardHeader><CardContent><Skeleton className="h-10 w-40" /></CardContent></Card>
-            <Card><CardHeader><Skeleton className="h-6 w-32" /></CardHeader><CardContent className="space-y-2"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></CardContent></Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-10 w-40" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
@@ -243,14 +282,12 @@ export default function ProjectDetailsPage() {
 
   if (!project) return <div className="p-6">Project not found</div>;
 
-  const isOwner     = String(user?.id) === project.ownerId;
-  const isAdmin     = user?.role === "ADMIN";
+  const isOwner = String(user?.id) === project.ownerId;
+  const isAdmin = user?.role === "ADMIN";
   const canInteract = user && !isOwner && !isAdmin;
 
-  
   return (
     <div className="min-h-screen bg-gray-50">
-
       {/* Back button */}
       <div className="mb-0">
         <Button variant="ghost" className="mb-4 -ml-2" onClick={handleBack}>
@@ -258,8 +295,6 @@ export default function ProjectDetailsPage() {
           Back to Projects
         </Button>
       </div>
-
-      
 
       {/* ── Hero Section ── */}
       <section className="relative bg-white overflow-hidden">
@@ -269,13 +304,21 @@ export default function ProjectDetailsPage() {
         <div className="relative max-w-7xl mx-auto px-6 py-6">
           <div className="max-w-4xl">
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <Badge className={`${stageColors[project.stage]} px-4 py-2 text-sm flex items-center gap-2`}>
-                <Sparkles className="size-4" />{project.stage}
+              <Badge
+                className={`${stageColors[project.stage]} px-4 py-2 text-sm flex items-center gap-2`}
+              >
+                <Sparkles className="size-4" />
+                {project.stage}
               </Badge>
-              <Badge className={`${statusColors[project.status]} px-4 py-2 text-sm`}>{project.status}</Badge>
+              <Badge
+                className={`${statusColors[project.status]} px-4 py-2 text-sm`}
+              >
+                {project.status}
+              </Badge>
               {project.featured && (
                 <Badge className="bg-amber-100 text-amber-700 px-4 py-2 text-sm flex items-center gap-2">
-                  <Sparkles className="size-4" />Featured
+                  <Sparkles className="size-4" />
+                  Featured
                 </Badge>
               )}
             </div>
@@ -283,32 +326,68 @@ export default function ProjectDetailsPage() {
             <h1 className="text-3xl mb-4 bg-gradient-to-r from-gray-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
               {project.title}
             </h1>
-            <p className="text-lg text-gray-600 mb-4 leading-relaxed">{project.tagline}</p>
+            <p className="text-lg text-gray-600 mb-4 leading-relaxed">
+              {project.tagline}
+            </p>
 
             <div className="flex flex-wrap gap-4 mb-4">
-              <div className="flex items-center gap-2 text-gray-700"><div className="p-2 bg-indigo-100 rounded-lg"><Briefcase className="size-4 text-indigo-600" /></div><span>{project.industry}</span></div>
-              <div className="flex items-center gap-2 text-gray-700"><div className="p-2 bg-purple-100 rounded-lg"><MapPin className="size-4 text-purple-600" /></div><span>{project.location}</span></div>
-              <div className="flex items-center gap-2 text-gray-700"><div className="p-2 bg-green-100 rounded-lg"><Target className="size-4 text-green-600" /></div><span>Seeking {formatCurrency(project.fundingSought ?? 0, project.currency)}</span></div>
-              <div className="flex items-center gap-2 text-gray-700"><div className="p-2 bg-blue-100 rounded-lg"><Users className="size-4 text-blue-600" /></div><span>By {project.owner?.name}</span></div>
-              <div className="flex items-center gap-2 text-gray-700"><div className="p-2 bg-gray-100 rounded-lg"><Eye className="size-4 text-gray-600" /></div><span>{project.viewCount.toLocaleString()} views</span></div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <Briefcase className="size-4 text-indigo-600" />
+                </div>
+                <span>{project.industry}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <MapPin className="size-4 text-purple-600" />
+                </div>
+                <span>{project.location}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Target className="size-4 text-green-600" />
+                </div>
+                <span>
+                  Seeking{" "}
+                  {formatCurrency(project.fundingSought ?? 0, project.currency)}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Users className="size-4 text-blue-600" />
+                </div>
+                <span>By {project.owner?.name}</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-700">
+                <div className="p-2 bg-gray-100 rounded-lg">
+                  <Eye className="size-4 text-gray-600" />
+                </div>
+                <span>{project.viewCount.toLocaleString()} views</span>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2 mb-10">
               {project.technologies?.map((tech) => (
-                <Badge key={tech} variant="outline" className="bg-white border-indigo-200 text-indigo-700 px-4 py-1.5">{tech}</Badge>
+                <Badge
+                  key={tech}
+                  variant="outline"
+                  className="bg-white border-indigo-200 text-indigo-700 px-4 py-1.5"
+                >
+                  {tech}
+                </Badge>
               ))}
             </div>
 
-{canInteract && (
-  <div className="flex items-center gap-2">
-    <InterestButton
-      projectId={project.id}
-      projectTitle={project.title}
-      ownerId={project.ownerId}
-    />
-    <span className="text-sm text-gray-600">Express Interest</span>
-  </div>
-)}
+            {canInteract && (
+              <div className="flex items-center gap-2">
+                <InterestButton
+                  projectId={project.id}
+                  projectTitle={project.title}
+                  ownerId={project.ownerId}
+                />
+                <span className="text-sm text-gray-600">Express Interest</span>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -316,35 +395,51 @@ export default function ProjectDetailsPage() {
       {/* ── Main Content ── */}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
             {/* About */}
             <Card>
-              <CardHeader><CardTitle>About This Project</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>About This Project</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-gray-600 mb-4">{project.shortDesc}</p>
-                <div className="text-gray-600 leading-relaxed break-words" dangerouslySetInnerHTML={{ __html: project.fullDesc }} />
+                <div
+                  className="text-gray-600 leading-relaxed break-words"
+                  dangerouslySetInnerHTML={{ __html: project.fullDesc }}
+                />
               </CardContent>
             </Card>
 
             {/* Team */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Users className="size-5" />Team</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="size-5" />
+                  Team
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {project.teamMembers?.map((member) => (
                     <div key={member.name} className="flex items-center gap-3">
                       <Avatar className="size-14">
-                        <AvatarImage src={member.photo || ""} alt={member.name} className="object-cover" />
+                        <AvatarImage
+                          src={member.photo || ""}
+                          alt={member.name}
+                          className="object-cover"
+                        />
                         <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-lg">
-                          {member.name.split(" ").map((n) => n[0]).join("")}
+                          {member.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="font-medium text-gray-900">{member.name}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          {member.name}
+                        </h4>
                         <p className="text-sm text-gray-600">{member.role}</p>
                       </div>
                     </div>
@@ -356,7 +451,10 @@ export default function ProjectDetailsPage() {
             {/* Roadmap */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Calendar className="size-5" />Roadmap & Milestones</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="size-5" />
+                  Roadmap & Milestones
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="relative">
@@ -364,21 +462,36 @@ export default function ProjectDetailsPage() {
                   <div className="space-y-6">
                     {project.milestones?.map((milestone, index) => (
                       <div key={index} className="relative flex gap-4">
-                        <div className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${milestone.completedAt ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}>
+                        <div
+                          className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${milestone.completedAt ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}
+                        >
                           <Calendar className="size-5" />
                         </div>
                         <div className="flex-1 pb-6">
                           <div className="flex flex-wrap items-center gap-3 mb-1">
-                            <h4 className="font-medium text-gray-900">{milestone.title}</h4>
+                            <h4 className="font-medium text-gray-900">
+                              {milestone.title}
+                            </h4>
                             {milestone.completedAt && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Completed</Badge>
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-200"
+                              >
+                                Completed
+                              </Badge>
                             )}
                           </div>
                           <p className="text-sm text-gray-500 mb-2">
-                            Target: {milestone.targetDate ? formatDate(milestone.targetDate) : "No date"}
-                            {milestone.completedAt && ` • Completed: ${formatDate(milestone.completedAt)}`}
+                            Target:{" "}
+                            {milestone.targetDate
+                              ? formatDate(milestone.targetDate)
+                              : "No date"}
+                            {milestone.completedAt &&
+                              ` • Completed: ${formatDate(milestone.completedAt)}`}
                           </p>
-                          <p className="text-sm text-gray-600">{milestone.description}</p>
+                          <p className="text-sm text-gray-600">
+                            {milestone.description}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -390,17 +503,22 @@ export default function ProjectDetailsPage() {
 
           {/* Right Column */}
           <div className="space-y-6">
-
             {/* Funding */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Target className="size-5" />Funding Goal</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="size-5" />
+                  Funding Goal
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Target Amount</p>
                   <p className="text-3xl font-semibold text-indigo-600">
-                    {formatCurrency(project.fundingSought ?? 0, project.currency)}
+                    {formatCurrency(
+                      project.fundingSought ?? 0,
+                      project.currency,
+                    )}
                   </p>
                 </div>
               </CardContent>
@@ -409,7 +527,10 @@ export default function ProjectDetailsPage() {
             {/* Documents */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><FileText className="size-5" />Documents</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="size-5" />
+                  Documents
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 {project.documents?.map((doc, index) => (
@@ -419,20 +540,24 @@ export default function ProjectDetailsPage() {
                     className="w-full justify-start gap-2"
                     onClick={() => {
                       window.open(
-                        `${import.meta.env.VITE_API_URL}/uploads/document/download?url=${encodeURIComponent(doc.fileUrl)}&originalName=${encodeURIComponent(doc.name)}`
+                        `${import.meta.env.VITE_API_URL}/uploads/document/download?url=${encodeURIComponent(doc.fileUrl)}&originalName=${encodeURIComponent(doc.name)}`,
                       );
                     }}
                   >
                     <FileText className="size-4" />
                     <span className="flex-1 text-left">{doc.name}</span>
-                    <Badge variant="outline" className="text-xs">{doc.fileType}</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {doc.fileType}
+                    </Badge>
                   </Button>
                 ))}
               </CardContent>
             </Card>
             {/* Project Info */}
             <Card>
-              <CardHeader><CardTitle>Project Info</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle>Project Info</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Created</p>
@@ -441,14 +566,19 @@ export default function ProjectDetailsPage() {
                 <Separator />
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Visibility</p>
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-blue-50 text-blue-700 border-blue-200"
+                  >
                     {project.visibility}
                   </Badge>
                 </div>
                 <Separator />
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Total Views</p>
-                  <p className="font-medium">{project.viewCount.toLocaleString()}</p>
+                  <p className="font-medium">
+                    {project.viewCount.toLocaleString()}
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -476,9 +606,15 @@ export default function ProjectDetailsPage() {
                       onClick={() => setShowPostForm((v) => !v)}
                     >
                       {showPostForm ? (
-                        <><X className="size-3.5" />Cancel</>
+                        <>
+                          <X className="size-3.5" />
+                          Cancel
+                        </>
                       ) : (
-                        <><Plus className="size-3.5" />Post</>
+                        <>
+                          <Plus className="size-3.5" />
+                          Post
+                        </>
                       )}
                     </Button>
                   )}
@@ -486,7 +622,6 @@ export default function ProjectDetailsPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-
                 {/* Post form — owner only */}
                 {isOwner && showPostForm && (
                   <div className="bg-indigo-50 rounded-xl p-4 space-y-3 border border-indigo-100">
@@ -498,7 +633,9 @@ export default function ProjectDetailsPage() {
                       placeholder="Share a project update with the community..."
                       className="w-full px-3 py-2 rounded-lg border border-indigo-200 bg-white text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
                     />
-                    <p className="text-xs text-gray-400 text-right">{postContent.length}/1000</p>
+                    <p className="text-xs text-gray-400 text-right">
+                      {postContent.length}/1000
+                    </p>
 
                     {/* Optional image URL */}
                     <div className="flex items-center gap-2">
@@ -519,7 +656,10 @@ export default function ProjectDetailsPage() {
                           src={postImageUrl}
                           alt="Preview"
                           className="w-full h-full object-cover"
-                          onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                          onError={(e) =>
+                            ((e.target as HTMLImageElement).style.display =
+                              "none")
+                          }
                         />
                       </div>
                     )}
@@ -594,8 +734,6 @@ export default function ProjectDetailsPage() {
               </CardContent>
             </Card>
             {/* END PROJECT UPDATES CARD */}
-
-           
           </div>
         </div>
       </div>

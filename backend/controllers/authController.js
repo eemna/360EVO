@@ -4,7 +4,7 @@ import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import {
   generateAccessToken,
-  generateRefreshToken, 
+  generateRefreshToken,
 } from "../utils/tokenUtils.js";
 import { sendEmail } from "../utils/email.js";
 import { cookieOptions } from "../utils/cookieOptions.js";
@@ -104,7 +104,7 @@ export const register = async (req, res, next) => {
       await tx.emailVerification.create({
         data: {
           userId: createdUser.id,
-          token: verificationToken, 
+          token: verificationToken,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
       });

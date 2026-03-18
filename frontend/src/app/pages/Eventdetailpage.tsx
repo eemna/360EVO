@@ -8,7 +8,6 @@ import {
   Users,
   ArrowLeft,
   Globe,
- 
   User,
   CheckCircle2,
   XCircle,
@@ -65,13 +64,13 @@ function formatDate(date: string) {
     month: "long",
     day: "numeric",
     year: "numeric",
-    timeZone: "UTC",  
+    timeZone: "UTC",
   });
 }
 
 function formatTime(date: string) {
   const d = new Date(date);
-  const hours   = String(d.getUTCHours()).padStart(2, "0");
+  const hours = String(d.getUTCHours()).padStart(2, "0");
   const minutes = String(d.getUTCMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
@@ -91,8 +90,7 @@ export default function EventDetailPage() {
   const isAdmin = user?.role === "ADMIN";
   const canManage = isOrganizer || isAdmin;
   const isFull =
-    event?.capacity != null &&
-    event._count.registrations >= event.capacity;
+    event?.capacity != null && event._count.registrations >= event.capacity;
 
   useEffect(() => {
     if (!id) return;
@@ -124,9 +122,13 @@ export default function EventDetailPage() {
                 isRegistered: false,
                 _count: { registrations: prev._count.registrations - 1 },
               }
-            : prev
+            : prev,
         );
-        showToast({ type: "success", title: "Registration cancelled", message: "" });
+        showToast({
+          type: "success",
+          title: "Registration cancelled",
+          message: "",
+        });
       } else {
         await api.post(`/events/${event.id}/register`);
         setEvent((prev) =>
@@ -136,29 +138,34 @@ export default function EventDetailPage() {
                 isRegistered: true,
                 _count: { registrations: prev._count.registrations + 1 },
               }
-            : prev
+            : prev,
         );
-        showToast({ type: "success", title: "Registered successfully!", message: `You're registered for "${event.title}"` });
+        showToast({
+          type: "success",
+          title: "Registered successfully!",
+          message: `You're registered for "${event.title}"`,
+        });
       }
     } catch (err: unknown) {
-    const errorMessage =
-  err instanceof Error
-    ? err.message
-    : (err as { response?: { data?: { message?: string } } })?.response?.data
-        ?.message || "Something went wrong";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : (err as { response?: { data?: { message?: string } } })?.response
+              ?.data?.message || "Something went wrong";
 
-showToast({
-  type: "error",
-  title: "Action failed",
-  message: errorMessage,
-});
+      showToast({
+        type: "error",
+        title: "Action failed",
+        message: errorMessage,
+      });
     } finally {
       setRegistering(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!event || !window.confirm("Delete this event? This cannot be undone.")) return;
+    if (!event || !window.confirm("Delete this event? This cannot be undone."))
+      return;
     try {
       setDeleting(true);
       await api.delete(`/events/${event.id}`);
@@ -176,7 +183,11 @@ showToast({
     try {
       await api.post(`/events/${event.id}/publish`);
       setEvent((prev) => (prev ? { ...prev, status: "PUBLISHED" } : prev));
-      showToast({ type: "success", title: "Event published!", message: "It is now visible to everyone." });
+      showToast({
+        type: "success",
+        title: "Event published!",
+        message: "It is now visible to everyone.",
+      });
     } catch {
       showToast({ type: "error", title: "Publish failed", message: "" });
     }
@@ -197,9 +208,7 @@ showToast({
   if (!event) return null;
 
   const spotsLeft =
-    event.capacity != null
-      ? event.capacity - event._count.registrations
-      : null;
+    event.capacity != null ? event.capacity - event._count.registrations : null;
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -271,7 +280,9 @@ showToast({
 
           {/* Description */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="font-semibold text-gray-900 mb-3">About this event</h2>
+            <h2 className="font-semibold text-gray-900 mb-3">
+              About this event
+            </h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">
               {event.description}
             </p>
@@ -316,12 +327,11 @@ showToast({
                   {formatDate(event.date)}
                 </p>
                 <p className="text-sm text-gray-500">
-  {formatTime(event.date)}
-  {event.endDate &&
-    formatTime(event.endDate) !== formatTime(event.date) &&
-    ` – ${formatTime(event.endDate)}`
-  }
-</p>
+                  {formatTime(event.date)}
+                  {event.endDate &&
+                    formatTime(event.endDate) !== formatTime(event.date) &&
+                    ` – ${formatTime(event.endDate)}`}
+                </p>
               </div>
             </div>
 
@@ -353,9 +363,14 @@ showToast({
               <Users className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-gray-700">
-                  <span className="font-medium">{event._count.registrations}</span>
+                  <span className="font-medium">
+                    {event._count.registrations}
+                  </span>
                   {event.capacity != null && (
-                    <span className="text-gray-500"> / {event.capacity} spots</span>
+                    <span className="text-gray-500">
+                      {" "}
+                      / {event.capacity} spots
+                    </span>
                   )}{" "}
                   registered
                 </p>
@@ -375,16 +390,16 @@ showToast({
             <div className="pt-2 border-t border-gray-100 space-y-3">
               {/* Register / Cancel button — not shown to organizer */}
               {!canManage && event.status === "PUBLISHED" && (
-               <Button
-  onClick={handleRegister}
-  disabled={registering || (isFull && !event.isRegistered)}
-  className={`w-full gap-2 ${
-    event.isRegistered
-      ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-      : "bg-blue-600 hover:bg-blue-700 text-white"
-  }`}
-  variant={event.isRegistered ? "outline" : "primary"}
->
+                <Button
+                  onClick={handleRegister}
+                  disabled={registering || (isFull && !event.isRegistered)}
+                  className={`w-full gap-2 ${
+                    event.isRegistered
+                      ? "bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                      : "bg-blue-600 hover:bg-blue-700 text-white"
+                  }`}
+                  variant={event.isRegistered ? "outline" : "primary"}
+                >
                   {event.isRegistered ? (
                     <>
                       <XCircle className="w-4 h-4" />
@@ -396,8 +411,8 @@ showToast({
                       {registering
                         ? "Registering..."
                         : isFull
-                        ? "Fully Booked"
-                        : "Register Now"}
+                          ? "Fully Booked"
+                          : "Register Now"}
                     </>
                   )}
                 </Button>
@@ -441,7 +456,11 @@ showToast({
                 className="w-full gap-2 text-gray-500"
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
-                  showToast({ type: "success", title: "Link copied!", message: "" });
+                  showToast({
+                    type: "success",
+                    title: "Link copied!",
+                    message: "",
+                  });
                 }}
               >
                 <Share2 className="w-4 h-4" />
