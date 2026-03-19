@@ -46,6 +46,10 @@ type User = {
   name: string;
   email: string;
   role: string;
+  profile?: {
+    expertise?: string[];
+    expertApplicationStatus?: string;
+  };
 };
 
 export default function AdminDashboard() {
@@ -54,8 +58,49 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [expertApplicants, setExpertApplicants] = useState<User[]>([]);
+  const fetchExpertApplicants = async () => {
+  try {
+    const { data } = await api.get("/admin/users");
+    // Filter users whose expertApplicationStatus is PENDING
+    const pending = data.filter(
+      (u: User) => u.profile?.expertApplicationStatus === "PENDING"
+    );
+    setExpertApplicants(pending);
+  } catch (error) {
+    console.error("Error fetching expert applicants:", error);
+  }
+};
+const handleApproveExpert = async (userId: string) => {
+  try {
+    await api.patch(`/admin/experts/${userId}/approve`);
+    setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
+  } catch (error) {
+    console.error("Approve expert failed:", error);
+  }
+};
 
-  // Fetch Data
+const handleRejectExpert = async (userId: string) => {
+  try {
+    await api.patch(`/admin/experts/${userId}/reject`);
+    setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
+  } catch (error) {
+    console.error("Reject expert failed:", error);
+  }
+};
+useEffect(() => {
+  const loadData = async () => {
+    setLoading(true);
+    await Promise.all([
+      fetchPendingProjects(),
+      fetchUsers(),
+      fetchExpertApplicants(), 
+    ]);
+    setLoading(false);
+  };
+  loadData();
+}, []);
+  
   const fetchPendingProjects = async () => {
     try {
       const { data } = await api.get("/admin/projects/pending");
@@ -74,7 +119,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Approve Project
+  
   const handleApprove = async (projectId: string) => {
     try {
       setActionLoading(projectId);
@@ -87,7 +132,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // Reject Project
+  
   const handleReject = async (projectId: string) => {
     try {
       setActionLoading(projectId);
@@ -100,7 +145,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Change Role
   const handleRoleChange = async (userId: string, newRole: string) => {
     try {
       await api.patch(`/admin/users/${userId}/role`, {
@@ -112,14 +156,7 @@ export default function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true);
-      await Promise.all([fetchPendingProjects(), fetchUsers()]);
-      setLoading(false);
-    };
-    loadData();
-  }, []);
+
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
@@ -378,6 +415,65 @@ export default function AdminDashboard() {
           My Events
         </Button>
       </div>
+      {/* EXPERT APPLICATIONS */}
+<Card className="border border-gray-200 shadow-sm rounded-xl">
+  <div className="p-6 border-b border-gray-400">
+    <h2 className="text-xl font-semibold">Pending Expert Applications</h2>
+  </div>
+  <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Expertise</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {expertApplicants.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={4} className="text-center py-6">
+              No pending expert applications
+            </TableCell>
+          </TableRow>
+        ) : (
+          expertApplicants.map((u) => (
+            <TableRow key={u.id}>
+              <TableCell>{u.name}</TableCell>
+              <TableCell>{u.email}</TableCell>
+              <TableCell>
+                {(u.profile?.expertise ?? []).join(", ") || "—"}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-green-500 text-green-600 hover:bg-green-50"
+                    onClick={() => handleApproveExpert(u.id)}
+                  >
+                    <Check className="size-4 mr-1" />
+                    Approve
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-500 text-red-600 hover:bg-red-50"
+                    onClick={() => handleRejectExpert(u.id)}
+                  >
+                    <X className="size-4 mr-1" />
+                    Reject
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))
+        )}
+      </TableBody>
+    </Table>
+  </div>
+</Card>
     </div>
   );
 }

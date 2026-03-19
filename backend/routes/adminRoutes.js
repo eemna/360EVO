@@ -6,6 +6,8 @@ import {
   rejectProject,
   getAllUsers,
   updateUserRole,
+  approveExpert,
+  rejectExpert
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -18,5 +20,7 @@ router.patch("/projects/:id/reject", rejectProject);
 
 router.get("/users", getAllUsers);
 router.patch("/users/:id/role", updateUserRole);
+router.patch("/experts/:id/approve", approveExpert);
+router.patch("/experts/:id/reject", rejectExpert);
 
 export default router;

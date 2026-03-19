@@ -256,34 +256,36 @@ export function MessagesPage() {
   useEffect(() => {
     if (!socket) return;
     const handleNewMessage = (message: Message) => {
-      if (message.conversationId === selectedConv) {
-        setMessages((prev) => [...prev, message]);
-      }
+  if (message.conversationId === selectedConv) {
+    setMessages((prev) => {
+      const exists = prev.some((m) => m.id === message.id);
+      if (exists) return prev;
+      return [...prev, message];
+    });
+  }
 
-      setConversations((prev) => {
-        const updated = prev.map((conv) => {
-          if (conv.id !== message.conversationId) return conv;
+  setConversations((prev) => {
+    const updated = prev.map((conv) => {
+      if (conv.id !== message.conversationId) return conv;
+      return {
+        ...conv,
+        lastMessage: message,
+        timestamp: new Date(message.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        unread:
+          message.conversationId === selectedConv
+            ? conv.unread
+            : conv.unread + 1,
+      };
+    });
 
-          return {
-            ...conv,
-            lastMessage: message,
-            timestamp: new Date(message.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unread:
-              message.conversationId === selectedConv
-                ? conv.unread
-                : conv.unread + 1,
-          };
-        });
-
-        const conv = updated.find((c) => c.id === message.conversationId);
-        const rest = updated.filter((c) => c.id !== message.conversationId);
-
-        return conv ? [conv, ...rest] : updated;
-      });
-    };
+    const conv = updated.find((c) => c.id === message.conversationId);
+    const rest = updated.filter((c) => c.id !== message.conversationId);
+    return conv ? [conv, ...rest] : updated;
+  });
+};
 
     socket.on("new_message", handleNewMessage);
     socket.on("typing_start", ({ userId }) => {

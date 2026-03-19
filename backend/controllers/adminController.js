@@ -74,6 +74,12 @@ export const getAllUsers = async (req, res, next) => {
         email: true,
         role: true,
         createdAt: true,
+        profile: {
+          select: {
+            expertise: true,
+            expertApplicationStatus: true,
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -89,13 +95,95 @@ export const updateUserRole = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
+const validRoles = ['MEMBER', 'EXPERT', 'STARTUP', 'INVESTOR', 'ADMIN'];
 
+if (!validRoles.includes(role)) {
+  return res.status(400).json({
+    message: 'Invalid role value'
+  });
+}
     const updated = await prisma.user.update({
       where: { id },
       data: { role },
     });
 
     res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+export const approveExpert = async (req, res, next) => {
+  try {
+    const { id } = req.params; 
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.profile?.expertApplicationStatus !== "PENDING") {
+      return res.status(400).json({ message: "No pending application for this user" });
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: { role: "EXPERT" },
+    });
+
+   await prisma.profile.upsert({
+  where: { userId: id },
+  update: {
+    expertApplicationStatus: "APPROVED",
+  },
+  create: {
+    userId: id,
+    expertise: [],
+    expertApplicationStatus: "APPROVED",
+  },
+});
+
+    await createNotification({
+      userId: id,
+      type: "SYSTEM",
+      title: "Application Approved!",
+      body: "Congratulations! Your expert application has been approved.",
+      link: `/app/profile`,
+    });
+
+    res.json({ message: "Expert approved successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+export const rejectExpert = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+ await prisma.profile.upsert({
+  where: { userId: id },
+  update: {
+    expertApplicationStatus: "REJECTED",
+  },
+  create: {
+    userId: id,
+    expertise: [],
+    expertApplicationStatus: "REJECTED",
+  },
+});
+
+    await createNotification({
+      userId: id,
+      type: "SYSTEM",
+      title: "Application Not Approved",
+      body: "Your expert application was not approved at this time.",
+      link: `/app/profile`,
+    });
+
+    res.json({ message: "Application rejected" });
   } catch (error) {
     next(error);
   }

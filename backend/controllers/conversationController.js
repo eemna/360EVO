@@ -14,7 +14,6 @@ export const createConversation = async (req, res, next) => {
       return next({ statusCode: 400, message: "Cannot message yourself" });
     }
 
-    // find conversation where BOTH users are participants
     const existing = await prisma.conversation.findFirst({
       where: {
         AND: [
@@ -26,10 +25,9 @@ export const createConversation = async (req, res, next) => {
     });
 
     if (existing && existing.participants.length === 2) {
-      return res.json(existing); // return existing, don't create new
+      return res.json(existing); 
     }
 
-    // Only reaches here if no conversation exists yet
     const conversation = await prisma.conversation.create({
       data: {
         participants: {
@@ -81,6 +79,10 @@ export const sendMessage = async (req, res, next) => {
         },
       },
     });
+    await prisma.conversation.update({
+  where: { id },
+  data: { lastMessageAt: new Date() },
+});
 
     global.io.to(id).emit("new_message", message);
 
@@ -89,10 +91,10 @@ export const sendMessage = async (req, res, next) => {
       select: { userId: true },
     });
     if (otherParticipant) {
-      // 1. Emit to recipient's personal room
-      global.io.to(otherParticipant.userId).emit("new_message", message);
+  
+       global.io.to(otherParticipant.userId).emit("new_message", message);
 
-      // 2. Create notification
+      //  Create notification
       const profile = await prisma.profile.findUnique({
         where: { userId: otherParticipant.userId },
         select: { settings: true },
@@ -188,7 +190,7 @@ export const getConversations = async (req, res, next) => {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        lastMessageAt: { sort: "desc", nulls: "last" },
       },
     });
 

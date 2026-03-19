@@ -71,7 +71,7 @@ export function BookConsultationPage() {
   useEffect(() => {
     const fetchExpert = async () => {
       try {
-        const { data } = await api.get(`/users/${expertId}`);
+        const { data } = await api.get(`/experts/${expertId}`);
         setExpert(data);
       } catch (error) {
         console.error(error);

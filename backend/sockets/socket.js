@@ -1,20 +1,21 @@
 import jwt from "jsonwebtoken";
 import { prisma } from "../config/prisma.js";
 
-const onlineUsers = new Map();
+const onlineUsers = new Map(); 
 // Map<userId, Set<socketId>>
 
 export const initializeSocket = (io) => {
   io.use(async (socket, next) => {
     try {
-      console.log("Handshake auth:", socket.handshake.auth);
-      console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
+      
+       console.log("Handshake auth:", socket.handshake.auth);
+    console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
 
-      const token = socket.handshake.auth.token;
-      console.log("Received token:", token);
+    const token = socket.handshake.auth.token;
+    console.log("Received token:", token);
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Decoded:", decoded);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Decoded:", decoded);
 
       const user = await prisma.user.findUnique({
         where: { id: decoded.id },
@@ -29,26 +30,26 @@ export const initializeSocket = (io) => {
     }
   });
 
-  io.on("connection", (socket) => {
-    const userId = socket.user.id;
+ io.on("connection", (socket) => {
+  const userId = socket.user.id;
 
-    console.log("User connected:", userId);
+  console.log("User connected:", userId);
 
-    if (!onlineUsers.has(userId)) {
-      onlineUsers.set(userId, new Set());
-    }
+  if (!onlineUsers.has(userId)) {
+    onlineUsers.set(userId, new Set());
+  }
 
-    onlineUsers.get(userId).add(socket.id);
+  onlineUsers.get(userId).add(socket.id);
 
-    // 🔥 Send full online list to the newly connected user
-    socket.emit("online_users", Array.from(onlineUsers.keys()));
+  // Send online_users event ONLY to this user, Send full online list to the newly connected user
+  socket.emit("online_users", Array.from(onlineUsers.keys()));
 
-    // Emit globally only if first active socket
-    if (onlineUsers.get(userId).size === 1) {
-      io.emit("user_online", userId);
-    }
+  // Emit globally only if first active socket
+  if (onlineUsers.get(userId).size === 1) {
+    io.emit("user_online", userId);
+  }
 
-    socket.join(userId); // personal room
+  socket.join(userId); // personal room
 
     socket.on("join_conversation", (conversationId) => {
       socket.join(conversationId);
@@ -77,7 +78,7 @@ export const initializeSocket = (io) => {
   });
 };
 
-// 🔥 Helper
+// Helper
 export const isUserOnline = (userId) => {
   return onlineUsers.has(userId);
 };

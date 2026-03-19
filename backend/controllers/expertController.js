@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
-
+import { createNotification } from "../utils/createNotification.js";
 dotenv.config();
 
 export const getPublicExpertProfile = async (req, res, next) => {
@@ -176,24 +176,54 @@ export const applyExpert = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    await prisma.user.update({
+    // Check user is not already an expert or pending
+    const user = await prisma.user.findUnique({
       where: { id: userId },
-      data: { role: "EXPERT" },
+      include: { profile: true },
     });
 
-    const profile = await prisma.profile.upsert({
-      where: { userId },
-      update: {},
-      create: {
-        userId,
-        expertise: req.body.expertise || [],
-        industries: req.body.industries || [],
-        hourlyRate: req.body.hourlyRate || 0,
-      },
+    if (user.role === "EXPERT") {
+      return res.status(400).json({ message: "You are already an expert" });
+    }
+
+    if (user.profile?.expertApplicationStatus === "PENDING") {
+      return res.status(400).json({ message: "Application already pending review" });
+    }
+
+   const profile = await prisma.profile.upsert({
+  where: { userId },
+  update: {
+    expertApplicationStatus: "PENDING",
+  },
+  create: {
+    userId,
+    expertise: [],
+    industries: [],
+    expertApplicationStatus: "PENDING",
+  },
+});
+
+   
+    const admins = await prisma.user.findMany({
+      where: { role: "ADMIN" },
+      select: { id: true },
     });
 
-    res.json(profile);
+    await Promise.all(
+      admins.map((admin) =>
+        createNotification({
+          userId: admin.id,
+          type: "SYSTEM",
+          title: "New Expert Application",
+          body: `${user.name} has applied to become an expert.`,
+          link: `/app/admin/experts`,
+        })
+      )
+    );
+
+    res.json({ message: "Application submitted. Pending admin review.", profile });
   } catch (error) {
+    console.error("APPLY EXPERT ERROR:", error.message);
     next(error);
   }
 };

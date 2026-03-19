@@ -69,6 +69,7 @@ interface Booking {
     id: string;
     name: string;
   };
+  review?: { id: string } | null;
 }
 
 export function ManageReservations() {
@@ -765,7 +766,7 @@ export function ManageReservations() {
                     <p className="text-sm font-semibold text-gray-900 mb-3">
                       Topic: {booking.topic}
                     </p>
-                    {user?.id === booking.member?.id && (
+                    {user?.id === booking.member?.id && !booking.review && (
                       <Button
                         variant="outline"
                         onClick={() => setReviewBooking(booking)}

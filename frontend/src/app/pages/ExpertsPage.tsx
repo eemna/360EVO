@@ -14,21 +14,24 @@ import {
 import { Slider } from "../components/ui/slider";
 import { Star, Search, SlidersHorizontal, X } from "lucide-react";
 import api from "../../services/axios";
+import { Loader2,  CheckCircle2 } from "lucide-react";
+import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../hooks/useAuth";
 
 interface Expert {
   id: string;
   name: string;
-  profile: {
+  profile?: {
     avatar?: string;
     bio?: string;
-    expertise: string[];
-    industries: string[];
+    expertise?: string[];
+    industries?: string[];
     hourlyRate?: number;
     currency?: string;
     yearsOfExperience?: number;
-    avgRating: number;
-    reviewCount: number;
-    availabilityStatus: "AVAILABLE" | "BUSY" | "UNAVAILABLE";
+    avgRating?: number;
+    reviewCount?: number;
+    availabilityStatus?: "AVAILABLE" | "BUSY" | "UNAVAILABLE";
   };
 }
 
@@ -82,7 +85,32 @@ export default function ExpertsPage() {
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState("rating");
   const [page, setPage] = useState(1);
+ const { user } = useAuth();
+const { showToast } = useToast();
+const [applying, setApplying] = useState(false);
+const [applied, setApplied] = useState(false);
 
+const handleApplyExpert = async () => {
+  try {
+    setApplying(true);
+    await api.post("/experts/apply");
+    setApplied(true);
+    showToast({
+      type: "success",
+      title: "Application submitted!",
+      message: "Admins will review your application shortly.",
+    });
+} catch (error) {
+  const err = error as { response?: { data?: { message?: string } } };
+  showToast({
+    type: "error",
+    title: "Error",
+    message: err?.response?.data?.message || "Something went wrong",
+  });
+}finally {
+    setApplying(false);
+  }
+};
   useEffect(() => {
     let cancelled = false;
 
@@ -120,13 +148,13 @@ export default function ExpertsPage() {
       clearTimeout(timer);
     };
   }, [expertise, industry, maxRate, minRating, sort, page]);
-  const filtered = experts.filter(
-    (e) =>
-      e.name.toLowerCase().includes(search.toLowerCase()) ||
-      e.profile.expertise.some((ex) =>
-        ex.toLowerCase().includes(search.toLowerCase()),
-      ),
-  );
+const filtered = experts.filter(
+  (e) =>
+    e.name.toLowerCase().includes(search.toLowerCase()) ||
+    e.profile?.expertise?.some((ex) =>
+      ex.toLowerCase().includes(search.toLowerCase()),
+    ),
+);
 
   const hasActiveFilters =
     expertise || industry || maxRate < 500 || minRating > 0;
@@ -148,7 +176,27 @@ export default function ExpertsPage() {
           Connect with experienced professionals for your business needs
         </p>
       </div>
+ 
+ <div className="flex items-center justify-between mb-8">
+ 
 
+  {user?.role === "MEMBER" && (
+    <Button
+      onClick={handleApplyExpert}
+      disabled={applying || applied}
+      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+    >
+      {applying ? (
+        <Loader2 className="size-4 mr-2 animate-spin" />
+      ) : applied ? (
+        <CheckCircle2 className="size-4 mr-2" />
+      ) : (
+        <Star className="size-4 mr-2" />
+      )}
+      {applied ? "Application Sent" : "Become an Expert"}
+    </Button>
+  )}
+</div>
       {/* ── SEARCH + SORT BAR ── */}
       <div className="flex gap-3 items-center">
         <div className="relative flex-1">
@@ -392,18 +440,20 @@ function ExpertCard({
   onBook: () => void;
 }) {
   const { profile } = expert;
+if (!profile) return null; 
+const availabilityStatus = profile.availabilityStatus ?? "UNAVAILABLE";
 
-  const statusColor = {
-    AVAILABLE: "bg-green-100 text-green-700",
-    BUSY: "bg-orange-100 text-orange-700",
-    UNAVAILABLE: "bg-gray-100 text-gray-500",
-  }[profile.availabilityStatus];
+const statusColor = {
+  AVAILABLE: "bg-green-100 text-green-700",
+  BUSY: "bg-orange-100 text-orange-700",
+  UNAVAILABLE: "bg-gray-100 text-gray-500",
+}[availabilityStatus];
 
-  const statusLabel = {
-    AVAILABLE: "Available",
-    BUSY: "Busy",
-    UNAVAILABLE: "Unavailable",
-  }[profile.availabilityStatus];
+const statusLabel = {
+  AVAILABLE: "Available",
+  BUSY: "Busy",
+  UNAVAILABLE: "Unavailable",
+}[availabilityStatus];
 
   return (
     <Card
@@ -474,9 +524,9 @@ function ExpertCard({
         )}
 
         {/* Expertise tags */}
-        {profile.expertise.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {profile.expertise.slice(0, 3).map((tag) => (
+        {(profile.expertise?.length ?? 0) > 0 && (
+  <div className="flex flex-wrap gap-1.5">
+    {profile.expertise?.slice(0, 3).map((tag) => (
               <Badge
                 key={tag}
                 className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0"
@@ -484,18 +534,18 @@ function ExpertCard({
                 {tag}
               </Badge>
             ))}
-            {profile.expertise.length > 3 && (
-              <Badge className="bg-gray-100 text-gray-500 text-xs px-2 py-0">
-                +{profile.expertise.length - 3}
+          {(profile.expertise?.length ?? 0) > 3 && (
+  <Badge className="bg-gray-100 text-gray-500 text-xs px-2 py-0">
+    +{(profile.expertise?.length ?? 0) - 3}
               </Badge>
             )}
           </div>
         )}
 
         {/* Industries */}
-        {profile.industries.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {profile.industries.slice(0, 2).map((ind) => (
+   {(profile.industries?.length ?? 0) > 0 && (
+  <div className="flex flex-wrap gap-1.5">
+    {profile.industries?.slice(0, 2).map((ind) => (
               <Badge key={ind} variant="outline" className="text-xs px-2 py-0">
                 {ind}
               </Badge>
