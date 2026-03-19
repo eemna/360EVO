@@ -330,7 +330,9 @@ export const completeBooking = async (req, res, next) => {
     if (booking.expertId !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
-
+   if (booking.status !== "ACCEPTED") {
+  return res.status(400).json({ message: "Only accepted bookings can be completed" });
+}
     const updated = await prisma.booking.update({
       where: { id: req.params.id },
       data: {
@@ -433,7 +435,9 @@ export const createReview = async (req, res, next) => {
           },
         },
       });
-      global.io.to(conversation.id).emit("new_message", reviewMessage);
+      if (global.io) {
+  global.io.to(conversation.id).emit("new_message", reviewMessage);
+}
     }
 
     const settings = await getNotifSettings(booking.expertId);

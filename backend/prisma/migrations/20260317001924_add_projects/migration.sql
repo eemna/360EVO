@@ -157,3 +157,19 @@ SET search_vector = to_tsvector(
 CREATE INDEX project_search_idx
 ON "Project"
 USING GIN(search_vector);
+
+CREATE OR REPLACE FUNCTION project_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector := to_tsvector(
+    'english',
+    coalesce(NEW.title, '') || ' ' ||
+    coalesce(NEW.tagline, '') || ' ' ||
+    coalesce(NEW."shortDesc", '')
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER project_search_vector_trigger
+BEFORE INSERT OR UPDATE ON "Project"
+FOR EACH ROW EXECUTE FUNCTION project_search_vector_update();

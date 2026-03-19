@@ -270,7 +270,7 @@ export default function MyEventsPage() {
       try {
         setLoadingOrganized(true);
         const { data } = await api.get("/events/user/mine");
-        setOrganized(data.events ?? data);
+        setOrganized(data);
       } catch {
         showToast({
           type: "error",

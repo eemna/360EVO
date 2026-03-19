@@ -31,37 +31,44 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes("/auth/login") &&
-      !originalRequest.url.includes("/auth/refresh-token")
-    ) {
-      console.log("Attempting refresh token...");
+   if (
+  error.response?.status === 401 &&
+  !originalRequest._retry &&
+  !originalRequest.url?.includes("/auth/login") &&
+  !originalRequest.url?.includes("/auth/refresh-token")
+) {
+  console.log("Attempting refresh token...");
 
-      originalRequest._retry = true;
+  originalRequest._retry = true;
 
-      try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
-          {},
-          { withCredentials: true },
-        );
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
+      {},
+      { withCredentials: true }
+    );
 
-        console.log("Refresh success:", res.data);
+    console.log("Refresh success:", res.data);
 
-        localStorage.setItem("accessToken", res.data.accessToken);
+    const newToken = res.data.accessToken;
 
-        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+    localStorage.setItem("accessToken", newToken);
 
-        return api(originalRequest);
-      } catch (refreshError) {
-        console.log(" Refresh failed:", refreshError);
+    return api({
+      ...originalRequest,
+      headers: {
+        ...originalRequest.headers,
+        Authorization: `Bearer ${newToken}`,
+      },
+    });
 
-        localStorage.removeItem("accessToken");
-        window.location.href = "/login";
-      }
-    }
+  } catch (refreshError) {
+    console.log("Refresh failed:", refreshError);
+
+    localStorage.removeItem("accessToken");
+    window.location.href = "/login";
+  }
+}
 
     return Promise.reject(error);
   },

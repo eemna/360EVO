@@ -2,7 +2,7 @@ import { prisma } from "../config/prisma.js";
 //import { Prisma } from "@prisma/client";
 import { createNotification } from "../utils/createNotification.js";
 
-export const createProject = async (req, res, _next) => {
+export const createProject = async (req, res, next) => {
   try {
     console.log("REQ USER:", req.user);
     const { teamMembers, milestones, documents, ...projectData } = req.body;
@@ -30,7 +30,7 @@ export const createProject = async (req, res, _next) => {
     res.status(201).json(project);
   } catch (error) {
     console.error("CREATE PROJECT ERROR:", error);
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -157,7 +157,7 @@ export const updateProject = async (req, res, next) => {
     next(error);
   }
 };
-export const getMyProjects = async (req, res, _next) => {
+export const getMyProjects = async (req, res, next) => {
   try {
     const projects = await prisma.project.findMany({
       where: { ownerId: req.user.id },
@@ -167,7 +167,7 @@ export const getMyProjects = async (req, res, _next) => {
     res.json(projects);
   } catch (error) {
     console.error("CREATE PROJECT ERROR:", error);
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -187,9 +187,9 @@ export const deleteProject = async (req, res, next) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    if (project.status !== "DRAFT") {
-      return res.status(400).json({ message: "Only draft can be deleted" });
-    }
+   if (!["DRAFT", "REJECTED"].includes(project.status)) {
+  return res.status(400).json({ message: "Only draft or rejected projects can be deleted" });
+}
 
     await prisma.project.delete({
       where: { id },
@@ -228,30 +228,69 @@ export const getPublicProjects = async (req, res, next) => {
       limit = 12,
     } = req.query;
 
-    const skip = (Number(page) - 1) * Number(limit);
+    const skip = (Number(page) - 1) * Number(limit); // ← ADD THIS LINE HERE
+
+   if (q) {
+  try {
+    const limitNum = Number(limit);
+    const offsetNum = Number(skip);
+
+    const projects = await prisma.$queryRaw`
+      SELECT
+        p.id,
+        p."ownerId",
+        p.title,
+        p.tagline,
+        p."shortDesc",
+        p."fullDesc",
+        p.stage,
+        p.industry,
+        p.technologies,
+        p."fundingSought",
+        p.currency,
+        p.location,
+        p.status,
+        p.visibility,
+        p."viewCount",
+        p."createdAt",
+        p."updatedAt",
+        p.featured,
+        ts_rank(p.search_vector, plainto_tsquery('english', ${q})) AS rank,
+        u.name AS "ownerName"
+      FROM "Project" p
+      LEFT JOIN "User" u ON u.id = p."ownerId"
+      WHERE
+        p.status = 'APPROVED'
+        AND p.visibility = 'PUBLIC'
+        AND p.search_vector @@ plainto_tsquery('english', ${q})
+      ORDER BY rank DESC
+      LIMIT ${limitNum}::integer
+      OFFSET ${offsetNum}::integer
+    `;
+
+    const shaped = projects.map((p) => ({
+      ...p,
+      owner: { id: p.ownerId, name: p.ownerName },
+      fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
+      viewCount: Number(p.viewCount),
+      rank: Number(p.rank),
+    }));
+
+    return res.json(shaped);
+
+  } catch (searchError) {
+    console.error("SEARCH ERROR:", searchError);
+    return next(searchError);
+  }
+}
 
     const where = {
       status: "APPROVED",
       visibility: "PUBLIC",
-
       ...(industry && { industry }),
       ...(stage && { stage }),
-
-      ...(minFunding && {
-        fundingSought: { gte: Number(minFunding) },
-      }),
-
-      ...(maxFunding && {
-        fundingSought: { lte: Number(maxFunding) },
-      }),
-
-      ...(q && {
-        OR: [
-          { title: { contains: q, mode: "insensitive" } },
-          { shortDesc: { contains: q, mode: "insensitive" } },
-          { tagline: { contains: q, mode: "insensitive" } },
-        ],
-      }),
+      ...(minFunding && { fundingSought: { gte: Number(minFunding) } }),
+      ...(maxFunding && { fundingSought: { lte: Number(maxFunding) } }),
     };
 
     const projects = await prisma.project.findMany({
@@ -261,10 +300,7 @@ export const getPublicProjects = async (req, res, next) => {
       take: Number(limit),
       include: {
         owner: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
         },
       },
     });
@@ -274,7 +310,6 @@ export const getPublicProjects = async (req, res, next) => {
     next(error);
   }
 };
-
 export const submitProject = async (req, res, next) => {
   try {
     const { id } = req.params;
