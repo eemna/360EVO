@@ -14,7 +14,7 @@ import {
 import { Slider } from "../components/ui/slider";
 import { Star, Search, SlidersHorizontal, X } from "lucide-react";
 import api from "../../services/axios";
-import { Loader2,  CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -77,7 +77,7 @@ export default function ExpertsPage() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filters
+  
   const [search, setSearch] = useState("");
   const [expertise, setExpertise] = useState("");
   const [industry, setIndustry] = useState("");
@@ -85,32 +85,32 @@ export default function ExpertsPage() {
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState("rating");
   const [page, setPage] = useState(1);
- const { user } = useAuth();
-const { showToast } = useToast();
-const [applying, setApplying] = useState(false);
-const [applied, setApplied] = useState(false);
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState(false);
 
-const handleApplyExpert = async () => {
-  try {
-    setApplying(true);
-    await api.post("/experts/apply");
-    setApplied(true);
-    showToast({
-      type: "success",
-      title: "Application submitted!",
-      message: "Admins will review your application shortly.",
-    });
-} catch (error) {
-  const err = error as { response?: { data?: { message?: string } } };
-  showToast({
-    type: "error",
-    title: "Error",
-    message: err?.response?.data?.message || "Something went wrong",
-  });
-}finally {
-    setApplying(false);
-  }
-};
+  const handleApplyExpert = async () => {
+    try {
+      setApplying(true);
+      await api.post("/experts/apply");
+      setApplied(true);
+      showToast({
+        type: "success",
+        title: "Application submitted!",
+        message: "Admins will review your application shortly.",
+      });
+    } catch (error) {
+      const err = error as { response?: { data?: { message?: string } } };
+      showToast({
+        type: "error",
+        title: "Error",
+        message: err?.response?.data?.message || "Something went wrong",
+      });
+    } finally {
+      setApplying(false);
+    }
+  };
   useEffect(() => {
     let cancelled = false;
 
@@ -148,13 +148,13 @@ const handleApplyExpert = async () => {
       clearTimeout(timer);
     };
   }, [expertise, industry, maxRate, minRating, sort, page]);
-const filtered = experts.filter(
-  (e) =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.profile?.expertise?.some((ex) =>
-      ex.toLowerCase().includes(search.toLowerCase()),
-    ),
-);
+  const filtered = experts.filter(
+    (e) =>
+      e.name.toLowerCase().includes(search.toLowerCase()) ||
+      e.profile?.expertise?.some((ex) =>
+        ex.toLowerCase().includes(search.toLowerCase()),
+      ),
+  );
 
   const hasActiveFilters =
     expertise || industry || maxRate < 500 || minRating > 0;
@@ -169,35 +169,33 @@ const filtered = experts.filter(
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-      {/* ── HEADER ── */}
+      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Find an Expert</h1>
         <p className="text-gray-500 mt-1">
           Connect with experienced professionals for your business needs
         </p>
       </div>
- 
- <div className="flex items-center justify-between mb-8">
- 
 
-  {user?.role === "MEMBER" && (
-    <Button
-      onClick={handleApplyExpert}
-      disabled={applying || applied}
-      className="bg-indigo-600 hover:bg-indigo-700 text-white"
-    >
-      {applying ? (
-        <Loader2 className="size-4 mr-2 animate-spin" />
-      ) : applied ? (
-        <CheckCircle2 className="size-4 mr-2" />
-      ) : (
-        <Star className="size-4 mr-2" />
-      )}
-      {applied ? "Application Sent" : "Become an Expert"}
-    </Button>
-  )}
-</div>
-      {/* ── SEARCH + SORT BAR ── */}
+      <div className="flex items-center justify-between mb-8">
+        {user?.role === "MEMBER" && (
+          <Button
+            onClick={handleApplyExpert}
+            disabled={applying || applied}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+          >
+            {applying ? (
+              <Loader2 className="size-4 mr-2 animate-spin" />
+            ) : applied ? (
+              <CheckCircle2 className="size-4 mr-2" />
+            ) : (
+              <Star className="size-4 mr-2" />
+            )}
+            {applied ? "Application Sent" : "Become an Expert"}
+          </Button>
+        )}
+      </div>
+      {/* SEARCH + SORT BAR */}
       <div className="flex gap-3 items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
@@ -249,7 +247,7 @@ const filtered = experts.filter(
         )}
       </div>
 
-      {/* ── FILTERS PANEL ── */}
+      {/* FILTERS PANEL */}
       {showFilters && (
         <Card className="border-indigo-100">
           <CardContent className="pt-6">
@@ -344,12 +342,12 @@ const filtered = experts.filter(
         </Card>
       )}
 
-      {/* ── RESULTS COUNT ── */}
+      {/* RESULTS COUNT */}
       <p className="text-sm text-gray-500">
         {loading ? "Loading..." : `${pagination.total} experts found`}
       </p>
 
-      {/* ── EXPERT GRID ── */}
+      {/* EXPERT GRID */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
@@ -391,7 +389,7 @@ const filtered = experts.filter(
         </div>
       )}
 
-      {/* ── PAGINATION ── */}
+      {/* PAGINATION */}
       {pagination.totalPages > 1 && (
         <div className="flex justify-center gap-2 pt-4">
           <Button
@@ -440,20 +438,20 @@ function ExpertCard({
   onBook: () => void;
 }) {
   const { profile } = expert;
-if (!profile) return null; 
-const availabilityStatus = profile.availabilityStatus ?? "UNAVAILABLE";
+  if (!profile) return null;
+  const availabilityStatus = profile.availabilityStatus ?? "UNAVAILABLE";
 
-const statusColor = {
-  AVAILABLE: "bg-green-100 text-green-700",
-  BUSY: "bg-orange-100 text-orange-700",
-  UNAVAILABLE: "bg-gray-100 text-gray-500",
-}[availabilityStatus];
+  const statusColor = {
+    AVAILABLE: "bg-green-100 text-green-700",
+    BUSY: "bg-orange-100 text-orange-700",
+    UNAVAILABLE: "bg-gray-100 text-gray-500",
+  }[availabilityStatus];
 
-const statusLabel = {
-  AVAILABLE: "Available",
-  BUSY: "Busy",
-  UNAVAILABLE: "Unavailable",
-}[availabilityStatus];
+  const statusLabel = {
+    AVAILABLE: "Available",
+    BUSY: "Busy",
+    UNAVAILABLE: "Unavailable",
+  }[availabilityStatus];
 
   return (
     <Card
@@ -525,8 +523,8 @@ const statusLabel = {
 
         {/* Expertise tags */}
         {(profile.expertise?.length ?? 0) > 0 && (
-  <div className="flex flex-wrap gap-1.5">
-    {profile.expertise?.slice(0, 3).map((tag) => (
+          <div className="flex flex-wrap gap-1.5">
+            {profile.expertise?.slice(0, 3).map((tag) => (
               <Badge
                 key={tag}
                 className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0"
@@ -534,18 +532,18 @@ const statusLabel = {
                 {tag}
               </Badge>
             ))}
-          {(profile.expertise?.length ?? 0) > 3 && (
-  <Badge className="bg-gray-100 text-gray-500 text-xs px-2 py-0">
-    +{(profile.expertise?.length ?? 0) - 3}
+            {(profile.expertise?.length ?? 0) > 3 && (
+              <Badge className="bg-gray-100 text-gray-500 text-xs px-2 py-0">
+                +{(profile.expertise?.length ?? 0) - 3}
               </Badge>
             )}
           </div>
         )}
 
         {/* Industries */}
-   {(profile.industries?.length ?? 0) > 0 && (
-  <div className="flex flex-wrap gap-1.5">
-    {profile.industries?.slice(0, 2).map((ind) => (
+        {(profile.industries?.length ?? 0) > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {profile.industries?.slice(0, 2).map((ind) => (
               <Badge key={ind} variant="outline" className="text-xs px-2 py-0">
                 {ind}
               </Badge>

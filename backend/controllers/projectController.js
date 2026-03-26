@@ -187,9 +187,11 @@ export const deleteProject = async (req, res, next) => {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-   if (!["DRAFT", "REJECTED"].includes(project.status)) {
-  return res.status(400).json({ message: "Only draft or rejected projects can be deleted" });
-}
+    if (!["DRAFT", "REJECTED"].includes(project.status)) {
+      return res
+        .status(400)
+        .json({ message: "Only draft or rejected projects can be deleted" });
+    }
 
     await prisma.project.delete({
       where: { id },
@@ -228,14 +230,14 @@ export const getPublicProjects = async (req, res, next) => {
       limit = 12,
     } = req.query;
 
-    const skip = (Number(page) - 1) * Number(limit); // ← ADD THIS LINE HERE
+    const skip = (Number(page) - 1) * Number(limit);
 
-   if (q) {
-  try {
-    const limitNum = Number(limit);
-    const offsetNum = Number(skip);
+    if (q) {
+      try {
+        const limitNum = Number(limit);
+        const offsetNum = Number(skip);
 
-    const projects = await prisma.$queryRaw`
+        const projects = await prisma.$queryRaw`
       SELECT
         p.id,
         p."ownerId",
@@ -268,21 +270,20 @@ export const getPublicProjects = async (req, res, next) => {
       OFFSET ${offsetNum}::integer
     `;
 
-    const shaped = projects.map((p) => ({
-      ...p,
-      owner: { id: p.ownerId, name: p.ownerName },
-      fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
-      viewCount: Number(p.viewCount),
-      rank: Number(p.rank),
-    }));
+        const shaped = projects.map((p) => ({
+          ...p,
+          owner: { id: p.ownerId, name: p.ownerName },
+          fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
+          viewCount: Number(p.viewCount),
+          rank: Number(p.rank),
+        }));
 
-    return res.json(shaped);
-
-  } catch (searchError) {
-    console.error("SEARCH ERROR:", searchError);
-    return next(searchError);
-  }
-}
+        return res.json(shaped);
+      } catch (searchError) {
+        console.error("SEARCH ERROR:", searchError);
+        return next(searchError);
+      }
+    }
 
     const where = {
       status: "APPROVED",

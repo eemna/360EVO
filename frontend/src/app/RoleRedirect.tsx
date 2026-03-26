@@ -19,6 +19,6 @@ export default function RoleRedirect() {
   if (user.role === "EXPERT") {
     return <Navigate to="/app/expert" replace />;
   }
- if (user.role === "INVESTOR") return <Navigate to="/app/projects" replace />;
-  return <Navigate to="/" replace />;
+  if (user.role === "INVESTOR") return <Navigate to="/app/investor" replace />;
+  return <Navigate to="/app/investor" replace />;
 }

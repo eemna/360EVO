@@ -8,7 +8,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
 import rateLimiter from "./middleware/rateLimiter.js";
-import job from "./config/cron.js";
+import job, { matchRegenerationJob, narrativeRetryJob } from "./config/cron.js";
 import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
@@ -20,6 +20,9 @@ import conversationRoutes from "./routes/conversationRoutes.js";
 import notificationRoutes from "./routes/notificationRoute.js";
 import eventRoutes from "./routes/eventRoute.js";
 import bookmarkRoute from "./routes/bookmarkRoute.js";
+import aiRoute from "./routes/aiRoute.js";
+import investorProfileRoutes from "./routes/investorprofileroute.js";
+
 dotenv.config();
 const app = express();
 app.use(helmet());
@@ -48,8 +51,11 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-if (process.env.NODE_ENV === "production") job.start();
-
+if (process.env.NODE_ENV === "production") {
+  job.start();
+  matchRegenerationJob.start();
+  narrativeRetryJob.start();
+}
 app.get("/api/health", (req, res) => {
   res.send("Backend is running ");
 });
@@ -64,6 +70,9 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/bookmarks", bookmarkRoute);
+app.use("/api/ai", aiRoute);
+app.use("/api/investor-profile", investorProfileRoutes);
+
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);

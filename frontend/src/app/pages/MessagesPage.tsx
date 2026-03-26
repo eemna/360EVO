@@ -256,36 +256,36 @@ export function MessagesPage() {
   useEffect(() => {
     if (!socket) return;
     const handleNewMessage = (message: Message) => {
-  if (message.conversationId === selectedConv) {
-    setMessages((prev) => {
-      const exists = prev.some((m) => m.id === message.id);
-      if (exists) return prev;
-      return [...prev, message];
-    });
-  }
+      if (message.conversationId === selectedConv) {
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === message.id);
+          if (exists) return prev;
+          return [...prev, message];
+        });
+      }
 
-  setConversations((prev) => {
-    const updated = prev.map((conv) => {
-      if (conv.id !== message.conversationId) return conv;
-      return {
-        ...conv,
-        lastMessage: message,
-        timestamp: new Date(message.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        unread:
-          message.conversationId === selectedConv
-            ? conv.unread
-            : conv.unread + 1,
-      };
-    });
+      setConversations((prev) => {
+        const updated = prev.map((conv) => {
+          if (conv.id !== message.conversationId) return conv;
+          return {
+            ...conv,
+            lastMessage: message,
+            timestamp: new Date(message.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unread:
+              message.conversationId === selectedConv
+                ? conv.unread
+                : conv.unread + 1,
+          };
+        });
 
-    const conv = updated.find((c) => c.id === message.conversationId);
-    const rest = updated.filter((c) => c.id !== message.conversationId);
-    return conv ? [conv, ...rest] : updated;
-  });
-};
+        const conv = updated.find((c) => c.id === message.conversationId);
+        const rest = updated.filter((c) => c.id !== message.conversationId);
+        return conv ? [conv, ...rest] : updated;
+      });
+    };
 
     socket.on("new_message", handleNewMessage);
     socket.on("typing_start", ({ userId }) => {
@@ -318,7 +318,7 @@ export function MessagesPage() {
     };
   }, [socket, selectedConv, user?.id]);
 
-  // ── Fetch all users for @mention
+  // Fetch all users for @mention
   useEffect(() => {
     api
       .get("/users")
@@ -326,7 +326,7 @@ export function MessagesPage() {
       .catch(() => {});
   }, []);
 
-  // ── Users matching @query
+  // Users matching @query
   const mentionMatches =
     mentionQuery.length > 0
       ? allUsers
@@ -338,7 +338,6 @@ export function MessagesPage() {
           .slice(0, 5)
       : [];
 
-  // ── Handle input change — detects @
   const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setMessageInput(val);
@@ -363,7 +362,7 @@ export function MessagesPage() {
     }, 1000);
   };
 
-  // ── Select user from dropdown
+  // Select user from dropdown
   const handleMentionSelect = (selectedUser: User) => {
     const cursor = inputRef.current?.selectionStart ?? messageInput.length;
     const before = messageInput
@@ -376,7 +375,7 @@ export function MessagesPage() {
     setTimeout(() => inputRef.current?.focus(), 0);
   };
 
-  // ── Keyboard navigation
+  // Keyboard navigation
   const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!mentionOpen || mentionMatches.length === 0) return;
     if (e.key === "ArrowDown") {
@@ -393,7 +392,6 @@ export function MessagesPage() {
     }
   };
 
-  // ── Render @mentions as highlighted text
   const renderMessageContent = (content: string) => {
     const parts = content.split(/(@\w+(?:\s\w+)?)/g);
     return parts.map((part, i) => {
@@ -424,7 +422,6 @@ export function MessagesPage() {
       console.error(err);
     }
   };
-  // Group messages by date and sender
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const selectedConversation = conversations.find((c) => c.id === selectedConv);

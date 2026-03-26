@@ -6,7 +6,10 @@ export default [
   js.configs.recommended,
   {
     languageOptions: {
-      globals: globals.node,
+      globals: {
+        ...globals.node,
+        ...globals.jest,  
+      },
     },
     rules: {
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],

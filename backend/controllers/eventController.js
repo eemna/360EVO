@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
+import { sendEmail } from "../utils/email.js";
 
 export const getEvents = async (req, res, next) => {
   try {
@@ -298,7 +299,7 @@ export const registerForEvent = async (req, res, next) => {
         .json({ message: "Already registered for this event" });
     }
 
-    const registration = await prisma.eventRegistration.create({
+const registration = await prisma.eventRegistration.create({
       data: { eventId: id, userId },
     });
 
@@ -309,6 +310,71 @@ export const registerForEvent = async (req, res, next) => {
       body: `You are registered for "${event.title}"`,
       link: `/events/${id}`,
     });
+
+    
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, email: true },
+    });
+
+    const eventDate = new Date(event.date).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    });
+
+    const eventTime = new Date(event.date).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+    });
+
+    const locationLine = event.location
+      ? event.location
+      : event.virtualLink
+        ? `Online — ${event.virtualLink}`
+        : "To be announced";
+
+    sendEmail({
+      to: user.email,
+      subject: `Registration Confirmed — ${event.title}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 32px; border-radius: 12px 12px 0 0;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">You're registered! 🎉</h1>
+          </div>
+          <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb;">
+            <p style="color: #374151; font-size: 16px;">Hi <strong>${user.name}</strong>,</p>
+            <p style="color: #374151;">Your registration has been confirmed for:</p>
+            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h2 style="color: #1f2937; margin: 0 0 12px 0;">${event.title}</h2>
+              <p style="margin: 6px 0; color: #6b7280;">
+                <strong style="color: #374151;">Type:</strong> ${event.type.replace("_", " ")}
+              </p>
+              <p style="margin: 6px 0; color: #6b7280;">
+                <strong style="color: #374151;">Date:</strong> ${eventDate}
+              </p>
+              <p style="margin: 6px 0; color: #6b7280;">
+                <strong style="color: #374151;">Time:</strong> ${eventTime}
+              </p>
+              <p style="margin: 6px 0; color: #6b7280;">
+                <strong style="color: #374151;">Location:</strong> ${locationLine}
+              </p>
+            </div>
+            <p style="color: #6b7280; font-size: 14px;">
+              Manage your registrations from your 
+              <a href="${process.env.CLIENT_URL}/app/events/my" style="color: #2563eb;">My Events</a> page.
+            </p>
+            <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
+              © 360EVO — Innovation & Investment Platform
+            </p>
+          </div>
+        </div>
+      `,
+    }).catch((err) => console.error("Confirmation email failed:", err));
+   
 
     res.status(201).json({ message: "Registered successfully", registration });
   } catch (error) {

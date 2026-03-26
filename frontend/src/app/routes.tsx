@@ -29,7 +29,9 @@ import EventDetailPage from "./pages/Eventdetailpage";
 import CreateEventForm from "./pages/Createeventform";
 import MyEventsPage from "./pages/Myeventspage";
 import SavedProjectsPage from "./pages/Bookmarkfeature";
-
+import InvestorSetupWizard  from "./pages/Investorsetupwizard";
+import MatchFeedPage from "./pages/Matchfeedpage";
+import InvestorDashboard from "./pages/InvestorDashboard";
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -63,6 +65,12 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      { path: "investor",            element: <RoleRoute allowedRoles={["INVESTOR"]}><InvestorDashboard /></RoleRoute> },
+
+      { path: "investor/setup",      element: <RoleRoute allowedRoles={["INVESTOR"]}><InvestorSetupWizard /></RoleRoute> },
+      { path: "investor/matches",    element: <RoleRoute allowedRoles={["INVESTOR"]}><MatchFeedPage /></RoleRoute> },
+
+
       { path: "experts", element: <ExpertsPage /> },
       {
         path: "startup",
@@ -99,7 +107,7 @@ export const router = createBrowserRouter([
       {
         path: "experts/:expertId/book",
         element: (
-          <RoleRoute allowedRoles={["MEMBER", "STARTUP", "ADMIN"]}>
+          <RoleRoute allowedRoles={["MEMBER", "STARTUP", "ADMIN","INVESTOR"]}>
             <BookConsultationPage />
           </RoleRoute>
         ),
@@ -127,7 +135,7 @@ export const router = createBrowserRouter([
       {
         path: "startup/projects/:id",
         element: (
-          <RoleRoute allowedRoles={["STARTUP", "ADMIN", "EXPERT", "MEMBER"]}>
+          <RoleRoute allowedRoles={["STARTUP", "ADMIN", "EXPERT", "MEMBER","INVESTOR"]}>
             <ProjectDetailsPage />
           </RoleRoute>
         ),

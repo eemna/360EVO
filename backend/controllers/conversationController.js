@@ -25,7 +25,7 @@ export const createConversation = async (req, res, next) => {
     });
 
     if (existing && existing.participants.length === 2) {
-      return res.json(existing); 
+      return res.json(existing);
     }
 
     const conversation = await prisma.conversation.create({
@@ -80,9 +80,9 @@ export const sendMessage = async (req, res, next) => {
       },
     });
     await prisma.conversation.update({
-  where: { id },
-  data: { lastMessageAt: new Date() },
-});
+      where: { id },
+      data: { lastMessageAt: new Date() },
+    });
 
     global.io.to(id).emit("new_message", message);
 
@@ -91,8 +91,7 @@ export const sendMessage = async (req, res, next) => {
       select: { userId: true },
     });
     if (otherParticipant) {
-  
-       global.io.to(otherParticipant.userId).emit("new_message", message);
+      global.io.to(otherParticipant.userId).emit("new_message", message);
 
       //  Create notification
       const profile = await prisma.profile.findUnique({

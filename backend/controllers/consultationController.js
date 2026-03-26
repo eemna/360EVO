@@ -103,7 +103,6 @@ export const createBooking = async (req, res, next) => {
       });
     }
 
-    // Check overlap (PROFESSIONAL WAY)
     const overlapping = await prisma.booking.findFirst({
       where: {
         expertId,
@@ -125,10 +124,8 @@ export const createBooking = async (req, res, next) => {
         message: "Location is required for in-person meetings",
       });
     }
-    // Calculate price
     const price = (Number(expert.profile.hourlyRate) * duration) / 60;
 
-    // Create booking
     const booking = await prisma.booking.create({
       data: {
         expertId,
@@ -141,19 +138,68 @@ export const createBooking = async (req, res, next) => {
         topic,
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
+        status: "PENDING_PAYMENT", 
       },
     });
-    const settings = await getNotifSettings(expertId);
+   
+    res.status(201).json(booking);
+  } catch (error) {
+    next(error);
+  }
+};
+export const confirmPayment = async (req, res, next) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    if (booking.memberId !== req.user.id) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    if (booking.status !== "PENDING_PAYMENT") {
+      return res.status(400).json({ message: "Payment already processed" });
+    }
+
+    const updated = await prisma.booking.update({
+      where: { id: req.params.id },
+      data: { status: "PENDING" },
+    });
+
+    const settings = await getNotifSettings(booking.expertId);
     if (settings.emailOnBooking) {
       await createNotification({
-        userId: expertId,
+        userId: booking.expertId,
         type: "BOOKING",
         title: "New Booking Request 📅",
-        body: `New consultation request: ${topic || "General topic"}`,
+        body: `New consultation request: ${booking.topic || "General topic"}`,
         link: "/app/expert/reservations",
       });
     }
-    res.status(201).json(booking);
+
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+export const cancelUnpaidBooking = async (req, res, next) => {
+  try {
+    const booking = await prisma.booking.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (booking.memberId !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+    if (booking.status !== "PENDING_PAYMENT") {
+      return res.status(400).json({ message: "Booking is not awaiting payment" });
+    }
+
+    await prisma.booking.delete({ where: { id: req.params.id } });
+    res.json({ message: "Booking cancelled" });
   } catch (error) {
     next(error);
   }
@@ -192,6 +238,10 @@ export const acceptBooking = async (req, res, next) => {
     if (!booking) {
       return res.status(404).json({ message: "Booking not found" });
     }
+    if (booking.status === "PENDING_PAYMENT") {
+  return res.status(400).json({ message: "Cannot accept — payment not completed" });
+}
+
 
     if (booking.expertId !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
@@ -330,9 +380,11 @@ export const completeBooking = async (req, res, next) => {
     if (booking.expertId !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
-   if (booking.status !== "ACCEPTED") {
-  return res.status(400).json({ message: "Only accepted bookings can be completed" });
-}
+    if (booking.status !== "ACCEPTED") {
+      return res
+        .status(400)
+        .json({ message: "Only accepted bookings can be completed" });
+    }
     const updated = await prisma.booking.update({
       where: { id: req.params.id },
       data: {
@@ -436,8 +488,8 @@ export const createReview = async (req, res, next) => {
         },
       });
       if (global.io) {
-  global.io.to(conversation.id).emit("new_message", reviewMessage);
-}
+        global.io.to(conversation.id).emit("new_message", reviewMessage);
+      }
     }
 
     const settings = await getNotifSettings(booking.expertId);
@@ -472,7 +524,7 @@ export const getEarningsOverview = async (req, res, next) => {
   try {
     const expertId = req.user.id;
 
-    // 1. Total earned (all COMPLETED bookings)
+    // 1. Total earned 
     const completed = await prisma.booking.aggregate({
       where: { expertId, status: "COMPLETED" },
       _sum: { price: true },

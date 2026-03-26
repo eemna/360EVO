@@ -4,7 +4,7 @@ import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import {
   generateAccessToken,
-  generateRefreshToken, 
+  generateRefreshToken,
 } from "../utils/tokenUtils.js";
 import { sendEmail } from "../utils/email.js";
 import { cookieOptions } from "../utils/cookieOptions.js";
@@ -43,11 +43,7 @@ export const register = async (req, res, next) => {
     //  Ensure role is uppercase
     const normalizedRole = role.toUpperCase();
 
-    if (
-      !["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(
-        normalizedRole,
-      )
-    ) {
+    if (!["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(normalizedRole)) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
@@ -104,7 +100,7 @@ export const register = async (req, res, next) => {
       await tx.emailVerification.create({
         data: {
           userId: createdUser.id,
-          token: verificationToken, 
+          token: verificationToken,
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         },
       });
@@ -175,9 +171,9 @@ export const login = async (req, res, next) => {
       .createHash("sha256")
       .update(refreshToken)
       .digest("hex");
-await prisma.refreshToken.deleteMany({
-  where: { userId: userData.id },
-});
+    await prisma.refreshToken.deleteMany({
+      where: { userId: userData.id },
+    });
     await prisma.refreshToken.create({
       data: {
         userId: userData.id,
@@ -220,9 +216,13 @@ export const verifyEmail = async (req, res, next) => {
     if (!verification) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
-if (verification.expiresAt < new Date()) {
-  return res.status(400).json({ message: "Verification link has expired. Please request a new one." });
-}
+    if (verification.expiresAt < new Date()) {
+      return res
+        .status(400)
+        .json({
+          message: "Verification link has expired. Please request a new one.",
+        });
+    }
     await prisma.user.update({
       where: { id: verification.userId },
       data: { isVerified: true },
@@ -358,18 +358,20 @@ export const refreshToken = async (req, res, next) => {
     const session = await prisma.refreshToken.findUnique({
       where: { tokenHash: hashedToken },
     });
-  if (!session || session.expiresAt < new Date()) {
-  return res.status(403).json({ message: "Refresh token expired" });
-}
-   
-let decoded;
-try {
-  decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-} catch (err) {
-  return res.status(401).json({ message: "Invalid or expired refresh token" });
-}
-const newAccessToken = generateAccessToken(decoded.id);
-res.json({ accessToken: newAccessToken });
+    if (!session || session.expiresAt < new Date()) {
+      return res.status(403).json({ message: "Refresh token expired" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch (err) {
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired refresh token" });
+    }
+    const newAccessToken = generateAccessToken(decoded.id);
+    res.json({ accessToken: newAccessToken });
   } catch (error) {
     next(error);
   }
