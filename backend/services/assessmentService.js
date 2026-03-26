@@ -6,7 +6,12 @@ import { generateNarrative } from "./narrativeGenerator.js";
 export async function runProjectAssessment(projectId) {
   const project = await prisma.project.findUnique({
     where: { id: projectId },
-    include: { teamMembers: true, milestones: true, documents: true, updates: true },
+    include: {
+      teamMembers: true,
+      milestones: true,
+      documents: true,
+      updates: true,
+    },
   });
 
   if (!project) throw new Error(`Project ${projectId} not found`);
@@ -20,28 +25,37 @@ export async function runProjectAssessment(projectId) {
   }
 
   return prisma.aiAssessment.upsert({
-    where:  { projectId },
+    where: { projectId },
     update: {
-      trlScore, trlConfidence, trlBreakdown: {},
-      irScore, irBreakdown, recommendations,
-      executiveSummary:           narrative?.executiveSummary           ?? null,
-      strengthsNarrative:         narrative?.strengthsNarrative         ?? null,
-      risksNarrative:             narrative?.risksNarrative             ?? null,
+      trlScore,
+      trlConfidence,
+      trlBreakdown: {},
+      irScore,
+      irBreakdown,
+      recommendations,
+      executiveSummary: narrative?.executiveSummary ?? null,
+      strengthsNarrative: narrative?.strengthsNarrative ?? null,
+      risksNarrative: narrative?.risksNarrative ?? null,
       marketOpportunityNarrative: narrative?.marketOpportunityNarrative ?? null,
-      llmModel:   narrative ? "groq/llama-3.1-8b" : "rule-based-template",
+      llmModel: narrative ? "groq/llama-3.1-8b" : "rule-based-template",
       assessedAt: new Date(),
-      version:    { increment: 1 },
+      version: { increment: 1 },
     },
     create: {
-      projectId, trlScore, trlConfidence, trlBreakdown: {},
-      irScore, irBreakdown, recommendations,
-      executiveSummary:           narrative?.executiveSummary           ?? null,
-      strengthsNarrative:         narrative?.strengthsNarrative         ?? null,
-      risksNarrative:             narrative?.risksNarrative             ?? null,
+      projectId,
+      trlScore,
+      trlConfidence,
+      trlBreakdown: {},
+      irScore,
+      irBreakdown,
+      recommendations,
+      executiveSummary: narrative?.executiveSummary ?? null,
+      strengthsNarrative: narrative?.strengthsNarrative ?? null,
+      risksNarrative: narrative?.risksNarrative ?? null,
       marketOpportunityNarrative: narrative?.marketOpportunityNarrative ?? null,
-      llmModel:   narrative ? "groq/llama-3.1-8b" : "rule-based-template",
+      llmModel: narrative ? "groq/llama-3.1-8b" : "rule-based-template",
       assessedAt: new Date(),
-      version:    1,
+      version: 1,
     },
   });
 }

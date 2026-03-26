@@ -17,22 +17,20 @@ interface PitchAnalysisCardProps {
   projectId: string;
 }
 
-function ScorePill({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function ScorePill({ label, value }: { label: string; value: number }) {
   const color =
-    value >= 70 ? "text-green-600 bg-green-50 border-green-200" :
-    value >= 40 ? "text-amber-600 bg-amber-50 border-amber-200" :
-                  "text-red-600 bg-red-50 border-red-200";
+    value >= 70
+      ? "text-green-600 bg-green-50 border-green-200"
+      : value >= 40
+        ? "text-amber-600 bg-amber-50 border-amber-200"
+        : "text-red-600 bg-red-50 border-red-200";
 
   return (
     <div className={`flex-1 border rounded-xl p-4 text-center ${color}`}>
       <div className="text-3xl font-bold leading-none mb-1">{value}</div>
-      <div className="text-xs font-medium uppercase tracking-wider opacity-80">{label}</div>
+      <div className="text-xs font-medium uppercase tracking-wider opacity-80">
+        {label}
+      </div>
     </div>
   );
 }
@@ -51,8 +49,8 @@ export function PitchAnalysisCard({ projectId }: PitchAnalysisCardProps) {
       setCached(data.cached ?? false);
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Pitch analysis failed";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Pitch analysis failed";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setLoading(false);

@@ -32,8 +32,20 @@ function AlignmentRing({ score, size = 80 }: { score: number; size?: number }) {
   const color = alignColor(score);
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke="#e5e7eb" strokeWidth={size * 0.09} />
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="flex-shrink-0"
+    >
+      <circle
+        cx={cx}
+        cy={cx}
+        r={r}
+        fill="none"
+        stroke="#e5e7eb"
+        strokeWidth={size * 0.09}
+      />
       <circle
         cx={cx}
         cy={cx}
@@ -50,7 +62,12 @@ function AlignmentRing({ score, size = 80 }: { score: number; size?: number }) {
         y={cx}
         textAnchor="middle"
         dominantBaseline="central"
-        style={{ fontFamily: "inherit", fontSize: size * 0.22, fontWeight: 700, fill: color }}
+        style={{
+          fontFamily: "inherit",
+          fontSize: size * 0.22,
+          fontWeight: 700,
+          fill: color,
+        }}
       >
         {score}
       </text>
@@ -73,8 +90,8 @@ export function ThesisAlignmentPanel({ projectId }: ThesisAlignmentPanelProps) {
       setCached(data.cached ?? false);
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Failed to generate thesis alignment";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Failed to generate thesis alignment";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setLoading(false);
@@ -85,7 +102,8 @@ export function ThesisAlignmentPanel({ projectId }: ThesisAlignmentPanelProps) {
     return (
       <div className="flex flex-col items-center justify-center py-10 gap-4">
         <p className="text-sm text-gray-500 text-center max-w-sm">
-          Generate an AI-powered analysis of how this project aligns with your investment thesis.
+          Generate an AI-powered analysis of how this project aligns with your
+          investment thesis.
         </p>
         <Button
           onClick={handleGenerate}
@@ -117,7 +135,10 @@ export function ThesisAlignmentPanel({ projectId }: ThesisAlignmentPanelProps) {
       <div className="flex items-start gap-4">
         <AlignmentRing score={alignment.alignmentScore} />
         <div className="flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider mb-1" style={{ color }}>
+          <p
+            className="text-xs font-semibold uppercase tracking-wider mb-1"
+            style={{ color }}
+          >
             Alignment Score: {alignment.alignmentScore}/100
           </p>
           <p className="text-sm text-gray-600 leading-relaxed">
@@ -164,18 +185,26 @@ export function ThesisAlignmentPanel({ projectId }: ThesisAlignmentPanelProps) {
           </p>
           <div className="space-y-2">
             {alignment.recommendedQuestions.map((q, i) => (
-              <div key={i} className="border border-gray-200 rounded-lg overflow-hidden">
+              <div
+                key={i}
+                className="border border-gray-200 rounded-lg overflow-hidden"
+              >
                 <button
                   onClick={() => setOpenQ(openQ === i ? null : i)}
                   className="w-full flex items-center justify-between px-4 py-3 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 >
-                  <span>Q{i + 1}. {q.slice(0, 65)}{q.length > 65 ? "..." : ""}</span>
+                  <span>
+                    Q{i + 1}. {q.slice(0, 65)}
+                    {q.length > 65 ? "..." : ""}
+                  </span>
                   <ChevronDown
                     className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${openQ === i ? "rotate-180" : ""}`}
                   />
                 </button>
                 {openQ === i && (
-                  <div className="px-4 pb-3 text-sm text-gray-600 bg-gray-50">{q}</div>
+                  <div className="px-4 pb-3 text-sm text-gray-600 bg-gray-50">
+                    {q}
+                  </div>
                 )}
               </div>
             ))}

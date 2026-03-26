@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "./card";
+import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { Button } from "./button";
 import { Skeleton } from "./skeleton";
 import { useAuth } from "../../../hooks/useAuth";
@@ -46,11 +41,15 @@ interface AIAssessmentSectionProps {
 
 export function TRLBadge({ score }: { score: number }) {
   const cls =
-    score >= 7 ? "bg-green-100 text-green-700 border-green-200" :
-    score >= 4 ? "bg-amber-100 text-amber-700 border-amber-200" :
-                 "bg-red-100 text-red-700 border-red-200";
+    score >= 7
+      ? "bg-green-100 text-green-700 border-green-200"
+      : score >= 4
+        ? "bg-amber-100 text-amber-700 border-amber-200"
+        : "bg-red-100 text-red-700 border-red-200";
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${cls}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border ${cls}`}
+    >
       <span className="w-1.5 h-1.5 rounded-full bg-current" />
       TRL {score}
     </span>
@@ -77,7 +76,6 @@ export default function AIAssessmentSection({
         const { data } = await api.get(`/ai/assessment/${projectId}`);
         setAssessment(data);
       } catch {
-        
         setAssessment(null);
       } finally {
         setLoading(false);
@@ -91,11 +89,15 @@ export default function AIAssessmentSection({
       setTriggering(true);
       const { data } = await api.post(`/ai/assess/${projectId}`);
       setAssessment(data);
-      showToast({ type: "success", title: "Assessment complete!", message: "" });
+      showToast({
+        type: "success",
+        title: "Assessment complete!",
+        message: "",
+      });
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Assessment failed";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Assessment failed";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setTriggering(false);
@@ -118,13 +120,14 @@ export default function AIAssessmentSection({
     );
   }
 
- 
   if (!assessment) {
     return (
       <Card className="border border-gray-200">
         <CardContent className="py-12 text-center">
           <BrainCircuit className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-gray-700 mb-1">No AI Assessment Yet</h3>
+          <h3 className="text-base font-semibold text-gray-700 mb-1">
+            No AI Assessment Yet
+          </h3>
           <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
             {projectStatus === "APPROVED"
               ? "This project has not been assessed yet."
@@ -136,7 +139,14 @@ export default function AIAssessmentSection({
               disabled={triggering}
               className="bg-indigo-600 hover:bg-indigo-700 gap-2"
             >
-              {triggering ? <><LoadingSpinner size="sm" />Running Assessment...</> : "Run AI Assessment"}
+              {triggering ? (
+                <>
+                  <LoadingSpinner size="sm" />
+                  Running Assessment...
+                </>
+              ) : (
+                "Run AI Assessment"
+              )}
             </Button>
           )}
         </CardContent>
@@ -175,7 +185,10 @@ export default function AIAssessmentSection({
             </CardTitle>
           </CardHeader>
           <CardContent className="flex justify-center">
-            <TRLGauge score={assessment.trlScore} confidence={assessment.trlConfidence} />
+            <TRLGauge
+              score={assessment.trlScore}
+              confidence={assessment.trlConfidence}
+            />
           </CardContent>
         </Card>
 
@@ -223,7 +236,8 @@ export default function AIAssessmentSection({
         <Card className="border border-gray-200">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-500" /> Improvement Recommendations
+              <Lightbulb className="w-4 h-4 text-amber-500" /> Improvement
+              Recommendations
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -236,7 +250,9 @@ export default function AIAssessmentSection({
                   <span className="text-xs font-bold text-amber-600 mt-0.5 font-mono flex-shrink-0">
                     0{i + 1}
                   </span>
-                  <p className="text-sm text-amber-900 leading-relaxed">{rec}</p>
+                  <p className="text-sm text-amber-900 leading-relaxed">
+                    {rec}
+                  </p>
                 </div>
               ))}
             </div>

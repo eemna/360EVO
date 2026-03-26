@@ -179,12 +179,18 @@ export default function AdminDashboard() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case "STARTUP":  return "bg-blue-100 text-blue-700";
-      case "MEMBER":   return "bg-purple-100 text-purple-700";
-      case "EXPERT":   return "bg-green-100 text-green-700";
-      case "ADMIN":    return "bg-red-100 text-red-700";
-      case "INVESTOR": return "bg-yellow-100 text-yellow-700";
-      default:         return "bg-gray-100 text-gray-700";
+      case "STARTUP":
+        return "bg-blue-100 text-blue-700";
+      case "MEMBER":
+        return "bg-purple-100 text-purple-700";
+      case "EXPERT":
+        return "bg-green-100 text-green-700";
+      case "ADMIN":
+        return "bg-red-100 text-red-700";
+      case "INVESTOR":
+        return "bg-yellow-100 text-yellow-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -214,11 +220,14 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-
       {/*  HEADER */}
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-1">Manage users, projects, and approvals</p>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          Admin Dashboard
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Manage users, projects, and approvals
+        </p>
       </div>
 
       {/* STATS */}
@@ -275,7 +284,10 @@ export default function AdminDashboard() {
             <TableBody>
               {projects.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-6 text-gray-400">
+                  <TableCell
+                    colSpan={5}
+                    className="text-center py-6 text-gray-400"
+                  >
                     No pending projects
                   </TableCell>
                 </TableRow>
@@ -284,7 +296,9 @@ export default function AdminDashboard() {
                   <TableRow key={project.id}>
                     <TableCell
                       className="cursor-pointer hover:bg-gray-50 font-medium"
-                      onClick={() => navigate(`/app/startup/projects/${project.id}`)}
+                      onClick={() =>
+                        navigate(`/app/startup/projects/${project.id}`)
+                      }
                     >
                       {project.title}
                     </TableCell>
@@ -303,23 +317,33 @@ export default function AdminDashboard() {
                           size="sm"
                           variant="outline"
                           disabled={actionLoading === project.id}
-                          onClick={(e) => { e.stopPropagation(); handleApprove(project.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApprove(project.id);
+                          }}
                           className="border-green-500 text-green-600 hover:bg-green-50 hover:border-green-600"
                         >
                           {actionLoading === project.id ? (
                             <Loader2 className="size-4 animate-spin" />
                           ) : (
-                            <><Check className="size-4 mr-1" />Approve</>
+                            <>
+                              <Check className="size-4 mr-1" />
+                              Approve
+                            </>
                           )}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           disabled={actionLoading === project.id}
-                          onClick={(e) => { e.stopPropagation(); handleReject(project.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReject(project.id);
+                          }}
                           className="border-red-500 text-red-600 hover:bg-red-50 hover:border-red-600"
                         >
-                          <X className="size-4 mr-1" />Reject
+                          <X className="size-4 mr-1" />
+                          Reject
                         </Button>
                       </div>
                     </TableCell>
@@ -387,7 +411,9 @@ export default function AdminDashboard() {
                     <Select
                       value={user.role}
                       disabled={user.isSuspended}
-                      onValueChange={(value) => handleRoleChange(user.id, value)}
+                      onValueChange={(value) =>
+                        handleRoleChange(user.id, value)
+                      }
                     >
                       <SelectTrigger
                         className="w-full sm:w-[150px]"
@@ -421,9 +447,15 @@ export default function AdminDashboard() {
                       {suspendLoading === user.id ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : user.isSuspended ? (
-                        <><ShieldCheck className="size-4 mr-1" />Reactivate</>
+                        <>
+                          <ShieldCheck className="size-4 mr-1" />
+                          Reactivate
+                        </>
                       ) : (
-                        <><ShieldOff className="size-4 mr-1" />Suspend</>
+                        <>
+                          <ShieldOff className="size-4 mr-1" />
+                          Suspend
+                        </>
                       )}
                     </Button>
                   </TableCell>
@@ -467,7 +499,10 @@ export default function AdminDashboard() {
             <TableBody>
               {expertApplicants.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-6 text-gray-400">
+                  <TableCell
+                    colSpan={4}
+                    className="text-center py-6 text-gray-400"
+                  >
                     No pending expert applications
                   </TableCell>
                 </TableRow>
@@ -487,7 +522,8 @@ export default function AdminDashboard() {
                           className="border-green-500 text-green-600 hover:bg-green-50"
                           onClick={() => handleApproveExpert(u.id)}
                         >
-                          <Check className="size-4 mr-1" />Approve
+                          <Check className="size-4 mr-1" />
+                          Approve
                         </Button>
                         <Button
                           size="sm"
@@ -495,7 +531,8 @@ export default function AdminDashboard() {
                           className="border-red-500 text-red-600 hover:bg-red-50"
                           onClick={() => handleRejectExpert(u.id)}
                         >
-                          <X className="size-4 mr-1" />Reject
+                          <X className="size-4 mr-1" />
+                          Reject
                         </Button>
                       </div>
                     </TableCell>
@@ -506,7 +543,6 @@ export default function AdminDashboard() {
           </Table>
         </div>
       </Card>
-
     </div>
   );
 }

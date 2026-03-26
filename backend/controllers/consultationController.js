@@ -138,10 +138,10 @@ export const createBooking = async (req, res, next) => {
         topic,
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
-        status: "PENDING_PAYMENT", 
+        status: "PENDING_PAYMENT",
       },
     });
-   
+
     res.status(201).json(booking);
   } catch (error) {
     next(error);
@@ -193,9 +193,12 @@ export const cancelUnpaidBooking = async (req, res, next) => {
     });
 
     if (!booking) return res.status(404).json({ message: "Booking not found" });
-    if (booking.memberId !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+    if (booking.memberId !== req.user.id)
+      return res.status(403).json({ message: "Unauthorized" });
     if (booking.status !== "PENDING_PAYMENT") {
-      return res.status(400).json({ message: "Booking is not awaiting payment" });
+      return res
+        .status(400)
+        .json({ message: "Booking is not awaiting payment" });
     }
 
     await prisma.booking.delete({ where: { id: req.params.id } });
@@ -239,9 +242,10 @@ export const acceptBooking = async (req, res, next) => {
       return res.status(404).json({ message: "Booking not found" });
     }
     if (booking.status === "PENDING_PAYMENT") {
-  return res.status(400).json({ message: "Cannot accept — payment not completed" });
-}
-
+      return res
+        .status(400)
+        .json({ message: "Cannot accept — payment not completed" });
+    }
 
     if (booking.expertId !== req.user.id) {
       return res.status(403).json({ message: "Unauthorized" });
@@ -524,7 +528,7 @@ export const getEarningsOverview = async (req, res, next) => {
   try {
     const expertId = req.user.id;
 
-    // 1. Total earned 
+    // 1. Total earned
     const completed = await prisma.booking.aggregate({
       where: { expertId, status: "COMPLETED" },
       _sum: { price: true },

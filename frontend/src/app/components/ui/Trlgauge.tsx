@@ -7,9 +7,23 @@ interface TRLGaugeProps {
   size?: number;
 }
 
-function getTRLZone(score: number): { label: string; color: string; bg: string } {
-  if (score >= 7) return { label: "Mature", color: "#16a34a", bg: "bg-green-100 text-green-700" };
-  if (score >= 4) return { label: "Developing", color: "#d97706", bg: "bg-amber-100 text-amber-700" };
+function getTRLZone(score: number): {
+  label: string;
+  color: string;
+  bg: string;
+} {
+  if (score >= 7)
+    return {
+      label: "Mature",
+      color: "#16a34a",
+      bg: "bg-green-100 text-green-700",
+    };
+  if (score >= 4)
+    return {
+      label: "Developing",
+      color: "#d97706",
+      bg: "bg-amber-100 text-amber-700",
+    };
   return { label: "Early", color: "#dc2626", bg: "bg-red-100 text-red-700" };
 }
 
@@ -54,7 +68,12 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <svg width={size} height={size * 0.75} viewBox={`0 0 ${size} ${size * 0.75}`} overflow="visible">
+      <svg
+        width={size}
+        height={size * 0.75}
+        viewBox={`0 0 ${size} ${size * 0.75}`}
+        overflow="visible"
+      >
         {/* Track */}
         <path
           d={arcPath(-210, 30, R)}
@@ -123,7 +142,12 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
           y={cy * 0.88}
           textAnchor="middle"
           dominantBaseline="central"
-          style={{ fontFamily: "inherit", fontSize: size * 0.22, fontWeight: 700, fill: zone.color }}
+          style={{
+            fontFamily: "inherit",
+            fontSize: size * 0.22,
+            fontWeight: 700,
+            fill: zone.color,
+          }}
         >
           {score}
         </text>
@@ -132,12 +156,20 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
           y={cy * 0.88 + size * 0.115}
           textAnchor="middle"
           dominantBaseline="central"
-          style={{ fontFamily: "inherit", fontSize: size * 0.072, fill: "#9ca3af" }}
+          style={{
+            fontFamily: "inherit",
+            fontSize: size * 0.072,
+            fill: "#9ca3af",
+          }}
         >
           / 9 TRL
         </text>
         {/* Tick labels */}
-        {[{ deg: -210, label: "1" }, { deg: -90, label: "5" }, { deg: 30, label: "9" }].map((t) => {
+        {[
+          { deg: -210, label: "1" },
+          { deg: -90, label: "5" },
+          { deg: 30, label: "9" },
+        ].map((t) => {
           const p = polar(t.deg, R + strokeW * 1.3);
           return (
             <text
@@ -146,7 +178,11 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
               y={p.y}
               textAnchor="middle"
               dominantBaseline="central"
-              style={{ fontFamily: "inherit", fontSize: size * 0.062, fill: "#9ca3af" }}
+              style={{
+                fontFamily: "inherit",
+                fontSize: size * 0.062,
+                fill: "#9ca3af",
+              }}
             >
               {t.label}
             </text>
@@ -155,7 +191,9 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
       </svg>
 
       <div className="flex items-center gap-2">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${confBadge[confidence]}`}>
+        <span
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${confBadge[confidence]}`}
+        >
           <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" />
           {confidence} CONFIDENCE
         </span>

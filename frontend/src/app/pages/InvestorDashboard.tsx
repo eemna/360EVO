@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 //import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
@@ -26,7 +31,7 @@ interface InvestorProfile {
   industries: string[];
   stages: string[];
   technologies: string[];
-  fundingMin: string | number | null; 
+  fundingMin: string | number | null;
   fundingMax: string | number | null;
   currency: string;
   geographicPrefs: string[];
@@ -50,9 +55,23 @@ interface Match {
 }
 
 function scoreColor(score: number) {
-  if (score >= 70) return { text: "text-green-600", ring: "#16a34a", bg: "bg-green-50 border-green-200" };
-  if (score >= 40) return { text: "text-amber-600", ring: "#d97706", bg: "bg-amber-50 border-amber-200" };
-  return { text: "text-red-600", ring: "#dc2626", bg: "bg-red-50 border-red-200" };
+  if (score >= 70)
+    return {
+      text: "text-green-600",
+      ring: "#16a34a",
+      bg: "bg-green-50 border-green-200",
+    };
+  if (score >= 40)
+    return {
+      text: "text-amber-600",
+      ring: "#d97706",
+      bg: "bg-amber-50 border-amber-200",
+    };
+  return {
+    text: "text-red-600",
+    ring: "#dc2626",
+    bg: "bg-red-50 border-red-200",
+  };
 }
 
 function riskColor(r: string) {
@@ -67,10 +86,25 @@ function ScoreRing({ score, size = 48 }: { score: number; size?: number }) {
   const circ = 2 * Math.PI * r;
   const { ring } = scoreColor(score);
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="flex-shrink-0">
-      <circle cx={cx} cy={cx} r={r} fill="none" stroke="#e5e7eb" strokeWidth={size * 0.1} />
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="flex-shrink-0"
+    >
       <circle
-        cx={cx} cy={cx} r={r} fill="none"
+        cx={cx}
+        cy={cx}
+        r={r}
+        fill="none"
+        stroke="#e5e7eb"
+        strokeWidth={size * 0.1}
+      />
+      <circle
+        cx={cx}
+        cy={cx}
+        r={r}
+        fill="none"
         stroke={ring}
         strokeWidth={size * 0.1}
         strokeDasharray={`${(score / 100) * circ} ${circ}`}
@@ -78,9 +112,16 @@ function ScoreRing({ score, size = 48 }: { score: number; size?: number }) {
         transform={`rotate(-90 ${cx} ${cx})`}
       />
       <text
-        x={cx} y={cx}
-        textAnchor="middle" dominantBaseline="central"
-        style={{ fontFamily: "inherit", fontSize: size * 0.26, fontWeight: 700, fill: ring }}
+        x={cx}
+        y={cx}
+        textAnchor="middle"
+        dominantBaseline="central"
+        style={{
+          fontFamily: "inherit",
+          fontSize: size * 0.26,
+          fontWeight: 700,
+          fill: ring,
+        }}
       >
         {score}
       </text>
@@ -119,7 +160,13 @@ function StatCard({
   );
 }
 
-function TopMatchRow({ match, onClick }: { match: Match; onClick: () => void }) {
+function TopMatchRow({
+  match,
+  onClick,
+}: {
+  match: Match;
+  onClick: () => void;
+}) {
   //const col = scoreColor(match.matchScore);
   return (
     <div
@@ -152,11 +199,23 @@ function TopMatchRow({ match, onClick }: { match: Match; onClick: () => void }) 
 
 function SetupChecklist({ profile }: { profile: InvestorProfile | null }) {
   const items = [
-    { label: "Industries selected", done: (profile?.industries?.length ?? 0) > 0 },
+    {
+      label: "Industries selected",
+      done: (profile?.industries?.length ?? 0) > 0,
+    },
     { label: "Stages configured", done: (profile?.stages?.length ?? 0) > 0 },
-    { label: "Funding range set", done: !!profile?.fundingMin || !!profile?.fundingMax },
-    { label: "Geography preferences", done: (profile?.geographicPrefs?.length ?? 0) > 0 },
-    { label: "Investment thesis written", done: (profile?.investmentThesis?.length ?? 0) > 50 },
+    {
+      label: "Funding range set",
+      done: !!profile?.fundingMin || !!profile?.fundingMax,
+    },
+    {
+      label: "Geography preferences",
+      done: (profile?.geographicPrefs?.length ?? 0) > 0,
+    },
+    {
+      label: "Investment thesis written",
+      done: (profile?.investmentThesis?.length ?? 0) > 50,
+    },
   ];
   const done = items.filter((i) => i.done).length;
   const pct = Math.round((done / items.length) * 100);
@@ -164,7 +223,9 @@ function SetupChecklist({ profile }: { profile: InvestorProfile | null }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs text-gray-500 font-medium">Profile completeness</span>
+        <span className="text-xs text-gray-500 font-medium">
+          Profile completeness
+        </span>
         <span className="text-xs font-bold text-indigo-600">{pct}%</span>
       </div>
       <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -181,7 +242,9 @@ function SetupChecklist({ profile }: { profile: InvestorProfile | null }) {
             ) : (
               <AlertCircle className="size-3.5 text-gray-300 flex-shrink-0" />
             )}
-            <span className={`text-xs ${item.done ? "text-gray-600" : "text-gray-400"}`}>
+            <span
+              className={`text-xs ${item.done ? "text-gray-600" : "text-gray-400"}`}
+            >
               {item.label}
             </span>
           </div>
@@ -246,8 +309,8 @@ export default function InvestorDashboard() {
       setMatches(fresh);
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Generation failed";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Generation failed";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setGenerating(false);
@@ -257,10 +320,15 @@ export default function InvestorDashboard() {
   // Derived stats
   const activeMatches = matches.filter((m) => m.status !== "DISMISSED");
   const highMatches = activeMatches.filter((m) => m.matchScore >= 70);
-  const topMatches = [...activeMatches].sort((a, b) => b.matchScore - a.matchScore).slice(0, 5);
+  const topMatches = [...activeMatches]
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, 5);
   const avgScore =
     activeMatches.length > 0
-      ? Math.round(activeMatches.reduce((s, m) => s + m.matchScore, 0) / activeMatches.length)
+      ? Math.round(
+          activeMatches.reduce((s, m) => s + m.matchScore, 0) /
+            activeMatches.length,
+        )
       : 0;
 
   const profileComplete =
@@ -277,7 +345,7 @@ export default function InvestorDashboard() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">
-            Welcome back, {user?.name?.split(" ")[0]} 
+            Welcome back, {user?.name?.split(" ")[0]}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             Your AI-powered investor workspace
@@ -298,9 +366,13 @@ export default function InvestorDashboard() {
             className="bg-indigo-600 hover:bg-indigo-700 gap-2"
           >
             {generating ? (
-              <><LoadingSpinner size="sm" /> Generating...</>
+              <>
+                <LoadingSpinner size="sm" /> Generating...
+              </>
             ) : (
-              <><RefreshCw className="size-4" /> Refresh Matches</>
+              <>
+                <RefreshCw className="size-4" /> Refresh Matches
+              </>
             )}
           </Button>
         </div>
@@ -318,7 +390,8 @@ export default function InvestorDashboard() {
                 Complete your investor profile to unlock AI matching
               </p>
               <p className="text-xs text-indigo-600 mt-0.5">
-                Add your thesis, sectors, and preferences so we can find the best projects for you.
+                Add your thesis, sectors, and preferences so we can find the
+                best projects for you.
               </p>
             </div>
           </div>
@@ -335,7 +408,11 @@ export default function InvestorDashboard() {
       {loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <Card key={i}><CardContent className="pt-5 pb-4"><Skeleton className="h-16 w-full" /></CardContent></Card>
+            <Card key={i}>
+              <CardContent className="pt-5 pb-4">
+                <Skeleton className="h-16 w-full" />
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : (
@@ -344,7 +421,11 @@ export default function InvestorDashboard() {
             icon={Target}
             label="Active Matches"
             value={activeMatches.length}
-            sub={matches.length > 0 ? `${matches.length} total` : "Generate to start"}
+            sub={
+              matches.length > 0
+                ? `${matches.length} total`
+                : "Generate to start"
+            }
             accent="text-indigo-600"
           />
           <StatCard
@@ -358,7 +439,11 @@ export default function InvestorDashboard() {
             icon={BarChart3}
             label="Avg Match Score"
             value={avgScore > 0 ? `${avgScore}` : "—"}
-            sub={activeMatches.length > 0 ? `across ${activeMatches.length} matches` : "No matches yet"}
+            sub={
+              activeMatches.length > 0
+                ? `across ${activeMatches.length} matches`
+                : "No matches yet"
+            }
             accent="text-amber-600"
           />
           <StatCard
@@ -373,7 +458,6 @@ export default function InvestorDashboard() {
 
       {/* Main content grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         {/* Top Matches */}
         <div className="lg:col-span-2 space-y-4">
           <Card className="border border-gray-200">
@@ -406,7 +490,11 @@ export default function InvestorDashboard() {
                       disabled={generating}
                       className="bg-indigo-600 hover:bg-indigo-700 gap-2"
                     >
-                      {generating ? <LoadingSpinner size="sm" /> : <RefreshCw className="size-3" />}
+                      {generating ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <RefreshCw className="size-3" />
+                      )}
                       Generate Matches
                     </Button>
                   ) : (
@@ -425,7 +513,9 @@ export default function InvestorDashboard() {
                     <TopMatchRow
                       key={m.id}
                       match={m}
-                      onClick={() => navigate(`/app/startup/projects/${m.project.id}`)}
+                      onClick={() =>
+                        navigate(`/app/startup/projects/${m.project.id}`)
+                      }
                     />
                   ))}
                 </div>
@@ -443,8 +533,12 @@ export default function InvestorDashboard() {
                 <Target className="size-5 text-indigo-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Match Feed</p>
-                <p className="text-xs text-gray-400">Browse all AI-scored matches</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  Match Feed
+                </p>
+                <p className="text-xs text-gray-400">
+                  Browse all AI-scored matches
+                </p>
               </div>
               <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
             </button>
@@ -457,8 +551,12 @@ export default function InvestorDashboard() {
                 <Globe className="size-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Project Gallery</p>
-                <p className="text-xs text-gray-400">Browse all startup projects</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  Project Gallery
+                </p>
+                <p className="text-xs text-gray-400">
+                  Browse all startup projects
+                </p>
               </div>
               <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-purple-400 transition-colors" />
             </button>
@@ -467,7 +565,6 @@ export default function InvestorDashboard() {
 
         {/* Right sidebar */}
         <div className="space-y-4">
-
           {/* Profile completeness */}
           <Card className="border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -500,7 +597,9 @@ export default function InvestorDashboard() {
                 {/* Risk */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-500">Risk Tolerance</span>
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${riskColor(profile.riskTolerance)}`}>
+                  <span
+                    className={`text-xs font-semibold px-2 py-0.5 rounded-full ${riskColor(profile.riskTolerance)}`}
+                  >
                     {profile.riskTolerance}
                   </span>
                 </div>
@@ -508,11 +607,17 @@ export default function InvestorDashboard() {
                 {/* Ticket size */}
                 {(profile.fundingMin || profile.fundingMax) && (
                   <div>
-                    <span className="text-xs text-gray-500 block mb-1">Ticket Size</span>
+                    <span className="text-xs text-gray-500 block mb-1">
+                      Ticket Size
+                    </span>
                     <span className="text-sm font-semibold text-indigo-600">
-                      {profile.fundingMin ? `$${Number(profile.fundingMin).toLocaleString()}` : "—"}
+                      {profile.fundingMin
+                        ? `$${Number(profile.fundingMin).toLocaleString()}`
+                        : "—"}
                       {" – "}
-                      {profile.fundingMax ? `$${Number(profile.fundingMax).toLocaleString()}` : "—"}
+                      {profile.fundingMax
+                        ? `$${Number(profile.fundingMax).toLocaleString()}`
+                        : "—"}
                     </span>
                   </div>
                 )}
@@ -520,10 +625,15 @@ export default function InvestorDashboard() {
                 {/* Sectors */}
                 {profile.industries?.length > 0 && (
                   <div>
-                    <span className="text-xs text-gray-500 block mb-1.5">Sectors</span>
+                    <span className="text-xs text-gray-500 block mb-1.5">
+                      Sectors
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {profile.industries.slice(0, 4).map((i) => (
-                        <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
+                        <span
+                          key={i}
+                          className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100"
+                        >
                           {i}
                         </span>
                       ))}
@@ -539,10 +649,15 @@ export default function InvestorDashboard() {
                 {/* Stages */}
                 {profile.stages?.length > 0 && (
                   <div>
-                    <span className="text-xs text-gray-500 block mb-1.5">Stages</span>
+                    <span className="text-xs text-gray-500 block mb-1.5">
+                      Stages
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {profile.stages.map((s) => (
-                        <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100">
+                        <span
+                          key={s}
+                          className="text-xs px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-100"
+                        >
                           {s}
                         </span>
                       ))}
@@ -553,10 +668,15 @@ export default function InvestorDashboard() {
                 {/* Geography */}
                 {profile.geographicPrefs?.length > 0 && (
                   <div>
-                    <span className="text-xs text-gray-500 block mb-1.5">Geography</span>
+                    <span className="text-xs text-gray-500 block mb-1.5">
+                      Geography
+                    </span>
                     <div className="flex flex-wrap gap-1">
                       {profile.geographicPrefs.map((g) => (
-                        <span key={g} className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100">
+                        <span
+                          key={g}
+                          className="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-100"
+                        >
                           {g}
                         </span>
                       ))}
@@ -581,7 +701,9 @@ export default function InvestorDashboard() {
           {!loadingProfile && profile?.investmentThesis && (
             <Card className="border-2 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base text-indigo-900">Investment Thesis</CardTitle>
+                <CardTitle className="text-base text-indigo-900">
+                  Investment Thesis
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-xs text-indigo-700 leading-relaxed line-clamp-4">

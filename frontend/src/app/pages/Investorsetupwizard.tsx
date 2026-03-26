@@ -12,16 +12,41 @@ import api from "../../services/axios";
 import { CheckCircle2 } from "lucide-react";
 
 const INDUSTRIES = [
-  "FinTech", "HealthTech", "AI & Machine Learning", "EdTech", "CleanTech",
-  "SaaS", "E-Commerce", "AgriTech", "PropTech", "Blockchain & Crypto",
-  "Cybersecurity", "IoT",
+  "FinTech",
+  "HealthTech",
+  "AI & Machine Learning",
+  "EdTech",
+  "CleanTech",
+  "SaaS",
+  "E-Commerce",
+  "AgriTech",
+  "PropTech",
+  "Blockchain & Crypto",
+  "Cybersecurity",
+  "IoT",
 ];
 const STAGES = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 const TECHS = [
-  "React", "Python", "AI/ML", "Blockchain", "Cloud", "Mobile",
-  "IoT", "API", "TypeScript", "Node.js", "Docker",
+  "React",
+  "Python",
+  "AI/ML",
+  "Blockchain",
+  "Cloud",
+  "Mobile",
+  "IoT",
+  "API",
+  "TypeScript",
+  "Node.js",
+  "Docker",
 ];
-const GEO = ["North Africa", "MENA", "Europe", "USA", "Southeast Asia", "Global"];
+const GEO = [
+  "North Africa",
+  "MENA",
+  "Europe",
+  "USA",
+  "Southeast Asia",
+  "Global",
+];
 const DEAL = ["Equity", "Convertible Note", "SAFE", "Revenue Share", "Grant"];
 
 interface InvestorProfileData {
@@ -88,7 +113,13 @@ function ChipToggle({
   );
 }
 
-const STEPS = ["Industries", "Stage & Tech", "Funding", "Geography & Deal", "Investment Thesis"];
+const STEPS = [
+  "Industries",
+  "Stage & Tech",
+  "Funding",
+  "Geography & Deal",
+  "Investment Thesis",
+];
 
 export default function InvestorSetupWizard() {
   const navigate = useNavigate();
@@ -129,8 +160,10 @@ export default function InvestorSetupWizard() {
     fetch();
   }, []);
 
-  const set = <K extends keyof InvestorProfileData>(key: K, val: InvestorProfileData[K]) =>
-    setData((d) => ({ ...d, [key]: val }));
+  const set = <K extends keyof InvestorProfileData>(
+    key: K,
+    val: InvestorProfileData[K],
+  ) => setData((d) => ({ ...d, [key]: val }));
 
   const handleSave = async () => {
     try {
@@ -146,7 +179,11 @@ export default function InvestorSetupWizard() {
         await api.post("/investor-profile", payload);
         setHasExisting(true);
       }
-      showToast({ type: "success", title: "Profile saved!", message: "Your investment preferences have been updated." });
+      showToast({
+        type: "success",
+        title: "Profile saved!",
+        message: "Your investment preferences have been updated.",
+      });
       if (step === STEPS.length - 1) {
         navigate("/app/investor");
       } else {
@@ -154,8 +191,8 @@ export default function InvestorSetupWizard() {
       }
     } catch (err: unknown) {
       const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Save failed";
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Save failed";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setSaving(false);
@@ -166,9 +203,13 @@ export default function InvestorSetupWizard() {
     return (
       <div className="max-w-2xl mx-auto space-y-6">
         <Skeleton className="h-8 w-48" />
-        <Card><CardContent className="pt-6 space-y-4">
-          {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-        </CardContent></Card>
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full" />
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -177,24 +218,42 @@ export default function InvestorSetupWizard() {
     // Step 0: Industries
     <div className="space-y-4" key="industries">
       <div>
-        <Label className="text-sm font-semibold">Which sectors do you invest in?</Label>
-        <p className="text-xs text-gray-500 mt-0.5 mb-3">Select all that apply</p>
-        <ChipToggle options={INDUSTRIES} selected={data.industries} onChange={(v) => set("industries", v)} />
+        <Label className="text-sm font-semibold">
+          Which sectors do you invest in?
+        </Label>
+        <p className="text-xs text-gray-500 mt-0.5 mb-3">
+          Select all that apply
+        </p>
+        <ChipToggle
+          options={INDUSTRIES}
+          selected={data.industries}
+          onChange={(v) => set("industries", v)}
+        />
       </div>
     </div>,
 
     // Step 1: Stage & Tech
     <div className="space-y-6" key="stage-tech">
       <div>
-        <Label className="text-sm font-semibold">Preferred Startup Stages</Label>
+        <Label className="text-sm font-semibold">
+          Preferred Startup Stages
+        </Label>
         <div className="mt-3">
-          <ChipToggle options={STAGES} selected={data.stages} onChange={(v) => set("stages", v)} />
+          <ChipToggle
+            options={STAGES}
+            selected={data.stages}
+            onChange={(v) => set("stages", v)}
+          />
         </div>
       </div>
       <div>
         <Label className="text-sm font-semibold">Key Technologies</Label>
         <div className="mt-3">
-          <ChipToggle options={TECHS} selected={data.technologies} onChange={(v) => set("technologies", v)} />
+          <ChipToggle
+            options={TECHS}
+            selected={data.technologies}
+            onChange={(v) => set("technologies", v)}
+          />
         </div>
       </div>
     </div>,
@@ -247,13 +306,21 @@ export default function InvestorSetupWizard() {
       <div>
         <Label className="text-sm font-semibold">Geographic Preferences</Label>
         <div className="mt-3">
-          <ChipToggle options={GEO} selected={data.geographicPrefs} onChange={(v) => set("geographicPrefs", v)} />
+          <ChipToggle
+            options={GEO}
+            selected={data.geographicPrefs}
+            onChange={(v) => set("geographicPrefs", v)}
+          />
         </div>
       </div>
       <div>
         <Label className="text-sm font-semibold">Deal Structures</Label>
         <div className="mt-3">
-          <ChipToggle options={DEAL} selected={data.dealStructures} onChange={(v) => set("dealStructures", v)} />
+          <ChipToggle
+            options={DEAL}
+            selected={data.dealStructures}
+            onChange={(v) => set("dealStructures", v)}
+          />
         </div>
       </div>
     </div>,
@@ -263,7 +330,8 @@ export default function InvestorSetupWizard() {
       <div>
         <Label className="text-sm font-semibold">Your Investment Thesis</Label>
         <p className="text-xs text-gray-500 mt-0.5 mb-3">
-          Describe your investment philosophy in detail. This text is passed directly to the AI for thesis alignment analysis.
+          Describe your investment philosophy in detail. This text is passed
+          directly to the AI for thesis alignment analysis.
         </p>
         <Textarea
           rows={8}
@@ -283,13 +351,13 @@ export default function InvestorSetupWizard() {
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
       <div>
-          <button
-    type="button"
-    onClick={() => navigate("/app/profile/me")}
-    className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
-  >
-    ← Back to Profile
-  </button>
+        <button
+          type="button"
+          onClick={() => navigate("/app/profile/me")}
+          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-4 transition-colors"
+        >
+          ← Back to Profile
+        </button>
         <h1 className="text-3xl font-semibold text-gray-900">
           {hasExisting ? "Edit Preferences" : "Investor Setup"}
         </h1>
@@ -312,8 +380,8 @@ export default function InvestorSetupWizard() {
                   step > i
                     ? "bg-indigo-600 border-indigo-600 text-white"
                     : step === i
-                    ? "border-indigo-600 text-indigo-600 bg-white"
-                    : "border-gray-200 text-gray-400 bg-white"
+                      ? "border-indigo-600 text-indigo-600 bg-white"
+                      : "border-gray-200 text-gray-400 bg-white"
                 }`}
               >
                 {step > i ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
@@ -327,7 +395,9 @@ export default function InvestorSetupWizard() {
               </span>
             </button>
             {i < STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 transition-all ${step > i ? "bg-indigo-600" : "bg-gray-200"}`} />
+              <div
+                className={`flex-1 h-0.5 mx-1 transition-all ${step > i ? "bg-indigo-600" : "bg-gray-200"}`}
+              />
             )}
           </div>
         ))}
@@ -336,54 +406,55 @@ export default function InvestorSetupWizard() {
       {/* Form card */}
       <Card className="border border-gray-200 shadow-sm">
         <CardContent className="pt-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">{STEPS[step]}</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+            {STEPS[step]}
+          </h2>
           <div className="mt-4">{steps[step]}</div>
 
-          
           {/* Navigation */}
-<div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
-  <Button
-    variant="outline"
-    onClick={() => setStep((s) => Math.max(0, s - 1))}
-    disabled={step === 0}
-  >
-    ← Back
-  </Button>
+          <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
+            <Button
+              variant="outline"
+              onClick={() => setStep((s) => Math.max(0, s - 1))}
+              disabled={step === 0}
+            >
+              ← Back
+            </Button>
 
-  <span className="text-xs text-gray-400 font-mono">
-    {step + 1} / {STEPS.length}
-  </span>
+            <span className="text-xs text-gray-400 font-mono">
+              {step + 1} / {STEPS.length}
+            </span>
 
-  <div className="flex items-center gap-2">
-    {/* Save without advancing */}
-    <Button
-      variant="outline"
-      onClick={handleSave}
-      disabled={saving}
-      className="gap-2"
-    >
-      {saving ? <LoadingSpinner size="sm" /> : null}
-      Save
-    </Button>
+            <div className="flex items-center gap-2">
+              {/* Save without advancing */}
+              <Button
+                variant="outline"
+                onClick={handleSave}
+                disabled={saving}
+                className="gap-2"
+              >
+                {saving ? <LoadingSpinner size="sm" /> : null}
+                Save
+              </Button>
 
-    {/* Advance to next step  */}
-    {step < STEPS.length - 1 ? (
-      <Button
-        onClick={() => setStep((s) => s + 1)}
-        className="bg-indigo-600 hover:bg-indigo-700"
-      >
-        Continue →
-      </Button>
-    ) : (
-      <Button
-        onClick={() => navigate("/app/profile/me")}
-        className="bg-indigo-600 hover:bg-indigo-700"
-      >
-        Done ✓
-      </Button>
-    )}
-  </div>
-</div>
+              {/* Advance to next step  */}
+              {step < STEPS.length - 1 ? (
+                <Button
+                  onClick={() => setStep((s) => s + 1)}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Continue →
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => navigate("/app/profile/me")}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Done ✓
+                </Button>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,7 +1,10 @@
 import { prisma } from "../config/prisma.js";
 import { calculateMatchScore } from "../services/matchingEngine.js";
 import crypto from "crypto";
-import {  createPitchAnalysis,createThesisAlignment  } from "../services/llmservice.js";
+import {
+  createPitchAnalysis,
+  createThesisAlignment,
+} from "../services/llmservice.js";
 import { runProjectAssessment } from "../services/assessmentService.js";
 
 // Scores a project — called after admin approves it
@@ -24,7 +27,9 @@ export const getAssessment = async (req, res, next) => {
     });
 
     if (!assessment) {
-      return res.status(404).json({ message: "No assessment found for this project" });
+      return res
+        .status(404)
+        .json({ message: "No assessment found for this project" });
     }
 
     res.json(assessment);
@@ -32,7 +37,6 @@ export const getAssessment = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // Computes match scores between current investor and all approved projects
 export const generateMatches = async (req, res, next) => {
@@ -70,15 +74,16 @@ export const generateMatches = async (req, res, next) => {
     const matchResults = [];
 
     for (const project of projects) {
-      const { matchScore, categoryScores, reasoning } = await calculateMatchScore(
-        investorProfile,
-        project,
-        project.aiAssessment
-      );
+      const { matchScore, categoryScores, reasoning } =
+        await calculateMatchScore(
+          investorProfile,
+          project,
+          project.aiAssessment,
+        );
 
       matchResults.push({
         investorId,
-        projectId:      project.id,
+        projectId: project.id,
         matchScore,
         categoryScores,
         reasoning,
@@ -87,29 +92,30 @@ export const generateMatches = async (req, res, next) => {
 
     // 4. Batch upsert all matches to database
     await Promise.all(
-      matchResults.map(match =>
+      matchResults.map((match) =>
         prisma.match.upsert({
           where: {
             investorId_projectId: {
               investorId: match.investorId,
-              projectId:  match.projectId,
+              projectId: match.projectId,
             },
           },
           update: {
-            matchScore:     match.matchScore,
+            matchScore: match.matchScore,
             categoryScores: match.categoryScores,
-            reasoning:      match.reasoning,
+            reasoning: match.reasoning,
+            status: "SUGGESTED",
           },
           create: {
-            investorId:     match.investorId,
-            projectId:      match.projectId,
-            matchScore:     match.matchScore,
+            investorId: match.investorId,
+            projectId: match.projectId,
+            matchScore: match.matchScore,
             categoryScores: match.categoryScores,
-            reasoning:      match.reasoning,
-            status:         "SUGGESTED",
+            reasoning: match.reasoning,
+            status: "SUGGESTED",
           },
-        })
-      )
+        }),
+      ),
     );
 
     res.json({
@@ -121,22 +127,22 @@ export const generateMatches = async (req, res, next) => {
   }
 };
 
-
 // Returns the investor's match feed ordered by score
 export const getMatchFeed = async (req, res, next) => {
   try {
     const investorId = req.user.id;
+    const showDismissed = req.query.dismissed === "true";
 
     const matches = await prisma.match.findMany({
       where: {
         investorId,
-        status: { not: "DISMISSED" }, // hide dismissed matches
+        ...(showDismissed ? {} : { status: { not: "DISMISSED" } }),
       },
       orderBy: { matchScore: "desc" },
       include: {
         project: {
           include: {
-            owner:       { select: { name: true, email: true } },
+            owner: { select: { name: true, email: true } },
             teamMembers: true,
             aiAssessment: true,
           },
@@ -146,17 +152,16 @@ export const getMatchFeed = async (req, res, next) => {
 
     res.json(matches);
   } catch (error) {
-    next(error);  
+    next(error);
   }
 };
-
 
 // Investor dismisses or restores a match
 export const updateMatchStatus = async (req, res, next) => {
   try {
     const { matchId } = req.params;
-    const { status }  = req.body;
-    const investorId  = req.user.id;
+    const { status } = req.body;
+    const investorId = req.user.id;
 
     const validStatuses = ["SUGGESTED", "VIEWED", "CONTACTED", "DISMISSED"];
     if (!validStatuses.includes(status)) {
@@ -173,7 +178,7 @@ export const updateMatchStatus = async (req, res, next) => {
 
     const updated = await prisma.match.update({
       where: { id: matchId },
-      data:  { status },
+      data: { status },
     });
 
     res.json(updated);
@@ -184,74 +189,90 @@ export const updateMatchStatus = async (req, res, next) => {
 export const getThesisAlignment = async (req, res, next) => {
   try {
     const { projectId } = req.params;
-    const investorId    = req.user.id;
- 
+    const investorId = req.user.id;
+
     // 1. Get investor profile
     const investorProfile = await prisma.investorProfile.findUnique({
       where: { userId: investorId },
     });
     if (!investorProfile) {
-      return res.status(400).json({ message: "Complete your investor profile first." });
+      return res
+        .status(400)
+        .json({ message: "Complete your investor profile first." });
     }
- 
+
     // 2. Get project with assessment
     const project = await prisma.project.findUnique({
-      where:   { id: projectId },
+      where: { id: projectId },
       include: { aiAssessment: true },
     });
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
     }
- 
+
     // 3. Build input hash — skip LLM call if nothing changed
     const inputHash = crypto
       .createHash("sha256")
       .update((investorProfile.investmentThesis || "") + project.fullDesc)
       .digest("hex");
- 
+
     // 4. Check cache first
     const cached = await prisma.llmInsight.findUnique({
       where: {
-        investorId_projectId_type: { investorId, projectId, type: "THESIS_ALIGNMENT" },
+        investorId_projectId_type: {
+          investorId,
+          projectId,
+          type: "THESIS_ALIGNMENT",
+        },
       },
     });
     if (cached && cached.inputHash === inputHash) {
       return res.json({ cached: true, data: cached.content });
     }
- 
+
     // 5. Call llmService — Groq LLaMA generates the analysis
     const alignment = await createThesisAlignment(
       investorProfile,
       project,
-      project.aiAssessment
+      project.aiAssessment,
     );
- 
+
     if (!alignment) {
-      return res.status(503).json({ message: "Thesis alignment temporarily unavailable." });
+      return res
+        .status(503)
+        .json({ message: "Thesis alignment temporarily unavailable." });
     }
- 
+
     // 6. Save to LlmInsight cache
     await prisma.llmInsight.upsert({
       where: {
-        investorId_projectId_type: { investorId, projectId, type: "THESIS_ALIGNMENT" },
+        investorId_projectId_type: {
+          investorId,
+          projectId,
+          type: "THESIS_ALIGNMENT",
+        },
       },
       update: { content: alignment, inputHash },
-      create: { investorId, projectId, type: "THESIS_ALIGNMENT", content: alignment, inputHash },
+      create: {
+        investorId,
+        projectId,
+        type: "THESIS_ALIGNMENT",
+        content: alignment,
+        inputHash,
+      },
     });
- 
+
     // 7. Update Match.thesisAlignmentSummary
     await prisma.match.updateMany({
       where: { investorId, projectId },
-      data:  { thesisAlignmentSummary: alignment.alignmentSummary },
+      data: { thesisAlignmentSummary: alignment.alignmentSummary },
     });
- 
+
     res.json({ cached: false, data: alignment });
   } catch (error) {
     next(error);
   }
 };
- 
- 
 
 export const getInsights = async (req, res, next) => {
   try {
@@ -267,23 +288,23 @@ export const getInsights = async (req, res, next) => {
 export const getPitchAnalysis = async (req, res, next) => {
   try {
     const { projectId } = req.params;
-    const investorId    = req.user.id;
- 
+    const investorId = req.user.id;
+
     const project = await prisma.project.findUnique({
-      where:   { id: projectId },
+      where: { id: projectId },
       include: { teamMembers: true, milestones: true, aiAssessment: true },
     });
- 
+
     if (!project) {
       return res.status(404).json({ message: "Project not found." });
     }
- 
+
     // Build hash from project data only (cached per project, not per investor)
     const inputHash = crypto
       .createHash("sha256")
       .update(project.fullDesc + project.updatedAt.toString())
       .digest("hex");
- 
+
     // Check cache — investorId is null for project-level cache
     const cached = await prisma.llmInsight.findUnique({
       where: {
@@ -294,18 +315,20 @@ export const getPitchAnalysis = async (req, res, next) => {
         },
       },
     });
- 
+
     if (cached && cached.inputHash === inputHash) {
       return res.json({ cached: true, data: cached.content });
     }
- 
+
     // Call LLM via llmService
     const analysis = await createPitchAnalysis(project, project.aiAssessment);
- 
+
     if (!analysis) {
-      return res.status(503).json({ message: "Pitch analysis temporarily unavailable." });
+      return res
+        .status(503)
+        .json({ message: "Pitch analysis temporarily unavailable." });
     }
- 
+
     // Save to LlmInsight cache
     await prisma.llmInsight.upsert({
       where: {
@@ -319,12 +342,12 @@ export const getPitchAnalysis = async (req, res, next) => {
       create: {
         investorId,
         projectId,
-        type:      "PITCH_ANALYSIS",
-        content:   analysis,
+        type: "PITCH_ANALYSIS",
+        content: analysis,
         inputHash,
       },
     });
- 
+
     res.json({ cached: false, data: analysis });
   } catch (error) {
     next(error);
