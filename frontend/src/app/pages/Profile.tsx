@@ -49,13 +49,27 @@ import {
   CheckCircle,
   DollarSign,
 } from "lucide-react";
-
+import { useNavigate } from "react-router";
 import api from "../../services/axios";
 
 interface PrivacySettings {
   showEmail?: boolean;
   showPhone?: boolean;
   profileVisible?: boolean;
+}
+interface InvestorProfileData {
+  industries: string[];
+  stages: string[];
+  technologies: string[];
+  fundingMin: string | number | null;
+  fundingMax: string | number | null;
+  currency: string;
+  geographicPrefs: string[];
+  riskTolerance: "LOW" | "MEDIUM" | "HIGH";
+  dealStructures: string[];
+  mustHaves: Record<string, unknown>;
+  exclusions: Record<string, unknown>;
+  investmentThesis: string;
 }
 const roleColors: Record<
   "EXPERT" | "STARTUP" | "MEMBER" | "ADMIN" | "INVESTOR",
@@ -73,6 +87,7 @@ export default function Profile() {
   const { showToast } = useToast();
   const [saving, setSaving] = useState(false);
   const { user, setUser } = useAuth();
+  const navigate = useNavigate();
   const dayNames = [
     "Sunday",
     "Monday",
@@ -91,33 +106,36 @@ export default function Profile() {
   const { id } = useParams();
   const [profileUser, setProfileUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [investorProfile, setInvestorProfile] = useState<InvestorProfileData | null>(null);
+  
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const targetId = !id || id === "me" ? user?.id : id;
+      if (!targetId) return;
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
+      const { data } = await api.get(`/users/${targetId}`);
+      setProfileUser(data);
 
-        const targetId = !id || id === "me" ? user?.id : id;
-
-        if (!targetId) return;
-
-        const { data } = await api.get(`/users/${targetId}`);
-        setProfileUser(data);
-      } catch (err) {
-        const error = err as AxiosError;
-
-        if (error.response?.status === 404) {
-          setProfileUser(null);
+      if (data.role === "INVESTOR") {
+        try {
+          const { data: invData } = await api.get("/investor-profile");
+          setInvestorProfile(invData);
+        } catch {
+          setInvestorProfile(null);
         }
-      } finally {
-        setLoading(false);
       }
-    };
-
-    if (user) {
-      fetchProfile();
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 404) setProfileUser(null);
+    } finally {
+      setLoading(false);
     }
-  }, [id, user]);
+  };
+
+  if (user) fetchProfile();
+}, [id, user]);
   //  Fetch user
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -300,12 +318,10 @@ export default function Profile() {
   const isOwnProfile = user?.id === profileUser.id;
   const isAdmin = user?.role === "ADMIN";
 
-  // Read privacy from the viewed user's profile
   const privacySettings = (
     profile.settings as { privacy?: PrivacySettings } | null
   )?.privacy;
 
-  // Private profile — only owner and admin can see it
   if (privacySettings?.profileVisible === false && !isOwnProfile && !isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3 text-gray-500">
@@ -315,7 +331,6 @@ export default function Profile() {
     );
   }
 
-  // Show by default unless explicitly set to false
   const canSeePhone =
     isOwnProfile || isAdmin || privacySettings?.showPhone !== false;
   const canSeeEmail =
@@ -468,7 +483,100 @@ text-white border border-white/30 gap-2"
               </p>
             </CardContent>
           </Card>
+        {profileUser.role === "INVESTOR" && investorProfile && (
+            <>
 
+
+              {/* Investment Focus */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-base">Investment Focus</CardTitle>
+                  {isOwnProfile && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => navigate("/app/investor/setup")}
+                      className="h-7 px-2 text-xs text-indigo-600 hover:text-indigo-700"
+                    >
+                      <Edit3 className="size-3 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {investorProfile.industries?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1.5">Sectors</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {investorProfile.industries.map((i) => (
+                          <span key={i} className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">{i}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {investorProfile.stages?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1.5">Stages</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {investorProfile.stages.map((s) => (
+                          <span key={s} className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {investorProfile.technologies?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1.5">Technologies</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {investorProfile.technologies.map((t) => (
+                          <span key={t} className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">{t}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {investorProfile.geographicPrefs?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1.5">Geography</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {investorProfile.geographicPrefs.map((g) => (
+                          <span key={g} className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">{g}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {investorProfile.dealStructures?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1.5">Deal Structures</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {investorProfile.dealStructures.map((d) => (
+                          <span key={d} className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">{d}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              
+            </>
+          )}
+
+          {/* Empty state */}
+          {profileUser.role === "INVESTOR" && !investorProfile && isOwnProfile && (
+            <Card className="border-dashed border-2 border-indigo-200">
+              <CardContent className="py-8 text-center space-y-3">
+                <DollarSign className="size-8 text-indigo-300 mx-auto" />
+                <p className="text-sm text-gray-500">No investment preferences set yet</p>
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/app/investor/setup")}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Set Up Preferences
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           {profileUser.role === "EXPERT" && (
             <ExpertProfile profileUser={profileUser} />
           )}
@@ -539,6 +647,60 @@ text-white border border-white/30 gap-2"
               )}
             </CardContent>
           </Card>
+          {profileUser.role === "INVESTOR" && investorProfile && (
+  <>
+               {/* Thesis */}
+              {investorProfile.investmentThesis && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Investment Thesis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                      {investorProfile.investmentThesis}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+              {/* Ticket Size */}
+              {(investorProfile.fundingMin || investorProfile.fundingMax) && (
+                <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-indigo-900">
+                      <DollarSign className="size-5" />
+                      Ticket Size
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-4">
+<p className="text-3xl font-semibold text-indigo-600 mb-1">
+  {investorProfile.fundingMin
+    ? `$${Number(investorProfile.fundingMin).toLocaleString()}`
+    : "—"}
+  {" – "}
+  {investorProfile.fundingMax
+    ? `$${Number(investorProfile.fundingMax).toLocaleString()}`
+    : "—"}
+</p>
+                    </div>
+                    <div className="mt-2 flex justify-center">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          investorProfile.riskTolerance === "HIGH"
+                            ? "bg-red-100 text-red-700"
+                            : investorProfile.riskTolerance === "MEDIUM"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-green-100 text-green-700"
+                        }`}
+                      >
+                        {investorProfile.riskTolerance} Risk
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+  </>
+)}
           {profileUser.role === "EXPERT" && (
             <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
               <CardHeader>

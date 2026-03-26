@@ -7,7 +7,9 @@ import {
   getAllUsers,
   updateUserRole,
   approveExpert,
-  rejectExpert
+  rejectExpert,
+  suspendUser,
+  unsuspendUser,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -22,5 +24,6 @@ router.get("/users", getAllUsers);
 router.patch("/users/:id/role", updateUserRole);
 router.patch("/experts/:id/approve", approveExpert);
 router.patch("/experts/:id/reject", rejectExpert);
-
+router.patch("/users/:id/suspend", suspendUser);
+router.patch("/users/:id/unsuspend", unsuspendUser);
 export default router;

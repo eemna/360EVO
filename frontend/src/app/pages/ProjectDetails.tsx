@@ -33,6 +33,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
 import { InterestButton } from "./Bookmarkfeature";
+import AIAssessmentSection from "../components/ui/Aiassessmentsection";
 
 interface TeamMember {
   name: string;
@@ -161,7 +162,7 @@ export default function ProjectDetailsPage() {
         const { data } = await api.get(`/projects/${id}/updates`);
         setUpdates(data);
       } catch {
-        // silently fail — updates are optional
+        //  optional
       } finally {
         setUpdatesLoading(false);
       }
@@ -296,7 +297,7 @@ export default function ProjectDetailsPage() {
         </Button>
       </div>
 
-      {/* ── Hero Section ── */}
+      {/* Hero Section */}
       <section className="relative bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-30"></div>
@@ -392,7 +393,7 @@ export default function ProjectDetailsPage() {
         </div>
       </section>
 
-      {/* ── Main Content ── */}
+      {/* Main Content*/}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
@@ -597,7 +598,7 @@ export default function ProjectDetailsPage() {
                     )}
                   </CardTitle>
 
-                  {/* Post button — owner only, approved project only */}
+                  {/* Post button */}
                   {isOwner && project.status === "APPROVED" && (
                     <Button
                       size="sm"
@@ -737,6 +738,13 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
       </div>
+      <div className="max-w-7xl mx-auto px-6 pb-10">
+  <AIAssessmentSection
+    projectId={id!}
+    projectStatus={project.status}
+    isAdmin={isAdmin}
+  />
+</div>
     </div>
   );
 }

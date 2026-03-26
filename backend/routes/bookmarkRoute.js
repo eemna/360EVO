@@ -19,5 +19,4 @@ router.get("/interests/:projectId", protect, getProjectInterests);
 router.post("/:projectId", protect, addBookmark);
 router.delete("/:projectId", protect, removeBookmark);
 
-
 export default router;

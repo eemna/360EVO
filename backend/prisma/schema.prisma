@@ -35,6 +35,9 @@ model User {
   expertReviews      Review[]                  @relation("ExpertReviews")
   writtenReviews     Review[]                  @relation("ReviewerReviews")
 
+  investorProfile    InvestorProfile?
+  investorMatches    Match[]              @relation("InvestorMatches")
+  llmInsights        LlmInsight[]         @relation("InvestorInsights")
   @@index([email])
 }
 
@@ -122,7 +125,10 @@ model Project {
   interests     ProjectInterest[]
   updates       ProjectUpdate[]
   teamMembers   TeamMember[]
-
+  
+  aiAssessment       AiAssessment?
+matches            Match[]
+llmInsights        LlmInsight[]
   @@index([status, industry])
   @@index([status, stage])
   @@index([ownerId])
@@ -320,6 +326,78 @@ model Review {
   reviewer       User     @relation("ReviewerReviews", fields: [reviewerId], references: [id])
 }
 
+
+model AiAssessment {
+  id                          String        @id @default(uuid())
+  projectId                   String        @unique
+  trlScore                    Int
+  trlConfidence               TrlConfidence
+  trlBreakdown                Json
+  irScore                     Int
+  irBreakdown                 Json
+  recommendations             String[]
+  executiveSummary            String?
+  strengthsNarrative          String?
+  risksNarrative              String?
+  marketOpportunityNarrative  String?
+  llmModel                    String?
+  assessedAt                  DateTime      @default(now())
+  version                     Int           @default(1)
+  project                     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model LlmInsight {
+  id         String         @id @default(uuid())
+  investorId String?
+  projectId  String
+  type       LlmInsightType
+  content    Json
+  inputHash  String
+  createdAt  DateTime       @default(now())
+  investor   User?          @relation("InvestorInsights", fields: [investorId], references: [id], onDelete: Cascade)
+  project    Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([investorId, projectId, type])
+}
+
+model InvestorProfile {
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  industries       String[]      @default([])
+  technologies     String[]      @default([])
+  stages           String[]      @default([])
+  fundingMin       Decimal?
+  fundingMax       Decimal?
+  currency         String?
+  geographicPrefs  String[]      @default([])
+  riskTolerance    RiskTolerance @default(MEDIUM)
+  dealStructures   String[]      @default([])
+  mustHaves        Json?
+  exclusions       Json?
+  investmentThesis String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Match {
+  id                     String      @id @default(uuid())
+  investorId             String
+  projectId              String
+  matchScore             Int
+  reasoning              Json?
+  categoryScores         Json?
+  thesisAlignmentSummary String?
+  status                 MatchStatus @default(SUGGESTED)
+  createdAt              DateTime    @default(now())
+  investor               User        @relation("InvestorMatches", fields: [investorId], references: [id], onDelete: Cascade)
+  project                Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([investorId, projectId])
+  @@index([investorId, status])
+}
+
+
 enum AvailabilityStatus {
   AVAILABLE
   BUSY
@@ -381,9 +459,38 @@ enum EventStatus {
 }
 
 enum BookingStatus {
+  PENDING_PAYMENT
   PENDING
   ACCEPTED
   DECLINED
   COMPLETED
   CANCELLED
+}
+
+
+
+enum TrlConfidence {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum LlmInsightType {
+  THESIS_ALIGNMENT
+  PITCH_ANALYSIS
+  DD_SUMMARY
+  DEAL_BRIEF
+}
+
+enum RiskTolerance {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum MatchStatus {
+  SUGGESTED
+  VIEWED
+  CONTACTED
+  DISMISSED
 }

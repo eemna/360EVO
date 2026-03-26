@@ -187,23 +187,24 @@ export const applyExpert = async (req, res, next) => {
     }
 
     if (user.profile?.expertApplicationStatus === "PENDING") {
-      return res.status(400).json({ message: "Application already pending review" });
+      return res
+        .status(400)
+        .json({ message: "Application already pending review" });
     }
 
-   const profile = await prisma.profile.upsert({
-  where: { userId },
-  update: {
-    expertApplicationStatus: "PENDING",
-  },
-  create: {
-    userId,
-    expertise: [],
-    industries: [],
-    expertApplicationStatus: "PENDING",
-  },
-});
+    const profile = await prisma.profile.upsert({
+      where: { userId },
+      update: {
+        expertApplicationStatus: "PENDING",
+      },
+      create: {
+        userId,
+        expertise: [],
+        industries: [],
+        expertApplicationStatus: "PENDING",
+      },
+    });
 
-   
     const admins = await prisma.user.findMany({
       where: { role: "ADMIN" },
       select: { id: true },
@@ -217,11 +218,14 @@ export const applyExpert = async (req, res, next) => {
           title: "New Expert Application",
           body: `${user.name} has applied to become an expert.`,
           link: `/app/admin/experts`,
-        })
-      )
+        }),
+      ),
     );
 
-    res.json({ message: "Application submitted. Pending admin review.", profile });
+    res.json({
+      message: "Application submitted. Pending admin review.",
+      profile,
+    });
   } catch (error) {
     console.error("APPLY EXPERT ERROR:", error.message);
     next(error);
