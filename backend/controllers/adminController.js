@@ -37,10 +37,12 @@ export const approveProject = async (req, res, next) => {
       body: `Your project "${updated.title}" has been approved and is now live.`,
       link: `/app/startup/projects/${id}`,
     });
-      setImmediate(() => {
+    setImmediate(() => {
       runProjectAssessment(id)
         .then(() => console.log(`[Admin] Assessment done for project ${id}`))
-        .catch(err => console.error(`[Admin] Assessment failed:`, err.message));
+        .catch((err) =>
+          console.error(`[Admin] Assessment failed:`, err.message),
+        );
     });
     res.json(updated);
   } catch (error) {
@@ -203,7 +205,8 @@ export const suspendUser = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return res.status(404).json({ message: "User not found" });
-    if (user.role === "ADMIN") return res.status(400).json({ message: "Cannot suspend an admin" });
+    if (user.role === "ADMIN")
+      return res.status(400).json({ message: "Cannot suspend an admin" });
 
     const updated = await prisma.user.update({
       where: { id },

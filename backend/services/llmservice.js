@@ -1,8 +1,9 @@
 import Groq from "groq-sdk";
 
-
 export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
-  const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "dummy-key-for-tests" });
+  const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY || "dummy-key-for-tests",
+  });
   const MAX_RETRIES = 3;
   let attempt = 0;
 
@@ -10,12 +11,12 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
     const start = Date.now();
     try {
       const response = await groq.chat.completions.create({
-        model:       "llama-3.1-8b-instant",
-        max_tokens:  maxTokens,
+        model: "llama-3.1-8b-instant",
+        max_tokens: maxTokens,
         temperature: 0.3,
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user",   content: prompt },
+          { role: "user", content: prompt },
         ],
       });
 
@@ -29,10 +30,13 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
       if (isRateLimit && attempt < MAX_RETRIES - 1) {
         const delay = Math.pow(2, attempt) * 1000;
         console.warn(`[LLM] Rate limited, retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         attempt++;
       } else {
-        console.error(`[LLM] Failed after ${attempt + 1} attempts:`, error.message);
+        console.error(
+          `[LLM] Failed after ${attempt + 1} attempts:`,
+          error.message,
+        );
         throw error;
       }
     }
@@ -44,8 +48,8 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
 export function parseJsonResponse(raw) {
   const cleaned = raw
     .replace(/^```json\s*/m, "")
-    .replace(/^```\s*/m,     "")
-    .replace(/\s*```$/m,     "")
+    .replace(/^```\s*/m, "")
+    .replace(/\s*```$/m, "")
     .trim();
 
   return JSON.parse(cleaned);
@@ -69,7 +73,7 @@ PROJECT:
 - Short Description: ${project.shortDesc}
 - Full Description: ${project.fullDesc?.slice(0, 600)}
 - Team Members: ${project.teamMembers?.length || 0}
-- Milestones: ${project.milestones?.length || 0} planned, ${project.milestones?.filter(m => m.completedAt)?.length || 0} completed
+- Milestones: ${project.milestones?.length || 0} planned, ${project.milestones?.filter((m) => m.completedAt)?.length || 0} completed
 - Funding Sought: ${project.fundingSought ? `${project.currency} ${project.fundingSought}` : "Not specified"}
 
 SCORES:
@@ -85,7 +89,7 @@ Respond ONLY with this JSON:
 }`;
 
   try {
-    const raw    = await callLlm(prompt, systemPrompt, 600);
+    const raw = await callLlm(prompt, systemPrompt, 600);
     const result = parseJsonResponse(raw);
 
     const required = [
@@ -110,7 +114,11 @@ Respond ONLY with this JSON:
 
 // createThesisAlignment
 // Called by POST /api/ai/thesis-alignment/:projectId
-export async function createThesisAlignment(investorProfile, project, assessment) {
+export async function createThesisAlignment(
+  investorProfile,
+  project,
+  assessment,
+) {
   const systemPrompt =
     "You are a venture capital analyst. Respond ONLY in JSON, no markdown, no explanation.";
 
@@ -146,15 +154,15 @@ Respond ONLY with this JSON:
 }`;
 
   try {
-    const raw    = await callLlm(prompt, systemPrompt, 600);
+    const raw = await callLlm(prompt, systemPrompt, 600);
     const result = parseJsonResponse(raw);
 
     return {
-      alignmentScore:       Number(result.alignmentScore)    || 0,
-      alignmentSummary:     result.alignmentSummary          || "",
-      thesisMatches:        result.thesisMatches             || [],
-      thesisMismatches:     result.thesisMismatches          || [],
-      recommendedQuestions: result.recommendedQuestions      || [],
+      alignmentScore: Number(result.alignmentScore) || 0,
+      alignmentSummary: result.alignmentSummary || "",
+      thesisMatches: result.thesisMatches || [],
+      thesisMismatches: result.thesisMismatches || [],
+      recommendedQuestions: result.recommendedQuestions || [],
     };
   } catch (error) {
     console.error("[LLM] createThesisAlignment failed:", error.message);
@@ -168,13 +176,14 @@ export async function createPitchAnalysis(project, assessment) {
   const systemPrompt =
     "You are a venture capital analyst. Respond ONLY in JSON, no markdown, no explanation.";
 
-  const teamList = project.teamMembers
-    ?.map(m => `${m.name} (${m.role})`)
-    .join(", ") || "Not specified";
+  const teamList =
+    project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") ||
+    "Not specified";
 
-  const milestoneList = project.milestones
-    ?.map(m => `${m.title}${m.completedAt ? " ✓" : ""}`)
-    .join(", ") || "None";
+  const milestoneList =
+    project.milestones
+      ?.map((m) => `${m.title}${m.completedAt ? " ✓" : ""}`)
+      .join(", ") || "None";
 
   const prompt = `Analyze this startup pitch from an investor perspective.
 
@@ -203,15 +212,15 @@ Respond ONLY with this JSON:
 }`;
 
   try {
-    const raw    = await callLlm(prompt, systemPrompt, 500);
+    const raw = await callLlm(prompt, systemPrompt, 500);
     const result = parseJsonResponse(raw);
 
     return {
-      pitchStrengths:  result.pitchStrengths  || [],
+      pitchStrengths: result.pitchStrengths || [],
       pitchWeaknesses: result.pitchWeaknesses || [],
       missingElements: result.missingElements || [],
-      overallClarity:  Number(result.overallClarity) || 0,
-      investorAppeal:  Number(result.investorAppeal)  || 0,
+      overallClarity: Number(result.overallClarity) || 0,
+      investorAppeal: Number(result.investorAppeal) || 0,
     };
   } catch (error) {
     console.error("[LLM] createPitchAnalysis failed:", error.message);

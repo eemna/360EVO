@@ -28,10 +28,18 @@ export function AINarrativePanel({
 
       <Tabs defaultValue="summary">
         <TabsList className="flex w-full">
-          <TabsTrigger value="summary" className="flex-1 text-xs">Summary</TabsTrigger>
-          <TabsTrigger value="strengths" className="flex-1 text-xs">Strengths</TabsTrigger>
-          <TabsTrigger value="risks" className="flex-1 text-xs">Risks</TabsTrigger>
-          <TabsTrigger value="market" className="flex-1 text-xs">Market</TabsTrigger>
+          <TabsTrigger value="summary" className="flex-1 text-xs">
+            Summary
+          </TabsTrigger>
+          <TabsTrigger value="strengths" className="flex-1 text-xs">
+            Strengths
+          </TabsTrigger>
+          <TabsTrigger value="risks" className="flex-1 text-xs">
+            Risks
+          </TabsTrigger>
+          <TabsTrigger value="market" className="flex-1 text-xs">
+            Market
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="summary" className="pt-4">
@@ -67,10 +75,13 @@ function NarrativeText({
   }
 
   const leftBorderColor =
-    accent === "green" ? "border-green-400" :
-    accent === "red"   ? "border-red-400" :
-    accent === "blue"  ? "border-blue-400" :
-                         "border-indigo-400";
+    accent === "green"
+      ? "border-green-400"
+      : accent === "red"
+        ? "border-red-400"
+        : accent === "blue"
+          ? "border-blue-400"
+          : "border-indigo-400";
 
   return (
     <div className={`border-l-4 pl-4 ${leftBorderColor}`}>

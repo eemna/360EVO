@@ -217,11 +217,9 @@ export const verifyEmail = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
     if (verification.expiresAt < new Date()) {
-      return res
-        .status(400)
-        .json({
-          message: "Verification link has expired. Please request a new one.",
-        });
+      return res.status(400).json({
+        message: "Verification link has expired. Please request a new one.",
+      });
     }
     await prisma.user.update({
       where: { id: verification.userId },

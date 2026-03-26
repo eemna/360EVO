@@ -3,11 +3,20 @@ import { prisma } from "../config/prisma.js";
 const VALID_RISK_TOLERANCE = ["LOW", "MEDIUM", "HIGH"];
 
 function validatePayload(data) {
-  if (data.riskTolerance && !VALID_RISK_TOLERANCE.includes(data.riskTolerance)) {
+  if (
+    data.riskTolerance &&
+    !VALID_RISK_TOLERANCE.includes(data.riskTolerance)
+  ) {
     return `riskTolerance must be one of: ${VALID_RISK_TOLERANCE.join(", ")}`;
   }
 
-  for (const field of ["industries", "technologies", "stages", "geographicPrefs", "dealStructures"]) {
+  for (const field of [
+    "industries",
+    "technologies",
+    "stages",
+    "geographicPrefs",
+    "dealStructures",
+  ]) {
     if (data[field] !== undefined && !Array.isArray(data[field])) {
       return `${field} must be an array`;
     }
@@ -21,7 +30,7 @@ function validatePayload(data) {
     return "fundingMin must be ≤ fundingMax";
   }
 
-  return null; 
+  return null;
 }
 
 export const getInvestorProfile = async (req, res) => {
@@ -31,7 +40,9 @@ export const getInvestorProfile = async (req, res) => {
     });
 
     if (!profile) {
-      return res.status(404).json({ message: "Investor profile not found. Use POST to create one." });
+      return res.status(404).json({
+        message: "Investor profile not found. Use POST to create one.",
+      });
     }
 
     res.status(200).json(profile);
@@ -48,32 +59,43 @@ export const createInvestorProfile = async (req, res) => {
     });
 
     if (existing) {
-      return res.status(409).json({ message: "Profile already exists. Use PUT to update it." });
+      return res
+        .status(409)
+        .json({ message: "Profile already exists. Use PUT to update it." });
     }
 
     const error = validatePayload(req.body);
     if (error) return res.status(400).json({ message: error });
 
     const {
-      industries, technologies, stages, fundingMin, fundingMax,
-      currency, geographicPrefs, riskTolerance, dealStructures,
-      mustHaves, exclusions, investmentThesis,
+      industries,
+      technologies,
+      stages,
+      fundingMin,
+      fundingMax,
+      currency,
+      geographicPrefs,
+      riskTolerance,
+      dealStructures,
+      mustHaves,
+      exclusions,
+      investmentThesis,
     } = req.body;
 
     const profile = await prisma.investorProfile.create({
       data: {
-        userId:           req.user.id,
-        industries:       industries       ?? [],
-        technologies:     technologies     ?? [],
-        stages:           stages           ?? [],
-        fundingMin:       fundingMin       ?? null,
-        fundingMax:       fundingMax       ?? null,
-        currency:         currency         ?? null,
-        geographicPrefs:  geographicPrefs  ?? [],
-        riskTolerance:    riskTolerance    ?? "MEDIUM",
-        dealStructures:   dealStructures   ?? [],
-        mustHaves:        mustHaves        ?? null,
-        exclusions:       exclusions       ?? null,
+        userId: req.user.id,
+        industries: industries ?? [],
+        technologies: technologies ?? [],
+        stages: stages ?? [],
+        fundingMin: fundingMin ?? null,
+        fundingMax: fundingMax ?? null,
+        currency: currency ?? null,
+        geographicPrefs: geographicPrefs ?? [],
+        riskTolerance: riskTolerance ?? "MEDIUM",
+        dealStructures: dealStructures ?? [],
+        mustHaves: mustHaves ?? null,
+        exclusions: exclusions ?? null,
         investmentThesis: investmentThesis ?? null,
       },
     });
@@ -92,7 +114,9 @@ export const updateInvestorProfile = async (req, res) => {
     });
 
     if (!existing) {
-      return res.status(404).json({ message: "Profile not found. Use POST to create one first." });
+      return res
+        .status(404)
+        .json({ message: "Profile not found. Use POST to create one first." });
     }
 
     const error = validatePayload(req.body);
@@ -100,9 +124,18 @@ export const updateInvestorProfile = async (req, res) => {
 
     const patch = {};
     const fields = [
-      "industries", "technologies", "stages", "fundingMin", "fundingMax",
-      "currency", "geographicPrefs", "riskTolerance", "dealStructures",
-      "mustHaves", "exclusions", "investmentThesis",
+      "industries",
+      "technologies",
+      "stages",
+      "fundingMin",
+      "fundingMax",
+      "currency",
+      "geographicPrefs",
+      "riskTolerance",
+      "dealStructures",
+      "mustHaves",
+      "exclusions",
+      "investmentThesis",
     ];
     fields.forEach((field) => {
       if (req.body[field] !== undefined) patch[field] = req.body[field];

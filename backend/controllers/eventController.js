@@ -299,7 +299,7 @@ export const registerForEvent = async (req, res, next) => {
         .json({ message: "Already registered for this event" });
     }
 
-const registration = await prisma.eventRegistration.create({
+    const registration = await prisma.eventRegistration.create({
       data: { eventId: id, userId },
     });
 
@@ -311,7 +311,6 @@ const registration = await prisma.eventRegistration.create({
       link: `/events/${id}`,
     });
 
-    
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, email: true },
@@ -374,7 +373,6 @@ const registration = await prisma.eventRegistration.create({
         </div>
       `,
     }).catch((err) => console.error("Confirmation email failed:", err));
-   
 
     res.status(201).json({ message: "Registered successfully", registration });
   } catch (error) {

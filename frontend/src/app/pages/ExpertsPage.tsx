@@ -77,7 +77,6 @@ export default function ExpertsPage() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  
   const [search, setSearch] = useState("");
   const [expertise, setExpertise] = useState("");
   const [industry, setIndustry] = useState("");

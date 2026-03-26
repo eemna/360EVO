@@ -31,7 +31,14 @@ export function IRProgressRing({ score, size = 160 }: IRProgressRingProps) {
     <div className="flex flex-col items-center gap-2">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {/* Track */}
-        <circle cx={cx} cy={cx} r={r} fill="none" stroke="#e5e7eb" strokeWidth={size * 0.07} />
+        <circle
+          cx={cx}
+          cy={cx}
+          r={r}
+          fill="none"
+          stroke="#e5e7eb"
+          strokeWidth={size * 0.07}
+        />
         {/* Fill */}
         <circle
           cx={cx}
@@ -43,7 +50,9 @@ export function IRProgressRing({ score, size = 160 }: IRProgressRingProps) {
           strokeDasharray={`${dash} ${circ}`}
           strokeLinecap="round"
           transform={`rotate(-90 ${cx} ${cx})`}
-          style={{ transition: "stroke-dasharray 1.3s cubic-bezier(0.16,1,0.3,1)" }}
+          style={{
+            transition: "stroke-dasharray 1.3s cubic-bezier(0.16,1,0.3,1)",
+          }}
         />
         {/* Score */}
         <text
@@ -51,7 +60,12 @@ export function IRProgressRing({ score, size = 160 }: IRProgressRingProps) {
           y={cx - size * 0.05}
           textAnchor="middle"
           dominantBaseline="central"
-          style={{ fontFamily: "inherit", fontSize: size * 0.22, fontWeight: 700, fill: color }}
+          style={{
+            fontFamily: "inherit",
+            fontSize: size * 0.22,
+            fontWeight: 700,
+            fill: color,
+          }}
         >
           {animated}
         </text>
@@ -60,7 +74,11 @@ export function IRProgressRing({ score, size = 160 }: IRProgressRingProps) {
           y={cx + size * 0.14}
           textAnchor="middle"
           dominantBaseline="central"
-          style={{ fontFamily: "inherit", fontSize: size * 0.075, fill: "#9ca3af" }}
+          style={{
+            fontFamily: "inherit",
+            fontSize: size * 0.075,
+            fill: "#9ca3af",
+          }}
         >
           / 100
         </text>
@@ -83,16 +101,19 @@ interface BreakdownProps {
 }
 
 const DIM_META: Record<string, { label: string; weight: string }> = {
-  financial:   { label: "Financial",   weight: "25%" },
-  market:      { label: "Market",      weight: "25%" },
-  team:        { label: "Team",        weight: "20%" },
-  traction:    { label: "Traction",    weight: "20%" },
+  financial: { label: "Financial", weight: "25%" },
+  market: { label: "Market", weight: "25%" },
+  team: { label: "Team", weight: "20%" },
+  traction: { label: "Traction", weight: "20%" },
   competitive: { label: "Competitive", weight: "10%" },
 };
 
 export function AssessmentBreakdown({ breakdown }: BreakdownProps) {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setMounted(true), 200); return () => clearTimeout(t); }, []);
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 200);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -103,10 +124,14 @@ export function AssessmentBreakdown({ breakdown }: BreakdownProps) {
           <div key={key} className="space-y-1.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">{meta.label}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {meta.label}
+                </span>
                 <span className="text-xs text-gray-400">({meta.weight})</span>
               </div>
-              <span className="text-sm font-semibold" style={{ color }}>{val}</span>
+              <span className="text-sm font-semibold" style={{ color }}>
+                {val}
+              </span>
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div

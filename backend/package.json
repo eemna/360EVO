@@ -13,10 +13,12 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testMatch": ["**/test/**/*.test.js"],
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
     "transform": {
       "^.+\\.js$": "babel-jest"
-    } 
+    }
   },
   "keywords": [],
   "author": "",

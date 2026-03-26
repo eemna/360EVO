@@ -1,6 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
@@ -41,16 +46,28 @@ interface Match {
 }
 
 function matchScoreColor(score: number) {
-  if (score >= 70) return { text: "text-green-600", bg: "bg-green-100 border-green-200" };
-  if (score >= 40) return { text: "text-amber-600", bg: "bg-amber-100 border-amber-200" };
+  if (score >= 70)
+    return { text: "text-green-600", bg: "bg-green-100 border-green-200" };
+  if (score >= 40)
+    return { text: "text-amber-600", bg: "bg-amber-100 border-amber-200" };
   return { text: "text-red-600", bg: "bg-red-100 border-red-200" };
 }
 
-function CategoryScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) {
+function CategoryScoreBar({
+  label,
+  value,
+  max = 25,
+}: {
+  label: string;
+  value: number;
+  max?: number;
+}) {
   const pct = Math.min(100, (value / max) * 100);
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-24 text-right flex-shrink-0 capitalize">{label}</span>
+      <span className="text-xs text-gray-500 w-24 text-right flex-shrink-0 capitalize">
+        {label}
+      </span>
       <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full bg-indigo-500 transition-all duration-700"
@@ -67,14 +84,21 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <Target className="w-8 h-8 text-gray-200 mb-3" />
-        <p className="text-sm text-gray-400">Select a match to see detailed reasoning</p>
+        <p className="text-sm text-gray-400">
+          Select a match to see detailed reasoning
+        </p>
       </div>
     );
   }
 
   const cats = match.categoryScores;
   const maxValues: Record<string, number> = {
-    industry: 25, stage: 20, technology: 20, funding: 15, geography: 10, irBonus: 10,
+    industry: 25,
+    stage: 20,
+    technology: 20,
+    funding: 15,
+    geography: 10,
+    irBonus: 10,
   };
 
   return (
@@ -97,7 +121,12 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
         </p>
         <div className="space-y-2">
           {Object.entries(cats).map(([k, v]) => (
-            <CategoryScoreBar key={k} label={k} value={v} max={maxValues[k] ?? 25} />
+            <CategoryScoreBar
+              key={k}
+              label={k}
+              value={v}
+              max={maxValues[k] ?? 25}
+            />
           ))}
         </div>
       </div>
@@ -111,7 +140,11 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
             <div key={k} className="flex items-start gap-2 text-sm">
               <span
                 className={`mt-0.5 w-3 h-3 rounded-full flex-shrink-0 ${
-                  v === true ? "bg-green-400" : v === false ? "bg-red-300" : "bg-gray-200"
+                  v === true
+                    ? "bg-green-400"
+                    : v === false
+                      ? "bg-red-300"
+                      : "bg-gray-200"
                 }`}
               />
               <span className="text-gray-600 capitalize">
@@ -146,7 +179,9 @@ function MatchCard({
   return (
     <div
       className={`bg-white rounded-2xl border transition-all cursor-pointer ${
-        selected ? "border-indigo-400 shadow-md shadow-indigo-50" : "border-gray-200 hover:shadow-sm"
+        selected
+          ? "border-indigo-400 shadow-md shadow-indigo-50"
+          : "border-gray-200 hover:shadow-sm"
       } ${dismissed ? "opacity-50" : ""}`}
       onClick={onSelect}
     >
@@ -175,20 +210,35 @@ function MatchCard({
                 "{match.thesisAlignmentSummary}"
               </p>
             ) : (
-              <p className="text-xs text-gray-300">No thesis alignment generated yet</p>
+              <p className="text-xs text-gray-300">
+                No thesis alignment generated yet
+              </p>
             )}
           </div>
 
           {/* Score ring */}
           <div className="flex flex-col items-center gap-1 flex-shrink-0">
             <svg width="56" height="56" viewBox="0 0 56 56">
-              <circle cx="28" cy="28" r="22" fill="none" stroke="#e5e7eb" strokeWidth="5" />
               <circle
                 cx="28"
                 cy="28"
                 r="22"
                 fill="none"
-                stroke={match.matchScore >= 70 ? "#16a34a" : match.matchScore >= 40 ? "#d97706" : "#dc2626"}
+                stroke="#e5e7eb"
+                strokeWidth="5"
+              />
+              <circle
+                cx="28"
+                cy="28"
+                r="22"
+                fill="none"
+                stroke={
+                  match.matchScore >= 70
+                    ? "#16a34a"
+                    : match.matchScore >= 40
+                      ? "#d97706"
+                      : "#dc2626"
+                }
                 strokeWidth="5"
                 strokeDasharray={`${(match.matchScore / 100) * 138.2} 138.2`}
                 strokeLinecap="round"
@@ -246,48 +296,54 @@ export default function MatchFeedPage() {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [filter, setFilter] = useState<"all" | "active" | "dismissed">("active");
+  const [filter, setFilter] = useState<"all" | "active" | "dismissed">(
+    "active",
+  );
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
-  const fetchMatches = async () => {
-    try {
-      setLoading(true);
-      const { data } = await api.get("/ai/matches/feed");
-      setMatches(data);
-    } catch {
-      showToast({ type: "error", title: "Failed to load matches", message: "" });
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchMatches = useCallback(async () => {
+  try {
+    setLoading(true);
+    const { data } = await api.get("/ai/matches/feed?dismissed=true");
+    setMatches(data);
+  } catch {
+    showToast({ type: "error", title: "Failed to load matches", message: "" });
+  } finally {
+    setLoading(false);
+  }
+}, [showToast]);
 
-  useEffect(() => { fetchMatches(); }, []);
-
-  const handleGenerate = async () => {
-    try {
-      setGenerating(true);
-      const { data } = await api.post("/ai/matches/generate");
+  useEffect(() => {
+    fetchMatches();
+  }, [fetchMatches]);
+const handleGenerate = async () => {
+  try {
+    setGenerating(true);
+    await api.post("/ai/matches/generate");
+    await fetchMatches(); 
+    setMatches(prev => {
       showToast({
         type: "success",
-        title: `Generated ${data.matches?.length ?? 0} matches`,
+        title: `${prev.length} matches in your feed`,
         message: "Match feed updated.",
       });
-      await fetchMatches();
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data?.message ??
-        "Generation failed";
-      showToast({ type: "error", title: "Error", message: msg });
-    } finally {
-      setGenerating(false);
-    }
-  };
+      return prev;
+    });
+  } catch (err: unknown) {
+    const msg =
+      (err as { response?: { data?: { message?: string } } })?.response?.data
+        ?.message ?? "Generation failed";
+    showToast({ type: "error", title: "Error", message: msg });
+  } finally {
+    setGenerating(false);
+  }
+};
 
   const handleDismiss = async (matchId: string) => {
     try {
       await api.put(`/ai/matches/${matchId}/status`, { status: "DISMISSED" });
       setMatches((prev) =>
-        prev.map((m) => (m.id === matchId ? { ...m, status: "DISMISSED" } : m))
+        prev.map((m) => (m.id === matchId ? { ...m, status: "DISMISSED" } : m)),
       );
       if (selectedMatch?.id === matchId) setSelectedMatch(null);
     } catch {
@@ -296,7 +352,7 @@ export default function MatchFeedPage() {
   };
 
   const filtered = matches.filter((m) => {
-    if (filter === "active")    return m.status !== "DISMISSED";
+    if (filter === "active") return m.status !== "DISMISSED";
     if (filter === "dismissed") return m.status === "DISMISSED";
     return true;
   });
@@ -317,9 +373,13 @@ export default function MatchFeedPage() {
           className="bg-indigo-600 hover:bg-indigo-700 gap-2"
         >
           {generating ? (
-            <><LoadingSpinner size="sm" /> Generating...</>
+            <>
+              <LoadingSpinner size="sm" /> Generating...
+            </>
           ) : (
-            <><RefreshCw className="w-4 h-4" /> Refresh Matches</>
+            <>
+              <RefreshCw className="w-4 h-4" /> Refresh Matches
+            </>
           )}
         </Button>
       </div>
@@ -336,7 +396,11 @@ export default function MatchFeedPage() {
                 : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"
             }`}
           >
-            {f === "active" ? "Active" : f === "all" ? "All Matches" : "Dismissed"}
+            {f === "active"
+              ? "Active"
+              : f === "all"
+                ? "All Matches"
+                : "Dismissed"}
           </button>
         ))}
       </div>
@@ -345,11 +409,13 @@ export default function MatchFeedPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             {[...Array(4)].map((_, i) => (
-              <Card key={i}><CardContent className="pt-5 space-y-3">
-                <Skeleton className="h-5 w-1/2" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-full" />
-              </CardContent></Card>
+              <Card key={i}>
+                <CardContent className="pt-5 space-y-3">
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                </CardContent>
+              </Card>
             ))}
           </div>
           <Skeleton className="h-64 rounded-xl" />
