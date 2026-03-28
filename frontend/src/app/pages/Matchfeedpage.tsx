@@ -301,43 +301,47 @@ export default function MatchFeedPage() {
   );
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
 
-const fetchMatches = useCallback(async () => {
-  try {
-    setLoading(true);
-    const { data } = await api.get("/ai/matches/feed?dismissed=true");
-    setMatches(data);
-  } catch {
-    showToast({ type: "error", title: "Failed to load matches", message: "" });
-  } finally {
-    setLoading(false);
-  }
-}, [showToast]);
+  const fetchMatches = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get("/ai/matches/feed?dismissed=true");
+      setMatches(data);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Failed to load matches",
+        message: "",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
 
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
-const handleGenerate = async () => {
-  try {
-    setGenerating(true);
-    await api.post("/ai/matches/generate");
-    await fetchMatches(); 
-    setMatches(prev => {
-      showToast({
-        type: "success",
-        title: `${prev.length} matches in your feed`,
-        message: "Match feed updated.",
+  const handleGenerate = async () => {
+    try {
+      setGenerating(true);
+      await api.post("/ai/matches/generate");
+      await fetchMatches();
+      setMatches((prev) => {
+        showToast({
+          type: "success",
+          title: `${prev.length} matches in your feed`,
+          message: "Match feed updated.",
+        });
+        return prev;
       });
-      return prev;
-    });
-  } catch (err: unknown) {
-    const msg =
-      (err as { response?: { data?: { message?: string } } })?.response?.data
-        ?.message ?? "Generation failed";
-    showToast({ type: "error", title: "Error", message: msg });
-  } finally {
-    setGenerating(false);
-  }
-};
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Generation failed";
+      showToast({ type: "error", title: "Error", message: msg });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const handleDismiss = async (matchId: string) => {
     try {
