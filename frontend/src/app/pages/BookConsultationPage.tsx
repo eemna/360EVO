@@ -210,6 +210,7 @@ export function BookConsultationPage() {
         topic,
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
+        dayOfWeek: selectedDate.getDay(),
       });
 
       // Refresh bookings so the slot appears taken on the calendar

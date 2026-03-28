@@ -34,6 +34,7 @@ export const createBooking = async (req, res, next) => {
       topic,
       meetingType,
       location,
+      dayOfWeek,
     } = req.body;
 
     if (!expertId || !date || !timeSlot || !duration) {
@@ -79,7 +80,7 @@ export const createBooking = async (req, res, next) => {
     endDateTime.setMinutes(endDateTime.getMinutes() + duration);
 
     // Check weekly availability
-    const day = startDateTime.getDay();
+    const day = dayOfWeek ?? startDateTime.getUTCDay();
 
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
