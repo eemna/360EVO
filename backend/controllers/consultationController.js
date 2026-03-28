@@ -79,7 +79,7 @@ export const createBooking = async (req, res, next) => {
     endDateTime.setMinutes(endDateTime.getMinutes() + duration);
 
     // Check weekly availability
-    const day = startDateTime.getUTCDay();
+    const day = startDateTime.getDay();
 
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
@@ -97,10 +97,10 @@ export const createBooking = async (req, res, next) => {
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
     const availableStart = new Date(startDateTime);
-    availableStart.setUTCHours(startHour, startMinute, 0, 0);
+    availableStart.setHours(startHour, startMinute, 0, 0);
 
     const availableEnd = new Date(startDateTime);
-    availableEnd.setUTCHours(endHour, endMinute, 0, 0);
+    availableEnd.setHours(endHour, endMinute, 0, 0);
 
     if (startDateTime < availableStart || endDateTime > availableEnd) {
       return res.status(400).json({
