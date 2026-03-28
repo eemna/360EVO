@@ -58,15 +58,15 @@ export const createBooking = async (req, res, next) => {
     }
 
     // Build start datetime
-const startDateTime = startDateTimeISO
-  ? new Date(startDateTimeISO)
-  : (() => {
-      const bookingDate = new Date(date);
-      const [hour, minute] = timeSlot.split(":").map(Number);
-      const dt = new Date(bookingDate);
-      dt.setHours(hour, minute, 0, 0);
-      return dt;
-    })();
+    const startDateTime = startDateTimeISO
+      ? new Date(startDateTimeISO)
+      : (() => {
+          const bookingDate = new Date(date);
+          const [hour, minute] = timeSlot.split(":").map(Number);
+          const dt = new Date(bookingDate);
+          dt.setHours(hour, minute, 0, 0);
+          return dt;
+        })();
 
     if (startDateTime < new Date()) {
       return res.status(400).json({
@@ -79,7 +79,7 @@ const startDateTime = startDateTimeISO
     endDateTime.setMinutes(endDateTime.getMinutes() + duration);
 
     // Check weekly availability
-    const day = startDateTime.getDay();
+    const day = startDateTime.getUTCDay();
 
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
@@ -97,10 +97,10 @@ const startDateTime = startDateTimeISO
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
     const availableStart = new Date(startDateTime);
-    availableStart.setHours(startHour, startMinute, 0, 0);
+    availableStart.setUTCHours(startHour, startMinute, 0, 0);
 
     const availableEnd = new Date(startDateTime);
-    availableEnd.setHours(endHour, endMinute, 0, 0);
+    availableEnd.setUTCHours(endHour, endMinute, 0, 0);
 
     if (startDateTime < availableStart || endDateTime > availableEnd) {
       return res.status(400).json({

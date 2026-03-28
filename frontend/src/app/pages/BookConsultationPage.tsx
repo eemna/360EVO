@@ -196,9 +196,9 @@ export function BookConsultationPage() {
       }
 
       setBooking(true);
-    const [hour, minute] = selectedSlot.split(":").map(Number);
-    const startDateTime = new Date(selectedDate);
-    startDateTime.setHours(hour, minute, 0, 0);
+      const [hour, minute] = selectedSlot.split(":").map(Number);
+      const startDateTime = new Date(selectedDate);
+      startDateTime.setHours(hour, minute, 0, 0);
       // Create booking — starts as PENDING_PAYMENT
       const { data: newBooking } = await api.post("/consultations/request", {
         expertId: expert.id,

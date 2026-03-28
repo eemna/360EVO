@@ -58,33 +58,49 @@ export default function RegistrationPage() {
   const isPasswordStrong = (password: string) => {
     if (password.length < 8) return false;
     return (
-      /[A-Z]/.test(password) &&
-      /[a-z]/.test(password) &&
-      /[0-9]/.test(password)
+      /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password)
     );
   };
 
   const handleNext = () => {
     if (currentStep === 1 && !formData.role) {
-      showToast({ type: "warning", title: "Select a role", message: "Please choose your role." });
+      showToast({
+        type: "warning",
+        title: "Select a role",
+        message: "Please choose your role.",
+      });
       return;
     }
 
     if (currentStep === 2) {
-      if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
-        showToast({ type: "warning", title: "Missing fields", message: "Please complete all required fields." });
+      if (
+        !formData.fullName ||
+        !formData.email ||
+        !formData.password ||
+        !formData.confirmPassword
+      ) {
+        showToast({
+          type: "warning",
+          title: "Missing fields",
+          message: "Please complete all required fields.",
+        });
         return;
       }
       if (!isPasswordStrong(formData.password)) {
         showToast({
           type: "error",
           title: "Weak password",
-          message: "Password must be at least 8 characters and include uppercase, lowercase, and number.",
+          message:
+            "Password must be at least 8 characters and include uppercase, lowercase, and number.",
         });
         return;
       }
       if (formData.password !== formData.confirmPassword) {
-        showToast({ type: "error", title: "Password mismatch", message: "Passwords do not match." });
+        showToast({
+          type: "error",
+          title: "Password mismatch",
+          message: "Passwords do not match.",
+        });
         return;
       }
     }
@@ -110,7 +126,11 @@ export default function RegistrationPage() {
         hourlyRate: formData.hourlyRate,
       });
 
-      showToast({ type: "success", title: "Check your email", message: "We sent you a verification link." });
+      showToast({
+        type: "success",
+        title: "Check your email",
+        message: "We sent you a verification link.",
+      });
       navigate("/login");
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -181,7 +201,11 @@ export default function RegistrationPage() {
                       : "bg-white border-gray-300 text-gray-400"
                   }`}
                 >
-                  {currentStep > step ? <CheckCircle2 className="w-5 h-5" /> : step}
+                  {currentStep > step ? (
+                    <CheckCircle2 className="w-5 h-5" />
+                  ) : (
+                    step
+                  )}
                 </div>
                 {step < 3 && (
                   <div
@@ -197,7 +221,6 @@ export default function RegistrationPage() {
 
         <Card className="p-8 shadow-md border border-gray-200">
           <form onSubmit={handleSubmit}>
-
             {/* ── STEP 1: Choose Role ── */}
             {currentStep === 1 && (
               <div className="space-y-5">
@@ -209,60 +232,64 @@ export default function RegistrationPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {roles.map(({ value, label, icon, description, color, border }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => updateFormData("role", value)}
-                      className={`p-5 border-2 rounded-xl text-left transition-all ${
-                        formData.role === value
-                          ? `${border} ${color}`
-                          : "border-gray-200 hover:border-gray-300 bg-white"
-                      }`}
-                    >
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
-                          formData.role === value ? color : "bg-gray-100"
+                  {roles.map(
+                    ({ value, label, icon, description, color, border }) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => updateFormData("role", value)}
+                        className={`p-5 border-2 rounded-xl text-left transition-all ${
+                          formData.role === value
+                            ? `${border} ${color}`
+                            : "border-gray-200 hover:border-gray-300 bg-white"
                         }`}
                       >
-                        <span
-                          className={
-                            formData.role === value
-                              ? value === "member"
-                                ? "text-green-600"
-                                : value === "startup"
-                                ? "text-blue-600"
-                                : value === "expert"
-                                ? "text-purple-600"
-                                : "text-amber-600"
-                              : "text-gray-500"
-                          }
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
+                            formData.role === value ? color : "bg-gray-100"
+                          }`}
                         >
-                          {icon}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-gray-900">{label}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                        {description}
-                      </p>
-                      {formData.role === value && (
-                        <div className="mt-2 flex items-center gap-1">
-                          <CheckCircle2
-                            className={`w-4 h-4 ${
-                              value === "member"
-                                ? "text-green-600"
-                                : value === "startup"
-                                ? "text-blue-600"
-                                : value === "expert"
-                                ? "text-purple-600"
-                                : "text-amber-600"
-                            }`}
-                          />
-                          <span className="text-xs font-medium text-gray-600">Selected</span>
+                          <span
+                            className={
+                              formData.role === value
+                                ? value === "member"
+                                  ? "text-green-600"
+                                  : value === "startup"
+                                    ? "text-blue-600"
+                                    : value === "expert"
+                                      ? "text-purple-600"
+                                      : "text-amber-600"
+                                : "text-gray-500"
+                            }
+                          >
+                            {icon}
+                          </span>
                         </div>
-                      )}
-                    </button>
-                  ))}
+                        <h3 className="font-semibold text-gray-900">{label}</h3>
+                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                          {description}
+                        </p>
+                        {formData.role === value && (
+                          <div className="mt-2 flex items-center gap-1">
+                            <CheckCircle2
+                              className={`w-4 h-4 ${
+                                value === "member"
+                                  ? "text-green-600"
+                                  : value === "startup"
+                                    ? "text-blue-600"
+                                    : value === "expert"
+                                      ? "text-purple-600"
+                                      : "text-amber-600"
+                              }`}
+                            />
+                            <span className="text-xs font-medium text-gray-600">
+                              Selected
+                            </span>
+                          </div>
+                        )}
+                      </button>
+                    ),
+                  )}
                 </div>
 
                 <Button
@@ -279,7 +306,9 @@ export default function RegistrationPage() {
             {/* ── STEP 2: Basic Info ── */}
             {currentStep === 2 && (
               <div className="space-y-6">
-                <h2 className="text-2xl text-center font-semibold">Basic Information</h2>
+                <h2 className="text-2xl text-center font-semibold">
+                  Basic Information
+                </h2>
 
                 <div>
                   <Label>Full Name</Label>
@@ -313,12 +342,19 @@ export default function RegistrationPage() {
                   <Input
                     type="password"
                     value={formData.confirmPassword}
-                    onChange={(e) => updateFormData("confirmPassword", e.target.value)}
+                    onChange={(e) =>
+                      updateFormData("confirmPassword", e.target.value)
+                    }
                   />
                 </div>
 
                 <div className="flex gap-3">
-                  <Button type="button" onClick={handleBack} variant="outline" className="flex-1">
+                  <Button
+                    type="button"
+                    onClick={handleBack}
+                    variant="outline"
+                    className="flex-1"
+                  >
                     Back
                   </Button>
                   <Button type="button" onClick={handleNext} className="flex-1">
@@ -331,25 +367,32 @@ export default function RegistrationPage() {
             {/* ── STEP 3: Role-specific details ── */}
             {currentStep === 3 && (
               <div className="space-y-4">
-
                 {/* STARTUP */}
                 {formData.role === "startup" && (
                   <>
-                    <h2 className="text-2xl text-center font-semibold">Company Details</h2>
+                    <h2 className="text-2xl text-center font-semibold">
+                      Company Details
+                    </h2>
                     <div>
                       <Label>Company Name</Label>
                       <Input
                         value={formData.companyName || ""}
-                        onChange={(e) => updateFormData("companyName", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("companyName", e.target.value)
+                        }
                       />
                     </div>
                     <div>
                       <Label>Startup Stage</Label>
                       <Select
                         value={formData.stage}
-                        onValueChange={(value) => updateFormData("stage", value)}
+                        onValueChange={(value) =>
+                          updateFormData("stage", value)
+                        }
                       >
-                        <SelectTrigger><SelectValue placeholder="Select stage" /></SelectTrigger>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select stage" />
+                        </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="IDEA">Idea</SelectItem>
                           <SelectItem value="PROTOTYPE">Prototype</SelectItem>
@@ -365,12 +408,16 @@ export default function RegistrationPage() {
                 {/* EXPERT */}
                 {formData.role === "expert" && (
                   <>
-                    <h2 className="text-2xl text-center font-semibold">Expert Details</h2>
+                    <h2 className="text-2xl text-center font-semibold">
+                      Expert Details
+                    </h2>
                     <div>
                       <Label>Expertise</Label>
                       <Input
                         value={formData.expertise || ""}
-                        onChange={(e) => updateFormData("expertise", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("expertise", e.target.value)
+                        }
                         placeholder="e.g. Business Strategy, Marketing"
                       />
                     </div>
@@ -379,7 +426,9 @@ export default function RegistrationPage() {
                       <Input
                         type="number"
                         value={formData.hourlyRate || ""}
-                        onChange={(e) => updateFormData("hourlyRate", e.target.value)}
+                        onChange={(e) =>
+                          updateFormData("hourlyRate", e.target.value)
+                        }
                         placeholder="e.g. 80"
                       />
                     </div>
@@ -394,16 +443,25 @@ export default function RegistrationPage() {
                         <TrendingUp className="w-8 h-8 text-amber-600" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold">Ready to Join as an Investor?</h3>
+                    <h3 className="text-xl font-semibold">
+                      Ready to Join as an Investor?
+                    </h3>
                     <p className="text-gray-600 text-sm max-w-sm mx-auto">
-                      After registration you'll be guided through a quick setup wizard to configure
-                      your investment thesis and preferences. Our AI will then match you with the
-                      most relevant startup projects.
+                      After registration you'll be guided through a quick setup
+                      wizard to configure your investment thesis and
+                      preferences. Our AI will then match you with the most
+                      relevant startup projects.
                     </p>
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left text-sm space-y-2">
-                      <p><strong>Name:</strong> {formData.fullName}</p>
-                      <p><strong>Email:</strong> {formData.email}</p>
-                      <p><strong>Role:</strong> Investor</p>
+                      <p>
+                        <strong>Name:</strong> {formData.fullName}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {formData.email}
+                      </p>
+                      <p>
+                        <strong>Role:</strong> Investor
+                      </p>
                     </div>
                   </div>
                 )}
@@ -416,20 +474,34 @@ export default function RegistrationPage() {
                         <User className="w-8 h-8 text-green-600" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold">Ready to Join as a Member?</h3>
+                    <h3 className="text-xl font-semibold">
+                      Ready to Join as a Member?
+                    </h3>
                     <p className="text-gray-600 text-sm">
-                      No additional details needed. Confirm your registration below.
+                      No additional details needed. Confirm your registration
+                      below.
                     </p>
                     <div className="bg-gray-50 rounded-lg p-4 text-left text-sm space-y-2 border border-gray-200">
-                      <p><strong>Name:</strong> {formData.fullName}</p>
-                      <p><strong>Email:</strong> {formData.email}</p>
-                      <p><strong>Role:</strong> Member</p>
+                      <p>
+                        <strong>Name:</strong> {formData.fullName}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {formData.email}
+                      </p>
+                      <p>
+                        <strong>Role:</strong> Member
+                      </p>
                     </div>
                   </div>
                 )}
 
                 <div className="flex gap-3 pt-2">
-                  <Button type="button" onClick={handleBack} variant="outline" className="flex-1">
+                  <Button
+                    type="button"
+                    onClick={handleBack}
+                    variant="outline"
+                    className="flex-1"
+                  >
                     Back
                   </Button>
                   <Button type="submit" disabled={loading} className="flex-1">
@@ -443,7 +515,9 @@ export default function RegistrationPage() {
 
         <p className="text-center mt-6 text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">Sign in</Link>
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Sign in
+          </Link>
         </p>
       </div>
     </div>
