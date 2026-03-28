@@ -22,6 +22,7 @@ const getNotifSettings = async (userId) => {
 };
 
 export const createBooking = async (req, res, next) => {
+  console.log("[CB START] body:", JSON.stringify(req.body));
   try {
     const memberId = req.user.id;
     const {
@@ -68,15 +69,15 @@ export const createBooking = async (req, res, next) => {
           dt.setHours(hour, minute, 0, 0);
           return dt;
         })();
-console.log("[BOOKING DEBUG]", {
-  dayOfWeek,
-  startDateTimeISO,
-  startDateTime: startDateTime.toISOString(),
-  computedDay: startDateTime.getUTCDay(),
-  now: new Date().toISOString(),
-  isPast: startDateTime < new Date(),
-  availability: expert?.profile?.weeklyAvailability,
-});
+    console.log("[BOOKING DEBUG]", {
+      dayOfWeek,
+      startDateTimeISO,
+      startDateTime: startDateTime.toISOString(),
+      computedDay: startDateTime.getUTCDay(),
+      now: new Date().toISOString(),
+      isPast: startDateTime < new Date(),
+      availability: expert?.profile?.weeklyAvailability,
+    });
     if (startDateTime < new Date()) {
       return res.status(400).json({
         message: "Cannot book past time",
