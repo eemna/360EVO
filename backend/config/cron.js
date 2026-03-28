@@ -4,7 +4,7 @@ import { prisma } from "../config/prisma.js";
 import { calculateMatchScore } from "../services/matchingEngine.js";
 import { generateNarrative } from "../services/narrativeGenerator.js";
 
-const job = new cron.CronJob("*/14 * * * *", function () {
+const job = new cron.CronJob("*/10 * * * *", function () {
   https
     .get(process.env.API_URL, (res) => {
       if (res.statusCode === 200) console.log("GET request sent successfully");
