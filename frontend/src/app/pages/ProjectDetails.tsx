@@ -740,6 +740,7 @@ export default function ProjectDetailsPage() {
       </div>
       <div className="max-w-7xl mx-auto px-6 pb-10">
         <AIAssessmentSection
+        
           projectId={id!}
           projectStatus={project.status}
           isAdmin={isAdmin}

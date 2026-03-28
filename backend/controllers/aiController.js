@@ -105,6 +105,7 @@ export const generateMatches = async (req, res, next) => {
             categoryScores: match.categoryScores,
             reasoning: match.reasoning,
             status: "SUGGESTED",
+            
           },
           create: {
             investorId: match.investorId,

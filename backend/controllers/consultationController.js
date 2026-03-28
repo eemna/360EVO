@@ -28,6 +28,7 @@ export const createBooking = async (req, res, next) => {
       expertId,
       date,
       timeSlot,
+      startDateTimeISO,
       duration,
       message,
       topic,
@@ -57,11 +58,15 @@ export const createBooking = async (req, res, next) => {
     }
 
     // Build start datetime
-    const bookingDate = new Date(date);
-    const [hour, minute] = timeSlot.split(":").map(Number);
-
-    const startDateTime = new Date(bookingDate);
-    startDateTime.setHours(hour, minute, 0, 0);
+const startDateTime = startDateTimeISO
+  ? new Date(startDateTimeISO)
+  : (() => {
+      const bookingDate = new Date(date);
+      const [hour, minute] = timeSlot.split(":").map(Number);
+      const dt = new Date(bookingDate);
+      dt.setHours(hour, minute, 0, 0);
+      return dt;
+    })();
 
     if (startDateTime < new Date()) {
       return res.status(400).json({
@@ -144,6 +149,7 @@ export const createBooking = async (req, res, next) => {
 
     res.status(201).json(booking);
   } catch (error) {
+    console.error("Booking error response:", error.response?.data);
     next(error);
   }
 };
