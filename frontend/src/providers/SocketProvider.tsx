@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { SocketContext } from "../context/SocketContext";
 import { useAuth } from "../hooks/useAuth";
-import { getApiToken } from "../services/axios"; 
+import { getApiToken } from "../services/axios";
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const socketRef = useRef<Socket | null>(null);
-   const [socket, setSocket] = useState<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
 
-    const token = getApiToken(); 
+    const token = getApiToken();
 
     if (!token) return;
 
@@ -50,9 +50,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       newSocket.disconnect();
       socketRef.current = null;
-      setSocket(null); 
+      setSocket(null);
     };
-  }, [user]); 
+  }, [user]);
 
   return (
     <SocketContext.Provider value={{ socket, onlineUsers }}>

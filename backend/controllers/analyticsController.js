@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma.js";
 
-// Called internally whenever a project is viewed 
+// Called internally whenever a project is viewed
 export const trackProjectView = async (projectId) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -28,7 +28,8 @@ export const getProjectAnalytics = async (req, res, next) => {
       select: { ownerId: true },
     });
     if (!project) return res.status(404).json({ message: "Project not found" });
-    if (project.ownerId !== userId) return res.status(403).json({ message: "Forbidden" });
+    if (project.ownerId !== userId)
+      return res.status(403).json({ message: "Forbidden" });
 
     const rangeMap = { "90d": 90, "30d": 30, "7d": 7 };
     const days = rangeMap[req.query.range] || 7;

@@ -8,9 +8,10 @@ import { useToast } from "../../context/ToastContext";
 import { useLocation } from "react-router";
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
-  const location = useLocation(); 
+  const location = useLocation();
   const { showToast } = useToast();
-const pendingEmail = (location.state as { pendingEmail?: string })?.pendingEmail;
+  const pendingEmail = (location.state as { pendingEmail?: string })
+    ?.pendingEmail;
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const type = searchParams.get("type");
@@ -73,8 +74,7 @@ const pendingEmail = (location.state as { pendingEmail?: string })?.pendingEmail
   }, [token, showToast, type, email, navigate]);
 
   //  Resend verification email
-const handleResend = async () => {
-  
+  const handleResend = async () => {
     const email = pendingEmail;
 
     if (!email) {

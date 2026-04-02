@@ -5,7 +5,7 @@ import type { User } from "../context/AuthContext";
 import api, { setApiToken } from "../services/axios";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null); 
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // restore session via httpOnly refresh token cookie
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const res = await api.post("/auth/refresh-token");
         const newToken = res.data.accessToken;
 
-        setApiToken(newToken); 
+        setApiToken(newToken);
 
         const { data } = await api.get("/auth/me");
         setUser(data);
@@ -32,9 +32,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = (userData: User, accessToken: string) => {
-    setApiToken(accessToken);  
+    setApiToken(accessToken);
     setUser(userData);
-   
   };
 
   const logout = async () => {
@@ -44,9 +43,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error(error);
     }
 
-    setApiToken(null);   
+    setApiToken(null);
     setUser(null);
-   
   };
 
   return (

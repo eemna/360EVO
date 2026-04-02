@@ -1,7 +1,10 @@
 import { prisma } from "../config/prisma.js";
 import { calculateMatchScore } from "../services/matchingEngine.js";
 import crypto from "crypto";
-import {  createThesisAlignmentMoE, createPitchAnalysisMoE } from "../services/llmservice.js";
+import {
+  createThesisAlignmentMoE,
+  createPitchAnalysisMoE,
+} from "../services/llmservice.js";
 
 import { runProjectAssessment } from "../services/assessmentService.js";
 
@@ -103,7 +106,6 @@ export const generateMatches = async (req, res, next) => {
             categoryScores: match.categoryScores,
             reasoning: match.reasoning,
             status: "SUGGESTED",
-            
           },
           create: {
             investorId: match.investorId,
@@ -112,7 +114,6 @@ export const generateMatches = async (req, res, next) => {
             categoryScores: match.categoryScores,
             reasoning: match.reasoning,
             status: "SUGGESTED",
-            
           },
         }),
       ),
@@ -150,33 +151,33 @@ export const getMatchFeed = async (req, res, next) => {
       },
     });
 
-   const enriched = await Promise.all(
-  matches.map(async (match) => {
-    if (match.thesisAlignmentSummary) return match;
+    const enriched = await Promise.all(
+      matches.map(async (match) => {
+        if (match.thesisAlignmentSummary) return match;
 
-    // Fall back to LlmInsight cache if Match row wasn't updated
-    const insight = await prisma.llmInsight.findUnique({
-      where: {
-        investorId_projectId_type: {
-          investorId,
-          projectId: match.projectId,
-          type: "THESIS_ALIGNMENT",
-        },
-      },
-    });
+        // Fall back to LlmInsight cache if Match row wasn't updated
+        const insight = await prisma.llmInsight.findUnique({
+          where: {
+            investorId_projectId_type: {
+              investorId,
+              projectId: match.projectId,
+              type: "THESIS_ALIGNMENT",
+            },
+          },
+        });
 
-    if (insight?.content?.alignmentSummary) {
-      return {
-        ...match,
-        thesisAlignmentSummary: insight.content.alignmentSummary,
-      };
-    }
+        if (insight?.content?.alignmentSummary) {
+          return {
+            ...match,
+            thesisAlignmentSummary: insight.content.alignmentSummary,
+          };
+        }
 
-    return match;
-  })
-);
+        return match;
+      }),
+    );
 
-res.json(enriched);
+    res.json(enriched);
   } catch (error) {
     next(error);
   }
@@ -347,7 +348,10 @@ export const getPitchAnalysis = async (req, res, next) => {
     }
 
     // Call LLM via llmService
-    const analysis = await createPitchAnalysisMoE(project, project.aiAssessment);
+    const analysis = await createPitchAnalysisMoE(
+      project,
+      project.aiAssessment,
+    );
 
     if (!analysis) {
       return res

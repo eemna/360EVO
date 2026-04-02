@@ -62,7 +62,7 @@ export const getProjectById = async (req, res, next) => {
           viewCount: { increment: 1 },
         },
       });
-       trackProjectView(id);
+      trackProjectView(id);
     }
 
     res.json(project);

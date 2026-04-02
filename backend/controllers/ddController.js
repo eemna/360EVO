@@ -5,14 +5,17 @@ import {
   createDealBrief,
 } from "../services/ddLlmService.js";
 import crypto from "crypto";
-import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
+import {
+  getDocument,
+  GlobalWorkerOptions,
+} from "pdfjs-dist/legacy/build/pdf.mjs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 GlobalWorkerOptions.workerSrc = pathToFileURL(
-  join(__dirname, "../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs")
+  join(__dirname, "../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"),
 ).href;
 async function extractTextFromPdf(buffer) {
   const uint8 = new Uint8Array(buffer);
@@ -54,7 +57,9 @@ export const requestDueDiligence = async (req, res, next) => {
     });
 
     if (!project || project.status !== "APPROVED") {
-      return res.status(404).json({ message: "Project not found or not approved" });
+      return res
+        .status(404)
+        .json({ message: "Project not found or not approved" });
     }
 
     // @@unique prevents duplicates automatically
@@ -77,7 +82,9 @@ export const requestDueDiligence = async (req, res, next) => {
   } catch (error) {
     // Handle duplicate request (@@unique violation)
     if (error.code === "P2002") {
-      return res.status(400).json({ message: "You already sent a DD request for this project" });
+      return res
+        .status(400)
+        .json({ message: "You already sent a DD request for this project" });
     }
     next(error);
   }
@@ -108,7 +115,9 @@ export const getDdRequests = async (req, res, next) => {
     const requests = await prisma.ddRequest.findMany({
       where: { investorId: userId },
       include: {
-        project: { select: { id: true, title: true, owner: { select: { name: true } } } },
+        project: {
+          select: { id: true, title: true, owner: { select: { name: true } } },
+        },
         dataRoom: { select: { id: true, expiresAt: true } },
       },
       orderBy: { createdAt: "desc" },
@@ -130,9 +139,12 @@ export const approveDdRequest = async (req, res, next) => {
       include: { project: { select: { ownerId: true, title: true } } },
     });
 
-    if (!ddRequest) return res.status(404).json({ message: "Request not found" });
-    if (ddRequest.project.ownerId !== userId) return res.status(403).json({ message: "Forbidden" });
-    if (ddRequest.status !== "PENDING") return res.status(400).json({ message: "Request already processed" });
+    if (!ddRequest)
+      return res.status(404).json({ message: "Request not found" });
+    if (ddRequest.project.ownerId !== userId)
+      return res.status(403).json({ message: "Forbidden" });
+    if (ddRequest.status !== "PENDING")
+      return res.status(400).json({ message: "Request already processed" });
 
     const result = await prisma.$transaction(async (tx) => {
       const updated = await tx.ddRequest.update({
@@ -149,7 +161,6 @@ export const approveDdRequest = async (req, res, next) => {
         },
       });
 
-      
       await tx.notification.create({
         data: {
           userId: ddRequest.investorId,
@@ -180,8 +191,10 @@ export const declineDdRequest = async (req, res, next) => {
       include: { project: { select: { ownerId: true, title: true } } },
     });
 
-    if (!ddRequest) return res.status(404).json({ message: "Request not found" });
-    if (ddRequest.project.ownerId !== userId) return res.status(403).json({ message: "Forbidden" });
+    if (!ddRequest)
+      return res.status(404).json({ message: "Request not found" });
+    if (ddRequest.project.ownerId !== userId)
+      return res.status(403).json({ message: "Forbidden" });
 
     await prisma.ddRequest.update({
       where: { id },
@@ -220,7 +233,8 @@ async function getAccessibleDataRoom(dataRoomId, userId) {
   const isOwner = dataRoom.project.ownerId === userId;
 
   if (!isInvestor && !isOwner) throw { status: 403, message: "Access denied" };
-  if (new Date() > dataRoom.expiresAt) throw { status: 403, message: "Data room has expired" };
+  if (new Date() > dataRoom.expiresAt)
+    throw { status: 403, message: "Data room has expired" };
 
   return { dataRoom, isInvestor, isOwner };
 }
@@ -263,7 +277,8 @@ export const getDataRoom = async (req, res, next) => {
 
     res.json({ ...full, isInvestor, isOwner });
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -276,26 +291,28 @@ export const addDocument = async (req, res, next) => {
     const { name, fileUrl, fileKey, fileType, accessLevel } = req.body;
 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
-    if (!isOwner) return res.status(403).json({ message: "Only the startup can upload documents" });
+    if (!isOwner)
+      return res
+        .status(403)
+        .json({ message: "Only the startup can upload documents" });
 
     // Extract text from PDF for AI features
     let textExtract = null;
-if (fileType === "application/pdf" && fileUrl) {
-  try {
-    const response = await fetch(fileUrl);
-    const buffer = Buffer.from(await response.arrayBuffer());
-    console.log("[DD] Buffer size:", buffer.length);
-    const text = await extractTextFromPdf(buffer);
-    console.log("[DD] Raw text length:", text.length);
-    console.log("[DD] Raw text sample:", text.slice(0, 200));
-    textExtract = text.slice(0, 50000);
-    console.log(`[DD] Extracted ${textExtract.length} chars from ${name}`);
-  } catch (err) {
-    console.warn(`[DD] PDF extraction failed for ${name}:`, err.message);
-    console.warn(`[DD] Full error:`, err); 
-  }
-}
-
+    if (fileType === "application/pdf" && fileUrl) {
+      try {
+        const response = await fetch(fileUrl);
+        const buffer = Buffer.from(await response.arrayBuffer());
+        console.log("[DD] Buffer size:", buffer.length);
+        const text = await extractTextFromPdf(buffer);
+        console.log("[DD] Raw text length:", text.length);
+        console.log("[DD] Raw text sample:", text.slice(0, 200));
+        textExtract = text.slice(0, 50000);
+        console.log(`[DD] Extracted ${textExtract.length} chars from ${name}`);
+      } catch (err) {
+        console.warn(`[DD] PDF extraction failed for ${name}:`, err.message);
+        console.warn(`[DD] Full error:`, err);
+      }
+    }
 
     const doc = await prisma.dataRoomDocument.create({
       data: {
@@ -322,7 +339,8 @@ if (fileType === "application/pdf" && fileUrl) {
 
     res.status(201).json(doc);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -344,7 +362,8 @@ export const deleteDocument = async (req, res, next) => {
 
     res.json({ message: "Document deleted" });
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -358,8 +377,14 @@ export const createQaThread = async (req, res, next) => {
     const askerId = req.user.id;
     const { question } = req.body;
 
-    const { dataRoom, isInvestor } = await getAccessibleDataRoom(dataRoomId, askerId);
-    if (!isInvestor) return res.status(403).json({ message: "Only investors can ask questions" });
+    const { dataRoom, isInvestor } = await getAccessibleDataRoom(
+      dataRoomId,
+      askerId,
+    );
+    if (!isInvestor)
+      return res
+        .status(403)
+        .json({ message: "Only investors can ask questions" });
 
     const thread = await prisma.ddQaThread.create({
       data: { dataRoomId, question, askerId },
@@ -383,7 +408,8 @@ export const createQaThread = async (req, res, next) => {
 
     res.status(201).json(thread);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -395,8 +421,12 @@ export const replyToQaThread = async (req, res, next) => {
     const responderId = req.user.id;
     const { body, isAiGenerated } = req.body;
 
-    const { dataRoom, isOwner } = await getAccessibleDataRoom(dataRoomId, responderId);
-    if (!isOwner) return res.status(403).json({ message: "Only the startup can reply" });
+    const { dataRoom, isOwner } = await getAccessibleDataRoom(
+      dataRoomId,
+      responderId,
+    );
+    if (!isOwner)
+      return res.status(403).json({ message: "Only the startup can reply" });
 
     const response = await prisma.ddQaResponse.create({
       data: {
@@ -428,7 +458,8 @@ export const replyToQaThread = async (req, res, next) => {
 
     res.status(201).json(response);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -441,8 +472,14 @@ export const runAiScan = async (req, res, next) => {
     const { id: dataRoomId } = req.params;
     const userId = req.user.id;
 
-    const { dataRoom, isInvestor } = await getAccessibleDataRoom(dataRoomId, userId);
-    if (!isInvestor) return res.status(403).json({ message: "Only investors can trigger the scan" });
+    const { dataRoom, isInvestor } = await getAccessibleDataRoom(
+      dataRoomId,
+      userId,
+    );
+    if (!isInvestor)
+      return res
+        .status(403)
+        .json({ message: "Only investors can trigger the scan" });
 
     // Always fetch documents to compute hash
     const fullRoom = await prisma.dataRoom.findUnique({
@@ -457,7 +494,7 @@ export const runAiScan = async (req, res, next) => {
         fullRoom.documents
           .map((d) => `${d.id}:${d.uploadedAt}`)
           .sort()
-          .join(",")
+          .join(","),
       )
       .digest("hex");
 
@@ -506,7 +543,8 @@ export const runAiScan = async (req, res, next) => {
 
     res.json({ cached: false, data: scan });
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -518,10 +556,18 @@ export const suggestAnswer = async (req, res, next) => {
     const userId = req.user.id;
     const { threadId } = req.body;
 
-    const { dataRoom, isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
-    if (!isOwner) return res.status(403).json({ message: "Only the startup can request suggestions" });
+    const { isOwner } = await getAccessibleDataRoom(
+      dataRoomId,
+      userId,
+    );
+    if (!isOwner)
+      return res
+        .status(403)
+        .json({ message: "Only the startup can request suggestions" });
 
-    const thread = await prisma.ddQaThread.findUnique({ where: { id: threadId, dataRoomId } });
+    const thread = await prisma.ddQaThread.findUnique({
+      where: { id: threadId, dataRoomId },
+    });
     if (!thread) return res.status(404).json({ message: "Thread not found" });
 
     const fullRoom = await prisma.dataRoom.findUnique({
@@ -529,7 +575,10 @@ export const suggestAnswer = async (req, res, next) => {
       include: { documents: true },
     });
 
-    const suggestion = await suggestQaAnswer(thread.question, fullRoom.documents);
+    const suggestion = await suggestQaAnswer(
+      thread.question,
+      fullRoom.documents,
+    );
 
     // Save to the thread — startup reviews before sending
     await prisma.ddQaThread.update({
@@ -539,7 +588,8 @@ export const suggestAnswer = async (req, res, next) => {
 
     res.json(suggestion);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -550,8 +600,14 @@ export const generateDealBrief = async (req, res, next) => {
     const { id: dataRoomId } = req.params;
     const userId = req.user.id;
 
-    const { dataRoom, isInvestor } = await getAccessibleDataRoom(dataRoomId, userId);
-    if (!isInvestor) return res.status(403).json({ message: "Only investors can generate deal briefs" });
+    const { dataRoom, isInvestor } = await getAccessibleDataRoom(
+      dataRoomId,
+      userId,
+    );
+    if (!isInvestor)
+      return res
+        .status(403)
+        .json({ message: "Only investors can generate deal briefs" });
 
     const fullRoom = await prisma.dataRoom.findUnique({
       where: { id: dataRoomId },
@@ -600,7 +656,8 @@ export const generateDealBrief = async (req, res, next) => {
 
     res.json(saved);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -613,12 +670,16 @@ export const getDealBrief = async (req, res, next) => {
 
     await getAccessibleDataRoom(dataRoomId, userId);
 
-    const brief = await prisma.aiDealBrief.findUnique({ where: { dataRoomId } });
-    if (!brief) return res.status(404).json({ message: "No deal brief generated yet" });
+    const brief = await prisma.aiDealBrief.findUnique({
+      where: { dataRoomId },
+    });
+    if (!brief)
+      return res.status(404).json({ message: "No deal brief generated yet" });
 
     res.json(brief);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };

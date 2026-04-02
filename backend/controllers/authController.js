@@ -363,11 +363,12 @@ export const refreshToken = async (req, res, next) => {
     let decoded;
     try {
       decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    } catch (err) {
-      return res
-        .status(401)
-        .json({ message: "Invalid or expired refresh token" });
-    }
+    }catch (err) {
+  console.error(err);
+  return res.status(401).json({
+    message: "Invalid or expired refresh token",
+  });
+}
     const newAccessToken = generateAccessToken(decoded.id);
     res.json({ accessToken: newAccessToken });
   } catch (error) {
@@ -515,7 +516,8 @@ export const getMe = async (req, res, next) => {
   try {
     let user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: {                    // ✅ select only what the frontend needs
+      select: {
+        // ✅ select only what the frontend needs
         id: true,
         name: true,
         email: true,
