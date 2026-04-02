@@ -38,6 +38,12 @@ model User {
   investorProfile    InvestorProfile?
   investorMatches    Match[]              @relation("InvestorMatches")
   llmInsights        LlmInsight[]         @relation("InvestorInsights")
+  ddRequests         DdRequest[]          @relation("InvestorDdRequests")
+  dataRooms          DataRoom[]           @relation("InvestorDataRooms")
+  qaThreadsAsked     DdQaThread[]         @relation("AskerId")
+  qaResponses        DdQaResponse[]       @relation("ResponderId")
+  dealBriefs         AiDealBrief[]        @relation("InvestorDealBriefs")
+  dataRoomActivity   DataRoomActivity[]
   @@index([email])
 }
 
@@ -127,8 +133,11 @@ model Project {
   teamMembers   TeamMember[]
   
   aiAssessment       AiAssessment?
-matches            Match[]
-llmInsights        LlmInsight[]
+  matches            Match[]
+  llmInsights        LlmInsight[]
+  ddRequests         DdRequest[]
+  dataRooms          DataRoom[]
+  analytics          ProjectAnalytics[]
   @@index([status, industry])
   @@index([status, stage])
   @@index([ownerId])
@@ -397,7 +406,122 @@ model Match {
   @@index([investorId, status])
 }
 
+model DdRequest {
+  id          String        @id @default(uuid())
+  projectId   String
+  investorId  String
+  status      DdStatus      @default(PENDING)
+  message     String?
+  nda         Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  reviewedAt  DateTime?
+  project     Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  investor    User          @relation("InvestorDdRequests", fields: [investorId], references: [id], onDelete: Cascade)
+  dataRoom    DataRoom?
 
+  @@unique([projectId, investorId])
+}
+
+model DataRoom {
+  id                  String              @id @default(uuid())
+  ddRequestId         String              @unique
+  projectId           String
+  investorId          String
+  expiresAt           DateTime
+  aiSummaryGenerated  Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  ddRequest           DdRequest           @relation(fields: [ddRequestId], references: [id], onDelete: Cascade)
+  project             Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  investor            User                @relation("InvestorDataRooms", fields: [investorId], references: [id], onDelete: Cascade)
+  documents           DataRoomDocument[]
+  qaThreads           DdQaThread[]
+  activity            DataRoomActivity[]
+  dealBrief           AiDealBrief?
+}
+
+model DataRoomDocument {
+  id          String      @id @default(uuid())
+  dataRoomId  String
+  name        String
+  fileUrl     String
+  fileKey     String
+  fileType    String
+  accessLevel DocAccess   @default(OPEN)
+  textExtract String?    
+  uploadedAt  DateTime    @default(now())
+  dataRoom    DataRoom    @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+}
+
+model DdQaThread {
+  id                  String          @id @default(uuid())
+  dataRoomId          String
+  question            String
+  askerId             String
+  aiSuggestedAnswer   String?
+  createdAt           DateTime        @default(now())
+  dataRoom            DataRoom        @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  asker               User            @relation("AskerId", fields: [askerId], references: [id])
+  responses           DdQaResponse[]
+}
+
+model DdQaResponse {
+  id            String      @id @default(uuid())
+  threadId      String
+  body          String
+  responderId   String
+  isAiGenerated Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  thread        DdQaThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  responder     User        @relation("ResponderId", fields: [responderId], references: [id])
+}
+
+model AiDealBrief {
+  id          String    @id @default(uuid())
+  dataRoomId  String    @unique
+  investorId  String
+  content     Json
+  generatedAt DateTime  @default(now())
+  version     Int       @default(1)
+  dataRoom    DataRoom  @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  investor    User      @relation("InvestorDealBriefs", fields: [investorId], references: [id])
+}
+
+model DataRoomActivity {
+  id         String    @id @default(uuid())
+  dataRoomId String
+  userId     String
+  action     String
+  docName    String?
+  createdAt  DateTime  @default(now())
+  dataRoom   DataRoom  @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([dataRoomId, createdAt])
+}
+
+model ProjectAnalytics {
+  id        String   @id @default(uuid())
+  projectId String
+  date      DateTime
+  views     Int      @default(0)
+  bookmarks Int      @default(0)
+  interests Int      @default(0)
+  sources   Json?
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, date])
+}
+
+enum DdStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum DocAccess {
+  OPEN
+  ON_REQUEST
+}
 enum AvailabilityStatus {
   AVAILABLE
   BUSY

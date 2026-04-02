@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { runRuleBasedScoring } from "./aiScoring.js";
-import { createProjectNarrative } from "./llmservice.js";
+import { runMixtureOfExperts } from "./llmservice.js";
 import { generateNarrative } from "./narrativeGenerator.js";
 
 export async function runProjectAssessment(projectId) {
@@ -16,20 +16,21 @@ export async function runProjectAssessment(projectId) {
 
   if (!project) throw new Error(`Project ${projectId} not found`);
 
-  const { trlScore, trlConfidence, irScore, irBreakdown, recommendations } =
+  const { trlScore, trlConfidence, irScore, irBreakdown,trlBreakdown, recommendations } =
     runRuleBasedScoring(project);
 
-  let narrative = await createProjectNarrative(project, trlScore, irBreakdown);
+let narrative = await runMixtureOfExperts(project, trlScore, irBreakdown);
   if (!narrative) {
     narrative = generateNarrative(project, trlScore, irScore, irBreakdown);
   }
+    const llmModel = narrative._expertsUsed ? "groq/moe-4experts" : "rule-based-template";
 
   return prisma.aiAssessment.upsert({
     where: { projectId },
     update: {
       trlScore,
       trlConfidence,
-      trlBreakdown: {},
+      trlBreakdown,
       irScore,
       irBreakdown,
       recommendations,
@@ -37,7 +38,7 @@ export async function runProjectAssessment(projectId) {
       strengthsNarrative: narrative?.strengthsNarrative ?? null,
       risksNarrative: narrative?.risksNarrative ?? null,
       marketOpportunityNarrative: narrative?.marketOpportunityNarrative ?? null,
-      llmModel: narrative ? "groq/llama-3.1-8b" : "rule-based-template",
+      llmModel, 
       assessedAt: new Date(),
       version: { increment: 1 },
     },
@@ -45,7 +46,7 @@ export async function runProjectAssessment(projectId) {
       projectId,
       trlScore,
       trlConfidence,
-      trlBreakdown: {},
+      trlBreakdown,
       irScore,
       irBreakdown,
       recommendations,
@@ -53,7 +54,7 @@ export async function runProjectAssessment(projectId) {
       strengthsNarrative: narrative?.strengthsNarrative ?? null,
       risksNarrative: narrative?.risksNarrative ?? null,
       marketOpportunityNarrative: narrative?.marketOpportunityNarrative ?? null,
-      llmModel: narrative ? "groq/llama-3.1-8b" : "rule-based-template",
+      llmModel, 
       assessedAt: new Date(),
       version: 1,
     },

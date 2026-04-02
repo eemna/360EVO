@@ -1,10 +1,8 @@
 import { prisma } from "../config/prisma.js";
 import { calculateMatchScore } from "../services/matchingEngine.js";
 import crypto from "crypto";
-import {
-  createPitchAnalysis,
-  createThesisAlignment,
-} from "../services/llmservice.js";
+import {  createThesisAlignmentMoE, createPitchAnalysisMoE } from "../services/llmservice.js";
+
 import { runProjectAssessment } from "../services/assessmentService.js";
 
 // Scores a project — called after admin approves it
@@ -105,6 +103,7 @@ export const generateMatches = async (req, res, next) => {
             categoryScores: match.categoryScores,
             reasoning: match.reasoning,
             status: "SUGGESTED",
+            
           },
           create: {
             investorId: match.investorId,
@@ -113,6 +112,7 @@ export const generateMatches = async (req, res, next) => {
             categoryScores: match.categoryScores,
             reasoning: match.reasoning,
             status: "SUGGESTED",
+            
           },
         }),
       ),
@@ -150,7 +150,33 @@ export const getMatchFeed = async (req, res, next) => {
       },
     });
 
-    res.json(matches);
+   const enriched = await Promise.all(
+  matches.map(async (match) => {
+    if (match.thesisAlignmentSummary) return match;
+
+    // Fall back to LlmInsight cache if Match row wasn't updated
+    const insight = await prisma.llmInsight.findUnique({
+      where: {
+        investorId_projectId_type: {
+          investorId,
+          projectId: match.projectId,
+          type: "THESIS_ALIGNMENT",
+        },
+      },
+    });
+
+    if (insight?.content?.alignmentSummary) {
+      return {
+        ...match,
+        thesisAlignmentSummary: insight.content.alignmentSummary,
+      };
+    }
+
+    return match;
+  })
+);
+
+res.json(enriched);
   } catch (error) {
     next(error);
   }
@@ -231,7 +257,7 @@ export const getThesisAlignment = async (req, res, next) => {
     }
 
     // 5. Call llmService — Groq LLaMA generates the analysis
-    const alignment = await createThesisAlignment(
+    const alignment = await createThesisAlignmentMoE(
       investorProfile,
       project,
       project.aiAssessment,
@@ -321,7 +347,7 @@ export const getPitchAnalysis = async (req, res, next) => {
     }
 
     // Call LLM via llmService
-    const analysis = await createPitchAnalysis(project, project.aiAssessment);
+    const analysis = await createPitchAnalysisMoE(project, project.aiAssessment);
 
     if (!analysis) {
       return res

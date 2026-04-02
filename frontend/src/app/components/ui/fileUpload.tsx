@@ -123,7 +123,7 @@ export function FileUpload({
       const error = err as AxiosError<{ message: string }>;
 
       if (error.response?.status === 401) {
-        localStorage.removeItem("accessToken");
+       
         navigate("/login");
         return;
       }

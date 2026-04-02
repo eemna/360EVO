@@ -2,18 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { SocketContext } from "../context/SocketContext";
 import { useAuth } from "../hooks/useAuth";
+import { getApiToken } from "../services/axios"; 
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
-
   const socketRef = useRef<Socket | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!user) return;
 
-    const token = localStorage.getItem("accessToken");
+    const token = getApiToken(); 
+
+    if (!token) return;
 
     const baseURL = import.meta.env.VITE_API_URL.replace("/api", "");
 
@@ -25,10 +27,10 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
 
     socketRef.current = newSocket;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setSocket(newSocket);
+    newSocket.on("connect", () => {
+      setSocket(newSocket);
+    });
 
-    // LISTEN FOR ONLINE USERS
     newSocket.on("online_users", (users: string[]) => {
       setOnlineUsers(new Set(users));
     });
@@ -48,8 +50,9 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       newSocket.disconnect();
       socketRef.current = null;
+      setSocket(null); 
     };
-  }, [user]);
+  }, [user]); 
 
   return (
     <SocketContext.Provider value={{ socket, onlineUsers }}>

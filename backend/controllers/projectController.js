@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma.js";
 //import { Prisma } from "@prisma/client";
 import { createNotification } from "../utils/createNotification.js";
-
+import { trackProjectView } from "./analyticsController.js";
 export const createProject = async (req, res, next) => {
   try {
     console.log("REQ USER:", req.user);
@@ -62,6 +62,7 @@ export const getProjectById = async (req, res, next) => {
           viewCount: { increment: 1 },
         },
       });
+       trackProjectView(id);
     }
 
     res.json(project);

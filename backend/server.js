@@ -22,6 +22,8 @@ import eventRoutes from "./routes/eventRoute.js";
 import bookmarkRoute from "./routes/bookmarkRoute.js";
 import aiRoute from "./routes/aiRoute.js";
 import investorProfileRoutes from "./routes/investorprofileroute.js";
+import ddRoutes from "./routes/ddRoute.js";
+import analyticsRoute from "./routes/analyticsRoute.js";
 
 dotenv.config();
 const app = express();
@@ -72,7 +74,8 @@ app.use("/api/events", eventRoutes);
 app.use("/api/bookmarks", bookmarkRoute);
 app.use("/api/ai", aiRoute);
 app.use("/api/investor-profile", investorProfileRoutes);
-
+app.use("/api", ddRoutes);               // covers /api/dd-requests and /api/data-rooms
+app.use("/api/projects", analyticsRoute);
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);
