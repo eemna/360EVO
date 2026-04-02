@@ -10,7 +10,7 @@ export function calculateTRLScore(project) {
   const hasDocuments = project.documents?.length > 0;
   const hasUpdates = project.updates?.length > 0;
 
-  let score;  
+  let score;
 
   if (stage === "IDEA") {
     if (hasTeam && hasMilestones && project.fullDesc?.length > 200) score = 3;
@@ -183,7 +183,8 @@ export function irCompositeScore(project) {
 }
 
 export function runRuleBasedScoring(project) {
-  const { score: trlScore, breakdown: trlBreakdown } = calculateTRLScore(project);
+  const { score: trlScore, breakdown: trlBreakdown } =
+    calculateTRLScore(project);
   const trlConfidence = calculateTRLConfidence(project);
   const {
     composite: irScore,

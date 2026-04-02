@@ -34,7 +34,6 @@ export default function LoginPage() {
 
       login(response.data.user, response.data.accessToken);
 
-     
       showToast({
         type: "success",
         title: "Login successful 🎉",
@@ -73,7 +72,6 @@ export default function LoginPage() {
           message: message || "Something went wrong",
         });
       } else {
-        
         showToast({
           type: "error",
           title: "Unexpected Error",

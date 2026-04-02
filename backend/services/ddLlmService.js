@@ -1,6 +1,5 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
 
-
 export async function createDocumentRiskScan(documents) {
   const docsWithText = documents.filter((d) => d.textExtract);
 
@@ -19,7 +18,6 @@ export async function createDocumentRiskScan(documents) {
 
   const CHUNK_LIMIT = 12000;
 
-  
   if (combinedText.length > CHUNK_LIMIT) {
     const chunks = [];
     for (let i = 0; i < combinedText.length; i += CHUNK_LIMIT) {
@@ -74,7 +72,6 @@ Respond ONLY with valid JSON in exactly this format:
 
   return parseJsonResponse(raw);
 }
-
 
 export async function suggestQaAnswer(question, documents) {
   const context = documents

@@ -74,7 +74,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/bookmarks", bookmarkRoute);
 app.use("/api/ai", aiRoute);
 app.use("/api/investor-profile", investorProfileRoutes);
-app.use("/api", ddRoutes);               // covers /api/dd-requests and /api/data-rooms
+app.use("/api", ddRoutes); // covers /api/dd-requests and /api/data-rooms
 app.use("/api/projects", analyticsRoute);
 const PORT = process.env.PORT || 5001;
 

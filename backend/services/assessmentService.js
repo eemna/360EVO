@@ -16,14 +16,22 @@ export async function runProjectAssessment(projectId) {
 
   if (!project) throw new Error(`Project ${projectId} not found`);
 
-  const { trlScore, trlConfidence, irScore, irBreakdown,trlBreakdown, recommendations } =
-    runRuleBasedScoring(project);
+  const {
+    trlScore,
+    trlConfidence,
+    irScore,
+    irBreakdown,
+    trlBreakdown,
+    recommendations,
+  } = runRuleBasedScoring(project);
 
-let narrative = await runMixtureOfExperts(project, trlScore, irBreakdown);
+  let narrative = await runMixtureOfExperts(project, trlScore, irBreakdown);
   if (!narrative) {
     narrative = generateNarrative(project, trlScore, irScore, irBreakdown);
   }
-    const llmModel = narrative._expertsUsed ? "groq/moe-4experts" : "rule-based-template";
+  const llmModel = narrative._expertsUsed
+    ? "groq/moe-4experts"
+    : "rule-based-template";
 
   return prisma.aiAssessment.upsert({
     where: { projectId },
@@ -38,7 +46,7 @@ let narrative = await runMixtureOfExperts(project, trlScore, irBreakdown);
       strengthsNarrative: narrative?.strengthsNarrative ?? null,
       risksNarrative: narrative?.risksNarrative ?? null,
       marketOpportunityNarrative: narrative?.marketOpportunityNarrative ?? null,
-      llmModel, 
+      llmModel,
       assessedAt: new Date(),
       version: { increment: 1 },
     },
@@ -54,7 +62,7 @@ let narrative = await runMixtureOfExperts(project, trlScore, irBreakdown);
       strengthsNarrative: narrative?.strengthsNarrative ?? null,
       risksNarrative: narrative?.risksNarrative ?? null,
       marketOpportunityNarrative: narrative?.marketOpportunityNarrative ?? null,
-      llmModel, 
+      llmModel,
       assessedAt: new Date(),
       version: 1,
     },
