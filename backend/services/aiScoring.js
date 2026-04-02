@@ -1,7 +1,7 @@
 // STEP 1 — TRL SCORE (Technology Readiness Level 1 to 9)
 // Based on: project stage, prototype existence, milestones, documents
 export function calculateTRLScore(project) {
-  const stage = project.stage; // IDEA | PROTOTYPE | MVP | GROWTH | SCALING
+  const stage = project.stage;
   const hasTeam = project.teamMembers?.length > 0;
   const hasMilestones = project.milestones?.length > 0;
   const hasCompletedMilestone = project.milestones?.some(
@@ -9,36 +9,38 @@ export function calculateTRLScore(project) {
   );
   const hasDocuments = project.documents?.length > 0;
   const hasUpdates = project.updates?.length > 0;
+
+  let score;  
+
   if (stage === "IDEA") {
-    if (hasTeam && hasMilestones && project.fullDesc?.length > 200) return 3;
-    if (project.shortDesc?.length > 50) return 2;
-    return 1;
+    if (hasTeam && hasMilestones && project.fullDesc?.length > 200) score = 3;
+    else if (project.shortDesc?.length > 50) score = 2;
+    else score = 1;
+  } else if (stage === "PROTOTYPE") {
+    if (hasDocuments && hasCompletedMilestone) score = 5;
+    else score = 4;
+  } else if (stage === "MVP") {
+    if (hasUpdates && hasCompletedMilestone && hasTeam) score = 7;
+    else score = 6;
+  } else if (stage === "GROWTH") {
+    score = 8;
+  } else if (stage === "SCALING") {
+    score = 9;
+  } else {
+    score = 1;
   }
 
-  if (stage === "PROTOTYPE") {
-    if (hasDocuments && hasCompletedMilestone) return 5;
-    if (hasTeam) return 4;
-    return 4;
-  }
+  const breakdown = {
+    stage,
+    hasTeam,
+    hasMilestones,
+    hasCompletedMilestone,
+    hasDocuments,
+    hasUpdates,
+  };
 
-  if (stage === "MVP") {
-    if (hasUpdates && hasCompletedMilestone && hasTeam) return 7;
-    if (hasCompletedMilestone) return 6;
-    return 6;
-  }
-
-  if (stage === "GROWTH") {
-    if (hasUpdates && hasDocuments) return 8;
-    return 8;
-  }
-
-  if (stage === "SCALING") {
-    return 9;
-  }
-
-  return 1; // fallback
+  return { score, breakdown };
 }
-
 // STEP 2 — TRL CONFIDENCE
 export function calculateTRLConfidence(project) {
   const checks = [
@@ -181,7 +183,7 @@ export function irCompositeScore(project) {
 }
 
 export function runRuleBasedScoring(project) {
-  const trlScore = calculateTRLScore(project);
+  const { score: trlScore, breakdown: trlBreakdown } = calculateTRLScore(project);
   const trlConfidence = calculateTRLConfidence(project);
   const {
     composite: irScore,
@@ -191,6 +193,7 @@ export function runRuleBasedScoring(project) {
 
   return {
     trlScore,
+    trlBreakdown,
     trlConfidence,
     irScore,
     irBreakdown,

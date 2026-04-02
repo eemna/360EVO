@@ -5,11 +5,12 @@ import { useNavigate, useSearchParams } from "react-router";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
 import { useToast } from "../../context/ToastContext";
-
+import { useLocation } from "react-router";
 export default function VerifyEmailPage() {
   const navigate = useNavigate();
+  const location = useLocation(); 
   const { showToast } = useToast();
-
+const pendingEmail = (location.state as { pendingEmail?: string })?.pendingEmail;
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const type = searchParams.get("type");
@@ -72,8 +73,9 @@ export default function VerifyEmailPage() {
   }, [token, showToast, type, email, navigate]);
 
   //  Resend verification email
-  const handleResend = async () => {
-    const email = localStorage.getItem("pendingEmail");
+const handleResend = async () => {
+  
+    const email = pendingEmail;
 
     if (!email) {
       showToast({
@@ -86,13 +88,11 @@ export default function VerifyEmailPage() {
 
     try {
       await api.post("/auth/resend-verification", { email });
-
       showToast({
         type: "success",
         title: "Email Sent 📩",
         message: "Verification email has been resent.",
       });
-
       setResent(true);
       setTimeout(() => setResent(false), 3000);
     } catch {

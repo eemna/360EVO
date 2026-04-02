@@ -2,61 +2,51 @@ import { useState, useEffect } from "react";
 import type { ReactNode } from "react";
 import { AuthContext } from "../context/AuthContext";
 import type { User } from "../context/AuthContext";
-import api from "../services/axios";
+import api, { setApiToken } from "../services/axios";
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? (JSON.parse(storedUser) as User) : null;
-  });
+  const [user, setUser] = useState<User | null>(null); 
   const [loading, setLoading] = useState(true);
 
-  // Fetch fresh user on app load
+  // restore session via httpOnly refresh token cookie
   useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
+    const restoreSession = async () => {
       try {
+        // Cookie is sent automatically (withCredentials: true)
+        const res = await api.post("/auth/refresh-token");
+        const newToken = res.data.accessToken;
+
+        setApiToken(newToken); 
+
         const { data } = await api.get("/auth/me");
         setUser(data);
-      } catch (error) {
-        console.error("Failed to fetch user", error);
+      } catch {
         setUser(null);
+        setApiToken(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
-    fetchUser();
+    restoreSession();
   }, []);
 
-  //  Auto sync user → localStorage
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem("user", JSON.stringify(user));
-    }
-  }, [user]);
-
-  //const [loading] = useState(false);
-  const login = (user: User, accessToken: string) => {
-    setUser(user);
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("user", JSON.stringify(user));
+  const login = (userData: User, accessToken: string) => {
+    setApiToken(accessToken);  
+    setUser(userData);
+   
   };
 
   const logout = async () => {
     try {
-      await api.post("/auth/logout"); // call backend
+      await api.post("/auth/logout");
     } catch (error) {
       console.error(error);
     }
 
+    setApiToken(null);   
     setUser(null);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+   
   };
 
   return (

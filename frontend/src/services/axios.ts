@@ -1,59 +1,48 @@
 import axios from "axios";
 
+let inMemoryToken: string | null = null;
+
+export const setApiToken = (token: string | null) => {
+  inMemoryToken = token;
+};
+
+export const getApiToken = () => inMemoryToken;
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
-// Add access token to every request
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
-
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (inMemoryToken && config.headers) {
+      config.headers.Authorization = `Bearer ${inMemoryToken}`;
     }
-
     return config;
   },
   (error) => Promise.reject(error),
 );
 
-//  Auto refresh if access token expires
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    console.log("INTERCEPTOR CAUGHT:", error.response?.status);
-
     const originalRequest = error.config;
-
-    if (!originalRequest) {
-      return Promise.reject(error);
-    }
+    if (!originalRequest) return Promise.reject(error);
 
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes("/auth/login") &&
       !originalRequest.url?.includes("/auth/refresh-token")
     ) {
-      console.log("Attempting refresh token...");
-
       originalRequest._retry = true;
-
       try {
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
           {},
           { withCredentials: true },
         );
-
-        console.log("Refresh success:", res.data);
-
         const newToken = res.data.accessToken;
-
-        localStorage.setItem("accessToken", newToken);
-
+        inMemoryToken = newToken;
         return api({
           ...originalRequest,
           headers: {
@@ -61,14 +50,11 @@ api.interceptors.response.use(
             Authorization: `Bearer ${newToken}`,
           },
         });
-      } catch (refreshError) {
-        console.log("Refresh failed:", refreshError);
-
-        localStorage.removeItem("accessToken");
+      } catch {
+        inMemoryToken = null;
         window.location.href = "/login";
       }
     }
-
     return Promise.reject(error);
   },
 );

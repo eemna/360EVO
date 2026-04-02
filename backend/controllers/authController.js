@@ -515,19 +515,36 @@ export const getMe = async (req, res, next) => {
   try {
     let user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      include: { profile: true },
+      select: {                    // ✅ select only what the frontend needs
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isVerified: true,
+        createdAt: true,
+        profile: true,
+        // ❌ passwordHash is excluded automatically by not listing it
+      },
     });
 
-    if (!user.profile) {
-      await prisma.profile.create({
-        data: {
-          userId: user.id,
-        },
-      });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
+    // Create profile if missing
+    if (!user.profile) {
+      await prisma.profile.create({ data: { userId: user.id } });
       user = await prisma.user.findUnique({
         where: { id: req.user.id },
-        include: { profile: true },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isVerified: true,
+          createdAt: true,
+          profile: true,
+        },
       });
     }
 

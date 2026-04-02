@@ -102,8 +102,6 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
 });
 
 // ─────────────────────────────────────────────────────────────
-// JOB 3 — Retry failed narratives (Sprint 5 LLM Epic Task 5)
-// Runs every 30 minutes
 // Finds AiAssessment rows where executiveSummary is null and retries
 // Max 3 retries per project (tracked via version field)
 // ─────────────────────────────────────────────────────────────

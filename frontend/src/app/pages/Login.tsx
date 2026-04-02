@@ -34,7 +34,7 @@ export default function LoginPage() {
 
       login(response.data.user, response.data.accessToken);
 
-      console.log("Logged user:", response.data.user);
+     
       showToast({
         type: "success",
         title: "Login successful 🎉",
@@ -54,8 +54,7 @@ export default function LoginPage() {
               "Please verify your email first. Check your inbox or spam folder.",
           });
 
-          localStorage.setItem("pendingEmail", email);
-          navigate("/verify-email");
+          navigate("/verify-email", { state: { pendingEmail: email } });
           return;
         }
 
@@ -74,7 +73,7 @@ export default function LoginPage() {
           message: message || "Something went wrong",
         });
       } else {
-        // Non-Axios error
+        
         showToast({
           type: "error",
           title: "Unexpected Error",
