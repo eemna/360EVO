@@ -44,85 +44,91 @@ export const generateMatches = async (req, res, next) => {
   try {
     const investorId = req.user.id;
 
-    // 1. Get investor profile
     const investorProfile = await prisma.investorProfile.findUnique({
       where: { userId: investorId },
     });
-
     if (!investorProfile) {
-      return res.status(400).json({
-        message: "Please complete your investor profile first",
-      });
+      return res.status(400).json({ message: "Please complete your investor profile first" });
     }
 
-    // 2. Get all approved projects with their assessments
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
-      include: {
-        teamMembers: true,
-        milestones: true,
-        documents: true,
-        updates: true,
-        aiAssessment: true,
-      },
+      include: { teamMembers: true, milestones: true, documents: true, updates: true, aiAssessment: true },
     });
-
     if (projects.length === 0) {
       return res.json({ message: "No approved projects found", matches: [] });
     }
 
-    // 3. Calculate match score for each project
+    // 1. Score all projects
     const matchResults = [];
-
     for (const project of projects) {
-      const { matchScore, categoryScores, reasoning } =
-        await calculateMatchScore(
-          investorProfile,
-          project,
-          project.aiAssessment,
-        );
-
-      matchResults.push({
-        investorId,
-        projectId: project.id,
-        matchScore,
-        categoryScores,
-        reasoning,
-      });
+      const { matchScore, categoryScores, reasoning } = await calculateMatchScore(
+        investorProfile, project, project.aiAssessment,
+      );
+      matchResults.push({ investorId, projectId: project.id, matchScore, categoryScores, reasoning, project });
     }
 
-    // 4. Batch upsert all matches to database
+    // 2. Batch upsert all matches
     await Promise.all(
       matchResults.map((match) =>
         prisma.match.upsert({
-          where: {
-            investorId_projectId: {
-              investorId: match.investorId,
-              projectId: match.projectId,
-            },
-          },
-          update: {
-            matchScore: match.matchScore,
-            categoryScores: match.categoryScores,
-            reasoning: match.reasoning,
-            status: "SUGGESTED",
-          },
-          create: {
-            investorId: match.investorId,
-            projectId: match.projectId,
-            matchScore: match.matchScore,
-            categoryScores: match.categoryScores,
-            reasoning: match.reasoning,
-            status: "SUGGESTED",
-          },
+          where: { investorId_projectId: { investorId: match.investorId, projectId: match.projectId } },
+          update: { matchScore: match.matchScore, categoryScores: match.categoryScores, reasoning: match.reasoning, status: "SUGGESTED" },
+          create: { investorId: match.investorId, projectId: match.projectId, matchScore: match.matchScore, categoryScores: match.categoryScores, reasoning: match.reasoning, status: "SUGGESTED" },
         }),
       ),
     );
 
-    res.json({
-      message: `Generated ${matchResults.length} matches`,
-      matches: matchResults.sort((a, b) => b.matchScore - a.matchScore),
+    const sorted = matchResults.sort((a, b) => b.matchScore - a.matchScore);
+    res.json({ message: `Generated ${matchResults.length} matches`, matches: sorted });
+
+    setImmediate(async () => {
+      const top10 = sorted.slice(0, 10);
+      console.log(`[Matches] Enqueueing thesis alignment for top ${top10.length} matches...`);
+
+      for (const match of top10) {
+        try {
+          const inputHash = crypto
+            .createHash("sha256")
+            .update((investorProfile.investmentThesis || "") + (match.project.fullDesc || ""))
+            .digest("hex");
+
+          const cached = await prisma.llmInsight.findUnique({
+            where: { investorId_projectId_type: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT" } },
+          });
+          if (cached && cached.inputHash === inputHash) {
+            console.log(`[Matches] Thesis alignment cached for ${match.projectId}, skipping`);
+            continue;
+          }
+
+          // Call LLM
+          const alignment = await createThesisAlignmentMoE(
+            investorProfile,
+            match.project,
+            match.project.aiAssessment,
+          );
+          if (!alignment) continue;
+
+          // Save to LlmInsight cache
+          await prisma.llmInsight.upsert({
+            where: { investorId_projectId_type: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT" } },
+            update: { content: alignment, inputHash },
+            create: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT", content: alignment, inputHash },
+          });
+
+          // Update Match row with summary snippet
+          await prisma.match.updateMany({
+            where: { investorId, projectId: match.projectId },
+            data: { thesisAlignmentSummary: alignment.alignmentSummary },
+          });
+
+          console.log(`[Matches] Thesis alignment saved for ${match.projectId}`);
+        } catch (err) {
+          console.error(`[Matches] Thesis alignment failed for ${match.projectId}:`, err.message);
+        }
+      }
     });
+
   } catch (error) {
     next(error);
   }

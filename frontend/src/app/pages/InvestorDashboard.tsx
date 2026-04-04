@@ -26,6 +26,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { FolderOpen, FileSearch } from "lucide-react";
 
 interface InvestorProfile {
   industries: string[];
@@ -53,7 +54,13 @@ interface Match {
     tagline?: string;
   };
 }
-
+interface DdRequestSent {
+  id: string;
+  status: "PENDING" | "APPROVED" | "DECLINED";
+  createdAt: string;
+  project: { id: string; title: string };
+  dataRoom: { id: string; expiresAt: string } | null;
+}
 function scoreColor(score: number) {
   if (score >= 70)
     return {
@@ -264,8 +271,14 @@ export default function InvestorDashboard() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(true);
   const [generating, setGenerating] = useState(false);
-
-  // Fetch investor profile
+  const [ddRequests, setDdRequests] = useState<DdRequestSent[]>([]);
+  const [loadingDd, setLoadingDd] = useState(true);
+  useEffect(() => {
+  api.get("/dd-requests/sent")
+    .then(({ data }) => setDdRequests(data))
+    .catch(() => setDdRequests([]))
+    .finally(() => setLoadingDd(false));
+}, []);
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -513,9 +526,9 @@ export default function InvestorDashboard() {
                     <TopMatchRow
                       key={m.id}
                       match={m}
-                      onClick={() =>
-                        navigate(`/app/startup/projects/${m.project.id}`)
-                      }
+                     onClick={() => {
+                      navigate(`/app/startup/projects/${m.project.id}?source=match_feed`);
+                        }}
                     />
                   ))}
                 </div>
@@ -524,7 +537,7 @@ export default function InvestorDashboard() {
           </Card>
 
           {/* Quick actions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               onClick={() => navigate("/app/investor/matches")}
               className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
@@ -560,6 +573,19 @@ export default function InvestorDashboard() {
               </div>
               <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-purple-400 transition-colors" />
             </button>
+              <button
+                onClick={() => navigate("/app/investor/dd-requests")}
+                className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-green-300 hover:shadow-sm transition-all text-left group"
+                  >
+              <div className="p-2.5 bg-green-50 rounded-lg group-hover:bg-green-100 transition-colors">
+              <FolderOpen className="size-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Due Diligence</p>
+                <p className="text-xs text-gray-400">Your data room requests</p>
+              </div>
+                <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-green-400 transition-colors" />
+              </button>
           </div>
         </div>
 
@@ -578,6 +604,7 @@ export default function InvestorDashboard() {
                 Edit
               </Button>
             </CardHeader>
+            
             <CardContent>
               {loadingProfile ? (
                 <Skeleton className="h-32 w-full" />
@@ -585,8 +612,68 @@ export default function InvestorDashboard() {
                 <SetupChecklist profile={profile} />
               )}
             </CardContent>
+            
           </Card>
+{/* DD Requests — approved data rooms */}
+{!loadingDd && ddRequests.filter(r => r.status === "APPROVED").length > 0 && (
+  <Card className="border border-gray-200">
+    <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardTitle className="text-base flex items-center gap-2">
+        <FolderOpen className="size-4 text-green-600" />
+        Active Data Rooms
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-2">
+      {ddRequests
+        .filter(r => r.status === "APPROVED" && r.dataRoom)
+        .slice(0, 3)
+        .map(req => {
+          const daysLeft = Math.max(0, Math.floor(
+            (new Date(req.dataRoom!.expiresAt).getTime() - Date.now()) / 86400000
+          ));
+          return (
+            <button
+              key={req.id}
+              onClick={() => navigate(`/app/investor/data-rooms/${req.dataRoom!.id}`)}
+              className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-green-50 border border-gray-100 hover:border-green-200 transition-all text-left group"
+            >
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-gray-800 truncate">
+                  {req.project.title}
+                </p>
+                <p className={`text-xs mt-0.5 ${daysLeft <= 3 ? "text-red-500" : "text-gray-400"}`}>
+                  {daysLeft === 0 ? "Expires today" : `${daysLeft}d left`}
+                </p>
+              </div>
+              <ChevronRight className="size-3 text-gray-300 group-hover:text-green-500 flex-shrink-0 ml-2" />
+            </button>
+          );
+        })}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-full text-xs text-green-600 hover:text-green-700 mt-1"
+        onClick={() => navigate("/app/investor/dd-requests")}
+      >
+        View all requests →
+      </Button>
+    </CardContent>
+  </Card>
+)}
 
+{/* Pending DD requests badge */}
+{!loadingDd && ddRequests.filter(r => r.status === "PENDING").length > 0 && (
+  <div
+    className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors"
+    onClick={() => navigate("/app/investor/dd-requests")}
+  >
+    <FileSearch className="size-4 text-amber-600 flex-shrink-0" />
+    <p className="text-xs text-amber-700">
+      <span className="font-semibold">{ddRequests.filter(r => r.status === "PENDING").length}</span> DD request{ddRequests.filter(r => r.status === "PENDING").length > 1 ? "s" : ""} pending approval
+    </p>
+    <ChevronRight className="size-3 text-amber-400 ml-auto" />
+  </div>
+)}
           {/* Investment preferences summary */}
           {!loadingProfile && profile && (
             <Card className="border border-gray-200">

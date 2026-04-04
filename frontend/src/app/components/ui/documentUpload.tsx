@@ -131,7 +131,7 @@ export function DocumentUpload({
       };
     }
 
-    // Check for duplicates
+    
     const isDuplicate = uploadedFiles.some(
       (uf) =>
         uf.file?.name === file.name ||
@@ -260,7 +260,7 @@ export function DocumentUpload({
     if (selectedFiles && selectedFiles.length > 0) {
       handleFiles(selectedFiles);
     }
-    // Reset input so same file can be selected again
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -269,7 +269,7 @@ export function DocumentUpload({
   const handleRemove = async (fileId: string) => {
     const fileToRemove = uploadedFiles.find((f) => f.id === fileId);
 
-    // Delete from backend if exists
+   
     if (fileToRemove?.cloudinaryData?.publicId) {
       try {
         await api.delete(
@@ -282,7 +282,7 @@ export function DocumentUpload({
       }
     }
 
-    // Just update state
+    
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
   };
 

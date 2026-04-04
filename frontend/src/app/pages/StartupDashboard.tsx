@@ -27,6 +27,7 @@ import axios from "axios";
 import { useToast } from "../../context/ToastContext";
 import { useNavigate } from "react-router";
 import { Input } from "../components/ui/input";
+import { FolderOpen, Bell } from "lucide-react";
 
 interface TeamMember {
   id: string;
@@ -86,8 +87,8 @@ export default function StartupDashboard() {
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [wizardLoading, setWizardLoading] = useState(false);
+  const [pendingDdCount, setPendingDdCount] = useState(0);
 
-  // Filter: title, shortDesc, tagline
   const q = search.toLowerCase().trim();
   const projects = allProjects.filter(
     (p) =>
@@ -137,9 +138,15 @@ export default function StartupDashboard() {
   const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await api.get("/projects/dashboard");
-      setStats(res.data.stats);
-      setAllProjects(res.data.projects);
+      const [dashRes, ddRes] = await Promise.all([
+        api.get("/projects/dashboard"),
+        api.get("/dd-requests/received").catch(() => ({ data: [] })),
+      ]);
+      setStats(dashRes.data.stats);
+      setAllProjects(dashRes.data.projects);
+
+      const pending = ddRes.data.filter((r: { status: string }) => r.status === "PENDING").length;
+      setPendingDdCount(pending);
     } catch (error) {
       console.error("Dashboard error:", error);
     } finally {
@@ -160,9 +167,9 @@ export default function StartupDashboard() {
           <Skeleton className="h-4 w-80" />
         </div>
 
-        {/* Stats skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
+        {/* Stats skeleton — 4 columns */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
             <Card key={i} className="p-6">
               <Skeleton className="h-4 w-24 mb-3" />
               <Skeleton className="h-8 w-20" />
@@ -170,9 +177,9 @@ export default function StartupDashboard() {
           ))}
         </div>
 
-        {/* Projects skeleton */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {[...Array(4)].map((_, i) => (
+        {/* Projects skeleton — 3 columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="p-6 space-y-4">
               <Skeleton className="h-6 w-48" />
               <Skeleton className="h-4 w-32" />
@@ -219,34 +226,76 @@ export default function StartupDashboard() {
         </Button>
       </div>
 
-      {/* STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4 ">
+      {/* STATS — all 4 in one row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Projects"
           value={stats.totalProjects}
           icon={<TrendingUp className="size-6 text-blue-600" />}
         />
-
         <StatCard
           title="Total Views"
           value={stats.totalViews.toLocaleString()}
           icon={<Eye className="size-6 text-purple-600" />}
         />
-
         <StatCard
           title="Pending Requests"
           value={stats.pending}
           icon={<Clock className="size-6 text-yellow-600" />}
         />
+        <Card
+          className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 rounded-xl cursor-pointer"
+          onClick={() => navigate("/app/startup/dd-requests")}
+        >
+          <CardContent className="pt-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-500 mb-1">DD Requests</p>
+                <p className="text-2xl font-semibold text-green-600">
+                  {pendingDdCount}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">pending</p>
+              </div>
+              <div className="p-2 rounded-lg bg-green-50">
+                <FolderOpen className="size-6 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* PROJECTS */}
+      {/* DD INBOX BANNER */}
+      {pendingDdCount > 0 && (
+        <div
+          className="flex items-center justify-between gap-4 p-4 bg-green-50 border border-green-200 rounded-xl cursor-pointer hover:bg-green-100 transition-colors"
+          onClick={() => navigate("/app/startup/dd-requests")}
+        >
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-100 rounded-lg">
+              <Bell className="size-4 text-green-700" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-green-900">
+                {pendingDdCount} Due Diligence Request{pendingDdCount > 1 ? "s" : ""} Pending
+              </p>
+              <p className="text-xs text-green-700">
+                Investors are requesting access to your data rooms
+              </p>
+            </div>
+          </div>
+          <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-2 flex-shrink-0">
+            <FolderOpen className="size-4" />
+            Review Requests
+          </Button>
+        </div>
+      )}
+
+      {/* PROJECTS — 3 cards per row */}
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h2 className="text-2xl font-semibold text-foreground">
             My Projects
           </h2>
-
           <Input
             type="text"
             placeholder="Search my projects..."
@@ -276,7 +325,7 @@ export default function StartupDashboard() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {projects.map((project) => (
               <Card
                 key={project.id}
@@ -284,11 +333,10 @@ export default function StartupDashboard() {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <CardTitle className="text-xl text-gray-900">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <CardTitle className="text-lg text-gray-900">
                         {project.title}
                       </CardTitle>
-
                       <Badge
                         className={`px-2 py-0.5 text-xs ${getStatusColor(project.status)}`}
                       >
@@ -296,7 +344,7 @@ export default function StartupDashboard() {
                       </Badge>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       {project.status === "DRAFT" && (
                         <Button
                           size="icon"
@@ -306,7 +354,6 @@ export default function StartupDashboard() {
                           <Pencil className="w-4 h-4 text-blue-600" />
                         </Button>
                       )}
-
                       <Button
                         size="icon"
                         variant="ghost"
@@ -320,7 +367,6 @@ export default function StartupDashboard() {
                             });
                             return;
                           }
-
                           setDeleteProjectId(project.id);
                         }}
                       >
@@ -330,11 +376,11 @@ export default function StartupDashboard() {
                   </div>
 
                   {/* Tags from technologies */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {project.technologies?.map((tech, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
+                        className="px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-md"
                       >
                         {tech.trim()}
                       </span>
@@ -342,39 +388,35 @@ export default function StartupDashboard() {
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-3 pt-2 pb-4">
+                <CardContent className="space-y-2.5 pt-2 pb-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <TrendingUp className="size-4" />
+                    <TrendingUp className="size-4 flex-shrink-0" />
                     <span className="font-medium">Stage:</span>
                     <span>{project.stage}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Eye className="size-4" />
+                    <Eye className="size-4 flex-shrink-0" />
                     <span className="font-medium">Views:</span>
                     <span>{project.viewCount}</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="size-4" />
+                    <Users className="size-4 flex-shrink-0" />
                     <span className="font-medium">Team:</span>
                     <span>{project.teamMembers.length} members</span>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="size-4" />
+                    <Calendar className="size-4 flex-shrink-0" />
                     <span className="font-medium">Created:</span>
-                    <span>
-                      {new Date(project.createdAt).toLocaleDateString()}
-                    </span>
+                    <span>{new Date(project.createdAt).toLocaleDateString()}</span>
                   </div>
 
                   <Button
                     variant="outline"
-                    className="w-full mt-4"
-                    onClick={() =>
-                      navigate(`/app/startup/projects/${project.id}`)
-                    }
+                    className="w-full mt-3"
+                    onClick={() => navigate(`/app/startup/projects/${project.id}`)}
                   >
                     View Details
                     <ArrowRight className="size-4 ml-2" />
@@ -385,6 +427,7 @@ export default function StartupDashboard() {
           </div>
         )}
       </div>
+
       <AppModal
         open={!!deleteProjectId}
         onOpenChange={() => setDeleteProjectId(null)}
@@ -414,7 +457,6 @@ function StatCard({ title, value, icon }: StatCardProps) {
             <p className="text-sm text-gray-500 mb-1">{title}</p>
             <p className="text-2xl font-semibold text-foreground">{value}</p>
           </div>
-
           <div className="p-2 rounded-lg bg-gray-100">{icon}</div>
         </div>
       </CardContent>

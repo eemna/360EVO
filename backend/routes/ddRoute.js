@@ -14,6 +14,9 @@ import {
   suggestAnswer,
   generateDealBrief,
   getDealBrief,
+  getQaThreads,
+  getActivity,
+  updateDocumentAccess,
 } from "../controllers/ddController.js";
 
 const router = express.Router();
@@ -28,10 +31,12 @@ router.put("/dd-requests/:id/decline", protect, declineDdRequest);
 router.get("/data-rooms/:id", protect, getDataRoom);
 router.post("/data-rooms/:id/documents", protect, addDocument);
 router.delete("/data-rooms/:id/documents/:docId", protect, deleteDocument);
-
+router.put("/data-rooms/:id/documents/:docId", protect, updateDocumentAccess);
 // Q&A
 router.post("/data-rooms/:id/qa", protect, createQaThread);
 router.post("/data-rooms/:id/qa/:threadId/reply", protect, replyToQaThread);
+router.get("/data-rooms/:id/qa", protect, getQaThreads);
+router.get("/data-rooms/:id/activity", protect, getActivity);
 
 // AI
 router.post("/data-rooms/:id/ai/scan", protect, runAiScan);

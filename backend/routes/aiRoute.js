@@ -49,6 +49,6 @@ router.post(
   protect,
   authorize("INVESTOR"),
   getPitchAnalysis,
-); // ← add
+); 
 
 export default router;
