@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router";
+//import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
@@ -14,6 +14,7 @@ import {
 import { Search, MapPin, Target, Eye, Users, Sparkles } from "lucide-react";
 import api from "../../services/axios";
 import { BookmarkButton, InterestButton } from "./Bookmarkfeature";
+import { useNavigate } from "react-router";
 
 type Project = {
   id: string;
@@ -51,6 +52,7 @@ export function ProjectGallery() {
   const [currentPage, setCurrentPage] = useState(1);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -253,8 +255,13 @@ export function ProjectGallery() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {projects.map((project) => (
-            <Link key={project.id} to={`/app/startup/projects/${project.id}`}>
-              <Card className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group">
+              <Card 
+                key={project.id}
+                
+                onClick={() => {
+                navigate(`/app/startup/projects/${project.id}?source=gallery`);
+                }}
+                className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group">
                 <CardContent className="pt-6">
                   {project.featured && (
                     <div className="flex items-center gap-2 mb-3">
@@ -331,7 +338,7 @@ export function ProjectGallery() {
                   </div>
                 </CardContent>
               </Card>
-            </Link>
+            
           ))}
         </div>
       )}

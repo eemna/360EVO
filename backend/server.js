@@ -8,7 +8,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
 import rateLimiter from "./middleware/rateLimiter.js";
-import job, { matchRegenerationJob, narrativeRetryJob } from "./config/cron.js";
+import job, { matchRegenerationJob, narrativeRetryJob,analyticsJob } from "./config/cron.js";
 import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
@@ -23,7 +23,6 @@ import bookmarkRoute from "./routes/bookmarkRoute.js";
 import aiRoute from "./routes/aiRoute.js";
 import investorProfileRoutes from "./routes/investorprofileroute.js";
 import ddRoutes from "./routes/ddRoute.js";
-import analyticsRoute from "./routes/analyticsRoute.js";
 
 dotenv.config();
 const app = express();
@@ -57,6 +56,7 @@ if (process.env.NODE_ENV === "production") {
   job.start();
   matchRegenerationJob.start();
   narrativeRetryJob.start();
+  analyticsJob.start();
 }
 app.get("/api/health", (req, res) => {
   res.send("Backend is running ");
@@ -75,7 +75,7 @@ app.use("/api/bookmarks", bookmarkRoute);
 app.use("/api/ai", aiRoute);
 app.use("/api/investor-profile", investorProfileRoutes);
 app.use("/api", ddRoutes); // covers /api/dd-requests and /api/data-rooms
-app.use("/api/projects", analyticsRoute);
+
 const PORT = process.env.PORT || 5001;
 
 app.use(errorHandler);

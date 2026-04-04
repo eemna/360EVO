@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // ← add useRef
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { Button } from "./button";
 import { Skeleton } from "./skeleton";
@@ -11,7 +11,7 @@ import { AINarrativePanel } from "./Ainarrativepanel";
 import { ThesisAlignmentPanel } from "./Thesisalignmentpanel";
 import { PitchAnalysisCard } from "./Pitchanalysiscard";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { BrainCircuit, TrendingUp, Lightbulb } from "lucide-react";
+import { BrainCircuit, TrendingUp, Lightbulb, Sparkles } from "lucide-react"; // ← add Sparkles
 
 interface AIAssessment {
   trlScore: number;
@@ -66,8 +66,45 @@ export default function AIAssessmentSection({
   const [assessment, setAssessment] = useState<AIAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [triggering, setTriggering] = useState(false);
+  const [isPolling, setIsPolling] = useState(false);
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isInvestor = user?.role === "INVESTOR";
+
+  const stopPolling = () => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current);
+      pollingRef.current = null;
+    }
+    setIsPolling(false);
+  };
+
+  //start polling until llmModel flips to groq
+  const startPolling = () => {
+    setIsPolling(true);
+    let attempts = 0;
+    const MAX_ATTEMPTS = 10;
+
+    pollingRef.current = setInterval(async () => {
+      attempts++;
+      try {
+        const { data } = await api.get(`/ai/assessment/${projectId}`);
+        setAssessment(data);
+
+        if (data.llmModel === "groq/moe-4experts") {
+          stopPolling();
+        } else if (attempts >= MAX_ATTEMPTS) {
+          stopPolling();
+        }
+      } catch {
+        stopPolling();
+      }
+    }, 3000);
+  };
+
+  useEffect(() => {
+    return () => stopPolling();
+  }, []);
 
   useEffect(() => {
     const fetch = async () => {
@@ -88,11 +125,16 @@ export default function AIAssessmentSection({
     try {
       setTriggering(true);
       const { data } = await api.post(`/ai/assess/${projectId}`);
-      setAssessment(data);
+      setAssessment(data); // show rule-based immediately
+
+      if (data.llmModel !== "groq/moe-4experts") {
+        startPolling(); 
+      }
+
       showToast({
         type: "success",
         title: "Assessment complete!",
-        message: "",
+        message: "AI narrative is being generated...",
       });
     } catch (err: unknown) {
       const msg =
@@ -163,17 +205,34 @@ export default function AIAssessmentSection({
           <h2 className="text-xl font-semibold text-gray-900">AI Assessment</h2>
           <TRLBadge score={assessment.trlScore} />
         </div>
-        {isAdmin && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTriggerAssessment}
-            disabled={triggering}
-            className="text-xs gap-1"
-          >
-            {triggering ? <LoadingSpinner size="sm" /> : "↺ Re-run"}
-          </Button>
-        )}
+
+        <div className="flex items-center gap-2">
+          {isPolling && (
+            <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+              <div className="size-2 rounded-full bg-amber-500 animate-pulse" />
+              Generating AI narrative...
+            </div>
+          )}
+          {!isPolling && assessment.llmModel === "groq/moe-4experts" && (
+            <div className="flex items-center gap-1.5 text-xs text-green-600 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+              <Sparkles className="size-3" />
+              Groq MoE · 4 experts
+            </div>
+          )}
+         
+
+          {isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleTriggerAssessment}
+              disabled={triggering || isPolling}
+              className="text-xs gap-1"
+            >
+              {triggering ? <LoadingSpinner size="sm" /> : "↺ Re-run"}
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* TRL + IR + Breakdown */}
@@ -218,6 +277,8 @@ export default function AIAssessmentSection({
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <span>◈</span> AI Narrative
+            {/* ── NEW: subtle spinner inside the narrative card while polling ── */}
+            {isPolling && <LoadingSpinner size="sm" />}
           </CardTitle>
         </CardHeader>
         <CardContent>

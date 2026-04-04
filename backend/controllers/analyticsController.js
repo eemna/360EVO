@@ -1,21 +1,65 @@
 import { prisma } from "../config/prisma.js";
 
-// Called internally whenever a project is viewed
-export const trackProjectView = async (projectId) => {
+export const trackProjectView = async (projectId, source = "direct") => {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setUTCHours(0, 0, 0, 0);
 
   try {
+    
+    const existing = await prisma.projectAnalytics.findUnique({
+      where: { projectId_date: { projectId, date: today } },
+    });
+    
+    const currentSources = existing?.sources ?? {};
+    const updatedSources = {
+      ...currentSources,
+      [source]: (currentSources[source] || 0) + 1,
+    };
+
     await prisma.projectAnalytics.upsert({
       where: { projectId_date: { projectId, date: today } },
-      update: { views: { increment: 1 } },
-      create: { projectId, date: today, views: 1 },
+      update: {
+        views: { increment: 1 },
+        sources: updatedSources,
+      },
+      create: {
+        projectId,
+        date: today,
+        views: 1,
+        sources: { [source]: 1 },
+      },
     });
   } catch (err) {
     console.error("[Analytics] Failed to track view:", err.message);
   }
 };
+export const trackBookmark = async (projectId) => {
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0);
+  try {
+    await prisma.projectAnalytics.upsert({
+      where: { projectId_date: { projectId, date: today } },
+      update: { bookmarks: { increment: 1 } },
+      create: { projectId, date: today, bookmarks: 1 },
+    });
+  } catch (err) {
+    console.error("[Analytics] Failed to track bookmark:", err.message);
+  }
+};
 
+export const trackInterest = async (projectId) => {
+const today = new Date();
+today.setUTCHours(0, 0, 0, 0);
+  try {
+    await prisma.projectAnalytics.upsert({
+      where: { projectId_date: { projectId, date: today } },
+      update: { interests: { increment: 1 } },
+      create: { projectId, date: today, interests: 1 },
+    });
+  } catch (err) {
+    console.error("[Analytics] Failed to track interest:", err.message);
+  }
+};
 // GET /api/projects/:id/analytics?range=7d|30d|90d
 export const getProjectAnalytics = async (req, res, next) => {
   try {
@@ -54,5 +98,24 @@ export const getProjectAnalytics = async (req, res, next) => {
     res.json({ analytics, totals, range: req.query.range || "7d" });
   } catch (error) {
     next(error);
+  }
+};
+export const trackBookmarkRemove = async (projectId) => {
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  try {
+    const existing = await prisma.projectAnalytics.findUnique({
+      where: { projectId_date: { projectId, date: today } },
+    });
+
+    
+    if (!existing || existing.bookmarks <= 0) return;
+
+    await prisma.projectAnalytics.update({
+      where: { projectId_date: { projectId, date: today } },
+      data: { bookmarks: { decrement: 1 } },
+    });
+  } catch (err) {
+    console.error("[Analytics] Failed to track bookmark remove:", err.message);
   }
 };

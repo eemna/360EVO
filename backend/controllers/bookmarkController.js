@@ -1,6 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
-
+import { trackBookmark, trackInterest,trackBookmarkRemove } from "./analyticsController.js";
 export const addBookmark = async (req, res, next) => {
   try {
     const { projectId } = req.params;
@@ -14,7 +14,7 @@ export const addBookmark = async (req, res, next) => {
     const bookmark = await prisma.bookmark.create({
       data: { userId, projectId },
     });
-
+    trackBookmark(projectId);
     res.status(201).json(bookmark);
   } catch (error) {
     // @@unique violation  already bookmarked
@@ -33,7 +33,7 @@ export const removeBookmark = async (req, res, next) => {
     await prisma.bookmark.delete({
       where: { userId_projectId: { userId, projectId } },
     });
-
+    await trackBookmarkRemove(projectId);
     res.json({ message: "Bookmark removed" });
   } catch (error) {
     if (error.code === "P2025") {
@@ -107,7 +107,7 @@ export const expressInterest = async (req, res, next) => {
       data: { projectId, userId, message: message.trim() },
       include: { user: { select: { id: true, name: true } } },
     });
-
+    trackInterest(projectId);
     // 2. Find existing conversation between the two users or create new one
     const existing = await prisma.conversation.findFirst({
       where: {

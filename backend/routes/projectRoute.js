@@ -13,7 +13,7 @@ import {
   createProjectUpdate,
   getProjectUpdates,
 } from "../controllers/projectController.js";
-
+import { getProjectAnalytics } from "../controllers/analyticsController.js"; 
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -23,6 +23,7 @@ router.get("/", getPublicProjects);
 router.get("/featured", getFeaturedProjects);
 router.get("/dashboard", protect, getStartupDashboard);
 router.get("/mine", protect, getMyProjects);
+router.get("/:id/analytics", protect, getProjectAnalytics);
 router.get("/:id", protect, getProjectById);
 router.post("/", protect, createProject);
 router.put("/:id", protect, updateProject);

@@ -157,7 +157,7 @@ export const approveDdRequest = async (req, res, next) => {
           ddRequestId: id,
           projectId: ddRequest.projectId,
           investorId: ddRequest.investorId,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 
         },
       });
 
@@ -233,7 +233,7 @@ async function getAccessibleDataRoom(dataRoomId, userId) {
   const isOwner = dataRoom.project.ownerId === userId;
 
   if (!isInvestor && !isOwner) throw { status: 403, message: "Access denied" };
-  if (new Date() > dataRoom.expiresAt)
+  if (Date.now() > dataRoom.expiresAt.getTime())
     throw { status: 403, message: "Data room has expired" };
 
   return { dataRoom, isInvestor, isOwner };
@@ -275,7 +275,8 @@ export const getDataRoom = async (req, res, next) => {
       data: { dataRoomId: id, userId, action: "VIEWED_ROOM" },
     });
 
-    res.json({ ...full, isInvestor, isOwner });
+    const visibleDocs = full.documents.filter(d => d.accessLevel === "OPEN" || isOwner);
+    res.json({ ...full, documents: visibleDocs, isInvestor, isOwner });
   } catch (error) {
     if (error.status)
       return res.status(error.status).json({ message: error.message });
@@ -367,7 +368,35 @@ export const deleteDocument = async (req, res, next) => {
     next(error);
   }
 };
+// PUT /api/data-rooms/:id/documents/:docId  (update accessLevel)
+export const updateDocumentAccess = async (req, res, next) => {
+  try {
+    const { id: dataRoomId, docId } = req.params;
+    const userId = req.user.id;
+    const { accessLevel } = req.body;
 
+    const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
+    if (!isOwner) return res.status(403).json({ message: "Forbidden" });
+
+    if (!["OPEN", "ON_REQUEST"].includes(accessLevel)) {
+      return res.status(400).json({ message: "Invalid accessLevel. Use OPEN or ON_REQUEST" });
+    }
+
+    const doc = await prisma.dataRoomDocument.update({
+      where: { id: docId },
+      data: { accessLevel },
+    });
+
+    await prisma.dataRoomActivity.create({
+      data: { dataRoomId, userId, action: "UPDATED_DOCUMENT_ACCESS", docName: doc.name },
+    });
+
+    res.json(doc);
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ message: error.message });
+    next(error);
+  }
+};
 // Q&A
 
 // POST /api/data-rooms/:id/qa
@@ -388,6 +417,10 @@ export const createQaThread = async (req, res, next) => {
 
     const thread = await prisma.ddQaThread.create({
       data: { dataRoomId, question, askerId },
+        include: {
+    asker: { select: { name: true, role: true } },
+    responses: true, 
+  },
     });
 
     // Notify startup owner
@@ -413,7 +446,55 @@ export const createQaThread = async (req, res, next) => {
     next(error);
   }
 };
+// GET /api/data-rooms/:id/qa
+export const getQaThreads = async (req, res, next) => {
+  try {
+    const { id: dataRoomId } = req.params;
+    const userId = req.user.id;
 
+    await getAccessibleDataRoom(dataRoomId, userId);
+
+    const threads = await prisma.ddQaThread.findMany({
+      where: { dataRoomId },
+      include: {
+        asker: { select: { name: true, role: true } },
+        responses: {
+          include: { responder: { select: { name: true, role: true } } },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json(threads);
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ message: error.message });
+    next(error);
+  }
+};
+// GET /api/data-rooms/:id/activity
+export const getActivity = async (req, res, next) => {
+  try {
+    const { id: dataRoomId } = req.params;
+    const userId = req.user.id;
+
+    const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
+    // Only startup owner sees full activity log
+    if (!isOwner) return res.status(403).json({ message: "Forbidden" });
+
+    const activity = await prisma.dataRoomActivity.findMany({
+      where: { dataRoomId },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: { user: { select: { name: true, role: true } } },
+    });
+
+    res.json(activity);
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ message: error.message });
+    next(error);
+  }
+};
 // POST /api/data-rooms/:id/qa/:threadId/reply
 export const replyToQaThread = async (req, res, next) => {
   try {
@@ -484,7 +565,11 @@ export const runAiScan = async (req, res, next) => {
     // Always fetch documents to compute hash
     const fullRoom = await prisma.dataRoom.findUnique({
       where: { id: dataRoomId },
-      include: { documents: true },
+      include: {
+    documents: {
+      where: { accessLevel: "OPEN" },
+    },
+  },
     });
 
     // Hash based on document IDs + uploadedAt — changes when docs are added/removed
@@ -556,10 +641,7 @@ export const suggestAnswer = async (req, res, next) => {
     const userId = req.user.id;
     const { threadId } = req.body;
 
-    const { isOwner } = await getAccessibleDataRoom(
-      dataRoomId,
-      userId,
-    );
+    const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
       return res
         .status(403)

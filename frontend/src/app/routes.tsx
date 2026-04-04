@@ -32,6 +32,10 @@ import SavedProjectsPage from "./pages/Bookmarkfeature";
 import InvestorSetupWizard from "./pages/Investorsetupwizard";
 import MatchFeedPage from "./pages/Matchfeedpage";
 import InvestorDashboard from "./pages/InvestorDashboard";
+import DdInboxPage from "./pages/Ddinboxpage";
+import DataRoomPage from "./pages/Dataroompage";
+import DealBriefPage from "./pages/Dealbriefpage";
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -162,6 +166,12 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      { path: "startup/dd-requests", element: <RoleRoute allowedRoles={["STARTUP"]}><DdInboxPage /></RoleRoute> },
+      { path: "investor/dd-requests", element: <RoleRoute allowedRoles={["INVESTOR"]}><DdInboxPage /></RoleRoute> }, 
+      { path: "startup/data-rooms/:id", element: <RoleRoute allowedRoles={["STARTUP"]}><DataRoomPage /></RoleRoute> },
+      { path: "investor/data-rooms/:id", element: <RoleRoute allowedRoles={["INVESTOR"]}><DataRoomPage /></RoleRoute> },
+      { path: "investor/data-rooms/:id/deal-brief", element: <RoleRoute allowedRoles={["INVESTOR"]}><DealBriefPage /></RoleRoute> },
+
     ],
   },
   {

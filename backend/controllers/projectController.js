@@ -54,7 +54,6 @@ export const getProjectById = async (req, res, next) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    // Only increment if viewer is NOT owner
     if (!req.user || req.user.id !== project.ownerId) {
       await prisma.project.update({
         where: { id },
@@ -62,7 +61,19 @@ export const getProjectById = async (req, res, next) => {
           viewCount: { increment: 1 },
         },
       });
-      trackProjectView(id);
+       let source = req.query.source || null;
+
+  
+  if (!source) {
+    const referer = req.headers["referer"] || req.headers["referrer"] || "";
+    if (referer.includes("google")) source = "google";
+    else if (referer.includes("linkedin")) source = "linkedin";
+    else if (referer.includes("twitter") || referer.includes("x.com")) source = "twitter";
+    else if (referer.includes("facebook")) source = "facebook";
+    else source = "direct";
+  }
+
+  trackProjectView(id, source);
     }
 
     res.json(project);

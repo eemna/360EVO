@@ -71,7 +71,7 @@ export function FileUpload({
   };
 
   const generatePreview = (file: File) => {
-    // Generate preview for images
+
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -137,10 +137,8 @@ export function FileUpload({
 
     setFile(selectedFile);
 
-    //  Upload first
     await uploadToServer(selectedFile);
 
-    // Only generate preview after upload starts (safe)
     generatePreview(selectedFile);
   };
 

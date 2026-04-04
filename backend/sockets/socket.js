@@ -53,6 +53,13 @@ export const initializeSocket = (io) => {
     socket.on("join_conversation", (conversationId) => {
       socket.join(conversationId);
     });
+    socket.on("join_dataroom", (dataRoomId) => {
+    socket.join(`dataroom_${dataRoomId}`);
+    });
+
+    socket.on("leave_dataroom", (dataRoomId) => {
+    socket.leave(`dataroom_${dataRoomId}`);
+    });
 
     socket.on("typing_start", ({ conversationId }) => {
       socket.to(conversationId).emit("typing_start", { userId });

@@ -7,8 +7,9 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { Separator } from "../components/ui/separator";
-
+import { DdRequestModal } from "./Ddrequestmodal ";
 import { Skeleton } from "../components/ui/skeleton";
+import { useParams, useSearchParams } from "react-router";
 import {
   ArrowLeft,
   Users,
@@ -25,8 +26,6 @@ import {
   Plus,
   X,
 } from "lucide-react";
-
-import { useParams } from "react-router";
 import { useEffect, useState } from "react";
 import api from "../../services/axios";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
@@ -34,6 +33,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
 import { InterestButton } from "./Bookmarkfeature";
 import AIAssessmentSection from "../components/ui/Aiassessmentsection";
+import ProjectAnalyticsDashboard from "../pages/ProjectAnalyticsDashboard";
 
 interface TeamMember {
   name: string;
@@ -135,24 +135,31 @@ export default function ProjectDetailsPage() {
   const [postContent, setPostContent] = useState("");
   const [postImageUrl, setPostImageUrl] = useState("");
   const [posting, setPosting] = useState(false);
+  const [ddModalOpen, setDdModalOpen] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);
+  
+  //const location = useLocation();
+  const [searchParams] = useSearchParams();
+useEffect(() => {
+  const fetchProject = async () => {
+    try {
+      // Read source from URL query 
+      const source = searchParams.get("source") ?? "direct";
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const res = await api.get(`/projects/${id}`);
-        setProject({
-          ...res.data,
-          fundingSought:
-            res.data.fundingSought != null ? Number(res.data.fundingSought) : 0,
-        });
-      } catch (error) {
-        console.error("Error loading project:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (id) fetchProject();
-  }, [id]);
+      const res = await api.get(`/projects/${id}?source=${source}`);
+      setProject({
+        ...res.data,
+        fundingSought:
+          res.data.fundingSought != null ? Number(res.data.fundingSought) : 0,
+      });
+    } catch (error) {
+      console.error("Error loading project:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (id) fetchProject();
+}, [id, searchParams]);
 
   useEffect(() => {
     if (!id) return;
@@ -286,7 +293,7 @@ export default function ProjectDetailsPage() {
   const isOwner = String(user?.id) === project.ownerId;
   const isAdmin = user?.role === "ADMIN";
   const canInteract = user && !isOwner && !isAdmin;
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back button */}
@@ -398,22 +405,53 @@ export default function ProjectDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* About */}
-            <Card>
-              <CardHeader>
-                <CardTitle>About This Project</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-gray-600 mb-4">{project.shortDesc}</p>
-                <div
-                  className="text-gray-600 leading-relaxed break-words"
-                  dangerouslySetInnerHTML={{ __html: project.fullDesc }}
-                />
-              </CardContent>
-            </Card>
+          
+{/* About */}
+<Card>
+  <CardHeader>
+    <CardTitle>About This Project</CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-4">
+    <p className="text-gray-600 mb-4">{project.shortDesc}</p>
+    
+    <div
+      className={`text-gray-600 leading-relaxed break-words overflow-hidden transition-all duration-300 ${
+        showFullDesc ? "" : "max-h-32 relative"
+      }`}
+    >
+      <div dangerouslySetInnerHTML={{ __html: project.fullDesc }} />
+      
+      {/* Fade overlay when collapsed */}
+      {!showFullDesc && (
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+      )}
+    </div>
 
-            {/* Team */}
+    <button
+      onClick={() => setShowFullDesc((v) => !v)}
+      className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
+    >
+      {showFullDesc ? (
+        <>
+          Show less
+          <svg className="size-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </>
+      ) : (
+        <>
+          View more
+          <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </>
+      )}
+    </button>
+  </CardContent>
+</Card>
+                        {/* Team */}
             <Card>
+             
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="size-5" />
@@ -448,59 +486,12 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
+               {user?.id === project.ownerId && (
+               <ProjectAnalyticsDashboard projectId={project.id} />
+                 )}
 
-            {/* Roadmap */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="size-5" />
-                  Roadmap & Milestones
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-                  <div className="space-y-6">
-                    {project.milestones?.map((milestone, index) => (
-                      <div key={index} className="relative flex gap-4">
-                        <div
-                          className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${milestone.completedAt ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}
-                        >
-                          <Calendar className="size-5" />
-                        </div>
-                        <div className="flex-1 pb-6">
-                          <div className="flex flex-wrap items-center gap-3 mb-1">
-                            <h4 className="font-medium text-gray-900">
-                              {milestone.title}
-                            </h4>
-                            {milestone.completedAt && (
-                              <Badge
-                                variant="outline"
-                                className="bg-green-50 text-green-700 border-green-200"
-                              >
-                                Completed
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500 mb-2">
-                            Target:{" "}
-                            {milestone.targetDate
-                              ? formatDate(milestone.targetDate)
-                              : "No date"}
-                            {milestone.completedAt &&
-                              ` • Completed: ${formatDate(milestone.completedAt)}`}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {milestone.description}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
+
 
           {/* Right Column */}
           <div className="space-y-6">
@@ -584,7 +575,61 @@ export default function ProjectDetailsPage() {
               </CardContent>
             </Card>
 
-            {/* PROJECT UPDATES CARD */}
+
+
+
+            {/* Roadmap */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="size-5" />
+                  Roadmap & Milestones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="relative">
+                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                  <div className="space-y-6">
+                    {project.milestones?.map((milestone, index) => (
+                      <div key={index} className="relative flex gap-4">
+                        <div
+                          className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${milestone.completedAt ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}
+                        >
+                          <Calendar className="size-5" />
+                        </div>
+                        <div className="flex-1 pb-6">
+                          <div className="flex flex-wrap items-center gap-3 mb-1">
+                            <h4 className="font-medium text-gray-900">
+                              {milestone.title}
+                            </h4>
+                            {milestone.completedAt && (
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-200"
+                              >
+                                Completed
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 mb-2">
+                            Target:{" "}
+                            {milestone.targetDate
+                              ? formatDate(milestone.targetDate)
+                              : "No date"}
+                            {milestone.completedAt &&
+                              ` • Completed: ${formatDate(milestone.completedAt)}`}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {milestone.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+                        {/* PROJECT UPDATES CARD */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -624,6 +669,7 @@ export default function ProjectDetailsPage() {
 
               <CardContent className="space-y-4">
                 {/* Post form — owner only */}
+                
                 {isOwner && showPostForm && (
                   <div className="bg-indigo-50 rounded-xl p-4 space-y-3 border border-indigo-100">
                     <textarea
@@ -739,12 +785,19 @@ export default function ProjectDetailsPage() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-6 pb-10">
+        
         <AIAssessmentSection
           projectId={id!}
           projectStatus={project.status}
           isAdmin={isAdmin}
         />
       </div>
+      {user?.role === "INVESTOR" && project.status === "APPROVED" && (
+  <>
+    <Button onClick={() => setDdModalOpen(true)}>Request Due Diligence</Button>
+    <DdRequestModal open={ddModalOpen} onOpenChange={setDdModalOpen} projectId={project.id} projectTitle={project.title} />
+  </>
+)}
     </div>
   );
 }

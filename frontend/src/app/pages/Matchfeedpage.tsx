@@ -265,9 +265,9 @@ function MatchCard({
             size="sm"
             variant="outline"
             className="text-xs h-7 px-2"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/app/startup/projects/${match.project.id}`);
+           onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/app/startup/projects/${match.project.id}?source=match_feed`);
             }}
           >
             <Eye className="w-3 h-3 mr-1" /> View Project
