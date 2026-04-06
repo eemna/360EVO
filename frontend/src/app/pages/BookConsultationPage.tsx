@@ -13,6 +13,7 @@ import { Calendar } from "../components/ui/calendar";
 import { Skeleton } from "../components/ui/skeleton";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
+
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -46,6 +47,7 @@ interface Booking {
   endDateTime: string;
   status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
 }
+
 export function BookConsultationPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [duration, setDuration] = useState(30);
@@ -65,11 +67,7 @@ export function BookConsultationPage() {
   const [location, setLocation] = useState("");
   const [expert, setExpert] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [pendingBooking, setPendingBooking] = useState<{
-    id: string;
-    price: number;
-  } | null>(null);
-  const [paying, setPaying] = useState(false);
+
   const price = expert?.profile?.hourlyRate
     ? (Number(expert.profile.hourlyRate) * duration) / 60
     : 0;
@@ -182,63 +180,65 @@ export function BookConsultationPage() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const handleConfirmBooking = async () => {
-    if (!selectedDate || !selectedSlot || !expert) return;
+const handleConfirmBooking = async () => {
+  if (!selectedDate || !selectedSlot || !expert) return;
 
-    try {
-      if (meetingType === "IN_PERSON" && !location.trim()) {
-        showToast({
-          type: "error",
-          title: "Location required",
-          message: "Please enter meeting location",
-        });
-        return;
-      }
-
-      setBooking(true);
-      const [hour, minute] = selectedSlot.split(":").map(Number);
-      const startDateTime = new Date(selectedDate);
-      startDateTime.setHours(hour, minute, 0, 0);
-      // Create booking — starts as PENDING_PAYMENT
-      const { data: newBooking } = await api.post("/consultations/request", {
-        expertId: expert.id,
-        date: selectedDate.toISOString(),
-        timeSlot: selectedSlot,
-        startDateTimeISO: startDateTime.toISOString(),
-        duration,
-        message,
-        topic,
-        meetingType,
-        location: meetingType === "IN_PERSON" ? location : null,
-        dayOfWeek: selectedDate.getDay(),
-      });
-
-      // Refresh bookings so the slot appears taken on the calendar
-      const { data: updatedBookings } = await api.get("/consultations");
-      setBookings(
-        updatedBookings.filter((b: Booking) => b.expertId === expert.id),
-      );
-
-      // Clear the form
-      setSelectedSlot(null);
-      setSelectedDate(undefined);
-      setTopic("");
-      setMessage("");
-      setLocation("");
-
-      // Show the payment modal — this was missing before
-      setPendingBooking({ id: newBooking.id, price: newBooking.price });
-    } catch (error) {
+  try {
+    if (meetingType === "IN_PERSON" && !location.trim()) {
       showToast({
         type: "error",
-        title: "Booking Failed",
-        message: "Something went wrong. Please try again.",
+        title: "Location required",
+        message: "Please enter meeting location",
       });
-      console.error(error);
-    } finally {
-      setBooking(false);
+      return;
     }
-  };
+
+    setBooking(true);
+    const [hour, minute] = selectedSlot.split(":").map(Number);
+    const startDateTime = new Date(selectedDate);
+    startDateTime.setHours(hour, minute, 0, 0);
+
+    await api.post("/consultations/request", {
+      expertId: expert.id,
+      date: selectedDate.toISOString(),
+      timeSlot: selectedSlot,
+      startDateTimeISO: startDateTime.toISOString(),
+      duration,
+      message,
+      topic,
+      meetingType,
+      location: meetingType === "IN_PERSON" ? location : null,
+      dayOfWeek: selectedDate.getDay(),
+    });
+
+    const { data: updatedBookings } = await api.get("/consultations");
+    setBookings(
+      updatedBookings.filter((b: Booking) => b.expertId === expert.id),
+    );
+
+    setSelectedSlot(null);
+    setSelectedDate(undefined);
+    setTopic("");
+    setMessage("");
+    setLocation("");
+
+    showToast({
+      type: "success",
+      title: "Booking Request Sent!",
+      message: "The expert will review your request. You'll be notified to complete payment once accepted.",
+    });
+
+  } catch (error) {
+    showToast({
+      type: "error",
+      title: "Booking Failed",
+      message: "Something went wrong. Please try again.",
+    });
+    console.error(error);
+  } finally {
+    setBooking(false);
+  }
+};
 
   const getInitials = (name: string) =>
     name
@@ -655,133 +655,7 @@ export function BookConsultationPage() {
           )}
         </div>
       </div>
-      {/* Payment Modal */}
-      {pendingBooking && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <DollarSign className="size-8 text-indigo-600" />
-              </div>
-              <h2 className="text-2xl font-semibold text-gray-900">
-                Complete Payment
-              </h2>
-              <p className="text-gray-500 text-sm mt-1">
-                Your slot is reserved for 10 minutes
-              </p>
-            </div>
 
-            <div className="bg-gray-50 rounded-xl p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Consultation fee</span>
-                <span className="font-semibold">${pendingBooking.price}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Platform fee</span>
-                <span className="font-semibold">$0.00</span>
-              </div>
-              <div className="border-t pt-2 flex justify-between font-bold">
-                <span>Total</span>
-                <span className="text-indigo-600">${pendingBooking.price}</span>
-              </div>
-            </div>
-
-            {/* Mock card UI */}
-            <div className="space-y-3">
-              <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                <p className="text-xs text-gray-400 mb-1">Card number</p>
-                <p className="text-sm text-gray-600 font-mono">
-                  4242 4242 4242 4242
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  <p className="text-xs text-gray-400 mb-1">Expiry</p>
-                  <p className="text-sm text-gray-600 font-mono">12/26</p>
-                </div>
-                <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                  <p className="text-xs text-gray-400 mb-1">CVC</p>
-                  <p className="text-sm text-gray-600 font-mono">123</p>
-                </div>
-              </div>
-              <p className="text-xs text-center text-gray-400">
-                🔒 Mock payment — no real charge. Replace with Stripe in Sprint
-                7.
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={async () => {
-                  await api.patch(
-                    `/consultations/${pendingBooking.id}/cancel-unpaid`,
-                  );
-                  setPendingBooking(null);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 bg-indigo-600 hover:bg-indigo-700 gap-2"
-                disabled={paying}
-                onClick={async () => {
-                  try {
-                    setPaying(true);
-                    await api.patch(`/consultations/${pendingBooking.id}/pay`);
-
-                    // Now send the auto-message
-                    const { data: conversation } = await api.post(
-                      "/conversations",
-                      {
-                        otherUserId: expert.id,
-                      },
-                    );
-                    await api.post(
-                      `/conversations/${conversation.id}/messages`,
-                      {
-                        content: `📅 Booking confirmed & paid — ${format(new Date(), "MMMM d, yyyy")}`,
-                      },
-                    );
-
-                    const { data: updatedBookings } =
-                      await api.get("/consultations");
-                    setBookings(
-                      updatedBookings.filter(
-                        (b: Booking) => b.expertId === expert.id,
-                      ),
-                    );
-
-                    setPendingBooking(null);
-                    showToast({
-                      type: "success",
-                      title: "Payment Confirmed 🎉",
-                      message: "Your booking is now pending expert approval.",
-                    });
-                  } catch {
-                    showToast({
-                      type: "error",
-                      title: "Payment Failed",
-                      message: "Please try again.",
-                    });
-                  } finally {
-                    setPaying(false);
-                  }
-                }}
-              >
-                {paying ? (
-                  <>
-                    <LoadingSpinner size="sm" /> Processing...
-                  </>
-                ) : (
-                  "Pay Now"
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

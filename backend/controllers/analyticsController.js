@@ -5,11 +5,10 @@ export const trackProjectView = async (projectId, source = "direct") => {
   today.setUTCHours(0, 0, 0, 0);
 
   try {
-    
     const existing = await prisma.projectAnalytics.findUnique({
       where: { projectId_date: { projectId, date: today } },
     });
-    
+
     const currentSources = existing?.sources ?? {};
     const updatedSources = {
       ...currentSources,
@@ -34,8 +33,8 @@ export const trackProjectView = async (projectId, source = "direct") => {
   }
 };
 export const trackBookmark = async (projectId) => {
-const today = new Date();
-today.setUTCHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
   try {
     await prisma.projectAnalytics.upsert({
       where: { projectId_date: { projectId, date: today } },
@@ -48,8 +47,8 @@ today.setUTCHours(0, 0, 0, 0);
 };
 
 export const trackInterest = async (projectId) => {
-const today = new Date();
-today.setUTCHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
   try {
     await prisma.projectAnalytics.upsert({
       where: { projectId_date: { projectId, date: today } },
@@ -108,7 +107,6 @@ export const trackBookmarkRemove = async (projectId) => {
       where: { projectId_date: { projectId, date: today } },
     });
 
-    
     if (!existing || existing.bookmarks <= 0) return;
 
     await prisma.projectAnalytics.update({

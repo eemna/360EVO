@@ -13,7 +13,7 @@ import {
   createProjectUpdate,
   getProjectUpdates,
 } from "../controllers/projectController.js";
-import { getProjectAnalytics } from "../controllers/analyticsController.js"; 
+import { getProjectAnalytics } from "../controllers/analyticsController.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();

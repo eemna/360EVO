@@ -10,8 +10,15 @@ import { useToast } from "../../context/ToastContext";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../services/axios";
 import {
-  FileSearch, CheckCircle2, XCircle, Clock,
-  FolderOpen, MessageSquare, Shield, ChevronRight, Inbox,
+  FileSearch,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  FolderOpen,
+  MessageSquare,
+  Shield,
+  ChevronRight,
+  Inbox,
 } from "lucide-react";
 
 interface DdRequestReceived {
@@ -24,7 +31,11 @@ interface DdRequestReceived {
   investor: {
     name: string;
     email: string;
-    profile: { avatar: string | null; bio: string | null; location: string | null } | null;
+    profile: {
+      avatar: string | null;
+      bio: string | null;
+      location: string | null;
+    } | null;
   };
   project: { id: string; title: string };
   dataRoom: { id: string; expiresAt: string } | null;
@@ -44,9 +55,21 @@ interface DdRequestSent {
 type DdRequest = DdRequestReceived | DdRequestSent;
 
 const statusConfig = {
-  PENDING: { label: "Pending Review", icon: Clock, color: "bg-amber-100 text-amber-700 border-amber-200" },
-  APPROVED: { label: "Approved", icon: CheckCircle2, color: "bg-green-100 text-green-700 border-green-200" },
-  DECLINED: { label: "Declined", icon: XCircle, color: "bg-red-100 text-red-700 border-red-200" },
+  PENDING: {
+    label: "Pending Review",
+    icon: Clock,
+    color: "bg-amber-100 text-amber-700 border-amber-200",
+  },
+  APPROVED: {
+    label: "Approved",
+    icon: CheckCircle2,
+    color: "bg-green-100 text-green-700 border-green-200",
+  },
+  DECLINED: {
+    label: "Declined",
+    icon: XCircle,
+    color: "bg-red-100 text-red-700 border-red-200",
+  },
 };
 
 export default function DdInboxPage() {
@@ -58,19 +81,29 @@ export default function DdInboxPage() {
   const [requests, setRequests] = useState<DdRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
-  const [actionType, setActionType] = useState<"approve" | "decline" | null>(null);
+  const [actionType, setActionType] = useState<"approve" | "decline" | null>(
+    null,
+  );
   const [processing, setProcessing] = useState(false);
-  const [filter, setFilter] = useState<"ALL" | "PENDING" | "APPROVED" | "DECLINED">("ALL");
+  const [filter, setFilter] = useState<
+    "ALL" | "PENDING" | "APPROVED" | "DECLINED"
+  >("ALL");
 
   const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
 
-      const endpoint = isInvestor ? "/dd-requests/sent" : "/dd-requests/received";
+      const endpoint = isInvestor
+        ? "/dd-requests/sent"
+        : "/dd-requests/received";
       const { data } = await api.get(endpoint);
       setRequests(data);
     } catch {
-      showToast({ type: "error", title: "Failed to load requests", message: "" });
+      showToast({
+        type: "error",
+        title: "Failed to load requests",
+        message: "",
+      });
     } finally {
       setLoading(false);
     }
@@ -87,14 +120,18 @@ export default function DdInboxPage() {
       await api.put(`/dd-requests/${actionId}/${actionType}`);
       showToast({
         type: "success",
-        title: actionType === "approve" ? "Request Approved" : "Request Declined",
-        message: actionType === "approve"
-          ? "The investor now has 30-day access to the data room."
-          : "The investor has been notified.",
+        title:
+          actionType === "approve" ? "Request Approved" : "Request Declined",
+        message:
+          actionType === "approve"
+            ? "The investor now has 30-day access to the data room."
+            : "The investor has been notified.",
       });
       await fetchRequests();
     } catch (err: unknown) {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Action failed";
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Action failed";
       showToast({ type: "error", title: "Error", message: msg });
     } finally {
       setProcessing(false);
@@ -103,7 +140,8 @@ export default function DdInboxPage() {
     }
   };
 
-  const filtered = filter === "ALL" ? requests : requests.filter((r) => r.status === filter);
+  const filtered =
+    filter === "ALL" ? requests : requests.filter((r) => r.status === filter);
   const counts = {
     ALL: requests.length,
     PENDING: requests.filter((r) => r.status === "PENDING").length,
@@ -156,7 +194,11 @@ export default function DdInboxPage() {
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
+            <Card key={i}>
+              <CardContent className="pt-6">
+                <Skeleton className="h-20 w-full" />
+              </CardContent>
+            </Card>
           ))}
         </div>
       ) : filtered.length === 0 ? (
@@ -165,7 +207,9 @@ export default function DdInboxPage() {
             <FileSearch className="size-10 text-gray-200 mx-auto mb-3" />
             <h3 className="text-base font-semibold text-gray-700 mb-1">
               {filter === "ALL"
-                ? isInvestor ? "No DD requests sent yet" : "No DD requests yet"
+                ? isInvestor
+                  ? "No DD requests sent yet"
+                  : "No DD requests yet"
                 : `No ${filter.toLowerCase()} requests`}
             </h3>
             <p className="text-sm text-gray-400">
@@ -192,13 +236,20 @@ export default function DdInboxPage() {
             const sentReq = req as DdRequestSent;
 
             return (
-              <Card key={req.id} className="border border-gray-200 hover:shadow-sm transition-shadow">
+              <Card
+                key={req.id}
+                className="border border-gray-200 hover:shadow-sm transition-shadow"
+              >
                 <CardContent className="pt-5 pb-5">
                   <div className="flex items-start gap-4 flex-wrap">
                     {/* Avatar — only for startup view (investor info) */}
                     {!isInvestor && (
                       <Avatar className="size-11 flex-shrink-0">
-                        <AvatarImage src={receivedReq.investor?.profile?.avatar || undefined} />
+                        <AvatarImage
+                          src={
+                            receivedReq.investor?.profile?.avatar || undefined
+                          }
+                        />
                         <AvatarFallback className="bg-indigo-100 text-indigo-700 font-semibold">
                           {receivedReq.investor?.name?.charAt(0).toUpperCase()}
                         </AvatarFallback>
@@ -224,7 +275,9 @@ export default function DdInboxPage() {
                           </>
                         )}
 
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.color}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${cfg.color}`}
+                        >
                           <StatusIcon className="size-3" />
                           {cfg.label}
                         </span>
@@ -254,7 +307,9 @@ export default function DdInboxPage() {
                         )}
                         {" · "}
                         {new Date(req.createdAt).toLocaleDateString("en-US", {
-                          month: "short", day: "numeric", year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
                         })}
                       </p>
 
@@ -268,12 +323,16 @@ export default function DdInboxPage() {
                       )}
 
                       {/* Investor view: show expiry if approved */}
-                      {isInvestor && req.status === "APPROVED" && req.dataRoom && (
-                        <p className="text-xs text-green-600 mt-1">
-                          Access expires:{" "}
-                          {new Date(req.dataRoom.expiresAt).toLocaleDateString()}
-                        </p>
-                      )}
+                      {isInvestor &&
+                        req.status === "APPROVED" &&
+                        req.dataRoom && (
+                          <p className="text-xs text-green-600 mt-1">
+                            Access expires:{" "}
+                            {new Date(
+                              req.dataRoom.expiresAt,
+                            ).toLocaleDateString()}
+                          </p>
+                        )}
                     </div>
 
                     {/* Actions */}
@@ -284,7 +343,10 @@ export default function DdInboxPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => { setActionId(req.id); setActionType("decline"); }}
+                            onClick={() => {
+                              setActionId(req.id);
+                              setActionType("decline");
+                            }}
                             className="text-red-600 border-red-200 hover:bg-red-50"
                           >
                             <XCircle className="size-4 mr-1" />
@@ -292,7 +354,10 @@ export default function DdInboxPage() {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={() => { setActionId(req.id); setActionType("approve"); }}
+                            onClick={() => {
+                              setActionId(req.id);
+                              setActionType("approve");
+                            }}
                             className="bg-green-600 hover:bg-green-700 gap-1"
                           >
                             <CheckCircle2 className="size-4" />
@@ -302,30 +367,42 @@ export default function DdInboxPage() {
                       )}
 
                       {/* STARTUP: open their own data room */}
-                      {!isInvestor && req.status === "APPROVED" && req.dataRoom && (
-                        <Button
-                          size="sm"
-                          onClick={() => navigate(`/app/startup/data-rooms/${req.dataRoom!.id}`)}
-                          className="bg-indigo-600 hover:bg-indigo-700 gap-1"
-                        >
-                          <FolderOpen className="size-4" />
-                          Open Data Room
-                          <ChevronRight className="size-3" />
-                        </Button>
-                      )}
+                      {!isInvestor &&
+                        req.status === "APPROVED" &&
+                        req.dataRoom && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              navigate(
+                                `/app/startup/data-rooms/${req.dataRoom!.id}`,
+                              )
+                            }
+                            className="bg-indigo-600 hover:bg-indigo-700 gap-1"
+                          >
+                            <FolderOpen className="size-4" />
+                            Open Data Room
+                            <ChevronRight className="size-3" />
+                          </Button>
+                        )}
 
                       {/* INVESTOR: open data room when approved */}
-                      {isInvestor && req.status === "APPROVED" && req.dataRoom && (
-                        <Button
-                          size="sm"
-                          onClick={() => navigate(`/app/investor/data-rooms/${req.dataRoom!.id}`)}
-                          className="bg-green-600 hover:bg-green-700 gap-1"
-                        >
-                          <FolderOpen className="size-4" />
-                          Enter Data Room
-                          <ChevronRight className="size-3" />
-                        </Button>
-                      )}
+                      {isInvestor &&
+                        req.status === "APPROVED" &&
+                        req.dataRoom && (
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              navigate(
+                                `/app/investor/data-rooms/${req.dataRoom!.id}`,
+                              )
+                            }
+                            className="bg-green-600 hover:bg-green-700 gap-1"
+                          >
+                            <FolderOpen className="size-4" />
+                            Enter Data Room
+                            <ChevronRight className="size-3" />
+                          </Button>
+                        )}
 
                       {/* INVESTOR: pending — show waiting state */}
                       {isInvestor && req.status === "PENDING" && (
@@ -353,8 +430,15 @@ export default function DdInboxPage() {
       {!isInvestor && (
         <AppModal
           open={!!actionId}
-          onOpenChange={() => { setActionId(null); setActionType(null); }}
-          title={actionType === "approve" ? "Approve DD Request" : "Decline DD Request"}
+          onOpenChange={() => {
+            setActionId(null);
+            setActionType(null);
+          }}
+          title={
+            actionType === "approve"
+              ? "Approve DD Request"
+              : "Decline DD Request"
+          }
           description={
             actionType === "approve"
               ? "The investor will get 30-day access to your data room."

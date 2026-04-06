@@ -1,12 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { Textarea } from "../components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { useToast } from "../../context/ToastContext";
 //import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
@@ -124,13 +135,24 @@ function ExpiryCountdown({ expiresAt }: { expiresAt: string }) {
 
 function RiskBadge({ level }: { level: "LOW" | "MEDIUM" | "HIGH" }) {
   const cfg = {
-    LOW: { color: "bg-green-100 text-green-700 border-green-200", icon: ShieldCheck },
-    MEDIUM: { color: "bg-amber-100 text-amber-700 border-amber-200", icon: ShieldAlert },
-    HIGH: { color: "bg-red-100 text-red-700 border-red-200", icon: AlertTriangle },
+    LOW: {
+      color: "bg-green-100 text-green-700 border-green-200",
+      icon: ShieldCheck,
+    },
+    MEDIUM: {
+      color: "bg-amber-100 text-amber-700 border-amber-200",
+      icon: ShieldAlert,
+    },
+    HIGH: {
+      color: "bg-red-100 text-red-700 border-red-200",
+      icon: AlertTriangle,
+    },
   }[level];
   const Icon = cfg.icon;
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${cfg.color}`}>
+    <span
+      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${cfg.color}`}
+    >
       <Icon className="size-3" />
       {level} RISK
     </span>
@@ -160,7 +182,9 @@ export default function DataRoomPage() {
 
   const [dataRoom, setDataRoom] = useState<DataRoom | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"documents" | "qa" | "activity">("documents");
+  const [activeTab, setActiveTab] = useState<"documents" | "qa" | "activity">(
+    "documents",
+  );
   const [riskScan, setRiskScan] = useState<RiskScan | null>(null);
   const [scanLoading, setScanLoading] = useState(false);
   const [riskExpanded, setRiskExpanded] = useState(true);
@@ -208,13 +232,18 @@ export default function DataRoomPage() {
       setQaThreads((prev) => [thread, ...prev]);
     });
 
-    socket.on("new_qa_response", ({ threadId, response }: { threadId: string; response: QaResponse }) => {
-      setQaThreads((prev) =>
-        prev.map((t) =>
-          t.id === threadId ? { ...t, responses: [...t.responses, response] } : t,
-        ),
-      );
-    });
+    socket.on(
+      "new_qa_response",
+      ({ threadId, response }: { threadId: string; response: QaResponse }) => {
+        setQaThreads((prev) =>
+          prev.map((t) =>
+            t.id === threadId
+              ? { ...t, responses: [...t.responses, response] }
+              : t,
+          ),
+        );
+      },
+    );
 
     return () => {
       socket.emit("leave_dataroom", id);
@@ -240,7 +269,11 @@ export default function DataRoomPage() {
         showToast({ type: "success", title: "AI scan complete", message: "" });
     } catch {
       if (!silent)
-        showToast({ type: "error", title: "Scan failed", message: "Try again." });
+        showToast({
+          type: "error",
+          title: "Scan failed",
+          message: "Try again.",
+        });
     } finally {
       setScanLoading(false);
     }
@@ -271,7 +304,11 @@ export default function DataRoomPage() {
       showToast({ type: "success", title: "Document uploaded", message: "" });
       await fetchDataRoom();
     } catch {
-      showToast({ type: "error", title: "Upload failed", message: "Try again." });
+      showToast({
+        type: "error",
+        title: "Upload failed",
+        message: "Try again.",
+      });
     } finally {
       setUploadingDoc(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -288,7 +325,10 @@ export default function DataRoomPage() {
     }
   };
 
-  const handleAccessLevelChange = async (docId: string, accessLevel: string) => {
+  const handleAccessLevelChange = async (
+    docId: string,
+    accessLevel: string,
+  ) => {
     try {
       await api.put(`/data-rooms/${id}/documents/${docId}`, { accessLevel });
       await fetchDataRoom();
@@ -304,9 +344,17 @@ export default function DataRoomPage() {
       setAskingQuestion(true);
       await api.post(`/data-rooms/${id}/qa`, { question: newQuestion });
       setNewQuestion("");
-      showToast({ type: "success", title: "Question sent", message: "The startup will be notified." });
+      showToast({
+        type: "success",
+        title: "Question sent",
+        message: "The startup will be notified.",
+      });
     } catch {
-      showToast({ type: "error", title: "Failed to send question", message: "" });
+      showToast({
+        type: "error",
+        title: "Failed to send question",
+        message: "",
+      });
     } finally {
       setAskingQuestion(false);
     }
@@ -315,11 +363,15 @@ export default function DataRoomPage() {
   const handleGetAiSuggestion = async (threadId: string) => {
     try {
       setAiSuggesting(threadId);
-      const { data } = await api.post(`/data-rooms/${id}/ai/suggest-answer`, { threadId });
+      const { data } = await api.post(`/data-rooms/${id}/ai/suggest-answer`, {
+        threadId,
+      });
 
       setQaThreads((prev) =>
         prev.map((t) =>
-          t.id === threadId ? { ...t, aiSuggestedAnswer: data.suggestedAnswer } : t,
+          t.id === threadId
+            ? { ...t, aiSuggestedAnswer: data.suggestedAnswer }
+            : t,
         ),
       );
 
@@ -327,7 +379,11 @@ export default function DataRoomPage() {
       setReplyText(data.suggestedAnswer);
       setExpandedThread(threadId);
 
-      showToast({ type: "success", title: "AI suggestion ready", message: "Review and edit before sending." });
+      showToast({
+        type: "success",
+        title: "AI suggestion ready",
+        message: "Review and edit before sending.",
+      });
     } catch {
       showToast({ type: "error", title: "AI suggestion failed", message: "" });
     } finally {
@@ -388,9 +444,16 @@ export default function DataRoomPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <ExpiryCountdown expiresAt={dataRoom.expiresAt} />
             <span className="text-xs text-gray-400">
-              {dataRoom.documents.length} document{dataRoom.documents.length !== 1 ? "s" : ""}
+              {dataRoom.documents.length} document
+              {dataRoom.documents.length !== 1 ? "s" : ""}
             </span>
-            <Badge className={isInvestor ? "bg-indigo-100 text-indigo-700 border-indigo-200" : "bg-green-100 text-green-700 border-green-200"}>
+            <Badge
+              className={
+                isInvestor
+                  ? "bg-indigo-100 text-indigo-700 border-indigo-200"
+                  : "bg-green-100 text-green-700 border-green-200"
+              }
+            >
               {isInvestor ? "Investor View" : "Startup View"}
             </Badge>
           </div>
@@ -399,7 +462,9 @@ export default function DataRoomPage() {
         {/* Deal Brief button — investor only */}
         {isInvestor && (
           <Button
-            onClick={() => navigate(`/app/investor/data-rooms/${id}/deal-brief`)}
+            onClick={() =>
+              navigate(`/app/investor/data-rooms/${id}/deal-brief`)
+            }
             className="bg-indigo-600 hover:bg-indigo-700 gap-2"
           >
             <FileBarChart className="size-4" />
@@ -417,9 +482,13 @@ export default function DataRoomPage() {
           >
             <div className="flex items-center gap-2">
               <Bot className="size-4 text-indigo-600" />
-              <span className="text-sm font-semibold text-gray-800">AI Document Analysis</span>
+              <span className="text-sm font-semibold text-gray-800">
+                AI Document Analysis
+              </span>
               {riskScan && <RiskBadge level={riskScan.overallRiskLevel} />}
-              {scanLoading && <LoadingSpinner size="sm" className="text-indigo-600" />}
+              {scanLoading && (
+                <LoadingSpinner size="sm" className="text-indigo-600" />
+              )}
             </div>
             {riskExpanded ? (
               <ChevronDown className="size-4 text-gray-400" />
@@ -453,7 +522,9 @@ export default function DataRoomPage() {
               {scanLoading && !riskScan && (
                 <div className="py-8 flex flex-col items-center gap-3">
                   <LoadingSpinner size="lg" className="text-indigo-600" />
-                  <p className="text-sm text-gray-500">Analysing documents...</p>
+                  <p className="text-sm text-gray-500">
+                    Analysing documents...
+                  </p>
                 </div>
               )}
 
@@ -468,11 +539,14 @@ export default function DataRoomPage() {
                     {/* Risk Flags */}
                     <div>
                       <p className="text-xs font-semibold text-red-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <AlertTriangle className="size-3" /> Risk Flags ({riskScan.riskFlags.length})
+                        <AlertTriangle className="size-3" /> Risk Flags (
+                        {riskScan.riskFlags.length})
                       </p>
                       <div className="space-y-1.5">
                         {riskScan.riskFlags.length === 0 ? (
-                          <p className="text-xs text-gray-400 italic">No flags identified</p>
+                          <p className="text-xs text-gray-400 italic">
+                            No flags identified
+                          </p>
                         ) : (
                           riskScan.riskFlags.map((flag, i) => (
                             <div key={i} className="flex items-start gap-2">
@@ -487,11 +561,14 @@ export default function DataRoomPage() {
                     {/* Highlights */}
                     <div>
                       <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <CheckCircle2 className="size-3" /> Positive Signals ({riskScan.highlights.length})
+                        <CheckCircle2 className="size-3" /> Positive Signals (
+                        {riskScan.highlights.length})
                       </p>
                       <div className="space-y-1.5">
                         {riskScan.highlights.length === 0 ? (
-                          <p className="text-xs text-gray-400 italic">None identified</p>
+                          <p className="text-xs text-gray-400 italic">
+                            None identified
+                          </p>
                         ) : (
                           riskScan.highlights.map((h, i) => (
                             <div key={i} className="flex items-start gap-2">
@@ -529,7 +606,11 @@ export default function DataRoomPage() {
           <div className="flex items-center gap-1 border-b border-gray-200">
             {[
               { key: "documents", label: "Documents", icon: FolderOpen },
-              { key: "qa", label: `Q&A (${qaThreads.length})`, icon: MessageSquare },
+              {
+                key: "qa",
+                label: `Q&A (${qaThreads.length})`,
+                icon: MessageSquare,
+              },
               { key: "activity", label: "Activity", icon: Activity },
             ].map(({ key, label, icon: Icon }) => (
               <button
@@ -572,9 +653,13 @@ export default function DataRoomPage() {
                     ) : (
                       <Upload className="size-4" />
                     )}
-                    {uploadingDoc ? "Uploading & extracting text..." : "Upload Document"}
+                    {uploadingDoc
+                      ? "Uploading & extracting text..."
+                      : "Upload Document"}
                   </Button>
-                  <p className="text-xs text-gray-400 mt-1">PDF text is automatically extracted for AI analysis</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    PDF text is automatically extracted for AI analysis
+                  </p>
                 </div>
               )}
 
@@ -596,7 +681,9 @@ export default function DataRoomPage() {
                     >
                       {getFileIcon(doc.fileType)}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{doc.name}</p>
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {doc.name}
+                        </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           <span className="text-xs text-gray-400">
                             {new Date(doc.uploadedAt).toLocaleDateString()}
@@ -620,7 +707,9 @@ export default function DataRoomPage() {
                         {isOwner && (
                           <Select
                             value={doc.accessLevel}
-                            onValueChange={(v) => handleAccessLevelChange(doc.id, v)}
+                            onValueChange={(v) =>
+                              handleAccessLevelChange(doc.id, v)
+                            }
                           >
                             <SelectTrigger className="h-7 text-xs w-32">
                               <SelectValue />
@@ -641,13 +730,21 @@ export default function DataRoomPage() {
                         )}
 
                         <a href={doc.fileUrl} target="_blank" rel="noreferrer">
-                          <Button size="icon" variant="ghost" className="size-7">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-7"
+                          >
                             <Eye className="size-3.5 text-gray-500" />
                           </Button>
                         </a>
 
                         <a href={doc.fileUrl} download={doc.name}>
-                          <Button size="icon" variant="ghost" className="size-7">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="size-7"
+                          >
                             <Download className="size-3.5 text-gray-500" />
                           </Button>
                         </a>
@@ -693,7 +790,9 @@ export default function DataRoomPage() {
               {isInvestor && (
                 <Card className="border border-indigo-100 bg-indigo-50/40">
                   <CardContent className="pt-4 pb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Ask a question</p>
+                    <p className="text-sm font-medium text-gray-700 mb-2">
+                      Ask a question
+                    </p>
                     <Textarea
                       placeholder="e.g., What is your current MRR? Can you share the cap table?"
                       value={newQuestion}
@@ -707,7 +806,11 @@ export default function DataRoomPage() {
                         disabled={askingQuestion || !newQuestion.trim()}
                         className="bg-indigo-600 hover:bg-indigo-700 gap-2"
                       >
-                        {askingQuestion ? <LoadingSpinner size="sm" /> : <Send className="size-3.5" />}
+                        {askingQuestion ? (
+                          <LoadingSpinner size="sm" />
+                        ) : (
+                          <Send className="size-3.5" />
+                        )}
                         Send Question
                       </Button>
                     </div>
@@ -737,9 +840,14 @@ export default function DataRoomPage() {
                               Q
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-800">{thread.question}</p>
+                              <p className="text-sm font-medium text-gray-800">
+                                {thread.question}
+                              </p>
                               <p className="text-xs text-gray-400 mt-0.5">
-                                {thread.asker.name} · {new Date(thread.createdAt).toLocaleDateString()}
+                                {thread.asker.name} ·{" "}
+                                {new Date(
+                                  thread.createdAt,
+                                ).toLocaleDateString()}
                               </p>
                             </div>
                             {hasSuggestion && (
@@ -763,15 +871,23 @@ export default function DataRoomPage() {
                                     : "bg-green-100 text-green-700"
                                 }`}
                               >
-                                {resp.isAiGenerated ? <Bot className="size-3" /> : "A"}
+                                {resp.isAiGenerated ? (
+                                  <Bot className="size-3" />
+                                ) : (
+                                  "A"
+                                )}
                               </div>
                               <div className="flex-1">
-                                <p className="text-sm text-gray-700">{resp.body}</p>
+                                <p className="text-sm text-gray-700">
+                                  {resp.body}
+                                </p>
                                 <p className="text-xs text-gray-400 mt-0.5">
                                   {resp.responder.name}
                                   {resp.isAiGenerated && " (AI-assisted)"}
                                   {" · "}
-                                  {new Date(resp.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    resp.createdAt,
+                                  ).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
@@ -786,7 +902,9 @@ export default function DataRoomPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleGetAiSuggestion(thread.id)}
+                                    onClick={() =>
+                                      handleGetAiSuggestion(thread.id)
+                                    }
                                     disabled={aiSuggesting === thread.id}
                                     className="text-xs gap-1 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                                   >
@@ -820,15 +938,22 @@ export default function DataRoomPage() {
                                     <div className="flex items-start gap-2 bg-indigo-50 border border-indigo-100 rounded-lg p-2.5">
                                       <Bot className="size-3.5 text-indigo-500 mt-0.5 flex-shrink-0" />
                                       <div>
-                                        <p className="text-xs font-medium text-indigo-700 mb-1">AI Suggested Answer — review and edit before sending</p>
-                                        <p className="text-xs text-indigo-600">{thread.aiSuggestedAnswer}</p>
+                                        <p className="text-xs font-medium text-indigo-700 mb-1">
+                                          AI Suggested Answer — review and edit
+                                          before sending
+                                        </p>
+                                        <p className="text-xs text-indigo-600">
+                                          {thread.aiSuggestedAnswer}
+                                        </p>
                                       </div>
                                     </div>
                                   )}
                                   <Textarea
                                     placeholder="Type your reply..."
                                     value={replyText}
-                                    onChange={(e) => setReplyText(e.target.value)}
+                                    onChange={(e) =>
+                                      setReplyText(e.target.value)
+                                    }
                                     rows={3}
                                   />
                                   <div className="flex justify-end gap-2">
@@ -845,7 +970,10 @@ export default function DataRoomPage() {
                                     <Button
                                       size="sm"
                                       onClick={() => handleReply(thread.id)}
-                                      disabled={replying === thread.id || !replyText.trim()}
+                                      disabled={
+                                        replying === thread.id ||
+                                        !replyText.trim()
+                                      }
                                       className="bg-green-600 hover:bg-green-700 gap-1"
                                     >
                                       {replying === thread.id ? (
@@ -889,7 +1017,10 @@ export default function DataRoomPage() {
                         <span className="font-medium">{item.user.name}</span>{" "}
                         {ACTION_LABELS[item.action] || item.action}
                         {item.docName && (
-                          <span className="text-gray-500"> — {item.docName}</span>
+                          <span className="text-gray-500">
+                            {" "}
+                            — {item.docName}
+                          </span>
                         )}
                       </span>
                     </div>
@@ -927,7 +1058,9 @@ export default function DataRoomPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">AI Scanned</span>
-                <span className={`text-xs font-medium ${dataRoom.aiSummaryGenerated ? "text-green-600" : "text-gray-400"}`}>
+                <span
+                  className={`text-xs font-medium ${dataRoom.aiSummaryGenerated ? "text-green-600" : "text-gray-400"}`}
+                >
                   {dataRoom.aiSummaryGenerated ? "Yes" : "Not yet"}
                 </span>
               </div>
@@ -940,18 +1073,25 @@ export default function DataRoomPage() {
               <CardContent className="pt-5 pb-5">
                 <div className="flex items-center gap-2 mb-2">
                   <FileBarChart className="size-4 text-indigo-600" />
-                  <span className="text-sm font-semibold text-indigo-900">AI Deal Brief</span>
+                  <span className="text-sm font-semibold text-indigo-900">
+                    AI Deal Brief
+                  </span>
                 </div>
                 <p className="text-xs text-indigo-700 mb-3 leading-relaxed">
-                  Generate a structured investor-ready report combining project data, AI scores, and document findings.
+                  Generate a structured investor-ready report combining project
+                  data, AI scores, and document findings.
                 </p>
                 <Button
                   size="sm"
                   className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
-                  onClick={() => navigate(`/app/investor/data-rooms/${id}/deal-brief`)}
+                  onClick={() =>
+                    navigate(`/app/investor/data-rooms/${id}/deal-brief`)
+                  }
                 >
                   <Sparkles className="size-3.5" />
-                  {dataRoom.dealBrief ? "View Deal Brief" : "Generate Deal Brief"}
+                  {dataRoom.dealBrief
+                    ? "View Deal Brief"
+                    : "Generate Deal Brief"}
                 </Button>
               </CardContent>
             </Card>
@@ -966,7 +1106,9 @@ export default function DataRoomPage() {
                 </p>
                 <div className="space-y-1.5 text-xs text-amber-800">
                   <p>• Upload PDFs — text is auto-extracted for AI analysis</p>
-                  <p>• Use "AI Suggest" to draft answers to investor questions</p>
+                  <p>
+                    • Use "AI Suggest" to draft answers to investor questions
+                  </p>
                   <p>• Always review AI suggestions before sending</p>
                   <p>• Set sensitive docs to "On Request" access</p>
                 </div>

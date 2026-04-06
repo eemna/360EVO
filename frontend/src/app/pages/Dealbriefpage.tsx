@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
@@ -99,7 +104,11 @@ export default function DealBriefPage() {
       setGenerating(true);
       const { data } = await api.post(`/data-rooms/${id}/ai/deal-brief`);
       setBrief(data);
-      showToast({ type: "success", title: "Deal brief generated!", message: "" });
+      showToast({
+        type: "success",
+        title: "Deal brief generated!",
+        message: "",
+      });
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { message?: string } } })?.response?.data
@@ -144,11 +153,14 @@ export default function DealBriefPage() {
           </Button>
           <div className="flex items-center gap-2">
             <FileBarChart className="size-5 text-indigo-600" />
-            <h1 className="text-xl font-semibold text-gray-900">AI Deal Brief</h1>
+            <h1 className="text-xl font-semibold text-gray-900">
+              AI Deal Brief
+            </h1>
           </div>
           {brief && (
             <span className="text-xs text-gray-400 font-mono">
-              v{brief.version} · {new Date(brief.generatedAt).toLocaleDateString()}
+              v{brief.version} ·{" "}
+              {new Date(brief.generatedAt).toLocaleDateString()}
             </span>
           )}
         </div>
@@ -172,7 +184,11 @@ export default function DealBriefPage() {
                 disabled={generating}
                 className="gap-1"
               >
-                {generating ? <LoadingSpinner size="sm" /> : <RefreshCw className="size-3.5" />}
+                {generating ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <RefreshCw className="size-3.5" />
+                )}
                 Regenerate
               </Button>
             </>
@@ -183,7 +199,11 @@ export default function DealBriefPage() {
               disabled={generating}
               className="bg-indigo-600 hover:bg-indigo-700 gap-2"
             >
-              {generating ? <LoadingSpinner size="sm" /> : <Sparkles className="size-4" />}
+              {generating ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
               {generating ? "Generating..." : "Generate Deal Brief"}
             </Button>
           )}
@@ -195,10 +215,12 @@ export default function DealBriefPage() {
         <Card className="border-2 border-dashed border-indigo-200">
           <CardContent className="py-16 text-center">
             <FileBarChart className="size-10 text-indigo-200 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">No Deal Brief Yet</h3>
+            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              No Deal Brief Yet
+            </h3>
             <p className="text-sm text-gray-500 max-w-md mx-auto mb-6">
-              Generate an AI-powered investor report combining project data, AI scores, and
-              document analysis findings.
+              Generate an AI-powered investor report combining project data, AI
+              scores, and document analysis findings.
             </p>
             <Button
               onClick={handleGenerate}
@@ -228,7 +250,9 @@ export default function DealBriefPage() {
           {/* Print header */}
           <div className="hidden print:block mb-6">
             <h1 className="text-2xl font-bold">Investor Deal Brief</h1>
-            <p className="text-sm text-gray-500">Generated {new Date(brief.generatedAt).toLocaleString()}</p>
+            <p className="text-sm text-gray-500">
+              Generated {new Date(brief.generatedAt).toLocaleString()}
+            </p>
           </div>
 
           {/* Headline */}
@@ -269,26 +293,56 @@ export default function DealBriefPage() {
 
           {/* 2x2 grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <SectionCard icon={Building2} title="Company Snapshot" accent="bg-indigo-500">
-              <p className="text-sm text-gray-700 leading-relaxed">{brief.content.companySnapshot}</p>
+            <SectionCard
+              icon={Building2}
+              title="Company Snapshot"
+              accent="bg-indigo-500"
+            >
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {brief.content.companySnapshot}
+              </p>
             </SectionCard>
 
-            <SectionCard icon={DollarSign} title="Financial Highlights" accent="bg-green-500">
-              <p className="text-sm text-gray-700 leading-relaxed">{brief.content.financialHighlights}</p>
+            <SectionCard
+              icon={DollarSign}
+              title="Financial Highlights"
+              accent="bg-green-500"
+            >
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {brief.content.financialHighlights}
+              </p>
             </SectionCard>
 
-            <SectionCard icon={Globe} title="Market Opportunity" accent="bg-blue-500">
-              <p className="text-sm text-gray-700 leading-relaxed">{brief.content.marketOpportunity}</p>
+            <SectionCard
+              icon={Globe}
+              title="Market Opportunity"
+              accent="bg-blue-500"
+            >
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {brief.content.marketOpportunity}
+              </p>
             </SectionCard>
 
-            <SectionCard icon={Users} title="Team Strengths" accent="bg-purple-500">
-              <p className="text-sm text-gray-700 leading-relaxed">{brief.content.teamStrengths}</p>
+            <SectionCard
+              icon={Users}
+              title="Team Strengths"
+              accent="bg-purple-500"
+            >
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {brief.content.teamStrengths}
+              </p>
             </SectionCard>
           </div>
 
           {/* DD Findings */}
-          <SectionCard icon={FileBarChart} title="Due Diligence Findings" accent="bg-gray-500">
-            <p className="text-sm text-gray-700 leading-relaxed">{brief.content.dueDiligenceFindings}</p>
+          <SectionCard
+            icon={FileBarChart}
+            title="Due Diligence Findings"
+            accent="bg-gray-500"
+          >
+            <p className="text-sm text-gray-700 leading-relaxed">
+              {brief.content.dueDiligenceFindings}
+            </p>
           </SectionCard>
 
           {/* Key Risks */}

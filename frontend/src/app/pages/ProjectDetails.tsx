@@ -137,29 +137,29 @@ export default function ProjectDetailsPage() {
   const [posting, setPosting] = useState(false);
   const [ddModalOpen, setDdModalOpen] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
-  
+  const [matchId, setMatchId] = useState<string | null>(null);
   //const location = useLocation();
   const [searchParams] = useSearchParams();
-useEffect(() => {
-  const fetchProject = async () => {
-    try {
-      // Read source from URL query 
-      const source = searchParams.get("source") ?? "direct";
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        // Read source from URL query
+        const source = searchParams.get("source") ?? "direct";
 
-      const res = await api.get(`/projects/${id}?source=${source}`);
-      setProject({
-        ...res.data,
-        fundingSought:
-          res.data.fundingSought != null ? Number(res.data.fundingSought) : 0,
-      });
-    } catch (error) {
-      console.error("Error loading project:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  if (id) fetchProject();
-}, [id, searchParams]);
+        const res = await api.get(`/projects/${id}?source=${source}`);
+        setProject({
+          ...res.data,
+          fundingSought:
+            res.data.fundingSought != null ? Number(res.data.fundingSought) : 0,
+        });
+      } catch (error) {
+        console.error("Error loading project:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchProject();
+  }, [id, searchParams]);
 
   useEffect(() => {
     if (!id) return;
@@ -176,7 +176,17 @@ useEffect(() => {
     };
     fetchUpdates();
   }, [id]);
-
+useEffect(() => {
+  if (user?.role !== "INVESTOR" || !id) return;
+  api.get("/ai/matches/feed")
+    .then(({ data }) => {
+      const match = data.find((m: { project: { id: string }; id: string }) => 
+        m.project.id === id
+      );
+      if (match) setMatchId(match.id);
+    })
+    .catch(() => {});
+}, [id, user?.role]);
   const handlePostUpdate = async () => {
     if (!postContent.trim()) return;
     try {
@@ -293,7 +303,7 @@ useEffect(() => {
   const isOwner = String(user?.id) === project.ownerId;
   const isAdmin = user?.role === "ADMIN";
   const canInteract = user && !isOwner && !isAdmin;
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Back button */}
@@ -405,53 +415,71 @@ useEffect(() => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-          
-{/* About */}
-<Card>
-  <CardHeader>
-    <CardTitle>About This Project</CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-4">
-    <p className="text-gray-600 mb-4">{project.shortDesc}</p>
-    
-    <div
-      className={`text-gray-600 leading-relaxed break-words overflow-hidden transition-all duration-300 ${
-        showFullDesc ? "" : "max-h-32 relative"
-      }`}
-    >
-      <div dangerouslySetInnerHTML={{ __html: project.fullDesc }} />
-      
-      {/* Fade overlay when collapsed */}
-      {!showFullDesc && (
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
-      )}
-    </div>
-
-    <button
-      onClick={() => setShowFullDesc((v) => !v)}
-      className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
-    >
-      {showFullDesc ? (
-        <>
-          Show less
-          <svg className="size-4 rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </>
-      ) : (
-        <>
-          View more
-          <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </>
-      )}
-    </button>
-  </CardContent>
-</Card>
-                        {/* Team */}
+            {/* About */}
             <Card>
-             
+              <CardHeader>
+                <CardTitle>About This Project</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-gray-600 mb-4">{project.shortDesc}</p>
+
+                <div
+                  className={`text-gray-600 leading-relaxed break-words overflow-hidden transition-all duration-300 ${
+                    showFullDesc ? "" : "max-h-32 relative"
+                  }`}
+                >
+                  <div dangerouslySetInnerHTML={{ __html: project.fullDesc }} />
+
+                  {/* Fade overlay when collapsed */}
+                  {!showFullDesc && (
+                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                  )}
+                </div>
+
+                <button
+                  onClick={() => setShowFullDesc((v) => !v)}
+                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
+                >
+                  {showFullDesc ? (
+                    <>
+                      Show less
+                      <svg
+                        className="size-4 rotate-180"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </>
+                  ) : (
+                    <>
+                      View more
+                      <svg
+                        className="size-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </CardContent>
+            </Card>
+            {/* Team */}
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="size-5" />
@@ -486,12 +514,10 @@ useEffect(() => {
                 </div>
               </CardContent>
             </Card>
-               {user?.id === project.ownerId && (
-               <ProjectAnalyticsDashboard projectId={project.id} />
-                 )}
-
+            {user?.id === project.ownerId && (
+              <ProjectAnalyticsDashboard projectId={project.id} />
+            )}
           </div>
-
 
           {/* Right Column */}
           <div className="space-y-6">
@@ -575,9 +601,6 @@ useEffect(() => {
               </CardContent>
             </Card>
 
-
-
-
             {/* Roadmap */}
             <Card>
               <CardHeader>
@@ -629,7 +652,7 @@ useEffect(() => {
                 </div>
               </CardContent>
             </Card>
-                        {/* PROJECT UPDATES CARD */}
+            {/* PROJECT UPDATES CARD */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -669,7 +692,7 @@ useEffect(() => {
 
               <CardContent className="space-y-4">
                 {/* Post form — owner only */}
-                
+
                 {isOwner && showPostForm && (
                   <div className="bg-indigo-50 rounded-xl p-4 space-y-3 border border-indigo-100">
                     <textarea
@@ -785,7 +808,6 @@ useEffect(() => {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-6 pb-10">
-        
         <AIAssessmentSection
           projectId={id!}
           projectStatus={project.status}
@@ -793,11 +815,19 @@ useEffect(() => {
         />
       </div>
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
-  <>
-    <Button onClick={() => setDdModalOpen(true)}>Request Due Diligence</Button>
-    <DdRequestModal open={ddModalOpen} onOpenChange={setDdModalOpen} projectId={project.id} projectTitle={project.title} />
-  </>
-)}
+        <>
+          <Button onClick={() => setDdModalOpen(true)}>
+            Request Due Diligence
+          </Button>
+          <DdRequestModal
+            open={ddModalOpen}
+            onOpenChange={setDdModalOpen}
+            projectId={project.id}
+            projectTitle={project.title}
+            matchId={matchId}
+          />
+        </>
+      )}
     </div>
   );
 }

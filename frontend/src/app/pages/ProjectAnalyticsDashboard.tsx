@@ -1,12 +1,25 @@
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { useToast } from "../../context/ToastContext";
 import api from "../../services/axios";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, Legend,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from "recharts";
 import { Eye, Bookmark, Heart, TrendingUp, BarChart3 } from "lucide-react";
 
@@ -35,7 +48,10 @@ const RANGE_OPTIONS: { value: Range; label: string }[] = [
 const PIE_COLORS = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe"];
 
 function StatCard({
-  icon: Icon, label, value, accent,
+  icon: Icon,
+  label,
+  value,
+  accent,
 }: {
   icon: React.ElementType;
   label: string;
@@ -48,7 +64,9 @@ function StatCard({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-gray-500 mb-1">{label}</p>
-            <p className={`text-2xl font-bold ${accent}`}>{value.toLocaleString()}</p>
+            <p className={`text-2xl font-bold ${accent}`}>
+              {value.toLocaleString()}
+            </p>
           </div>
           <div className="p-2 bg-gray-50 rounded-lg">
             <Icon className={`size-4 ${accent}`} />
@@ -63,21 +81,33 @@ interface ProjectAnalyticsDashboardProps {
   projectId: string;
 }
 
-export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalyticsDashboardProps) {
+export default function ProjectAnalyticsDashboard({
+  projectId,
+}: ProjectAnalyticsDashboardProps) {
   const { showToast } = useToast();
   const [range, setRange] = useState<Range>("7d");
   const [analytics, setAnalytics] = useState<AnalyticsRow[]>([]);
-  const [totals, setTotals] = useState<AnalyticsTotals>({ views: 0, bookmarks: 0, interests: 0 });
+  const [totals, setTotals] = useState<AnalyticsTotals>({
+    views: 0,
+    bookmarks: 0,
+    interests: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get(`/projects/${projectId}/analytics?range=${range}`);
+      const { data } = await api.get(
+        `/projects/${projectId}/analytics?range=${range}`,
+      );
       setAnalytics(data.analytics || []);
       setTotals(data.totals || { views: 0, bookmarks: 0, interests: 0 });
     } catch {
-      showToast({ type: "error", title: "Failed to load analytics", message: "" });
+      showToast({
+        type: "error",
+        title: "Failed to load analytics",
+        message: "",
+      });
     } finally {
       setLoading(false);
     }
@@ -89,7 +119,10 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
 
   const chartData = analytics.map((row) => ({
     ...row,
-    label: new Date(row.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    label: new Date(row.date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
   }));
 
   const sourcesMap: Record<string, number> = {};
@@ -100,17 +133,38 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
       });
     }
   });
-  const pieData = Object.entries(sourcesMap).map(([name, value]) => ({ name, value }));
+  const pieData = Object.entries(sourcesMap).map(([name, value]) => ({
+    name,
+    value,
+  }));
 
-  const hasData = analytics.length > 0 && (totals.views > 0 || totals.bookmarks > 0 || totals.interests > 0);
+  const hasData =
+    analytics.length > 0 &&
+    (totals.views > 0 || totals.bookmarks > 0 || totals.interests > 0);
 
   // ✅ Computed OUTSIDE JSX
-  const maxMetric = Math.max(totals.views, totals.bookmarks, totals.interests) || 1;
+  const maxMetric =
+    Math.max(totals.views, totals.bookmarks, totals.interests) || 1;
 
   const funnelItems = [
-    { label: "Views", value: totals.views, color: "bg-indigo-500", pct: Math.round((totals.views / maxMetric) * 100) },
-    { label: "Bookmarks", value: totals.bookmarks, color: "bg-purple-500", pct: Math.round((totals.bookmarks / maxMetric) * 100) },
-    { label: "Interests", value: totals.interests, color: "bg-pink-500", pct: Math.round((totals.interests / maxMetric) * 100) },
+    {
+      label: "Views",
+      value: totals.views,
+      color: "bg-indigo-500",
+      pct: Math.round((totals.views / maxMetric) * 100),
+    },
+    {
+      label: "Bookmarks",
+      value: totals.bookmarks,
+      color: "bg-purple-500",
+      pct: Math.round((totals.bookmarks / maxMetric) * 100),
+    },
+    {
+      label: "Interests",
+      value: totals.interests,
+      color: "bg-pink-500",
+      pct: Math.round((totals.interests / maxMetric) * 100),
+    },
   ];
 
   if (loading) {
@@ -158,9 +212,24 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard icon={Eye} label="Total Views" value={totals.views} accent="text-indigo-600" />
-        <StatCard icon={Bookmark} label="Bookmarks" value={totals.bookmarks} accent="text-purple-600" />
-        <StatCard icon={Heart} label="Interests" value={totals.interests} accent="text-pink-600" />
+        <StatCard
+          icon={Eye}
+          label="Total Views"
+          value={totals.views}
+          accent="text-indigo-600"
+        />
+        <StatCard
+          icon={Bookmark}
+          label="Bookmarks"
+          value={totals.bookmarks}
+          accent="text-purple-600"
+        />
+        <StatCard
+          icon={Heart}
+          label="Interests"
+          value={totals.interests}
+          accent="text-pink-600"
+        />
       </div>
 
       {!hasData ? (
@@ -168,7 +237,8 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
           <CardContent className="py-12 text-center">
             <TrendingUp className="size-8 text-gray-200 mx-auto mb-3" />
             <p className="text-sm text-gray-400">
-              No analytics data for this period yet. Views are tracked when the project is viewed.
+              No analytics data for this period yet. Views are tracked when the
+              project is viewed.
             </p>
           </CardContent>
         </Card>
@@ -177,17 +247,62 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
           {/* Line chart */}
           <Card className="border border-gray-200">
             <CardHeader className="pb-0">
-              <CardTitle className="text-sm text-gray-700">Daily Activity</CardTitle>
+              <CardTitle className="text-sm text-gray-700">
+                Daily Activity
+              </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={chartData} margin={{ top: 0, right: 8, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} axisLine={false} tickLine={false} />
-                  <Tooltip contentStyle={{ backgroundColor: "white", border: "1px solid #e5e7eb", borderRadius: "8px", fontSize: "12px" }} />
-                  <Line type="monotone" dataKey="views" name="Views" stroke="#6366f1" strokeWidth={2} dot={{ fill: "#6366f1", r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="bookmarks" name="Bookmarks" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: "#8b5cf6", r: 3 }} activeDot={{ r: 5 }} />
-                  <Line type="monotone" dataKey="interests" name="Interests" stroke="#ec4899" strokeWidth={2} dot={{ fill: "#ec4899", r: 3 }} activeDot={{ r: 5 }} />
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 0, right: 8, left: -20, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 11, fill: "#9ca3af" }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      fontSize: "12px",
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="views"
+                    name="Views"
+                    stroke="#6366f1"
+                    strokeWidth={2}
+                    dot={{ fill: "#6366f1", r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="bookmarks"
+                    name="Bookmarks"
+                    stroke="#8b5cf6"
+                    strokeWidth={2}
+                    dot={{ fill: "#8b5cf6", r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="interests"
+                    name="Interests"
+                    stroke="#ec4899"
+                    strokeWidth={2}
+                    dot={{ fill: "#ec4899", r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -206,11 +321,15 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-xs text-gray-500">{label}</span>
                       <span className="text-xs font-semibold text-gray-700">
-                        {value.toLocaleString()} <span className="text-gray-400">({pct}%)</span>
+                        {value.toLocaleString()}{" "}
+                        <span className="text-gray-400">({pct}%)</span>
                       </span>
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full transition-all duration-700 ${color}`} style={{ width: `${pct}%` }} />
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${color}`}
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -226,13 +345,35 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
                 <CardContent>
                   <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={3} dataKey="value">
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={65}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
                         {pieData.map((_, index) => (
-                          <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={PIE_COLORS[index % PIE_COLORS.length]}
+                          />
                         ))}
                       </Pie>
-                      <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
-                      <Tooltip contentStyle={{ backgroundColor: "white", border: "1px solid #e5e7eb", borderRadius: "8px", fontSize: "11px" }} />
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: "11px" }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                        }}
+                      />
                     </PieChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -240,7 +381,9 @@ export default function ProjectAnalyticsDashboard({ projectId }: ProjectAnalytic
             ) : (
               <Card className="border border-gray-200 flex items-center justify-center">
                 <CardContent className="py-8 text-center">
-                  <p className="text-xs text-gray-400">No source data available</p>
+                  <p className="text-xs text-gray-400">
+                    No source data available
+                  </p>
                 </CardContent>
               </Card>
             )}

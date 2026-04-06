@@ -61,19 +61,19 @@ export const getProjectById = async (req, res, next) => {
           viewCount: { increment: 1 },
         },
       });
-       let source = req.query.source || null;
+      let source = req.query.source || null;
 
-  
-  if (!source) {
-    const referer = req.headers["referer"] || req.headers["referrer"] || "";
-    if (referer.includes("google")) source = "google";
-    else if (referer.includes("linkedin")) source = "linkedin";
-    else if (referer.includes("twitter") || referer.includes("x.com")) source = "twitter";
-    else if (referer.includes("facebook")) source = "facebook";
-    else source = "direct";
-  }
+      if (!source) {
+        const referer = req.headers["referer"] || req.headers["referrer"] || "";
+        if (referer.includes("google")) source = "google";
+        else if (referer.includes("linkedin")) source = "linkedin";
+        else if (referer.includes("twitter") || referer.includes("x.com"))
+          source = "twitter";
+        else if (referer.includes("facebook")) source = "facebook";
+        else source = "direct";
+      }
 
-  trackProjectView(id, source);
+      trackProjectView(id, source);
     }
 
     res.json(project);
@@ -163,7 +163,17 @@ export const updateProject = async (req, res, next) => {
         documents: true,
       },
     });
+await prisma.llmInsight.deleteMany({
+  where: {
+    projectId: id,
+    type: "THESIS_ALIGNMENT",
+  },
+});
 
+await prisma.match.updateMany({
+  where: { projectId: id },
+  data: { thesisAlignmentSummary: null },
+});
     res.json(updatedProject);
   } catch (error) {
     next(error);

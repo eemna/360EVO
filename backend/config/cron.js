@@ -130,7 +130,9 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
       return;
     }
 
-    console.log(`[CRON] Retrying ${failedAssessments.length} failed narratives...`);
+    console.log(
+      `[CRON] Retrying ${failedAssessments.length} failed narratives...`,
+    );
 
     for (const assessment of failedAssessments) {
       try {
@@ -141,7 +143,9 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
         );
 
         if (!narrative) {
-          console.warn(`[CRON] LLM failed again for ${assessment.projectId}, using rule-based fallback`);
+          console.warn(
+            `[CRON] LLM failed again for ${assessment.projectId}, using rule-based fallback`,
+          );
           narrative = generateNarrative(
             assessment.project,
             assessment.trlScore,
@@ -156,20 +160,30 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
             executiveSummary: narrative.executiveSummary ?? null,
             strengthsNarrative: narrative.strengthsNarrative ?? null,
             risksNarrative: narrative.risksNarrative ?? null,
-            marketOpportunityNarrative: narrative.marketOpportunityNarrative ?? null,
-            llmModel: narrative._expertsUsed ? "groq/moe-4experts" : "rule-based-template",
+            marketOpportunityNarrative:
+              narrative.marketOpportunityNarrative ?? null,
+            llmModel: narrative._expertsUsed
+              ? "groq/moe-4experts"
+              : "rule-based-template",
             version: { increment: 1 },
           },
         });
 
-        console.log(`[CRON] Narrative filled for project ${assessment.projectId}`);
+        console.log(
+          `[CRON] Narrative filled for project ${assessment.projectId}`,
+        );
       } catch (err) {
-        await prisma.aiAssessment.update({
-          where: { id: assessment.id },
-          data: { version: { increment: 1 } },
-        }).catch(() => {});
+        await prisma.aiAssessment
+          .update({
+            where: { id: assessment.id },
+            data: { version: { increment: 1 } },
+          })
+          .catch(() => {});
 
-        console.error(`[CRON] Retry failed for ${assessment.projectId}:`, err.message);
+        console.error(
+          `[CRON] Retry failed for ${assessment.projectId}:`,
+          err.message,
+        );
       }
     }
   } catch (error) {
@@ -177,10 +191,11 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
   }
 });
 
-
 // Runs at midnight every day — ensures today's analytics row exists for active projects
 const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
-    console.log("[CRON] Midnight analytics: ensuring today's rows exist for active projects");
+  console.log(
+    "[CRON] Midnight analytics: ensuring today's rows exist for active projects",
+  );
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -199,11 +214,13 @@ const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
         create: { projectId: project.id, date: today },
       });
     }
-    console.log(`[CRON] Ensured analytics rows for ${projects.length} projects`);
+    console.log(
+      `[CRON] Ensured analytics rows for ${projects.length} projects`,
+    );
   } catch (err) {
     console.error("[CRON] Analytics job failed:", err.message);
   }
 });
-export { job, matchRegenerationJob, narrativeRetryJob ,analyticsJob};
+export { job, matchRegenerationJob, narrativeRetryJob, analyticsJob };
 
 export default job;

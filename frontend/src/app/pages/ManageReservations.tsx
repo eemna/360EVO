@@ -51,7 +51,7 @@ interface Booking {
   id: string;
   startDateTime: string;
   endDateTime: string;
-  status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED" | "PENDING_PAYMENT";
   expertId: string;
   expert?: { id: string; name: string };
   duration: number;
@@ -88,7 +88,7 @@ export function ManageReservations() {
     try {
       setProcessingId(bookingId);
       setProcessingAction("complete");
-      await api.patch(`/consultations/${bookingId}/complete`);
+      await api.put(`/consultations/${bookingId}/complete`);
       setBookings((prev) =>
         prev.map((b) =>
           b.id === bookingId ? { ...b, status: "COMPLETED" } : b,
@@ -143,6 +143,8 @@ export function ManageReservations() {
 
   const confirmedBookings = bookings.filter((b) => b.status === "ACCEPTED");
 
+  const awaitingPaymentBookings = bookings.filter((b) => b.status === "PENDING_PAYMENT");
+
   const scheduleData = confirmedBookings.map((b) => ({
     date: b.startDateTime,
     time: format(new Date(b.startDateTime), "HH:mm"),
@@ -164,7 +166,7 @@ export function ManageReservations() {
     try {
       setProcessingId(bookingId);
       setProcessingAction("accept");
-      const { data } = await api.patch(`/consultations/${bookingId}/accept`);
+      const { data } = await api.put(`/consultations/${bookingId}/accept`);
 
       setBookings((prev) => prev.map((b) => (b.id === bookingId ? data : b)));
 
@@ -186,7 +188,7 @@ export function ManageReservations() {
     try {
       setProcessingId(selectedBooking.id);
       setProcessingAction("reject");
-      await api.patch(`/consultations/${selectedBooking.id}/reject`, {
+      await api.put(`/consultations/${selectedBooking.id}/reject`, {
         reason: rejectionReason,
       });
 
@@ -217,7 +219,7 @@ export function ManageReservations() {
     if (!selectedBooking || !cancellationReason.trim()) return;
 
     try {
-      await api.patch(`/consultations/${selectedBooking.id}/cancel`, {
+      await api.put(`/consultations/${selectedBooking.id}/cancel`, {
         reason: cancellationReason,
       });
 
@@ -405,7 +407,15 @@ export function ManageReservations() {
                 </Badge>
               )}
             </TabsTrigger>
-
+            <TabsTrigger
+              value="awaiting"
+              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              > Awaiting Payment
+              {awaitingPaymentBookings.length > 0 && (
+             <Badge className="ml-2 bg-yellow-500 text-white">
+               {awaitingPaymentBookings.length}
+             </Badge> )}
+            </TabsTrigger>
             <TabsTrigger
               value="confirmed"
               className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
@@ -433,7 +443,7 @@ export function ManageReservations() {
           </TabsList>
 
           {/* Pending Requests Tab */}
-          <TabsContent value="pending" className="space-y-6">
+          <TabsContent value="pending" className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
             {pendingBookings.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
@@ -487,7 +497,7 @@ export function ManageReservations() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                 <CardContent className="space-y-2 pt-0">
                     <div>
                       <p className="text-sm font-semibold text-gray-900 mb-1">
                         Topic: {booking.topic}
@@ -566,7 +576,47 @@ export function ManageReservations() {
               ))
             )}
           </TabsContent>
-
+<TabsContent value="awaiting" className="space-y-6">
+  {awaitingPaymentBookings.length === 0 ? (
+    <Card>
+      <CardContent className="py-12 text-center">
+        <p className="text-gray-600 text-lg">No sessions awaiting payment</p>
+      </CardContent>
+    </Card>
+  ) : (
+    awaitingPaymentBookings.map((booking) => (
+      <Card key={booking.id} className="border-l-4 border-l-yellow-400">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <CardTitle className="text-xl">{booking.member?.name}</CardTitle>
+            <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300 border">
+              Awaiting Payment
+            </Badge>
+          </div>
+          <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="size-4" />
+              <span>{formatDate(booking.startDateTime)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="size-4" />
+              <span>{format(new Date(booking.startDateTime), "HH:mm")} ({booking.duration} min)</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <DollarSign className="size-4" />
+              <span>{booking.price}</span>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-500">
+            Waiting for the client to complete payment.
+          </p>
+        </CardContent>
+      </Card>
+    ))
+  )}
+</TabsContent>
           {/* Confirmed Sessions Tab */}
           <TabsContent value="confirmed" className="space-y-6">
             {confirmedBookings.length === 0 ? (

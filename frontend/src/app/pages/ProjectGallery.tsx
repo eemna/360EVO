@@ -255,90 +255,89 @@ export function ProjectGallery() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {projects.map((project) => (
-              <Card 
-                key={project.id}
-                
-                onClick={() => {
+            <Card
+              key={project.id}
+              onClick={() => {
                 navigate(`/app/startup/projects/${project.id}?source=gallery`);
-                }}
-                className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group">
-                <CardContent className="pt-6">
-                  {project.featured && (
-                    <div className="flex items-center gap-2 mb-3">
-                      <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
-                        <Sparkles className="size-3 mr-1" />
-                        Featured
-                      </Badge>
-                    </div>
-                  )}
-
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
-                    {project.title}
-                  </h3>
-
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                    {project.tagline}
-                  </p>
-
-                  <div className="mb-4">
-                    <Badge className={stageColors[project.stage]}>
-                      {project.stage}
+              }}
+              className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group"
+            >
+              <CardContent className="pt-6">
+                {project.featured && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                      <Sparkles className="size-3 mr-1" />
+                      Featured
                     </Badge>
                   </div>
+                )}
 
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.technologies?.slice(0, 3).map((tech) => (
-                      <Badge
-                        key={tech}
-                        variant="outline"
-                        className="text-xs border-indigo-200 text-indigo-700"
-                      >
-                        {tech}
-                      </Badge>
-                    ))}
+                <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                  {project.title}
+                </h3>
+
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                  {project.tagline}
+                </p>
+
+                <div className="mb-4">
+                  <Badge className={stageColors[project.stage]}>
+                    {project.stage}
+                  </Badge>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {project.technologies?.slice(0, 3).map((tech) => (
+                    <Badge
+                      key={tech}
+                      variant="outline"
+                      className="text-xs border-indigo-200 text-indigo-700"
+                    >
+                      {tech}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="space-y-2 mb-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Target className="size-4 text-green-600" />
+                    <span className="font-medium text-green-600">
+                      {formatCurrency(Number(project.fundingSought))}
+                    </span>
+                    <span>funding</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPin className="size-4" />
+                    <span>{project.location}</span>
+                  </div>
+                </div>
+
+                {/* ── Footer: owner + views + bookmark + interest ── */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Users className="size-4" />
+                    <span>{project.owner.name}</span>
                   </div>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Target className="size-4 text-green-600" />
-                      <span className="font-medium text-green-600">
-                        {formatCurrency(Number(project.fundingSought))}
-                      </span>
-                      <span>funding</span>
+                  <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 text-sm text-gray-500 mr-1">
+                      <Eye className="size-4" />
+                      <span>{project.viewCount.toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <MapPin className="size-4" />
-                      <span>{project.location}</span>
-                    </div>
+
+                    {/* ── BOOKMARK BUTTON ── */}
+                    <BookmarkButton projectId={project.id} />
+
+                    {/* ── INTEREST BUTTON ── */}
+                    <InterestButton
+                      projectId={project.id}
+                      projectTitle={project.title}
+                      ownerId={project.owner.id}
+                    />
                   </div>
-
-                  {/* ── Footer: owner + views + bookmark + interest ── */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Users className="size-4" />
-                      <span>{project.owner.name}</span>
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                      <div className="flex items-center gap-1 text-sm text-gray-500 mr-1">
-                        <Eye className="size-4" />
-                        <span>{project.viewCount.toLocaleString()}</span>
-                      </div>
-
-                      {/* ── BOOKMARK BUTTON ── */}
-                      <BookmarkButton projectId={project.id} />
-
-                      {/* ── INTEREST BUTTON ── */}
-                      <InterestButton
-                        projectId={project.id}
-                        projectTitle={project.title}
-                        ownerId={project.owner.id}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}

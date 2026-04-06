@@ -31,7 +31,7 @@ export const getPublicExpertProfile = async (req, res, next) => {
 
     let computedStatus = "AVAILABLE";
 
-    //  Manual override
+
     if (expert.profile?.availabilityStatus === "UNAVAILABLE") {
       computedStatus = "UNAVAILABLE";
     } else {

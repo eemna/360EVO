@@ -8,7 +8,11 @@ import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
 import rateLimiter from "./middleware/rateLimiter.js";
-import job, { matchRegenerationJob, narrativeRetryJob,analyticsJob } from "./config/cron.js";
+import job, {
+  matchRegenerationJob,
+  narrativeRetryJob,
+  analyticsJob,
+} from "./config/cron.js";
 import helmet from "helmet";
 import uploadRoutes from "./routes/uploadRoute.js";
 import projectRoutes from "./routes/projectRoute.js";
@@ -23,6 +27,8 @@ import bookmarkRoute from "./routes/bookmarkRoute.js";
 import aiRoute from "./routes/aiRoute.js";
 import investorProfileRoutes from "./routes/investorprofileroute.js";
 import ddRoutes from "./routes/ddRoute.js";
+import paymentRoutes from "./routes/paymentRoute.js";
+import webhookRoutes from "./routes/webhookRoute.js";
 
 dotenv.config();
 const app = express();
@@ -48,7 +54,7 @@ app.use(
     credentials: true,
   }),
 );
-
+app.use("/api/webhooks", webhookRoutes);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -75,6 +81,7 @@ app.use("/api/bookmarks", bookmarkRoute);
 app.use("/api/ai", aiRoute);
 app.use("/api/investor-profile", investorProfileRoutes);
 app.use("/api", ddRoutes); // covers /api/dd-requests and /api/data-rooms
+app.use("/api/payments", paymentRoutes);
 
 const PORT = process.env.PORT || 5001;
 

@@ -145,7 +145,9 @@ export default function StartupDashboard() {
       setStats(dashRes.data.stats);
       setAllProjects(dashRes.data.projects);
 
-      const pending = ddRes.data.filter((r: { status: string }) => r.status === "PENDING").length;
+      const pending = ddRes.data.filter(
+        (r: { status: string }) => r.status === "PENDING",
+      ).length;
       setPendingDdCount(pending);
     } catch (error) {
       console.error("Dashboard error:", error);
@@ -276,14 +278,18 @@ export default function StartupDashboard() {
             </div>
             <div>
               <p className="text-sm font-semibold text-green-900">
-                {pendingDdCount} Due Diligence Request{pendingDdCount > 1 ? "s" : ""} Pending
+                {pendingDdCount} Due Diligence Request
+                {pendingDdCount > 1 ? "s" : ""} Pending
               </p>
               <p className="text-xs text-green-700">
                 Investors are requesting access to your data rooms
               </p>
             </div>
           </div>
-          <Button size="sm" className="bg-green-600 hover:bg-green-700 gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 gap-2 flex-shrink-0"
+          >
             <FolderOpen className="size-4" />
             Review Requests
           </Button>
@@ -410,13 +416,17 @@ export default function StartupDashboard() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="size-4 flex-shrink-0" />
                     <span className="font-medium">Created:</span>
-                    <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(project.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
 
                   <Button
                     variant="outline"
                     className="w-full mt-3"
-                    onClick={() => navigate(`/app/startup/projects/${project.id}`)}
+                    onClick={() =>
+                      navigate(`/app/startup/projects/${project.id}`)
+                    }
                   >
                     View Details
                     <ArrowRight className="size-4 ml-2" />

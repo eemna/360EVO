@@ -525,7 +525,6 @@ export const getMe = async (req, res, next) => {
         isVerified: true,
         createdAt: true,
         profile: true,
-       
       },
     });
 
