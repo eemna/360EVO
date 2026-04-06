@@ -1,6 +1,10 @@
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
-import { trackBookmark, trackInterest,trackBookmarkRemove } from "./analyticsController.js";
+import {
+  trackBookmark,
+  trackInterest,
+  trackBookmarkRemove,
+} from "./analyticsController.js";
 export const addBookmark = async (req, res, next) => {
   try {
     const { projectId } = req.params;

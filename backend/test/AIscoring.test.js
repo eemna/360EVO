@@ -1,4 +1,3 @@
-//aiscoring.test.js
 process.env.GROQ_API_KEY = "dummy-test-key";
 
 import { parseJsonResponse } from "../services/llmservice.js";

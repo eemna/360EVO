@@ -35,6 +35,7 @@ import InvestorDashboard from "./pages/InvestorDashboard";
 import DdInboxPage from "./pages/Ddinboxpage";
 import DataRoomPage from "./pages/Dataroompage";
 import DealBriefPage from "./pages/Dealbriefpage";
+import ConsultationPaymentPage from "./pages/ConsultationPaymentPage";
 
 export const router = createBrowserRouter([
   {
@@ -137,6 +138,14 @@ export const router = createBrowserRouter([
         ),
       },
       {
+  path: "consultations/:bookingId/pay",
+  element: (
+    <RoleRoute allowedRoles={["MEMBER", "STARTUP", "ADMIN", "INVESTOR"]}>
+      <ConsultationPaymentPage />
+    </RoleRoute>
+  ),
+},
+      {
         path: "projects",
         element: <ProjectGallery />,
       },
@@ -166,12 +175,46 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
-      { path: "startup/dd-requests", element: <RoleRoute allowedRoles={["STARTUP"]}><DdInboxPage /></RoleRoute> },
-      { path: "investor/dd-requests", element: <RoleRoute allowedRoles={["INVESTOR"]}><DdInboxPage /></RoleRoute> }, 
-      { path: "startup/data-rooms/:id", element: <RoleRoute allowedRoles={["STARTUP"]}><DataRoomPage /></RoleRoute> },
-      { path: "investor/data-rooms/:id", element: <RoleRoute allowedRoles={["INVESTOR"]}><DataRoomPage /></RoleRoute> },
-      { path: "investor/data-rooms/:id/deal-brief", element: <RoleRoute allowedRoles={["INVESTOR"]}><DealBriefPage /></RoleRoute> },
-
+      {
+        path: "startup/dd-requests",
+        element: (
+          <RoleRoute allowedRoles={["STARTUP"]}>
+            <DdInboxPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "investor/dd-requests",
+        element: (
+          <RoleRoute allowedRoles={["INVESTOR"]}>
+            <DdInboxPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "startup/data-rooms/:id",
+        element: (
+          <RoleRoute allowedRoles={["STARTUP"]}>
+            <DataRoomPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "investor/data-rooms/:id",
+        element: (
+          <RoleRoute allowedRoles={["INVESTOR"]}>
+            <DataRoomPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "investor/data-rooms/:id/deal-brief",
+        element: (
+          <RoleRoute allowedRoles={["INVESTOR"]}>
+            <DealBriefPage />
+          </RoleRoute>
+        ),
+      },
     ],
   },
   {

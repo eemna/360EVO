@@ -161,6 +161,26 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
   );
 }
 
+function StatusDot({ status }: { status: Match["status"] }) {
+  if (status === "SUGGESTED") return null;
+  const styles = {
+    VIEWED:    "bg-blue-400",
+    CONTACTED: "bg-green-500",
+    DISMISSED: "bg-gray-300",
+  };
+  const labels = {
+    VIEWED:    "Viewed",
+    CONTACTED: "Contacted",
+    DISMISSED: "Dismissed",
+  };
+  return (
+    <span className="flex items-center gap-1 text-xs text-gray-400">
+      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${styles[status]}`} />
+      {labels[status]}
+    </span>
+  );
+}
+
 function MatchCard({
   match,
   selected,
@@ -193,6 +213,7 @@ function MatchCard({
               <h3 className="font-semibold text-gray-900 text-base leading-tight">
                 {match.project.title}
               </h3>
+              <StatusDot status={match.status} />
             </div>
             <div className="flex items-center gap-2 flex-wrap mb-2">
               <Badge className="bg-cyan-50 text-cyan-700 border border-cyan-200 text-xs">
@@ -265,9 +286,13 @@ function MatchCard({
             size="sm"
             variant="outline"
             className="text-xs h-7 px-2"
-           onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/app/startup/projects/${match.project.id}?source=match_feed`);
+            onClick={(e) => {
+              e.stopPropagation();
+               if (match.status === "SUGGESTED") {
+                api.put(`/ai/matches/${match.id}/status`, { status: "VIEWED" }).catch(() => {});}
+              navigate(
+                `/app/startup/projects/${match.project.id}?source=match_feed`,
+              );
             }}
           >
             <Eye className="w-3 h-3 mr-1" /> View Project
@@ -320,28 +345,38 @@ export default function MatchFeedPage() {
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
-  const handleGenerate = async () => {
-    try {
-      setGenerating(true);
-      await api.post("/ai/matches/generate");
-      await fetchMatches();
-      setMatches((prev) => {
+const handleGenerate = async () => {
+  try {
+    setGenerating(true);
+    await api.post("/ai/matches/generate");
+
+    const { data: initial } = await api.get("/ai/matches/feed");
+    setMatches(initial);
+
+    let attempts = 0;
+    const poll = setInterval(async () => {
+      attempts++;
+      const { data: fresh } = await api.get("/ai/matches/feed");
+      setMatches(fresh);
+
+      const hasThesis = fresh.some((m: Match) => m.thesisAlignmentSummary);
+      if (hasThesis || attempts >= 8) {
+        clearInterval(poll);
+        setGenerating(false);
         showToast({
           type: "success",
-          title: `${prev.length} matches in your feed`,
-          message: "Match feed updated.",
+          title: hasThesis ? "Matches ready with AI summaries" : "Matches generated",
+          message: hasThesis ? "Thesis alignment complete." : "AI summaries will appear shortly.",
         });
-        return prev;
-      });
-    } catch (err: unknown) {
-      const msg =
-        (err as { response?: { data?: { message?: string } } })?.response?.data
-          ?.message ?? "Generation failed";
-      showToast({ type: "error", title: "Error", message: msg });
-    } finally {
-      setGenerating(false);
-    }
-  };
+      }
+    }, 4000);
+
+  } catch (err: unknown) {
+    const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Generation failed";
+    showToast({ type: "error", title: "Error", message: msg });
+    setGenerating(false);
+  }
+};
 
   const handleDismiss = async (matchId: string) => {
     try {

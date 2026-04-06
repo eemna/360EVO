@@ -157,7 +157,7 @@ export const approveDdRequest = async (req, res, next) => {
           ddRequestId: id,
           projectId: ddRequest.projectId,
           investorId: ddRequest.investorId,
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         },
       });
 
@@ -275,7 +275,9 @@ export const getDataRoom = async (req, res, next) => {
       data: { dataRoomId: id, userId, action: "VIEWED_ROOM" },
     });
 
-    const visibleDocs = full.documents.filter(d => d.accessLevel === "OPEN" || isOwner);
+    const visibleDocs = full.documents.filter(
+      (d) => d.accessLevel === "OPEN" || isOwner,
+    );
     res.json({ ...full, documents: visibleDocs, isInvestor, isOwner });
   } catch (error) {
     if (error.status)
@@ -379,7 +381,9 @@ export const updateDocumentAccess = async (req, res, next) => {
     if (!isOwner) return res.status(403).json({ message: "Forbidden" });
 
     if (!["OPEN", "ON_REQUEST"].includes(accessLevel)) {
-      return res.status(400).json({ message: "Invalid accessLevel. Use OPEN or ON_REQUEST" });
+      return res
+        .status(400)
+        .json({ message: "Invalid accessLevel. Use OPEN or ON_REQUEST" });
     }
 
     const doc = await prisma.dataRoomDocument.update({
@@ -388,12 +392,18 @@ export const updateDocumentAccess = async (req, res, next) => {
     });
 
     await prisma.dataRoomActivity.create({
-      data: { dataRoomId, userId, action: "UPDATED_DOCUMENT_ACCESS", docName: doc.name },
+      data: {
+        dataRoomId,
+        userId,
+        action: "UPDATED_DOCUMENT_ACCESS",
+        docName: doc.name,
+      },
     });
 
     res.json(doc);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -417,10 +427,10 @@ export const createQaThread = async (req, res, next) => {
 
     const thread = await prisma.ddQaThread.create({
       data: { dataRoomId, question, askerId },
-        include: {
-    asker: { select: { name: true, role: true } },
-    responses: true, 
-  },
+      include: {
+        asker: { select: { name: true, role: true } },
+        responses: true,
+      },
     });
 
     // Notify startup owner
@@ -468,7 +478,8 @@ export const getQaThreads = async (req, res, next) => {
 
     res.json(threads);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -491,7 +502,8 @@ export const getActivity = async (req, res, next) => {
 
     res.json(activity);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ message: error.message });
+    if (error.status)
+      return res.status(error.status).json({ message: error.message });
     next(error);
   }
 };
@@ -566,10 +578,10 @@ export const runAiScan = async (req, res, next) => {
     const fullRoom = await prisma.dataRoom.findUnique({
       where: { id: dataRoomId },
       include: {
-    documents: {
-      where: { accessLevel: "OPEN" },
-    },
-  },
+        documents: {
+          where: { accessLevel: "OPEN" },
+        },
+      },
     });
 
     // Hash based on document IDs + uploadedAt — changes when docs are added/removed

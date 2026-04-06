@@ -59,7 +59,6 @@ export const generateMatches = async (req, res, next) => {
       return res.json({ message: "No approved projects found", matches: [] });
     }
 
-    // 1. Score all projects
     const matchResults = [];
     for (const project of projects) {
       const { matchScore, categoryScores, reasoning } = await calculateMatchScore(
@@ -68,9 +67,8 @@ export const generateMatches = async (req, res, next) => {
       matchResults.push({ investorId, projectId: project.id, matchScore, categoryScores, reasoning, project });
     }
 
-    // 2. Batch upsert all matches
     await Promise.all(
-      matchResults.map((match) =>
+      matchResults.map(({ project: _p, ...match }) =>
         prisma.match.upsert({
           where: { investorId_projectId: { investorId: match.investorId, projectId: match.projectId } },
           update: { matchScore: match.matchScore, categoryScores: match.categoryScores, reasoning: match.reasoning, status: "SUGGESTED" },
@@ -79,7 +77,13 @@ export const generateMatches = async (req, res, next) => {
       ),
     );
 
+    await prisma.match.updateMany({
+      where: { investorId },
+      data: { thesisAlignmentSummary: null },
+    });
+
     const sorted = matchResults.sort((a, b) => b.matchScore - a.matchScore);
+
     res.json({ message: `Generated ${matchResults.length} matches`, matches: sorted });
 
     setImmediate(async () => {
@@ -97,26 +101,19 @@ export const generateMatches = async (req, res, next) => {
             where: { investorId_projectId_type: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT" } },
           });
           if (cached && cached.inputHash === inputHash) {
-            console.log(`[Matches] Thesis alignment cached for ${match.projectId}, skipping`);
+            console.log(`[Matches] Cached for ${match.projectId}, skipping`);
             continue;
           }
 
-          // Call LLM
-          const alignment = await createThesisAlignmentMoE(
-            investorProfile,
-            match.project,
-            match.project.aiAssessment,
-          );
+          const alignment = await createThesisAlignmentMoE(investorProfile, match.project, match.project.aiAssessment);
           if (!alignment) continue;
 
-          // Save to LlmInsight cache
           await prisma.llmInsight.upsert({
             where: { investorId_projectId_type: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT" } },
             update: { content: alignment, inputHash },
             create: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT", content: alignment, inputHash },
           });
 
-          // Update Match row with summary snippet
           await prisma.match.updateMany({
             where: { investorId, projectId: match.projectId },
             data: { thesisAlignmentSummary: alignment.alignmentSummary },
@@ -152,36 +149,30 @@ export const getMatchFeed = async (req, res, next) => {
             owner: { select: { name: true, email: true } },
             teamMembers: true,
             aiAssessment: true,
+           
+            llmInsights: {
+              where: {
+                investorId,
+                type: "THESIS_ALIGNMENT",
+              },
+              take: 1,
+            },
           },
         },
       },
     });
 
-    const enriched = await Promise.all(
-      matches.map(async (match) => {
-        if (match.thesisAlignmentSummary) return match;
-
-        // Fall back to LlmInsight cache if Match row wasn't updated
-        const insight = await prisma.llmInsight.findUnique({
-          where: {
-            investorId_projectId_type: {
-              investorId,
-              projectId: match.projectId,
-              type: "THESIS_ALIGNMENT",
-            },
-          },
-        });
-
-        if (insight?.content?.alignmentSummary) {
-          return {
-            ...match,
-            thesisAlignmentSummary: insight.content.alignmentSummary,
-          };
-        }
-
-        return match;
-      }),
-    );
+   
+    const enriched = matches.map((match) => {
+      const insight = match.project.llmInsights?.[0];
+      return {
+        ...match,
+        thesisAlignmentSummary:
+          match.thesisAlignmentSummary ??
+          insight?.content?.alignmentSummary ??
+          null,
+      };
+    });
 
     res.json(enriched);
   } catch (error) {

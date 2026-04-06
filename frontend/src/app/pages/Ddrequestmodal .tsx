@@ -21,6 +21,7 @@ interface DdRequestModalProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   projectTitle: string;
+  matchId?: string | null;
 }
 
 export function DdRequestModal({
@@ -28,6 +29,7 @@ export function DdRequestModal({
   onOpenChange,
   projectId,
   projectTitle,
+  matchId,
 }: DdRequestModalProps) {
   const { showToast } = useToast();
   const [message, setMessage] = useState("");
@@ -38,6 +40,10 @@ export function DdRequestModal({
     try {
       setSubmitting(true);
       await api.post("/dd-requests", { projectId, message, nda });
+      if (matchId) {
+        await api.put(`/ai/matches/${matchId}/status`, { status: "CONTACTED" })
+          .catch(() => {});
+      }
       showToast({
         type: "success",
         title: "DD Request Sent",
@@ -64,11 +70,17 @@ export function DdRequestModal({
             <div className="p-2 bg-indigo-100 rounded-lg">
               <FileSearch className="size-5 text-indigo-600" />
             </div>
-            <DialogTitle className="text-lg">Request Due Diligence Access</DialogTitle>
+            <DialogTitle className="text-lg">
+              Request Due Diligence Access
+            </DialogTitle>
           </div>
           <DialogDescription>
-            Request access to <span className="font-semibold text-gray-700">"{projectTitle}"</span>'s
-            private data room. The startup team will review and approve your request.
+            Request access to{" "}
+            <span className="font-semibold text-gray-700">
+              "{projectTitle}"
+            </span>
+            's private data room. The startup team will review and approve your
+            request.
           </DialogDescription>
         </DialogHeader>
 
@@ -77,15 +89,16 @@ export function DdRequestModal({
           <div className="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl p-3">
             <ShieldCheck className="size-4 text-indigo-600 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-indigo-700 leading-relaxed">
-              Access is granted for 30 days. All document views are logged. The startup
-              reviews your request before granting access.
+              Access is granted for 30 days. All document views are logged. The
+              startup reviews your request before granting access.
             </p>
           </div>
 
           {/* Message */}
           <div className="space-y-2">
             <Label htmlFor="dd-message">
-              Introduction Message <span className="text-gray-400 text-xs">(optional)</span>
+              Introduction Message{" "}
+              <span className="text-gray-400 text-xs">(optional)</span>
             </Label>
             <Textarea
               id="dd-message"
@@ -95,7 +108,9 @@ export function DdRequestModal({
               rows={4}
               maxLength={500}
             />
-            <p className="text-xs text-gray-400 text-right">{message.length}/500</p>
+            <p className="text-xs text-gray-400 text-right">
+              {message.length}/500
+            </p>
           </div>
 
           {/* NDA checkbox */}
@@ -107,7 +122,10 @@ export function DdRequestModal({
               className="mt-0.5"
             />
             <div>
-              <label htmlFor="nda" className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label
+                htmlFor="nda"
+                className="text-sm font-medium text-gray-700 cursor-pointer"
+              >
                 I agree to a standard NDA
               </label>
               <p className="text-xs text-gray-500 mt-0.5">
@@ -118,7 +136,11 @@ export function DdRequestModal({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={submitting}
+          >
             Cancel
           </Button>
           <Button
@@ -126,7 +148,11 @@ export function DdRequestModal({
             disabled={submitting}
             className="bg-indigo-600 hover:bg-indigo-700 gap-2"
           >
-            {submitting ? <LoadingSpinner size="sm" /> : <FileSearch className="size-4" />}
+            {submitting ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <FileSearch className="size-4" />
+            )}
             {submitting ? "Sending..." : "Send Request"}
           </Button>
         </DialogFooter>

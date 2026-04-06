@@ -71,7 +71,6 @@ export function FileUpload({
   };
 
   const generatePreview = (file: File) => {
-
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {

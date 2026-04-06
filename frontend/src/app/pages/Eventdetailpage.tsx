@@ -193,7 +193,6 @@ export default function EventDetailPage() {
     }
   };
 
-  // ── Loading skeleton ──
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto space-y-6 animate-pulse">

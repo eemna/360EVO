@@ -1,7 +1,10 @@
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { createNotification } from "../utils/createNotification.js";
+import Stripe from "stripe";
+
 dotenv.config();
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const getNotifSettings = async (userId) => {
   try {
@@ -153,49 +156,149 @@ export const createBooking = async (req, res, next) => {
         topic,
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
-        status: "PENDING_PAYMENT",
+        status: "PENDING",
       },
     });
-
+const settings = await getNotifSettings(expertId);
+if (settings.emailOnBooking) {
+  await createNotification({
+    userId: expertId,
+    type: "BOOKING",
+    title: "New Booking Request",
+    body: `New consultation request: ${topic || "General topic"}`,
+    link: "/app/expert/reservations",
+  });
+}
     res.status(201).json(booking);
   } catch (error) {
     console.error("Booking error response:", error.response?.data);
     next(error);
   }
 };
+export const createConsultationPaymentIntent = async (req, res, next) => {
+  try {
+    const { bookingId } = req.body;
+    const userId = req.user.id;
+
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: { expert: { select: { name: true } } },
+    });
+
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (booking.memberId !== userId) return res.status(403).json({ message: "Unauthorized" });
+    if (booking.status !== "PENDING_PAYMENT") {
+      return res.status(400).json({ message: "Booking not awaiting payment" });
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(Number(booking.price) * 100),
+      currency: "usd",
+      metadata: {
+        userId,
+        bookingId: booking.id,
+        referenceType: "CONSULTATION",
+      },
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      amount: Number(booking.price),
+      expertName: booking.expert.name,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const confirmPayment = async (req, res, next) => {
   try {
+    const { paymentIntentId } = req.body;
+
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    if (paymentIntent.status !== "succeeded") {
+      return res.status(400).json({ message: "Payment not yet successful" });
+    }
+
+    if (paymentIntent.metadata.userId !== req.user.id) {
+      return res.status(403).json({ message: "Payment does not belong to this user" });
+    }
+
+    if (paymentIntent.metadata.referenceType !== "CONSULTATION") {
+      return res.status(400).json({ message: "Invalid payment type" });
+    }
+
+    if (paymentIntent.metadata.bookingId !== req.params.id) {
+      return res.status(400).json({ message: "Payment intent does not match this booking" });
+    }
+
     const booking = await prisma.booking.findUnique({
       where: { id: req.params.id },
     });
 
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (booking.memberId !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+
+    const expectedAmount = Math.round(Number(booking.price) * 100);
+    if (paymentIntent.amount !== expectedAmount) {
+      return res.status(400).json({ message: "Payment amount does not match booking price" });
     }
 
-    if (booking.memberId !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized" });
+    if (booking.status === "ACCEPTED") {
+      return res.json(booking);
     }
 
     if (booking.status !== "PENDING_PAYMENT") {
-      return res.status(400).json({ message: "Payment already processed" });
+      return res.status(400).json({ message: "Booking is not awaiting payment" });
     }
 
-    const updated = await prisma.booking.update({
-      where: { id: req.params.id },
-      data: { status: "PENDING" },
+    const existingPayment = await prisma.payment.findUnique({
+      where: { stripePaymentIntentId: paymentIntentId },
     });
 
-    const settings = await getNotifSettings(booking.expertId);
-    if (settings.emailOnBooking) {
-      await createNotification({
-        userId: booking.expertId,
-        type: "BOOKING",
-        title: "New Booking Request 📅",
-        body: `New consultation request: ${booking.topic || "General topic"}`,
-        link: "/app/expert/reservations",
+    if (existingPayment) {
+      const updated = await prisma.booking.update({
+        where: { id: req.params.id },
+        data: {
+          status: "ACCEPTED",
+          meetingLink: booking.meetingType === "VIDEO"
+            ? `https://meet.jit.si/startup-consult-${booking.id}`
+            : null,
+        },
       });
+      return res.json(updated);
     }
+
+    const [updated] = await prisma.$transaction([
+      prisma.booking.update({
+        where: { id: req.params.id },
+        data: {
+          status: "ACCEPTED",
+          meetingLink: booking.meetingType === "VIDEO"
+            ? `https://meet.jit.si/startup-consult-${booking.id}`
+            : null,
+        },
+      }),
+      prisma.payment.create({
+        data: {
+          userId: req.user.id,
+          referenceType: "CONSULTATION",
+          referenceId: req.params.id,
+          amount: booking.price,
+          currency: "usd",
+          status: "SUCCEEDED",
+          stripePaymentIntentId: paymentIntentId,
+        },
+      }),
+    ]);
+
+    await createNotification({
+      userId: booking.expertId,
+      type: "BOOKING",
+      title: "Payment Received",
+      body: "Payment confirmed. The session is now locked in.",
+      link: "/app/expert/reservations",
+    });
 
     res.json(updated);
   } catch (error) {
@@ -254,41 +357,26 @@ export const acceptBooking = async (req, res, next) => {
       where: { id: req.params.id },
     });
 
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found" });
-    }
-    if (booking.status === "PENDING_PAYMENT") {
-      return res
-        .status(400)
-        .json({ message: "Cannot accept — payment not completed" });
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
+    if (booking.expertId !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+    if (booking.status !== "PENDING") {
+      return res.status(400).json({ message: "Booking is not pending" });
     }
 
-    if (booking.expertId !== req.user.id) {
-      return res.status(403).json({ message: "Unauthorized" });
-    }
     const updated = await prisma.booking.update({
       where: { id: req.params.id },
-      data: {
-        status: "ACCEPTED",
-        meetingLink:
-          booking.meetingType && booking.meetingType === "VIDEO"
-            ? `https://meet.jit.si/startup-consult-${booking.id}`
-            : null,
-      },
-      include: {
-        member: true,
-      },
+      data: { status: "PENDING_PAYMENT" },
+      include: { member: true },
     });
-    const settings = await getNotifSettings(booking.memberId);
-    if (settings.emailOnBooking) {
-      await createNotification({
-        userId: booking.memberId,
-        type: "BOOKING",
-        title: "Booking Accepted",
-        body: "Your consultation has been accepted.",
-        link: `/app/profile/${booking.expertId}`,
-      });
-    }
+
+    await createNotification({
+      userId: booking.memberId,
+      type: "BOOKING",
+      title: "Booking Accepted — Complete Payment 💳",
+      body: `Your consultation request was accepted. Complete payment to confirm your slot.`,
+      link: `/app/consultations/${booking.id}/pay`,
+    });
+
     res.json(updated);
   } catch (error) {
     next(error);

@@ -131,7 +131,6 @@ export function DocumentUpload({
       };
     }
 
-    
     const isDuplicate = uploadedFiles.some(
       (uf) =>
         uf.file?.name === file.name ||
@@ -269,7 +268,6 @@ export function DocumentUpload({
   const handleRemove = async (fileId: string) => {
     const fileToRemove = uploadedFiles.find((f) => f.id === fileId);
 
-   
     if (fileToRemove?.cloudinaryData?.publicId) {
       try {
         await api.delete(
@@ -282,7 +280,6 @@ export function DocumentUpload({
       }
     }
 
-    
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
   };
 

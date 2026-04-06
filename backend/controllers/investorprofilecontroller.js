@@ -145,7 +145,17 @@ export const updateInvestorProfile = async (req, res) => {
       where: { userId: req.user.id },
       data: patch,
     });
+    await prisma.llmInsight.deleteMany({
+      where: {
+        investorId: req.user.id,
+        type: "THESIS_ALIGNMENT",
+      },
+    });
 
+    await prisma.match.updateMany({
+      where: { investorId: req.user.id },
+      data: { thesisAlignmentSummary: null },
+    });
     res.status(200).json(updated);
   } catch (error) {
     console.error("PUT /api/investor-profile error:", error);

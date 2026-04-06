@@ -44,6 +44,12 @@ model User {
   qaResponses        DdQaResponse[]       @relation("ResponderId")
   dealBriefs         AiDealBrief[]        @relation("InvestorDealBriefs")
   dataRoomActivity   DataRoomActivity[]
+
+  organizedPrograms    Program[]            @relation("OrganizerPrograms")
+  programApplications  ProgramApplication[] @relation("UserApplications")
+  programParticipants  ProgramParticipant[] @relation("UserParticipants")
+  payments             Payment[]
+  search_vector Unsupported("tsvector")?
   @@index([email])
 }
 
@@ -138,6 +144,9 @@ model Project {
   ddRequests         DdRequest[]
   dataRooms          DataRoom[]
   analytics          ProjectAnalytics[]
+
+  programApplications  ProgramApplication[]
+
   @@index([status, industry])
   @@index([status, stage])
   @@index([ownerId])
@@ -271,7 +280,10 @@ model Event {
   status        EventStatus         @default(DRAFT)
   createdAt     DateTime            @default(now())
   organizer     User                @relation("UserOrganizedEvents", fields: [organizerId], references: [id], onDelete: Cascade)
+  price   Decimal  @default(0)
+  search_vector Unsupported("tsvector")?
   registrations EventRegistration[]
+  
 }
 
 model EventRegistration {
@@ -512,6 +524,94 @@ model ProjectAnalytics {
   @@unique([projectId, date])
 }
 
+
+
+model Program {
+  id                  String               @id @default(uuid())
+  title               String
+  description         String
+  type                ProgramType
+  startDate           DateTime
+  endDate             DateTime
+  applicationDeadline DateTime
+  capacity            Int
+  benefits            String[]             @default([])
+  requirements        String[]             @default([])
+  organizerId         String
+  status              ProgramStatus        @default(DRAFT)
+  coverImage          String?
+  createdAt           DateTime             @default(now())
+  organizer           User                 @relation("OrganizerPrograms", fields: [organizerId], references: [id], onDelete: Cascade)
+  applications        ProgramApplication[]
+  participants        ProgramParticipant[]
+  search_vector Unsupported("tsvector")?
+}
+
+model ProgramApplication {
+  id          String            @id @default(uuid())
+  programId   String
+  userId      String
+  projectId   String?
+  responses   Json
+  status      ApplicationStatus @default(PENDING)
+  submittedAt DateTime          @default(now())
+  program     Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  user        User              @relation("UserApplications", fields: [userId], references: [id], onDelete: Cascade)
+  project     Project?          @relation(fields: [projectId], references: [id])
+
+  @@unique([programId, userId])
+}
+
+model ProgramParticipant {
+  id         String   @id @default(uuid())
+  programId  String
+  userId     String
+  enrolledAt DateTime @default(now())
+  program    Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  user       User     @relation("UserParticipants", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, userId])
+}
+
+model Payment {
+  id                     String        @id @default(uuid())
+  userId                 String
+  referenceType          String
+  referenceId            String
+  amount                 Decimal
+  currency               String
+  status                 PaymentStatus @default(PENDING)
+  stripePaymentIntentId  String        @unique
+  createdAt              DateTime      @default(now())
+  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+enum ProgramType {
+  INCUBATION
+  ACCELERATION
+  MENTORSHIP
+}
+
+enum ProgramStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  COMPLETED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
 enum DdStatus {
   PENDING
   APPROVED

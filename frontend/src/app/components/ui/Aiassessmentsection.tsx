@@ -128,7 +128,7 @@ export default function AIAssessmentSection({
       setAssessment(data); // show rule-based immediately
 
       if (data.llmModel !== "groq/moe-4experts") {
-        startPolling(); 
+        startPolling();
       }
 
       showToast({
@@ -219,7 +219,6 @@ export default function AIAssessmentSection({
               Groq MoE · 4 experts
             </div>
           )}
-         
 
           {isAdmin && (
             <Button
