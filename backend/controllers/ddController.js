@@ -703,11 +703,12 @@ export const generateDealBrief = async (req, res, next) => {
         .status(403)
         .json({ message: "Only investors can generate deal briefs" });
 
-    const fullRoom = await prisma.dataRoom.findUnique({
+     const fullRoom = await prisma.dataRoom.findUnique({
       where: { id: dataRoomId },
       include: {
-        project: { include: { aiAssessment: true, teamMembers: true } },
+        project: { include: { aiAssessment: true, teamMembers: true ,llmInsights: true, } },
         documents: true,
+        
       },
     });
 
@@ -715,23 +716,21 @@ export const generateDealBrief = async (req, res, next) => {
       where: { userId: dataRoom.investorId },
     });
 
-    // Get the risk scan if it exists
-    const riskInsight = await prisma.llmInsight.findUnique({
-      where: {
-        investorId_projectId_type: {
-          investorId: dataRoom.investorId,
-          projectId: dataRoom.projectId,
-          type: "DD_SUMMARY",
-        },
-      },
-    });
-
+const riskInsight = await prisma.llmInsight.findUnique({
+  where: {
+    investorId_projectId_type: {
+      investorId: dataRoom.investorId,
+      projectId: dataRoom.projectId,
+      type: "DD_SUMMARY",
+    },
+  },
+});
     const brief = await createDealBrief(
       fullRoom,
       fullRoom.project,
       fullRoom.project.aiAssessment,
       investorProfile,
-      riskInsight?.content || null,
+      riskInsight?.content 
     );
 
     const saved = await prisma.aiDealBrief.upsert({

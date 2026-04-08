@@ -8,7 +8,6 @@ import {
   completeBooking,
   createReview,
   getEarningsOverview,
-  confirmPayment,
   cancelUnpaidBooking,
   createConsultationPaymentIntent,
 } from "../controllers/consultationController.js";
@@ -19,7 +18,7 @@ const router = express.Router();
 router.post("/request", protect, createBooking);
 router.get("/", protect, getConsultations);
 router.get("/earnings", protect, getEarningsOverview);
-router.patch("/:id/pay", protect, confirmPayment);
+//router.patch("/:id/pay", protect, confirmPayment);
 router.patch("/:id/cancel-unpaid", protect, cancelUnpaidBooking);
 router.post("/create-payment-intent", protect, createConsultationPaymentIntent);
 router.put("/:id/accept", protect, acceptBooking);

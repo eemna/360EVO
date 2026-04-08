@@ -41,7 +41,8 @@ export function DdRequestModal({
       setSubmitting(true);
       await api.post("/dd-requests", { projectId, message, nda });
       if (matchId) {
-        await api.put(`/ai/matches/${matchId}/status`, { status: "CONTACTED" })
+        await api
+          .put(`/ai/matches/${matchId}/status`, { status: "CONTACTED" })
           .catch(() => {});
       }
       showToast({

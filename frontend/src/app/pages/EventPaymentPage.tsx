@@ -7,7 +7,12 @@ import {
   useStripe,
   useElements,
 } from "@stripe/react-stripe-js";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
@@ -21,11 +26,13 @@ function CheckoutForm({
   clientSecret,
   amount,
   eventTitle,
+  eventId,
   onSuccess,
 }: {
   clientSecret: string;
   amount: number;
   eventTitle: string;
+  eventId: string;
   onSuccess: () => void;
 }) {
   const stripe = useStripe();
@@ -47,7 +54,7 @@ function CheckoutForm({
 
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
-        { payment_method: { card: cardElement } }
+        { payment_method: { card: cardElement } },
       );
 
       if (error) {
@@ -55,20 +62,33 @@ function CheckoutForm({
         return;
       }
 
-      if (paymentIntent?.status === "succeeded") {
-        // Confirm on our backend
-        await api.post("/payments/confirm", {
-          paymentIntentId: paymentIntent.id,
-        });
-
+if (paymentIntent?.status === "succeeded") {
+  let attempts = 0;
+  while (attempts < 10) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const { data } = await api.get(`/events/${eventId}`);
+      if (data.isRegistered) {
         showToast({
           type: "success",
           title: "Payment successful! 🎉",
           message: `You're registered for "${eventTitle}"`,
         });
-
         onSuccess();
+        return;
       }
+    } catch {
+      // continue polling
+    }
+    attempts++;
+  }
+  showToast({
+    type: "success",
+    title: "Payment Received",
+    message: "Your registration will be confirmed shortly.",
+  });
+  onSuccess();
+}
     } catch {
       setCardError("Something went wrong. Please try again.");
     } finally {
@@ -111,9 +131,7 @@ function CheckoutForm({
             }}
           />
         </div>
-        {cardError && (
-          <p className="text-sm text-red-600">{cardError}</p>
-        )}
+        {cardError && <p className="text-sm text-red-600">{cardError}</p>}
       </div>
 
       <Button
@@ -122,9 +140,13 @@ function CheckoutForm({
         className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
       >
         {paying ? (
-          <><LoadingSpinner size="sm" /> Processing...</>
+          <>
+            <LoadingSpinner size="sm" /> Processing...
+          </>
         ) : (
-          <><Lock className="size-4" /> Pay ${amount}</>
+          <>
+            <Lock className="size-4" /> Pay ${amount}
+          </>
         )}
       </Button>
 
@@ -156,9 +178,7 @@ export default function EventPaymentPage() {
         setEventTitle(data.eventTitle);
       })
       .catch((err) => {
-        setError(
-          err.response?.data?.message || "Could not load payment"
-        );
+        setError(err.response?.data?.message || "Could not load payment");
       })
       .finally(() => setLoading(false));
   }, [eventId]);
@@ -188,7 +208,11 @@ export default function EventPaymentPage() {
 
   return (
     <div className="max-w-lg mx-auto">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="-ml-2 mb-6">
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="-ml-2 mb-6"
+      >
         <ArrowLeft className="size-4 mr-2" />
         Back to Event
       </Button>
@@ -203,14 +227,12 @@ export default function EventPaymentPage() {
         </CardHeader>
         <CardContent>
           {clientSecret && (
-            <Elements
-              stripe={stripePromise}
-              options={{ clientSecret }}
-            >
+            <Elements stripe={stripePromise} options={{ clientSecret }}>
               <CheckoutForm
                 clientSecret={clientSecret}
                 amount={amount}
                 eventTitle={eventTitle}
+                eventId={eventId!}
                 onSuccess={handleSuccess}
               />
             </Elements>

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router";
 import { Menu } from "lucide-react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import api from "../../../services/axios";
 import {
   DropdownMenu,
@@ -23,6 +23,7 @@ import {
   Briefcase,
   GraduationCap,
 } from "lucide-react";
+import { useLocation } from "react-router";
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -52,12 +53,35 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef<HTMLDivElement>(null);
-
+  const location = useLocation();
+  const lastMessageIdRef = useRef<string | null>(null);
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+const handleMarkAllRead = useCallback(async () => {
+  try {
+    await api.put("/notifications/read-all");
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setUnreadCount(0);
+  } catch {
+    // silent fail
+  }
+}, []);
 
+  const handleClickNotification = async (n: Notification) => {
+    if (!n.isRead) {
+      await api.put(`/notifications/${n.id}/read`);
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setNotifications((prev) =>
+        prev.map((item) =>
+          item.id === n.id ? { ...item, isRead: true } : item,
+        ),
+      );
+    }
+    if (n.link) navigate(n.link);
+    setNotifOpen(false);
+  };
   // Fetch unread messages
   useEffect(() => {
     let cancelled = false;
@@ -95,19 +119,25 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
     };
   }, []);
 
-  // Socket: new message
-  useEffect(() => {
-    if (!socket) return;
-    const handleNewMessage = (message: { senderId: string }) => {
-      if (message.senderId !== user?.id) {
-        setUnreadMessages((prev) => prev + 1);
-      }
-    };
-    socket.on("new_message", handleNewMessage);
-    return () => {
-      socket.off("new_message", handleNewMessage);
-    };
-  }, [socket, user]);
+
+useEffect(() => {
+  if (!socket) return;
+  const handleNewMessage = (message: { id: string; senderId: string }) => {
+    if (lastMessageIdRef.current === message.id) return;
+    lastMessageIdRef.current = message.id;
+
+    if (
+      message.senderId !== user?.id &&
+      location.pathname !== "/app/conversation"
+    ) {
+      setUnreadMessages((prev) => prev + 1);
+    }
+  };
+  socket.on("new_message", handleNewMessage);
+  return () => {
+    socket.off("new_message", handleNewMessage);
+  };
+}, [socket, user, location.pathname]);
 
   // Socket: new notification
   useEffect(() => {
@@ -133,26 +163,18 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleMarkAllRead = async () => {
-    await api.put("/notifications/read-all");
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    setUnreadCount(0);
-  };
 
-  const handleClickNotification = async (n: Notification) => {
-    if (!n.isRead) {
-      await api.put(`/notifications/${n.id}/read`);
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-      setNotifications((prev) =>
-        prev.map((item) =>
-          item.id === n.id ? { ...item, isRead: true } : item,
-        ),
-      );
-    }
-    if (n.link) navigate(n.link);
-    setNotifOpen(false);
-  };
-
+useEffect(() => {
+  const path = location.pathname;
+  
+  if (path === "/app/conversation") {
+    Promise.resolve().then(() => setUnreadMessages(0));
+  }
+  
+  if (path === "/app/notifications") {
+    Promise.resolve().then(() => handleMarkAllRead());
+  }
+}, [location.pathname, handleMarkAllRead]);
   return (
     <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
       <div className="mx-auto max-w-7xl px-4">
@@ -203,7 +225,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                 variant="ghost"
                 size="icon"
                 className="relative"
-                onClick={() => setUnreadMessages(0)}
+               
               >
                 <MessageSquare className="h-5 w-5" />
                 {unreadMessages > 0 && (
@@ -231,7 +253,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
 
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white px-1">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </Button>

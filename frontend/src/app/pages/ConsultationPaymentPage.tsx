@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { ArrowLeft, Lock, CreditCard, Calendar, Clock } from "lucide-react";
@@ -41,47 +51,75 @@ function PaymentForm({
   const [paying, setPaying] = useState(false);
   const [cardError, setCardError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!stripe || !elements) return;
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) return;
+  const cardElement = elements.getElement(CardElement);
+  if (!cardElement) return;
 
-    try {
-      setPaying(true);
-      setCardError("");
+  try {
+    setPaying(true);
+    setCardError("");
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        { payment_method: { card: cardElement } }
-      );
+    const { error, paymentIntent } = await stripe.confirmCardPayment(
+      clientSecret,
+      { payment_method: { card: cardElement } }
+    );
 
-      if (error) {
-        setCardError(error.message || "Payment failed");
-        return;
-      }
-
-      if (paymentIntent?.status === "succeeded") {
-        await api.patch(`/consultations/${bookingId}/pay`, {
-          paymentIntentId: paymentIntent.id,
-        });
-
-        showToast({
-          type: "success",
-          title: "Payment Confirmed 🎉",
-          message: "Your session is now fully confirmed!",
-        });
-
-        onSuccess();
-      }
-    } catch {
-      setCardError("Something went wrong. Please try again.");
-    } finally {
-      setPaying(false);
+    if (error) {
+      setCardError(error.message || "Payment failed");
+      return;
     }
-  };
 
+    if (paymentIntent?.status === "succeeded") {
+      await pollBookingStatus();
+    }
+  } catch {
+    setCardError("Something went wrong. Please try again.");
+  } finally {
+    setPaying(false);
+  }
+};
+
+const pollBookingStatus = async () => {
+  const maxAttempts = 10;
+  let attempts = 0;
+  let cancelled = false;
+
+  const cleanup = () => { cancelled = true; };
+
+  while (attempts < maxAttempts && !cancelled) {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    if (cancelled) return; // ← check after await too
+
+    const { data } = await api.get("/consultations");
+    const updated = data.find((b: BookingDetail) => b.id === bookingId);
+
+    if (updated?.status === "ACCEPTED") {
+      showToast({
+        type: "success",
+        title: "Payment Confirmed 🎉",
+        message: "Your session is now fully confirmed!",
+      });
+      onSuccess();
+      return;
+    }
+
+    attempts++;
+  }
+
+  if (!cancelled) {
+    showToast({
+      type: "success",
+      title: "Payment Received",
+      message: "Your booking will be confirmed shortly.",
+    });
+    onSuccess();
+  }
+
+  return cleanup;
+};
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-50 rounded-xl p-4 space-y-2">
@@ -103,7 +141,11 @@ function PaymentForm({
           <CardElement
             options={{
               style: {
-                base: { fontSize: "16px", color: "#1f2937", "::placeholder": { color: "#9ca3af" } },
+                base: {
+                  fontSize: "16px",
+                  color: "#1f2937",
+                  "::placeholder": { color: "#9ca3af" },
+                },
               },
             }}
           />
@@ -116,7 +158,15 @@ function PaymentForm({
         disabled={paying || !stripe}
         className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
       >
-        {paying ? <><LoadingSpinner size="sm" /> Processing...</> : <><Lock className="size-4" /> Pay ${amount}</>}
+        {paying ? (
+          <>
+            <LoadingSpinner size="sm" /> Processing...
+          </>
+        ) : (
+          <>
+            <Lock className="size-4" /> Pay ${amount}
+          </>
+        )}
       </Button>
 
       <p className="text-xs text-center text-gray-400">
@@ -139,11 +189,14 @@ export default function ConsultationPaymentPage() {
   useEffect(() => {
     if (!bookingId) return;
 
-    // First fetch booking details, then create payment intent
-    api.get("/consultations")
+    api
+      .get("/consultations")
       .then(({ data }: { data: BookingDetail[] }) => {
-      const found = data.find((b) => b.id === bookingId);
-        if (!found) { setError("Booking not found"); return; }
+        const found = data.find((b) => b.id === bookingId);
+        if (!found) {
+          setError("Booking not found");
+          return;
+        }
         if (found.status !== "PENDING_PAYMENT") {
           setError("This booking is not awaiting payment.");
           return;
@@ -157,40 +210,64 @@ export default function ConsultationPaymentPage() {
           setAmount(res.data.amount);
         }
       })
-      .catch((err) => setError(err.response?.data?.message || "Could not load payment"))
+      .catch((err) =>
+        setError(err.response?.data?.message || "Could not load payment"),
+      )
       .finally(() => setLoading(false));
   }, [bookingId]);
 
-  if (loading) return <div className="flex justify-center h-64"><LoadingSpinner size="lg" /></div>;
+  if (loading)
+    return (
+      <div className="flex justify-center h-64">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
 
-  if (error) return (
-    <div className="max-w-md mx-auto text-center py-16">
-      <p className="text-red-600 mb-4">{error}</p>
-      <Button variant="outline" onClick={() => navigate(-1)}>Go Back</Button>
-    </div>
-  );
+  if (error)
+    return (
+      <div className="max-w-md mx-auto text-center py-16">
+        <p className="text-red-600 mb-4">{error}</p>
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          Go Back
+        </Button>
+      </div>
+    );
 
   return (
     <div className="max-w-lg mx-auto">
-      <Button variant="ghost" onClick={() => navigate(-1)} className="-ml-2 mb-6">
+      <Button
+        variant="ghost"
+        onClick={() => navigate(-1)}
+        className="-ml-2 mb-6"
+      >
         <ArrowLeft className="size-4 mr-2" /> Back
       </Button>
 
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Complete Payment</CardTitle>
-          <p className="text-gray-500 text-sm">Your slot was accepted — pay to lock it in</p>
+          <p className="text-gray-500 text-sm">
+            Your slot was accepted — pay to lock it in
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {booking && (
             <div className="bg-indigo-50 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex items-center gap-2 text-gray-700">
                 <Calendar className="size-4 text-indigo-600" />
-                <span>{format(new Date(booking.startDateTime), "EEEE, MMMM d, yyyy")}</span>
+                <span>
+                  {format(
+                    new Date(booking.startDateTime),
+                    "EEEE, MMMM d, yyyy",
+                  )}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-gray-700">
                 <Clock className="size-4 text-indigo-600" />
-                <span>{format(new Date(booking.startDateTime), "HH:mm")} · {booking.duration} min</span>
+                <span>
+                  {format(new Date(booking.startDateTime), "HH:mm")} ·{" "}
+                  {booking.duration} min
+                </span>
               </div>
             </div>
           )}

@@ -1,5 +1,6 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
 
+
 export async function createDocumentRiskScan(documents) {
   const docsWithText = documents.filter((d) => d.textExtract);
 
@@ -13,15 +14,21 @@ export async function createDocumentRiskScan(documents) {
   }
 
   const combinedText = docsWithText
-    .map((d) => `[Document: ${d.name}]\n${d.textExtract}`)
+    .map((d) => `[Document: ${d.name}]\n${d.textExtract.slice(0, 5000)}`)
     .join("\n\n---\n\n");
 
-  const CHUNK_LIMIT = 12000;
 
-  if (combinedText.length > CHUNK_LIMIT) {
+  const unique = (arr) => [...new Set(arr)];
+//reduce input size, add chunking, and avoid LLM token limit errors
+const MAX_TOKENS = 4000;
+const CHUNK_SIZE = 10000;
+
+const estimatedTokens = combinedText.length / 4;
+
+if (estimatedTokens > MAX_TOKENS) {
     const chunks = [];
-    for (let i = 0; i < combinedText.length; i += CHUNK_LIMIT) {
-      let chunk = combinedText.slice(i, i + CHUNK_LIMIT);
+    for (let i = 0; i < combinedText.length; i += CHUNK_SIZE) {
+      let chunk = combinedText.slice(i, i + CHUNK_SIZE);
       const lastBreak = chunk.lastIndexOf("\n");
       if (lastBreak > 0) chunk = chunk.slice(0, lastBreak);
       chunks.push(chunk);
@@ -30,7 +37,8 @@ export async function createDocumentRiskScan(documents) {
     const chunkResults = await Promise.all(
       chunks.map((chunk) =>
         callLlm(
-          `Analyse these startup documents for investment risks:\n\n${chunk}\n\nRespond ONLY with JSON: {"riskFlags":["..."],"highlights":["..."]}`,
+          
+          `Analyze these startup documents for investment risks:\n\n${chunk}\n\nRespond ONLY with JSON: {"riskFlags":["..."],"highlights":["..."]}`,
           "You are a VC due diligence analyst. Find risks and positive signals in startup documents. Respond only in valid JSON, no markdown.",
           400,
         )
@@ -40,30 +48,67 @@ export async function createDocumentRiskScan(documents) {
     );
 
     const merged = {
-      riskFlags: chunkResults.flatMap((r) => r.riskFlags || []).slice(0, 8),
-      highlights: chunkResults.flatMap((r) => r.highlights || []).slice(0, 6),
-      overallRiskLevel: "MEDIUM",
-      summary: `Analysis completed across ${docsWithText.length} document(s).`,
+
+      riskFlags: unique(
+        chunkResults.flatMap((r) => r.riskFlags || [])
+      ).slice(0, 8),
+      highlights: unique(
+        chunkResults.flatMap((r) => r.highlights || [])
+      ).slice(0, 6),
     };
 
-    // Recalculate risk level based on flag count
-    if (merged.riskFlags.length >= 5) merged.overallRiskLevel = "HIGH";
-    else if (merged.riskFlags.length <= 1) merged.overallRiskLevel = "LOW";
 
-    return merged;
+    if (merged.riskFlags.length === 0 && merged.highlights.length === 0) {
+      return {
+        riskFlags: ["No significant insights extracted"],
+        highlights: [],
+        overallRiskLevel: "LOW",
+        summary: "No meaningful data could be extracted from the documents.",
+      };
+    }
+
+
+    const synthRaw = await callLlm(
+      `You just analyzed ${docsWithText.length} startup documents in chunks.
+Here are the combined findings:
+
+Risk flags: ${merged.riskFlags.join("; ")}
+Highlights: ${merged.highlights.join("; ")}
+
+Now produce a final assessment. Respond ONLY with valid JSON:
+{
+  "overallRiskLevel": "LOW|MEDIUM|HIGH",
+  "summary": "2-3 sentence executive summary of all findings"
+}`,
+      "You are a VC due diligence analyst. Respond only in valid JSON, no markdown.",
+      200,
+    );
+
+    const synth = await parseJsonResponse(synthRaw).catch(() => ({
+      overallRiskLevel: "MEDIUM",
+      summary: `Analysis completed across ${docsWithText.length} document(s).`,
+    }));
+
+    return {
+      riskFlags: merged.riskFlags,
+      highlights: merged.highlights,
+      overallRiskLevel: synth.overallRiskLevel,
+      summary: synth.summary,
+    };
   }
 
-  // Single call for smaller documents
+  // Single-call path — document is small enough to process in one request
   const raw = await callLlm(
-    `Analyse these startup documents for investment due diligence:
 
-${combinedText.slice(0, 12000)}
+    `Analyze these startup documents for investment due diligence:
+
+${combinedText.slice(0, CHUNK_SIZE)}
 
 Respond ONLY with valid JSON in exactly this format:
 {
   "riskFlags": ["specific risk 1", "specific risk 2"],
   "highlights": ["positive finding 1", "positive finding 2"],
-  "overallRiskLevel": "LOW",
+  "overallRiskLevel": "LOW|MEDIUM|HIGH",
   "summary": "2-3 sentence executive summary of the documents"
 }`,
     "You are a VC due diligence analyst. Identify investment risks and positive signals. Respond only in valid JSON, no markdown.",
@@ -108,16 +153,20 @@ Respond ONLY with valid JSON:
   return parseJsonResponse(raw);
 }
 
+
 export async function createDealBrief(
   dataRoom,
   project,
   assessment,
   investorProfile,
-  riskScanContent,
+  riskScanContent
 ) {
+
+
   const raw = await callLlm(
     `Generate a structured investor deal brief for this startup.
 Use only the provided information. Do not invent facts.
+
 PROJECT INFO:
 Title: ${project.title}
 Tagline: ${project.tagline}
