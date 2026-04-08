@@ -51,75 +51,77 @@ function PaymentForm({
   const [paying, setPaying] = useState(false);
   const [cardError, setCardError] = useState("");
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!stripe || !elements) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!stripe || !elements) return;
 
-  const cardElement = elements.getElement(CardElement);
-  if (!cardElement) return;
+    const cardElement = elements.getElement(CardElement);
+    if (!cardElement) return;
 
-  try {
-    setPaying(true);
-    setCardError("");
+    try {
+      setPaying(true);
+      setCardError("");
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      { payment_method: { card: cardElement } }
-    );
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        { payment_method: { card: cardElement } },
+      );
 
-    if (error) {
-      setCardError(error.message || "Payment failed");
-      return;
+      if (error) {
+        setCardError(error.message || "Payment failed");
+        return;
+      }
+
+      if (paymentIntent?.status === "succeeded") {
+        await pollBookingStatus();
+      }
+    } catch {
+      setCardError("Something went wrong. Please try again.");
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const pollBookingStatus = async () => {
+    const maxAttempts = 10;
+    let attempts = 0;
+    let cancelled = false;
+
+    const cleanup = () => {
+      cancelled = true;
+    };
+
+    while (attempts < maxAttempts && !cancelled) {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (cancelled) return; // ← check after await too
+
+      const { data } = await api.get("/consultations");
+      const updated = data.find((b: BookingDetail) => b.id === bookingId);
+
+      if (updated?.status === "ACCEPTED") {
+        showToast({
+          type: "success",
+          title: "Payment Confirmed 🎉",
+          message: "Your session is now fully confirmed!",
+        });
+        onSuccess();
+        return;
+      }
+
+      attempts++;
     }
 
-    if (paymentIntent?.status === "succeeded") {
-      await pollBookingStatus();
-    }
-  } catch {
-    setCardError("Something went wrong. Please try again.");
-  } finally {
-    setPaying(false);
-  }
-};
-
-const pollBookingStatus = async () => {
-  const maxAttempts = 10;
-  let attempts = 0;
-  let cancelled = false;
-
-  const cleanup = () => { cancelled = true; };
-
-  while (attempts < maxAttempts && !cancelled) {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    if (cancelled) return; // ← check after await too
-
-    const { data } = await api.get("/consultations");
-    const updated = data.find((b: BookingDetail) => b.id === bookingId);
-
-    if (updated?.status === "ACCEPTED") {
+    if (!cancelled) {
       showToast({
         type: "success",
-        title: "Payment Confirmed 🎉",
-        message: "Your session is now fully confirmed!",
+        title: "Payment Received",
+        message: "Your booking will be confirmed shortly.",
       });
       onSuccess();
-      return;
     }
 
-    attempts++;
-  }
-
-  if (!cancelled) {
-    showToast({
-      type: "success",
-      title: "Payment Received",
-      message: "Your booking will be confirmed shortly.",
-    });
-    onSuccess();
-  }
-
-  return cleanup;
-};
+    return cleanup;
+  };
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-50 rounded-xl p-4 space-y-2">

@@ -59,15 +59,15 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
     logout();
     navigate("/login");
   };
-const handleMarkAllRead = useCallback(async () => {
-  try {
-    await api.put("/notifications/read-all");
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-    setUnreadCount(0);
-  } catch {
-    // silent fail
-  }
-}, []);
+  const handleMarkAllRead = useCallback(async () => {
+    try {
+      await api.put("/notifications/read-all");
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      setUnreadCount(0);
+    } catch {
+      // silent fail
+    }
+  }, []);
 
   const handleClickNotification = async (n: Notification) => {
     if (!n.isRead) {
@@ -119,25 +119,24 @@ const handleMarkAllRead = useCallback(async () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleNewMessage = (message: { id: string; senderId: string }) => {
+      if (lastMessageIdRef.current === message.id) return;
+      lastMessageIdRef.current = message.id;
 
-useEffect(() => {
-  if (!socket) return;
-  const handleNewMessage = (message: { id: string; senderId: string }) => {
-    if (lastMessageIdRef.current === message.id) return;
-    lastMessageIdRef.current = message.id;
-
-    if (
-      message.senderId !== user?.id &&
-      location.pathname !== "/app/conversation"
-    ) {
-      setUnreadMessages((prev) => prev + 1);
-    }
-  };
-  socket.on("new_message", handleNewMessage);
-  return () => {
-    socket.off("new_message", handleNewMessage);
-  };
-}, [socket, user, location.pathname]);
+      if (
+        message.senderId !== user?.id &&
+        location.pathname !== "/app/conversation"
+      ) {
+        setUnreadMessages((prev) => prev + 1);
+      }
+    };
+    socket.on("new_message", handleNewMessage);
+    return () => {
+      socket.off("new_message", handleNewMessage);
+    };
+  }, [socket, user, location.pathname]);
 
   // Socket: new notification
   useEffect(() => {
@@ -163,18 +162,17 @@ useEffect(() => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const path = location.pathname;
 
-useEffect(() => {
-  const path = location.pathname;
-  
-  if (path === "/app/conversation") {
-    Promise.resolve().then(() => setUnreadMessages(0));
-  }
-  
-  if (path === "/app/notifications") {
-    Promise.resolve().then(() => handleMarkAllRead());
-  }
-}, [location.pathname, handleMarkAllRead]);
+    if (path === "/app/conversation") {
+      Promise.resolve().then(() => setUnreadMessages(0));
+    }
+
+    if (path === "/app/notifications") {
+      Promise.resolve().then(() => handleMarkAllRead());
+    }
+  }, [location.pathname, handleMarkAllRead]);
   return (
     <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
       <div className="mx-auto max-w-7xl px-4">
@@ -221,12 +219,7 @@ useEffect(() => {
             </Link>
             {/* Messages */}
             <Link to="/app/conversation">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-               
-              >
+              <Button variant="ghost" size="icon" className="relative">
                 <MessageSquare className="h-5 w-5" />
                 {unreadMessages > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white px-1">

@@ -65,7 +65,6 @@ export const createPaymentIntent = async (req, res, next) => {
   }
 };
 
-
 // POST /api/webhooks/stripe
 // Stripe calls this directly signature verification
 export const stripeWebhook = async (req, res, next) => {
@@ -86,73 +85,85 @@ export const stripeWebhook = async (req, res, next) => {
 
   try {
     switch (event.type) {
-case "payment_intent.succeeded": {
-  const pi = event.data.object;
-  const { userId, eventId, bookingId, referenceType } = pi.metadata;
+      case "payment_intent.succeeded": {
+        const pi = event.data.object;
+        const { userId, eventId, bookingId, referenceType } = pi.metadata;
 
-  const existing = await prisma.payment.findUnique({
-    where: { stripePaymentIntentId: pi.id },
-  });
-  if (existing) break;
+        const existing = await prisma.payment.findUnique({
+          where: { stripePaymentIntentId: pi.id },
+        });
+        if (existing) break;
 
-  if (referenceType === "EVENT") {
-    await prisma.$transaction([
-      prisma.payment.create({
-        data: {
-          userId, referenceType, referenceId: eventId,
-          amount: pi.amount / 100, currency: pi.currency,
-          status: "SUCCEEDED", stripePaymentIntentId: pi.id,
-        },
-      }),
-      prisma.eventRegistration.upsert({
-        where: { eventId_userId: { eventId, userId } },
-        update: {},
-        create: { eventId, userId },
-      }),
-    ]);
+        if (referenceType === "EVENT") {
+          await prisma.$transaction([
+            prisma.payment.create({
+              data: {
+                userId,
+                referenceType,
+                referenceId: eventId,
+                amount: pi.amount / 100,
+                currency: pi.currency,
+                status: "SUCCEEDED",
+                stripePaymentIntentId: pi.id,
+              },
+            }),
+            prisma.eventRegistration.upsert({
+              where: { eventId_userId: { eventId, userId } },
+              update: {},
+              create: { eventId, userId },
+            }),
+          ]);
 
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
-    await createNotification({
-      userId,
-      type: "EVENT",
-      title: "Registration Confirmed",
-      body: `You're registered for "${event?.title}".`,
-      link: `/app/events/${eventId}`,
-    });
+          const event = await prisma.event.findUnique({
+            where: { id: eventId },
+          });
+          await createNotification({
+            userId,
+            type: "EVENT",
+            title: "Registration Confirmed",
+            body: `You're registered for "${event?.title}".`,
+            link: `/app/events/${eventId}`,
+          });
+        } else if (referenceType === "CONSULTATION") {
+          const booking = await prisma.booking.findUnique({
+            where: { id: bookingId },
+          });
+          if (!booking || booking.status === "ACCEPTED") break;
 
-  } else if (referenceType === "CONSULTATION") {
-    const booking = await prisma.booking.findUnique({ where: { id: bookingId } });
-    if (!booking || booking.status === "ACCEPTED") break;
+          await prisma.$transaction([
+            prisma.payment.create({
+              data: {
+                userId,
+                referenceType,
+                referenceId: bookingId,
+                amount: pi.amount / 100,
+                currency: pi.currency,
+                status: "SUCCEEDED",
+                stripePaymentIntentId: pi.id,
+              },
+            }),
+            prisma.booking.update({
+              where: { id: bookingId },
+              data: {
+                status: "ACCEPTED",
+                meetingLink:
+                  booking.meetingType === "VIDEO"
+                    ? `https://meet.jit.si/startup-consult-${bookingId}`
+                    : null,
+              },
+            }),
+          ]);
 
-    await prisma.$transaction([
-      prisma.payment.create({
-        data: {
-          userId, referenceType, referenceId: bookingId,
-          amount: pi.amount / 100, currency: pi.currency,
-          status: "SUCCEEDED", stripePaymentIntentId: pi.id,
-        },
-      }),
-      prisma.booking.update({
-        where: { id: bookingId },
-        data: {
-          status: "ACCEPTED",
-          meetingLink: booking.meetingType === "VIDEO"
-            ? `https://meet.jit.si/startup-consult-${bookingId}`
-            : null,
-        },
-      }),
-    ]);
-
-    await createNotification({
-      userId: booking.expertId,
-      type: "BOOKING",
-      title: "Payment Received ✅",
-      body: "Payment confirmed. The session is now locked in.",
-      link: "/app/expert/reservations",
-    });
-  }
-  break;
-}
+          await createNotification({
+            userId: booking.expertId,
+            type: "BOOKING",
+            title: "Payment Received ✅",
+            body: "Payment confirmed. The session is now locked in.",
+            link: "/app/expert/reservations",
+          });
+        }
+        break;
+      }
 
       case "payment_intent.payment_failed": {
         const pi = event.data.object;

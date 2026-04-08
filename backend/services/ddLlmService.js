@@ -1,6 +1,5 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
 
-
 export async function createDocumentRiskScan(documents) {
   const docsWithText = documents.filter((d) => d.textExtract);
 
@@ -17,15 +16,14 @@ export async function createDocumentRiskScan(documents) {
     .map((d) => `[Document: ${d.name}]\n${d.textExtract.slice(0, 5000)}`)
     .join("\n\n---\n\n");
 
-
   const unique = (arr) => [...new Set(arr)];
-//reduce input size, add chunking, and avoid LLM token limit errors
-const MAX_TOKENS = 4000;
-const CHUNK_SIZE = 10000;
+  //reduce input size, add chunking, and avoid LLM token limit errors
+  const MAX_TOKENS = 4000;
+  const CHUNK_SIZE = 10000;
 
-const estimatedTokens = combinedText.length / 4;
+  const estimatedTokens = combinedText.length / 4;
 
-if (estimatedTokens > MAX_TOKENS) {
+  if (estimatedTokens > MAX_TOKENS) {
     const chunks = [];
     for (let i = 0; i < combinedText.length; i += CHUNK_SIZE) {
       let chunk = combinedText.slice(i, i + CHUNK_SIZE);
@@ -37,7 +35,6 @@ if (estimatedTokens > MAX_TOKENS) {
     const chunkResults = await Promise.all(
       chunks.map((chunk) =>
         callLlm(
-          
           `Analyze these startup documents for investment risks:\n\n${chunk}\n\nRespond ONLY with JSON: {"riskFlags":["..."],"highlights":["..."]}`,
           "You are a VC due diligence analyst. Find risks and positive signals in startup documents. Respond only in valid JSON, no markdown.",
           400,
@@ -48,15 +45,15 @@ if (estimatedTokens > MAX_TOKENS) {
     );
 
     const merged = {
-
-      riskFlags: unique(
-        chunkResults.flatMap((r) => r.riskFlags || [])
-      ).slice(0, 8),
-      highlights: unique(
-        chunkResults.flatMap((r) => r.highlights || [])
-      ).slice(0, 6),
+      riskFlags: unique(chunkResults.flatMap((r) => r.riskFlags || [])).slice(
+        0,
+        8,
+      ),
+      highlights: unique(chunkResults.flatMap((r) => r.highlights || [])).slice(
+        0,
+        6,
+      ),
     };
-
 
     if (merged.riskFlags.length === 0 && merged.highlights.length === 0) {
       return {
@@ -66,7 +63,6 @@ if (estimatedTokens > MAX_TOKENS) {
         summary: "No meaningful data could be extracted from the documents.",
       };
     }
-
 
     const synthRaw = await callLlm(
       `You just analyzed ${docsWithText.length} startup documents in chunks.
@@ -99,7 +95,6 @@ Now produce a final assessment. Respond ONLY with valid JSON:
 
   // Single-call path — document is small enough to process in one request
   const raw = await callLlm(
-
     `Analyze these startup documents for investment due diligence:
 
 ${combinedText.slice(0, CHUNK_SIZE)}
@@ -153,16 +148,13 @@ Respond ONLY with valid JSON:
   return parseJsonResponse(raw);
 }
 
-
 export async function createDealBrief(
   dataRoom,
   project,
   assessment,
   investorProfile,
-  riskScanContent
+  riskScanContent,
 ) {
-
-
   const raw = await callLlm(
     `Generate a structured investor deal brief for this startup.
 Use only the provided information. Do not invent facts.
