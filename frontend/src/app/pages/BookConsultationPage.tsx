@@ -13,7 +13,7 @@ import { Calendar } from "../components/ui/calendar";
 import { Skeleton } from "../components/ui/skeleton";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-
+import { AxiosError } from "axios";
 import {
   Calendar as CalendarIcon,
   Clock,
@@ -197,7 +197,15 @@ export function BookConsultationPage() {
       const [hour, minute] = selectedSlot.split(":").map(Number);
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(hour, minute, 0, 0);
-
+console.log("Booking payload:", {
+  expertId: expert.id,
+  date: selectedDate.toISOString(),
+  timeSlot: selectedSlot,
+  startDateTimeISO: startDateTime.toISOString(),
+  duration,
+  dayOfWeek: selectedDate.getDay(),
+  startDateTime_local: startDateTime.toString(),
+});
       await api.post("/consultations/request", {
         expertId: expert.id,
         date: selectedDate.toISOString(),
@@ -228,14 +236,17 @@ export function BookConsultationPage() {
         message:
           "The expert will review your request. You'll be notified to complete payment once accepted.",
       });
-    } catch (error) {
-      showToast({
-        type: "error",
-        title: "Booking Failed",
-        message: "Something went wrong. Please try again.",
-      });
-      console.error(error);
-    } finally {
+} catch (error) {
+  const errorMessage = error instanceof AxiosError
+    ? error.response?.data?.message ?? "Something went wrong. Please try again."
+    : "Something went wrong. Please try again.";
+  showToast({
+    type: "error",
+    title: "Booking Failed",
+    message: errorMessage,
+  });
+  console.error("Booking error:", error instanceof AxiosError ? error.response?.data : error);
+}finally {
       setBooking(false);
     }
   };
