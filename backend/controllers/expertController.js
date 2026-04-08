@@ -35,7 +35,7 @@ export const getPublicExpertProfile = async (req, res, next) => {
       computedStatus = "UNAVAILABLE";
     } else {
       const today = new Date();
-      const todayDay = today.getDay();
+      const todayDay = today.getUTCDay();
 
       const todayAvailability = expert.profile.weeklyAvailability.find(
         (slot) => slot.day === todayDay && slot.enabled,

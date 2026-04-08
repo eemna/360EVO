@@ -30,17 +30,17 @@ export const protect = async (req, res, next) => {
     });
 
     console.log("Found user:", user);
-if (!user) {
-  return res.status(401).json({ message: "User not found" });
-}
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
 
-if (!user.isVerified) {
-  return res.status(403).json({ message: "Email not verified" });
-}
+    if (!user.isVerified) {
+      return res.status(403).json({ message: "Email not verified" });
+    }
 
-if (user.isSuspended) {
-  return res.status(403).json({ message: "Account suspended" });
-}
+    if (user.isSuspended) {
+      return res.status(403).json({ message: "Account suspended" });
+    }
     req.user = user;
     next();
   } catch (error) {

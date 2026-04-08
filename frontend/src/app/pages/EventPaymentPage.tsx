@@ -62,33 +62,33 @@ function CheckoutForm({
         return;
       }
 
-if (paymentIntent?.status === "succeeded") {
-  let attempts = 0;
-  while (attempts < 10) {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    try {
-      const { data } = await api.get(`/events/${eventId}`);
-      if (data.isRegistered) {
+      if (paymentIntent?.status === "succeeded") {
+        let attempts = 0;
+        while (attempts < 10) {
+          await new Promise((resolve) => setTimeout(resolve, 1500));
+          try {
+            const { data } = await api.get(`/events/${eventId}`);
+            if (data.isRegistered) {
+              showToast({
+                type: "success",
+                title: "Payment successful! 🎉",
+                message: `You're registered for "${eventTitle}"`,
+              });
+              onSuccess();
+              return;
+            }
+          } catch {
+            // continue polling
+          }
+          attempts++;
+        }
         showToast({
           type: "success",
-          title: "Payment successful! 🎉",
-          message: `You're registered for "${eventTitle}"`,
+          title: "Payment Received",
+          message: "Your registration will be confirmed shortly.",
         });
         onSuccess();
-        return;
       }
-    } catch {
-      // continue polling
-    }
-    attempts++;
-  }
-  showToast({
-    type: "success",
-    title: "Payment Received",
-    message: "Your registration will be confirmed shortly.",
-  });
-  onSuccess();
-}
     } catch {
       setCardError("Something went wrong. Please try again.");
     } finally {

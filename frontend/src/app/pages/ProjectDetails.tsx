@@ -515,7 +515,7 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-                        {/* Roadmap */}
+            {/* Roadmap */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -566,7 +566,6 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-
           </div>
 
           {/* Right Column */}
@@ -650,7 +649,6 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-
 
             {/* PROJECT UPDATES CARD */}
             <Card>
@@ -814,9 +812,9 @@ export default function ProjectDetailsPage() {
           isAdmin={isAdmin}
         />
       </div>
-                  {user?.id === project.ownerId && (
-              <ProjectAnalyticsDashboard projectId={project.id} />
-            )}
+      {user?.id === project.ownerId && (
+        <ProjectAnalyticsDashboard projectId={project.id} />
+      )}
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>
           <Button onClick={() => setDdModalOpen(true)}>

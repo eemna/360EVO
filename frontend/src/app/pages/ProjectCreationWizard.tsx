@@ -578,40 +578,40 @@ export function ProjectCreationWizard({
     }
   }, [isOpen, externalProjectId, reset]);
 
-useEffect(() => {
-  if (!isOpen) return;
-  if (isSubmitting) return;
+  useEffect(() => {
+    if (!isOpen) return;
+    if (isSubmitting) return;
 
-  const subscription = watch(() => {
-    if (!currentProjectId) return;
+    const subscription = watch(() => {
+      if (!currentProjectId) return;
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-
-    timeoutRef.current = setTimeout(async () => {
-      if (isSubmitting) return;
-
-      try {
-        const values = getValues(); // ✅ moved here
-
-        setSaveStatus("saving");
-        await api.put(`/projects/${currentProjectId}`, mapFormToApi(values));
-        setSaveStatus("saved");
-      } catch (error) {
-        console.error(error);
-        setSaveStatus("error");
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
       }
-    }, 60000);
-  });
 
-  return () => {
-    subscription.unsubscribe();
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-  };
-}, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
+      timeoutRef.current = setTimeout(async () => {
+        if (isSubmitting) return;
+
+        try {
+          const values = getValues(); // ✅ moved here
+
+          setSaveStatus("saving");
+          await api.put(`/projects/${currentProjectId}`, mapFormToApi(values));
+          setSaveStatus("saved");
+        } catch (error) {
+          console.error(error);
+          setSaveStatus("error");
+        }
+      }, 60000);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
   if (!isOpen) return null;
 
   return (

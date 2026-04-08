@@ -61,7 +61,6 @@ export const createBooking = async (req, res, next) => {
     if (!expert.profile?.hourlyRate) {
       return res.status(400).json({ message: "Expert has no hourly rate set" });
     }
-
     // Build start datetime
     const startDateTime = startDateTimeISO
       ? new Date(startDateTimeISO)
@@ -110,10 +109,10 @@ export const createBooking = async (req, res, next) => {
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
     const availableStart = new Date(startDateTime);
-    availableStart.setHours(startHour, startMinute, 0, 0);
+    availableStart.setUTCHours(startHour, startMinute, 0, 0);
 
     const availableEnd = new Date(startDateTime);
-    availableEnd.setHours(endHour, endMinute, 0, 0);
+    availableEnd.setUTCHours(endHour, endMinute, 0, 0);
 
     if (startDateTime < availableStart || endDateTime > availableEnd) {
       return res.status(400).json({
@@ -159,16 +158,16 @@ export const createBooking = async (req, res, next) => {
         status: "PENDING",
       },
     });
-const settings = await getNotifSettings(expertId);
-if (settings.emailOnBooking) {
-  await createNotification({
-    userId: expertId,
-    type: "BOOKING",
-    title: "New Booking Request",
-    body: `New consultation request: ${topic || "General topic"}`,
-    link: "/app/expert/reservations",
-  });
-}
+    const settings = await getNotifSettings(expertId);
+    if (settings.emailOnBooking) {
+      await createNotification({
+        userId: expertId,
+        type: "BOOKING",
+        title: "New Booking Request",
+        body: `New consultation request: ${topic || "General topic"}`,
+        link: "/app/expert/reservations",
+      });
+    }
     res.status(201).json(booking);
   } catch (error) {
     console.error("Booking error response:", error.response?.data);
@@ -186,7 +185,8 @@ export const createConsultationPaymentIntent = async (req, res, next) => {
     });
 
     if (!booking) return res.status(404).json({ message: "Booking not found" });
-    if (booking.memberId !== userId) return res.status(403).json({ message: "Unauthorized" });
+    if (booking.memberId !== userId)
+      return res.status(403).json({ message: "Unauthorized" });
     if (booking.status !== "PENDING_PAYMENT") {
       return res.status(400).json({ message: "Booking not awaiting payment" });
     }
@@ -210,7 +210,6 @@ export const createConsultationPaymentIntent = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const cancelUnpaidBooking = async (req, res, next) => {
   try {
@@ -265,7 +264,8 @@ export const acceptBooking = async (req, res, next) => {
     });
 
     if (!booking) return res.status(404).json({ message: "Booking not found" });
-    if (booking.expertId !== req.user.id) return res.status(403).json({ message: "Unauthorized" });
+    if (booking.expertId !== req.user.id)
+      return res.status(403).json({ message: "Unauthorized" });
     if (booking.status !== "PENDING") {
       return res.status(400).json({ message: "Booking is not pending" });
     }
