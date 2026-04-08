@@ -176,17 +176,18 @@ export default function ProjectDetailsPage() {
     };
     fetchUpdates();
   }, [id]);
-useEffect(() => {
-  if (user?.role !== "INVESTOR" || !id) return;
-  api.get("/ai/matches/feed")
-    .then(({ data }) => {
-      const match = data.find((m: { project: { id: string }; id: string }) => 
-        m.project.id === id
-      );
-      if (match) setMatchId(match.id);
-    })
-    .catch(() => {});
-}, [id, user?.role]);
+  useEffect(() => {
+    if (user?.role !== "INVESTOR" || !id) return;
+    api
+      .get("/ai/matches/feed")
+      .then(({ data }) => {
+        const match = data.find(
+          (m: { project: { id: string }; id: string }) => m.project.id === id,
+        );
+        if (match) setMatchId(match.id);
+      })
+      .catch(() => {});
+  }, [id, user?.role]);
   const handlePostUpdate = async () => {
     if (!postContent.trim()) return;
     try {
@@ -514,9 +515,58 @@ useEffect(() => {
                 </div>
               </CardContent>
             </Card>
-            {user?.id === project.ownerId && (
-              <ProjectAnalyticsDashboard projectId={project.id} />
-            )}
+                        {/* Roadmap */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="size-5" />
+                  Roadmap & Milestones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="relative">
+                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
+                  <div className="space-y-6">
+                    {project.milestones?.map((milestone, index) => (
+                      <div key={index} className="relative flex gap-4">
+                        <div
+                          className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${milestone.completedAt ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}
+                        >
+                          <Calendar className="size-5" />
+                        </div>
+                        <div className="flex-1 pb-6">
+                          <div className="flex flex-wrap items-center gap-3 mb-1">
+                            <h4 className="font-medium text-gray-900">
+                              {milestone.title}
+                            </h4>
+                            {milestone.completedAt && (
+                              <Badge
+                                variant="outline"
+                                className="bg-green-50 text-green-700 border-green-200"
+                              >
+                                Completed
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 mb-2">
+                            Target:{" "}
+                            {milestone.targetDate
+                              ? formatDate(milestone.targetDate)
+                              : "No date"}
+                            {milestone.completedAt &&
+                              ` • Completed: ${formatDate(milestone.completedAt)}`}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {milestone.description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
           </div>
 
           {/* Right Column */}
@@ -601,57 +651,7 @@ useEffect(() => {
               </CardContent>
             </Card>
 
-            {/* Roadmap */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="size-5" />
-                  Roadmap & Milestones
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-                  <div className="space-y-6">
-                    {project.milestones?.map((milestone, index) => (
-                      <div key={index} className="relative flex gap-4">
-                        <div
-                          className={`relative z-10 size-12 rounded-full flex items-center justify-center flex-shrink-0 ${milestone.completedAt ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}
-                        >
-                          <Calendar className="size-5" />
-                        </div>
-                        <div className="flex-1 pb-6">
-                          <div className="flex flex-wrap items-center gap-3 mb-1">
-                            <h4 className="font-medium text-gray-900">
-                              {milestone.title}
-                            </h4>
-                            {milestone.completedAt && (
-                              <Badge
-                                variant="outline"
-                                className="bg-green-50 text-green-700 border-green-200"
-                              >
-                                Completed
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-500 mb-2">
-                            Target:{" "}
-                            {milestone.targetDate
-                              ? formatDate(milestone.targetDate)
-                              : "No date"}
-                            {milestone.completedAt &&
-                              ` • Completed: ${formatDate(milestone.completedAt)}`}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {milestone.description}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
             {/* PROJECT UPDATES CARD */}
             <Card>
               <CardHeader>
@@ -814,6 +814,9 @@ useEffect(() => {
           isAdmin={isAdmin}
         />
       </div>
+                  {user?.id === project.ownerId && (
+              <ProjectAnalyticsDashboard projectId={project.id} />
+            )}
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>
           <Button onClick={() => setDdModalOpen(true)}>

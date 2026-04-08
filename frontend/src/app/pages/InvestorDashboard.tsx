@@ -309,38 +309,43 @@ export default function InvestorDashboard() {
     fetch();
   }, []);
 
-const handleGenerate = async () => {
-  try {
-    setGenerating(true);
-    await api.post("/ai/matches/generate");
+  const handleGenerate = async () => {
+    try {
+      setGenerating(true);
+      await api.post("/ai/matches/generate");
 
-    const { data: initial } = await api.get("/ai/matches/feed");
-    setMatches(initial);
+      const { data: initial } = await api.get("/ai/matches/feed");
+      setMatches(initial);
 
-    let attempts = 0;
-    const poll = setInterval(async () => {
-      attempts++;
-      const { data: fresh } = await api.get("/ai/matches/feed");
-      setMatches(fresh);
+      let attempts = 0;
+      const poll = setInterval(async () => {
+        attempts++;
+        const { data: fresh } = await api.get("/ai/matches/feed");
+        setMatches(fresh);
 
-      const hasThesis = fresh.some((m: Match) => m.thesisAlignmentSummary);
-      if (hasThesis || attempts >= 8) {
-        clearInterval(poll);
-        setGenerating(false);
-        showToast({
-          type: "success",
-          title: hasThesis ? "Matches ready with AI summaries" : "Matches generated",
-          message: hasThesis ? "Thesis alignment complete." : "AI summaries will appear shortly.",
-        });
-      }
-    }, 4000);
-
-  } catch (err: unknown) {
-    const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Generation failed";
-    showToast({ type: "error", title: "Error", message: msg });
-    setGenerating(false);
-  }
-};
+        const hasThesis = fresh.some((m: Match) => m.thesisAlignmentSummary);
+        if (hasThesis || attempts >= 8) {
+          clearInterval(poll);
+          setGenerating(false);
+          showToast({
+            type: "success",
+            title: hasThesis
+              ? "Matches ready with AI summaries"
+              : "Matches generated",
+            message: hasThesis
+              ? "Thesis alignment complete."
+              : "AI summaries will appear shortly.",
+          });
+        }
+      }, 4000);
+    } catch (err: unknown) {
+      const msg =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message ?? "Generation failed";
+      showToast({ type: "error", title: "Error", message: msg });
+      setGenerating(false);
+    }
+  };
 
   // Derived stats
   const activeMatches = matches.filter((m) => m.status !== "DISMISSED");
@@ -539,9 +544,13 @@ const handleGenerate = async () => {
                       key={m.id}
                       match={m}
                       onClick={() => {
-                          if (m.status === "SUGGESTED") {
-                          api.put(`/ai/matches/${m.id}/status`, { status: "VIEWED" }).catch(() => {});
-                            }
+                        if (m.status === "SUGGESTED") {
+                          api
+                            .put(`/ai/matches/${m.id}/status`, {
+                              status: "VIEWED",
+                            })
+                            .catch(() => {});
+                        }
                         navigate(
                           `/app/startup/projects/${m.project.id}?source=match_feed`,
                         );

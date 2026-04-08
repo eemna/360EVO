@@ -138,13 +138,13 @@ export const router = createBrowserRouter([
         ),
       },
       {
-  path: "consultations/:bookingId/pay",
-  element: (
-    <RoleRoute allowedRoles={["MEMBER", "STARTUP", "ADMIN", "INVESTOR"]}>
-      <ConsultationPaymentPage />
-    </RoleRoute>
-  ),
-},
+        path: "consultations/:bookingId/pay",
+        element: (
+          <RoleRoute allowedRoles={["MEMBER", "STARTUP", "ADMIN", "INVESTOR"]}>
+            <ConsultationPaymentPage />
+          </RoleRoute>
+        ),
+      },
       {
         path: "projects",
         element: <ProjectGallery />,

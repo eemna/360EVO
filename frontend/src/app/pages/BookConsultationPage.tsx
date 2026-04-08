@@ -180,65 +180,65 @@ export function BookConsultationPage() {
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-const handleConfirmBooking = async () => {
-  if (!selectedDate || !selectedSlot || !expert) return;
+  const handleConfirmBooking = async () => {
+    if (!selectedDate || !selectedSlot || !expert) return;
 
-  try {
-    if (meetingType === "IN_PERSON" && !location.trim()) {
+    try {
+      if (meetingType === "IN_PERSON" && !location.trim()) {
+        showToast({
+          type: "error",
+          title: "Location required",
+          message: "Please enter meeting location",
+        });
+        return;
+      }
+
+      setBooking(true);
+      const [hour, minute] = selectedSlot.split(":").map(Number);
+      const startDateTime = new Date(selectedDate);
+      startDateTime.setHours(hour, minute, 0, 0);
+
+      await api.post("/consultations/request", {
+        expertId: expert.id,
+        date: selectedDate.toISOString(),
+        timeSlot: selectedSlot,
+        startDateTimeISO: startDateTime.toISOString(),
+        duration,
+        message,
+        topic,
+        meetingType,
+        location: meetingType === "IN_PERSON" ? location : null,
+        dayOfWeek: selectedDate.getDay(),
+      });
+
+      const { data: updatedBookings } = await api.get("/consultations");
+      setBookings(
+        updatedBookings.filter((b: Booking) => b.expertId === expert.id),
+      );
+
+      setSelectedSlot(null);
+      setSelectedDate(undefined);
+      setTopic("");
+      setMessage("");
+      setLocation("");
+
+      showToast({
+        type: "success",
+        title: "Booking Request Sent!",
+        message:
+          "The expert will review your request. You'll be notified to complete payment once accepted.",
+      });
+    } catch (error) {
       showToast({
         type: "error",
-        title: "Location required",
-        message: "Please enter meeting location",
+        title: "Booking Failed",
+        message: "Something went wrong. Please try again.",
       });
-      return;
+      console.error(error);
+    } finally {
+      setBooking(false);
     }
-
-    setBooking(true);
-    const [hour, minute] = selectedSlot.split(":").map(Number);
-    const startDateTime = new Date(selectedDate);
-    startDateTime.setHours(hour, minute, 0, 0);
-
-    await api.post("/consultations/request", {
-      expertId: expert.id,
-      date: selectedDate.toISOString(),
-      timeSlot: selectedSlot,
-      startDateTimeISO: startDateTime.toISOString(),
-      duration,
-      message,
-      topic,
-      meetingType,
-      location: meetingType === "IN_PERSON" ? location : null,
-      dayOfWeek: selectedDate.getDay(),
-    });
-
-    const { data: updatedBookings } = await api.get("/consultations");
-    setBookings(
-      updatedBookings.filter((b: Booking) => b.expertId === expert.id),
-    );
-
-    setSelectedSlot(null);
-    setSelectedDate(undefined);
-    setTopic("");
-    setMessage("");
-    setLocation("");
-
-    showToast({
-      type: "success",
-      title: "Booking Request Sent!",
-      message: "The expert will review your request. You'll be notified to complete payment once accepted.",
-    });
-
-  } catch (error) {
-    showToast({
-      type: "error",
-      title: "Booking Failed",
-      message: "Something went wrong. Please try again.",
-    });
-    console.error(error);
-  } finally {
-    setBooking(false);
-  }
-};
+  };
 
   const getInitials = (name: string) =>
     name
@@ -655,7 +655,6 @@ const handleConfirmBooking = async () => {
           )}
         </div>
       </div>
-
     </div>
   );
 }

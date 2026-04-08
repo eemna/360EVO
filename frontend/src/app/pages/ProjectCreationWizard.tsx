@@ -578,41 +578,40 @@ export function ProjectCreationWizard({
     }
   }, [isOpen, externalProjectId, reset]);
 
-  useEffect(() => {
-    if (!isOpen) return;
+useEffect(() => {
+  if (!isOpen) return;
+  if (isSubmitting) return;
+
+  const subscription = watch(() => {
     if (!currentProjectId) return;
-    if (isSubmitting) return;
 
-    const subscription = watch(() => {
-      const values = getValues();
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(async () => {
+      if (isSubmitting) return;
+
+      try {
+        const values = getValues(); // ✅ moved here
+
+        setSaveStatus("saving");
+        await api.put(`/projects/${currentProjectId}`, mapFormToApi(values));
+        setSaveStatus("saved");
+      } catch (error) {
+        console.error(error);
+        setSaveStatus("error");
       }
+    }, 60000);
+  });
 
-      timeoutRef.current = setTimeout(async () => {
-        if (isSubmitting) return;
-
-        try {
-          setSaveStatus("saving");
-
-          await api.put(`/projects/${currentProjectId}`, mapFormToApi(values));
-
-          setSaveStatus("saved");
-        } catch (error) {
-          console.error(error);
-          setSaveStatus("error");
-        }
-      }, 60000);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
+  return () => {
+    subscription.unsubscribe();
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+}, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
   if (!isOpen) return null;
 
   return (

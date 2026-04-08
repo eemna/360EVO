@@ -70,7 +70,7 @@ export default function AIAssessmentSection({
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isInvestor = user?.role === "INVESTOR";
-
+  const isStartup = user?.role === "STARTUP";
   const stopPolling = () => {
     if (pollingRef.current) {
       clearInterval(pollingRef.current);
@@ -292,7 +292,7 @@ export default function AIAssessmentSection({
       </Card>
 
       {/* Recommendations */}
-      {assessment.recommendations.length > 0 && (
+      {isStartup && assessment.recommendations.length > 0 && (
         <Card className="border border-gray-200">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">

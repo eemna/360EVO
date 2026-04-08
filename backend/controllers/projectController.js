@@ -163,17 +163,17 @@ export const updateProject = async (req, res, next) => {
         documents: true,
       },
     });
-await prisma.llmInsight.deleteMany({
-  where: {
-    projectId: id,
-    type: "THESIS_ALIGNMENT",
-  },
-});
+    await prisma.llmInsight.deleteMany({
+      where: {
+        projectId: id,
+        type: "THESIS_ALIGNMENT",
+      },
+    });
 
-await prisma.match.updateMany({
-  where: { projectId: id },
-  data: { thesisAlignmentSummary: null },
-});
+    await prisma.match.updateMany({
+      where: { projectId: id },
+      data: { thesisAlignmentSummary: null },
+    });
     res.json(updatedProject);
   } catch (error) {
     next(error);

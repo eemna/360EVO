@@ -48,12 +48,20 @@ export const generateMatches = async (req, res, next) => {
       where: { userId: investorId },
     });
     if (!investorProfile) {
-      return res.status(400).json({ message: "Please complete your investor profile first" });
+      return res
+        .status(400)
+        .json({ message: "Please complete your investor profile first" });
     }
 
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
-      include: { teamMembers: true, milestones: true, documents: true, updates: true, aiAssessment: true },
+      include: {
+        teamMembers: true,
+        milestones: true,
+        documents: true,
+        updates: true,
+        aiAssessment: true,
+      },
     });
     if (projects.length === 0) {
       return res.json({ message: "No approved projects found", matches: [] });
@@ -61,18 +69,45 @@ export const generateMatches = async (req, res, next) => {
 
     const matchResults = [];
     for (const project of projects) {
-      const { matchScore, categoryScores, reasoning } = await calculateMatchScore(
-        investorProfile, project, project.aiAssessment,
-      );
-      matchResults.push({ investorId, projectId: project.id, matchScore, categoryScores, reasoning, project });
+      const { matchScore, categoryScores, reasoning } =
+        await calculateMatchScore(
+          investorProfile,
+          project,
+          project.aiAssessment,
+        );
+      matchResults.push({
+        investorId,
+        projectId: project.id,
+        matchScore,
+        categoryScores,
+        reasoning,
+        project,
+      });
     }
 
     await Promise.all(
       matchResults.map(({ project: _p, ...match }) =>
         prisma.match.upsert({
-          where: { investorId_projectId: { investorId: match.investorId, projectId: match.projectId } },
-          update: { matchScore: match.matchScore, categoryScores: match.categoryScores, reasoning: match.reasoning, status: "SUGGESTED" },
-          create: { investorId: match.investorId, projectId: match.projectId, matchScore: match.matchScore, categoryScores: match.categoryScores, reasoning: match.reasoning, status: "SUGGESTED" },
+          where: {
+            investorId_projectId: {
+              investorId: match.investorId,
+              projectId: match.projectId,
+            },
+          },
+          update: {
+            matchScore: match.matchScore,
+            categoryScores: match.categoryScores,
+            reasoning: match.reasoning,
+            status: "SUGGESTED",
+          },
+          create: {
+            investorId: match.investorId,
+            projectId: match.projectId,
+            matchScore: match.matchScore,
+            categoryScores: match.categoryScores,
+            reasoning: match.reasoning,
+            status: "SUGGESTED",
+          },
         }),
       ),
     );
@@ -84,34 +119,64 @@ export const generateMatches = async (req, res, next) => {
 
     const sorted = matchResults.sort((a, b) => b.matchScore - a.matchScore);
 
-    res.json({ message: `Generated ${matchResults.length} matches`, matches: sorted });
+    res.json({
+      message: `Generated ${matchResults.length} matches`,
+      matches: sorted,
+    });
 
     setImmediate(async () => {
       const top10 = sorted.slice(0, 10);
-      console.log(`[Matches] Enqueueing thesis alignment for top ${top10.length} matches...`);
+      console.log(
+        `[Matches] Enqueueing thesis alignment for top ${top10.length} matches...`,
+      );
 
       for (const match of top10) {
         try {
           const inputHash = crypto
             .createHash("sha256")
-            .update((investorProfile.investmentThesis || "") + (match.project.fullDesc || ""))
+            .update(
+              (investorProfile.investmentThesis || "") +
+                (match.project.fullDesc || ""),
+            )
             .digest("hex");
 
           const cached = await prisma.llmInsight.findUnique({
-            where: { investorId_projectId_type: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT" } },
+            where: {
+              investorId_projectId_type: {
+                investorId,
+                projectId: match.projectId,
+                type: "THESIS_ALIGNMENT",
+              },
+            },
           });
           if (cached && cached.inputHash === inputHash) {
             console.log(`[Matches] Cached for ${match.projectId}, skipping`);
             continue;
           }
 
-          const alignment = await createThesisAlignmentMoE(investorProfile, match.project, match.project.aiAssessment);
+          const alignment = await createThesisAlignmentMoE(
+            investorProfile,
+            match.project,
+            match.project.aiAssessment,
+          );
           if (!alignment) continue;
 
           await prisma.llmInsight.upsert({
-            where: { investorId_projectId_type: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT" } },
+            where: {
+              investorId_projectId_type: {
+                investorId,
+                projectId: match.projectId,
+                type: "THESIS_ALIGNMENT",
+              },
+            },
             update: { content: alignment, inputHash },
-            create: { investorId, projectId: match.projectId, type: "THESIS_ALIGNMENT", content: alignment, inputHash },
+            create: {
+              investorId,
+              projectId: match.projectId,
+              type: "THESIS_ALIGNMENT",
+              content: alignment,
+              inputHash,
+            },
           });
 
           await prisma.match.updateMany({
@@ -119,13 +184,17 @@ export const generateMatches = async (req, res, next) => {
             data: { thesisAlignmentSummary: alignment.alignmentSummary },
           });
 
-          console.log(`[Matches] Thesis alignment saved for ${match.projectId}`);
+          console.log(
+            `[Matches] Thesis alignment saved for ${match.projectId}`,
+          );
         } catch (err) {
-          console.error(`[Matches] Thesis alignment failed for ${match.projectId}:`, err.message);
+          console.error(
+            `[Matches] Thesis alignment failed for ${match.projectId}:`,
+            err.message,
+          );
         }
       }
     });
-
   } catch (error) {
     next(error);
   }
@@ -149,7 +218,7 @@ export const getMatchFeed = async (req, res, next) => {
             owner: { select: { name: true, email: true } },
             teamMembers: true,
             aiAssessment: true,
-           
+
             llmInsights: {
               where: {
                 investorId,
@@ -162,7 +231,6 @@ export const getMatchFeed = async (req, res, next) => {
       },
     });
 
-   
     const enriched = matches.map((match) => {
       const insight = match.project.llmInsights?.[0];
       return {
