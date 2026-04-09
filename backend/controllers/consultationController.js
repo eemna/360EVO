@@ -87,7 +87,9 @@ export const createBooking = async (req, res, next) => {
     }
 
     // Compare in minutes — no Date objects, no UTC drift
-    const [startHour, startMinute] = availability.startTime.split(":").map(Number);
+    const [startHour, startMinute] = availability.startTime
+      .split(":")
+      .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
     const offsetHours = -tzOffset / 60; // tzOffset is negative for UTC+ zones
@@ -110,7 +112,9 @@ export const createBooking = async (req, res, next) => {
     });
 
     if (bookingStartMins < windowStartMins || bookingEndMins > windowEndMins) {
-      return res.status(400).json({ message: "Booking exceeds expert availability window" });
+      return res
+        .status(400)
+        .json({ message: "Booking exceeds expert availability window" });
     }
 
     const overlapping = await prisma.booking.findFirst({
@@ -125,11 +129,15 @@ export const createBooking = async (req, res, next) => {
     });
 
     if (overlapping) {
-      return res.status(400).json({ message: "Time overlaps with another booking" });
+      return res
+        .status(400)
+        .json({ message: "Time overlaps with another booking" });
     }
 
     if (meetingType === "IN_PERSON" && !location) {
-      return res.status(400).json({ message: "Location is required for in-person meetings" });
+      return res
+        .status(400)
+        .json({ message: "Location is required for in-person meetings" });
     }
 
     const price = (Number(expert.profile.hourlyRate) * Number(duration)) / 60;

@@ -127,12 +127,16 @@ export async function suggestQaAnswer(question, documents) {
     };
   }
 
-  const raw = await callLlm(
-    `An investor asked the following question about a startup:
+const raw = await callLlm(
+    `An INVESTOR asked the following question about a startup:
 "${question}"
 
 Available documents:
 ${context.slice(0, 8000)}
+
+You are drafting a reply FROM THE STARTUP to the INVESTOR.
+The startup is the subject, not the reader.
+Write as if the startup is answering the investor's question.
 
 Based only on the documents above, draft a concise factual answer.
 Respond ONLY with valid JSON:
@@ -141,7 +145,7 @@ Respond ONLY with valid JSON:
   "confidenceLevel": "LOW|MEDIUM|HIGH",
   "sourceDocs": ["exact document names used from context"]
 }`,
-    "You are a startup advisor. Draft honest answers based only on the provided documents. Respond only in valid JSON, no markdown.",
+    "You are a startup advisor helping a startup reply to an investor question. Respond only in valid JSON, no markdown.",
     300,
   );
 
