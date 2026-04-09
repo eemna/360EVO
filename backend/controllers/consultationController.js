@@ -104,19 +104,21 @@ export const createBooking = async (req, res, next) => {
       });
     }
 
-    const [startHour, startMinute] = availability.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-    const offsetMs = tzOffset * 60 * 1000;
+const [startHour, startMinute] = availability.startTime.split(":").map(Number);
+const [endHour, endMinute] = availability.endTime.split(":").map(Number);
+const offsetMs = tzOffset * 60 * 1000;
 
-    const availableStart = new Date(startDateTime);
-    availableStart.setHours(startHour, startMinute, 0, 0);
-    availableStart.setTime(availableStart.getTime() - offsetMs);
+const dateBase = startDateTime.toISOString().slice(0, 10);
 
-    const availableEnd = new Date(startDateTime);
-    availableEnd.setHours(endHour, endMinute, 0, 0);
-    availableEnd.setTime(availableEnd.getTime() - offsetMs);
+const availableStart = new Date(
+  `${dateBase}T${String(startHour).padStart(2,'0')}:${String(startMinute).padStart(2,'0')}:00.000Z`
+);
+availableStart.setTime(availableStart.getTime() - offsetMs);
+
+const availableEnd = new Date(
+  `${dateBase}T${String(endHour).padStart(2,'0')}:${String(endMinute).padStart(2,'0')}:00.000Z`
+);
+availableEnd.setTime(availableEnd.getTime() - offsetMs);
 
     console.log("[WINDOW]", {
       startDateTime: startDateTime.toISOString(),
