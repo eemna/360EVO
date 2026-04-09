@@ -33,6 +33,7 @@ export const createBooking = async (req, res, next) => {
       date,
       timeSlot,
       startDateTimeISO,
+      tzOffset = 0,
       duration,
       message,
       topic,
@@ -107,12 +108,21 @@ export const createBooking = async (req, res, next) => {
       .split(":")
       .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
+    const offsetMs = tzOffset * 60 * 1000;
 
     const availableStart = new Date(startDateTime);
     availableStart.setHours(startHour, startMinute, 0, 0);
+    availableStart.setTime(availableStart.getTime() - offsetMs);
 
     const availableEnd = new Date(startDateTime);
     availableEnd.setHours(endHour, endMinute, 0, 0);
+    availableEnd.setTime(availableEnd.getTime() - offsetMs); 
+
+    console.log("[WINDOW]", {
+    startDateTime: startDateTime.toISOString(),
+    availableStart: availableStart.toISOString(),
+     availableEnd: availableEnd.toISOString(),
+  });
 
     if (startDateTime < availableStart || endDateTime > availableEnd) {
       return res.status(400).json({
