@@ -197,6 +197,7 @@ export function BookConsultationPage() {
       const [hour, minute] = selectedSlot.split(":").map(Number);
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(hour, minute, 0, 0);
+      const tzOffset = startDateTime.getTimezoneOffset();
       console.log("Booking payload:", {
         expertId: expert.id,
         date: selectedDate.toISOString(),
@@ -216,6 +217,7 @@ export function BookConsultationPage() {
         topic,
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
+        tzOffset,
         dayOfWeek: selectedDate.getDay(),
       });
 
