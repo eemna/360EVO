@@ -48,11 +48,7 @@ export const createBooking = async (req, res, next) => {
 
     const expert = await prisma.user.findUnique({
       where: { id: expertId },
-      include: {
-        profile: {
-          include: { weeklyAvailability: true },
-        },
-      },
+      include: { profile: { include: { weeklyAvailability: true } } },
     });
 
     if (!expert || expert.role !== "EXPERT") {
@@ -62,74 +58,59 @@ export const createBooking = async (req, res, next) => {
     if (!expert.profile?.hourlyRate) {
       return res.status(400).json({ message: "Expert has no hourly rate set" });
     }
-    // Build start datetime
+
     const startDateTime = startDateTimeISO
       ? new Date(startDateTimeISO)
       : (() => {
           const bookingDate = new Date(date);
           const [hour, minute] = timeSlot.split(":").map(Number);
-          const dt = new Date(bookingDate);
-          dt.setHours(hour, minute, 0, 0);
-          return dt;
+          bookingDate.setHours(hour, minute, 0, 0);
+          return bookingDate;
         })();
-    console.log("[BOOKING DEBUG]", {
-      dayOfWeek,
-      startDateTimeISO,
-      startDateTime: startDateTime.toISOString(),
-      computedDay: startDateTime.getUTCDay(),
-      now: new Date().toISOString(),
-      isPast: startDateTime < new Date(),
-      availability: expert?.profile?.weeklyAvailability,
-    });
+
     if (startDateTime < new Date()) {
-      return res.status(400).json({
-        message: "Cannot book past time",
-      });
+      return res.status(400).json({ message: "Cannot book past time" });
     }
 
-    // Build end datetime
     const endDateTime = new Date(startDateTime);
-    endDateTime.setMinutes(endDateTime.getMinutes() + duration);
+    endDateTime.setMinutes(endDateTime.getMinutes() + Number(duration));
 
-    // Check weekly availability
-    const day = dayOfWeek ?? startDateTime.getUTCDay();
+    // Use dayOfWeek sent from client (local day) — never trust UTC day
+    const day = dayOfWeek;
 
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
     );
 
     if (!availability || !availability.startTime || !availability.endTime) {
-      return res.status(400).json({
-        message: "Expert not available this day",
-      });
+      return res.status(400).json({ message: "Expert not available this day" });
     }
 
-const [startHour, startMinute] = availability.startTime.split(":").map(Number);
-const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-const offsetMs = tzOffset * 60 * 1000;
+    // Compare in minutes — no Date objects, no UTC drift
+    const [startHour, startMinute] = availability.startTime.split(":").map(Number);
+    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
-const dateBase = startDateTime.toISOString().slice(0, 10);
+    const offsetHours = -tzOffset / 60; // tzOffset is negative for UTC+ zones
+    const localHour = startDateTime.getUTCHours() + offsetHours;
+    const localMinute = startDateTime.getUTCMinutes();
 
-const availableStart = new Date(
-  `${dateBase}T${String(startHour).padStart(2,'0')}:${String(startMinute).padStart(2,'0')}:00.000Z`
-);
-availableStart.setTime(availableStart.getTime() - offsetMs);
+    const bookingStartMins = localHour * 60 + localMinute;
+    const bookingEndMins = bookingStartMins + Number(duration);
+    const windowStartMins = startHour * 60 + startMinute;
+    const windowEndMins = endHour * 60 + endMinute;
 
-const availableEnd = new Date(
-  `${dateBase}T${String(endHour).padStart(2,'0')}:${String(endMinute).padStart(2,'0')}:00.000Z`
-);
-availableEnd.setTime(availableEnd.getTime() - offsetMs);
-
-    console.log("[WINDOW]", {
-      startDateTime: startDateTime.toISOString(),
-      availableStart: availableStart.toISOString(),
-      availableEnd: availableEnd.toISOString(),
+    console.log("[WINDOW CHECK]", {
+      bookingStartMins,
+      bookingEndMins,
+      windowStartMins,
+      windowEndMins,
+      localHour,
+      localMinute,
+      tzOffset,
     });
 
-    if (startDateTime < availableStart || endDateTime > availableEnd) {
-      return res.status(400).json({
-        message: "Booking exceeds expert availability window",
-      });
+    if (bookingStartMins < windowStartMins || bookingEndMins > windowEndMins) {
+      return res.status(400).json({ message: "Booking exceeds expert availability window" });
     }
 
     const overlapping = await prisma.booking.findFirst({
@@ -144,16 +125,14 @@ availableEnd.setTime(availableEnd.getTime() - offsetMs);
     });
 
     if (overlapping) {
-      return res.status(400).json({
-        message: "Time overlaps with another booking",
-      });
+      return res.status(400).json({ message: "Time overlaps with another booking" });
     }
+
     if (meetingType === "IN_PERSON" && !location) {
-      return res.status(400).json({
-        message: "Location is required for in-person meetings",
-      });
+      return res.status(400).json({ message: "Location is required for in-person meetings" });
     }
-    const price = (Number(expert.profile.hourlyRate) * duration) / 60;
+
+    const price = (Number(expert.profile.hourlyRate) * Number(duration)) / 60;
 
     const booking = await prisma.booking.create({
       data: {
@@ -170,6 +149,7 @@ availableEnd.setTime(availableEnd.getTime() - offsetMs);
         status: "PENDING",
       },
     });
+
     const settings = await getNotifSettings(expertId);
     if (settings.emailOnBooking) {
       await createNotification({
@@ -180,6 +160,7 @@ availableEnd.setTime(availableEnd.getTime() - offsetMs);
         link: "/app/expert/reservations",
       });
     }
+
     res.status(201).json(booking);
   } catch (error) {
     console.error("Booking error response:", error.response?.data);
