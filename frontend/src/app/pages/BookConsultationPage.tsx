@@ -204,7 +204,7 @@ export function BookConsultationPage() {
         timeSlot: selectedSlot,
         startDateTimeISO: startDateTime.toISOString(),
         duration,
-        dayOfWeek: selectedDate.getDay(),
+        dayOfWeek: startDateTime.getDay(),
         startDateTime_local: startDateTime.toString(),
       });
       await api.post("/consultations/request", {

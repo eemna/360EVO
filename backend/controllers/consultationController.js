@@ -116,13 +116,13 @@ export const createBooking = async (req, res, next) => {
 
     const availableEnd = new Date(startDateTime);
     availableEnd.setHours(endHour, endMinute, 0, 0);
-    availableEnd.setTime(availableEnd.getTime() - offsetMs); 
+    availableEnd.setTime(availableEnd.getTime() - offsetMs);
 
     console.log("[WINDOW]", {
-    startDateTime: startDateTime.toISOString(),
-    availableStart: availableStart.toISOString(),
-     availableEnd: availableEnd.toISOString(),
-  });
+      startDateTime: startDateTime.toISOString(),
+      availableStart: availableStart.toISOString(),
+      availableEnd: availableEnd.toISOString(),
+    });
 
     if (startDateTime < availableStart || endDateTime > availableEnd) {
       return res.status(400).json({
