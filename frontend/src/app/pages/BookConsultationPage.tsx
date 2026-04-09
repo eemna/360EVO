@@ -218,7 +218,7 @@ export function BookConsultationPage() {
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
         tzOffset,
-        dayOfWeek: selectedDate.getDay(),
+        dayOfWeek: startDateTime.getDay(),
       });
 
       const { data: updatedBookings } = await api.get("/consultations");
