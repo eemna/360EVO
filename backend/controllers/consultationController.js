@@ -2,7 +2,7 @@ import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { createNotification } from "../utils/createNotification.js";
 import Stripe from "stripe";
-
+import { bookingsTotal, paymentsTotal } from '../middleware/metrics.js';
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -86,13 +86,12 @@ export const createBooking = async (req, res, next) => {
       return res.status(400).json({ message: "Expert not available this day" });
     }
 
-    // Compare in minutes — no Date objects, no UTC drift
     const [startHour, startMinute] = availability.startTime
       .split(":")
       .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
-    const offsetHours = -tzOffset / 60; // tzOffset is negative for UTC+ zones
+    const offsetHours = -tzOffset / 60;
     const localHour = startDateTime.getUTCHours() + offsetHours;
     const localMinute = startDateTime.getUTCMinutes();
 
@@ -157,7 +156,7 @@ export const createBooking = async (req, res, next) => {
         status: "PENDING",
       },
     });
-
+    bookingsTotal.inc({ status: 'pending' });
     const settings = await getNotifSettings(expertId);
     if (settings.emailOnBooking) {
       await createNotification({
@@ -201,7 +200,7 @@ export const createConsultationPaymentIntent = async (req, res, next) => {
         referenceType: "CONSULTATION",
       },
     });
-
+    paymentsTotal.inc({ type: 'CONSULTATION', status: 'initiated' });
     res.json({
       clientSecret: paymentIntent.client_secret,
       amount: Number(booking.price),
@@ -276,6 +275,7 @@ export const acceptBooking = async (req, res, next) => {
       data: { status: "PENDING_PAYMENT" },
       include: { member: true },
     });
+    bookingsTotal.inc({ status: 'accepted' });
 
     await createNotification({
       userId: booking.memberId,
@@ -313,6 +313,7 @@ export const rejectBooking = async (req, res, next) => {
         rejectionReason: reason || null,
       },
     });
+    bookingsTotal.inc({ status: 'declined' });
     const settings = await getNotifSettings(booking.memberId);
     if (settings.emailOnBooking) {
       await createNotification({
@@ -359,6 +360,7 @@ export const cancelBooking = async (req, res, next) => {
         rejectionReason: reason || null,
       },
     });
+    bookingsTotal.inc({ status: 'cancelled' });
     const notifyUserId =
       req.user.id === booking.expertId ? booking.memberId : booking.expertId;
 
@@ -540,42 +542,87 @@ export const getEarningsOverview = async (req, res, next) => {
   try {
     const expertId = req.user.id;
 
-    // 1. Total earned
-    const completed = await prisma.booking.aggregate({
-      where: { expertId, status: "COMPLETED" },
-      _sum: { price: true },
-      _count: true,
+    const expertBookings = await prisma.booking.findMany({
+      where: { expertId },
+      select: { id: true, startDateTime: true, status: true, price: true },
     });
 
-    // 2. Pending earnings (ACCEPTED bookings = confirmed but not done yet)
-    const pending = await prisma.booking.aggregate({
-      where: { expertId, status: "ACCEPTED" },
-      _sum: { price: true },
-      _count: true,
-    });
+    const bookingIds = expertBookings.map((b) => b.id);
 
-    // 3. This month's earnings
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    const thisMonth = await prisma.booking.aggregate({
+    const allPayments = await prisma.payment.findMany({
       where: {
-        expertId,
-        status: "COMPLETED",
-        createdAt: { gte: startOfMonth },
+        referenceType: "CONSULTATION",
+        referenceId: { in: bookingIds },
+        status: "SUCCEEDED",
       },
-      _sum: { price: true },
-      _count: true,
+      select: { referenceId: true, amount: true, createdAt: true },
     });
+
+    console.log("[EARNINGS DEBUG] expertBookings count:", expertBookings.length);
+    console.log("[EARNINGS DEBUG] allPayments count:", allPayments.length);
+    console.log("[EARNINGS DEBUG] sample payment:", allPayments[0]);
+    console.log("[EARNINGS DEBUG] sample booking id:", expertBookings[0]?.id);
+
+    const usePaymentTable = allPayments.length > 0;
+
+    let totalEarned = 0;
+    let completedSessions = 0;
+    let thisMonthEarned = 0;
+    let thisMonthSessions = 0;
+
+    const startOfMonth = new Date(
+      Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)
+    );
+
+    if (usePaymentTable) {
+      totalEarned = allPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+      completedSessions = allPayments.length;
+
+      const thisMonthPayments = allPayments.filter(
+        (p) => new Date(p.createdAt) >= startOfMonth
+      );
+      thisMonthEarned = thisMonthPayments.reduce(
+        (sum, p) => sum + Number(p.amount),
+        0
+      );
+      thisMonthSessions = thisMonthPayments.length;
+    } else {
+      // Fallback: use completed bookings directly
+      const completedBookings = expertBookings.filter(
+        (b) => b.status === "COMPLETED"
+      );
+      totalEarned = completedBookings.reduce(
+        (sum, b) => sum + Number(b.price),
+        0
+      );
+      completedSessions = completedBookings.length;
+
+      const thisMonthBookings = completedBookings.filter(
+        (b) => new Date(b.startDateTime) >= startOfMonth
+      );
+      thisMonthEarned = thisMonthBookings.reduce(
+        (sum, b) => sum + Number(b.price),
+        0
+      );
+      thisMonthSessions = thisMonthBookings.length;
+    }
+
+    // Upcoming: ACCEPTED bookings not yet completed
+    const upcomingBookings = expertBookings.filter(
+      (b) => b.status === "ACCEPTED"
+    );
+    const pendingEarnings = upcomingBookings.reduce(
+      (sum, b) => sum + Number(b.price),
+      0
+    );
 
     res.json({
-      totalEarned: Number(completed._sum.price ?? 0),
-      completedSessions: completed._count,
-      pendingEarnings: Number(pending._sum.price ?? 0),
-      upcomingSessions: pending._count,
-      thisMonthEarned: Number(thisMonth._sum.price ?? 0),
-      thisMonthSessions: thisMonth._count,
+      totalEarned,
+      completedSessions,
+      pendingEarnings,
+      upcomingSessions: upcomingBookings.length,
+      thisMonthEarned,
+      thisMonthSessions,
     });
   } catch (error) {
     next(error);

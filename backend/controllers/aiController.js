@@ -5,7 +5,7 @@ import {
   createThesisAlignmentMoE,
   createPitchAnalysisMoE,
 } from "../services/llmservice.js";
-
+import { matchesGenerated, matchScoreHistogram, llmCacheHits } from '../middleware/metrics.js';
 import { runProjectAssessment } from "../services/assessmentService.js";
 
 // Scores a project — called after admin approves it
@@ -43,15 +43,24 @@ export const getAssessment = async (req, res, next) => {
 export const generateMatches = async (req, res, next) => {
   try {
     const investorId = req.user.id;
-
+    
     const investorProfile = await prisma.investorProfile.findUnique({
+  where: { userId: investorId },
+}) ?? {
+  industries: [], stages: [], technologies: [],
+  fundingMin: null, fundingMax: null,
+  geographicPrefs: [], riskTolerance: "MEDIUM",
+  dealStructures: [], mustHaves: {}, exclusions: {},
+  investmentThesis: "",
+};
+    /* const investorProfile = await prisma.investorProfile.findUnique({
       where: { userId: investorId },
-    });
-    if (!investorProfile) {
-      return res
-        .status(400)
-        .json({ message: "Please complete your investor profile first" });
-    }
+    }); */
+    // if (!investorProfile) {
+    //  return res
+      //  .status(400)
+      //  .json({ message: "Please complete your investor profile first" });
+    //}
 
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
@@ -83,6 +92,8 @@ export const generateMatches = async (req, res, next) => {
         reasoning,
         project,
       });
+      matchesGenerated.inc();
+      matchScoreHistogram.observe(matchScore);
     }
 
     await Promise.all(
@@ -150,6 +161,7 @@ export const generateMatches = async (req, res, next) => {
             },
           });
           if (cached && cached.inputHash === inputHash) {
+            llmCacheHits.inc({ type: 'THESIS_ALIGNMENT' }); 
             console.log(`[Matches] Cached for ${match.projectId}, skipping`);
             continue;
           }
@@ -319,6 +331,7 @@ export const getThesisAlignment = async (req, res, next) => {
       },
     });
     if (cached && cached.inputHash === inputHash) {
+      llmCacheHits.inc({ type: 'THESIS_ALIGNMENT' });
       return res.json({ cached: true, data: cached.content });
     }
 

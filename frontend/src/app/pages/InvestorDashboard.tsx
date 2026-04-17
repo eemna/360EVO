@@ -19,12 +19,12 @@ import {
   RefreshCw,
   Settings2,
   ChevronRight,
-  Zap,
   BarChart3,
   Globe,
   Layers,
   CheckCircle2,
   AlertCircle,
+  Calendar
 } from "lucide-react";
 import { FolderOpen, FileSearch } from "lucide-react";
 
@@ -294,7 +294,6 @@ export default function InvestorDashboard() {
     fetch();
   }, []);
 
-  // Fetch matches
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -347,7 +346,6 @@ export default function InvestorDashboard() {
     }
   };
 
-  // Derived stats
   const activeMatches = matches.filter((m) => m.status !== "DISMISSED");
   const highMatches = activeMatches.filter((m) => m.matchScore >= 70);
   const topMatches = [...activeMatches]
@@ -361,11 +359,11 @@ export default function InvestorDashboard() {
         )
       : 0;
 
-  const profileComplete =
+   {/*const profileComplete =
     profile &&
     (profile.industries?.length ?? 0) > 0 &&
     (profile.stages?.length ?? 0) > 0 &&
-    (profile.investmentThesis?.length ?? 0) > 50;
+    (profile.investmentThesis?.length ?? 0) > 50; */}
 
   const loading = loadingProfile || loadingMatches;
 
@@ -392,7 +390,7 @@ export default function InvestorDashboard() {
           </Button>
           <Button
             onClick={handleGenerate}
-            disabled={generating || !profileComplete}
+            disabled={generating }
             className="bg-indigo-600 hover:bg-indigo-700 gap-2"
           >
             {generating ? (
@@ -409,7 +407,7 @@ export default function InvestorDashboard() {
       </div>
 
       {/* No profile banner */}
-      {!loadingProfile && !profileComplete && (
+      {/* !loadingProfile && !profileComplete && (
         <div className="rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-indigo-100 rounded-lg">
@@ -432,7 +430,7 @@ export default function InvestorDashboard() {
             Set Up Profile →
           </Button>
         </div>
-      )}
+      ) */}
 
       {/* Stats row */}
       {loading ? (
@@ -513,7 +511,7 @@ export default function InvestorDashboard() {
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <Target className="size-8 text-gray-200 mb-3" />
                   <p className="text-sm text-gray-500 mb-4">No matches yet</p>
-                  {profileComplete ? (
+                  {/*{profileComplete ? ( */}
                     <Button
                       size="sm"
                       onClick={handleGenerate}
@@ -527,7 +525,7 @@ export default function InvestorDashboard() {
                       )}
                       Generate Matches
                     </Button>
-                  ) : (
+                 {/* ) : (
                     <Button
                       size="sm"
                       variant="outline"
@@ -535,7 +533,7 @@ export default function InvestorDashboard() {
                     >
                       Complete Profile First →
                     </Button>
-                  )}
+                  )}*/} 
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
@@ -614,6 +612,19 @@ export default function InvestorDashboard() {
               </div>
               <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-green-400 transition-colors" />
             </button>
+            <button
+               onClick={() => navigate("/app/events/my")}
+               className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
+                >
+               <div className="p-2.5 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
+               <Calendar className="size-5 text-blue-600" />
+             </div>
+             <div>
+               <p className="text-sm font-semibold text-gray-900">My Events</p>
+               <p className="text-xs text-gray-400">Your registered events</p>
+             </div>
+            <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
+          </button>
           </div>
         </div>
 
