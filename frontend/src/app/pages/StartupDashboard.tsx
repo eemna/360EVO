@@ -208,6 +208,7 @@ export default function StartupDashboard() {
             Manage your projects and track performance
           </p>
         </div>
+        
         <ProjectCreationWizard
           isOpen={isWizardOpen}
           onClose={() => {
@@ -219,13 +220,23 @@ export default function StartupDashboard() {
           setLoading={setWizardLoading}
           onProjectSaved={fetchDashboard}
         />
-        <Button
-          onClick={() => setIsWizardOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 w-fit"
-        >
-          <Plus className="size-5 mr-2" />
-          Create Project
-        </Button>
+  <div className="flex items-center gap-2">
+    <Button
+      variant="outline"
+      onClick={() => navigate("/app/events/my")}
+      className="gap-2"
+    >
+      <Calendar className="size-4" />
+      My Events
+    </Button>
+    <Button
+      onClick={() => setIsWizardOpen(true)}
+      className="bg-blue-600 hover:bg-blue-700 gap-2"
+    >
+      <Plus className="size-5" />
+      Create Project
+    </Button>
+  </div>
       </div>
 
       {/* STATS — all 4 in one row */}

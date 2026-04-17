@@ -13,6 +13,7 @@ import {
   Settings,
   X,
   GraduationCap,
+  Layers,
 } from "lucide-react";
 import { cn } from "../ui/utils";
 export interface Profile {
@@ -35,6 +36,7 @@ const menuItems = [
   { icon: Home, label: "Dashboard", path: "/app" },
   { icon: User, label: "My Profile", path: "/app/profile/me" },
   { icon: Users, label: "Events", path: "/app/events" },
+  { icon: Layers, label: "Programs", path: "/app/programs" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
   { icon: GraduationCap, label: "Find Experts", path: "/app/experts" },
   { icon: MessageSquare, label: "Messages", path: "/app/conversation" },

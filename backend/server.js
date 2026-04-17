@@ -8,6 +8,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoute.js";
 import errorHandler from "./middleware/errorMiddleware.js";
 import rateLimiter from "./middleware/rateLimiter.js";
+import { metricsMiddleware, metricsHandler } from './middleware/metrics.js';
 import job, {
   matchRegenerationJob,
   narrativeRetryJob,
@@ -29,6 +30,7 @@ import investorProfileRoutes from "./routes/investorprofileroute.js";
 import ddRoutes from "./routes/ddRoute.js";
 import paymentRoutes from "./routes/paymentRoute.js";
 import webhookRoutes from "./routes/webhookRoute.js";
+import programRoutes from "./routes/programRoute.js";
 
 dotenv.config();
 const app = express();
@@ -58,6 +60,7 @@ app.use("/api/webhooks", webhookRoutes);
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(metricsMiddleware);
 if (process.env.NODE_ENV === "production") {
   job.start();
   matchRegenerationJob.start();
@@ -67,6 +70,7 @@ if (process.env.NODE_ENV === "production") {
 app.get("/api/health", (req, res) => {
   res.send("Backend is running ");
 });
+app.get('/metrics', metricsHandler);
 app.use("/api/auth", rateLimiter, authRoutes);
 app.use("/api/uploads", uploadRoutes);
 app.use("/api/projects", projectRoutes);
@@ -82,6 +86,7 @@ app.use("/api/ai", aiRoute);
 app.use("/api/investor-profile", investorProfileRoutes);
 app.use("/api", ddRoutes); // covers /api/dd-requests and /api/data-rooms
 app.use("/api/payments", paymentRoutes);
+app.use("/api/programs", programRoutes);
 
 const PORT = process.env.PORT || 5001;
 
