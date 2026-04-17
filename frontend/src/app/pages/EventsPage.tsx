@@ -92,7 +92,6 @@ function formatDateRange(date: string, endDate?: string) {
 
   const endTime = formatTime(endDate);
 
-  // Only show end time if different from start time
   const timeStr =
     startTime === endTime ? startTime : `${startTime} – ${endTime}`;
 
@@ -103,13 +102,11 @@ function getDateFilter(value: string): string | undefined {
   const now = new Date();
 
   if (value === "today") {
-    // Start of today
     const start = new Date(now);
     start.setHours(0, 0, 0, 0);
     return start.toISOString();
   }
   if (value === "week") {
-    // Start of this week (Monday)
     const start = new Date(now);
     const day = start.getDay();
     const diff = start.getDate() - day + (day === 0 ? -6 : 1);
@@ -118,21 +115,38 @@ function getDateFilter(value: string): string | undefined {
     return start.toISOString();
   }
   if (value === "month") {
-    // Start of this month
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     return start.toISOString();
   }
   return undefined;
 }
+function isEventPast(event: Event): boolean {
+  const now = new Date();
+  
+  const endTime = event.endDate ? new Date(event.endDate) : new Date(event.date);
+  return endTime < now;
+}
 
+function isEventFull(event: Event): boolean {
+  if (!event.capacity) return false;
+  return event._count.registrations >= event.capacity;
+}
 function EventCard({ event }: { event: Event }) {
   const navigate = useNavigate();
   const { date, time } = formatDateRange(event.date, event.endDate);
 
+  const past = isEventPast(event);
+  const full = isEventFull(event);
+  const unavailable = past || full;
+
   return (
     <div
       onClick={() => navigate(`/app/events/${event.id}`)}
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden group"
+      className={`bg-white rounded-2xl border shadow-sm transition-all duration-200 cursor-pointer overflow-hidden group relative
+        ${unavailable
+          ? "border-gray-100 opacity-70 hover:opacity-80"
+          : "border-gray-100 hover:shadow-md"
+        }`}
     >
       {/* Cover Image */}
       <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
@@ -140,26 +154,43 @@ function EventCard({ event }: { event: Event }) {
           <img
             src={event.coverImage}
             alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className={`w-full h-full object-cover transition-transform duration-300
+              ${unavailable ? "grayscale-[40%]" : "group-hover:scale-105"}`}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
             <Calendar className="w-12 h-12 text-blue-300" />
           </div>
         )}
+
         {/* Type Badge */}
         <div className="absolute top-3 right-3">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold border ${TYPE_COLORS[event.type]}`}
-          >
+          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${TYPE_COLORS[event.type]}`}>
             {TYPE_LABELS[event.type]}
           </span>
         </div>
+
+        {/* Status Overlay Badge */}
+        {past && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-gray-900/60 text-white text-sm font-semibold px-4 py-1.5 rounded-full backdrop-blur-sm">
+              Event Ended
+            </span>
+          </div>
+        )}
+        {!past && full && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="bg-red-700/70 text-white text-sm font-semibold px-4 py-1.5 rounded-full backdrop-blur-sm">
+              Fully Booked
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="font-semibold text-gray-900 text-lg leading-snug mb-3 line-clamp-2 group-hover:text-blue-600 transition-colors">
+        <h3 className={`font-semibold text-lg leading-snug mb-3 line-clamp-2 transition-colors
+          ${unavailable ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
           {event.title}
         </h3>
 
@@ -170,7 +201,6 @@ function EventCard({ event }: { event: Event }) {
             <span className="text-gray-400">·</span>
             <span>{time}</span>
           </div>
-
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <MapPin className="w-4 h-4 flex-shrink-0 text-blue-500" />
             <span className="truncate">
@@ -182,11 +212,8 @@ function EventCard({ event }: { event: Event }) {
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <div className="text-sm text-gray-500">
             <span className="text-gray-400">Organized by </span>
-            <span className="font-medium text-gray-700">
-              {event.organizer.name}
-            </span>
+            <span className="font-medium text-gray-700">{event.organizer.name}</span>
           </div>
-
           <div className="flex items-center gap-1 text-sm text-gray-500">
             <Users className="w-4 h-4" />
             <span>{event._count.registrations}</span>
@@ -257,7 +284,6 @@ export default function EventsPage() {
     }
   }, [search, selectedType, selectedDate, page]);
 
-  // Reset page when filters change
   useEffect(() => {
     setPage(1);
   }, [search, selectedType, selectedDate]);

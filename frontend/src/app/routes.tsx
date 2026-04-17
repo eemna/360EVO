@@ -36,6 +36,11 @@ import DdInboxPage from "./pages/Ddinboxpage";
 import DataRoomPage from "./pages/Dataroompage";
 import DealBriefPage from "./pages/Dealbriefpage";
 import ConsultationPaymentPage from "./pages/ConsultationPaymentPage";
+import ProgramsPage from "./pages/Programspage";
+import ProgramDetailPage from "./pages/Programdetailpage";
+import MyApplicationsPage from "./pages/MyApplicationsPage";
+import EventPaymentPage from "./pages/EventPaymentPage";
+import CreateProgramPage from "./pages/CreateProgramPage";
 
 export const router = createBrowserRouter([
   {
@@ -161,6 +166,26 @@ export const router = createBrowserRouter([
       { path: "events/my", element: <MyEventsPage /> },
       { path: "events/:id", element: <EventDetailPage /> },
       { path: "events/:id/edit", element: <CreateEventForm /> },
+      { 
+        path: "programs/create", 
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <CreateProgramPage />
+         </RoleRoute>
+                  ) 
+      },
+      { 
+  path: "programs/:id/edit", 
+  element: (
+    <RoleRoute allowedRoles={["ADMIN"]}>
+      <CreateProgramPage />
+    </RoleRoute>
+  ) 
+},
+      { path: "programs", element: <ProgramsPage /> },
+      { path: "programs/my-applications", element: <ProtectedRoute><MyApplicationsPage /></ProtectedRoute> },
+      { path: "programs/:id", element: <ProgramDetailPage /> },
+      { path: "events/:id/pay", element: <ProtectedRoute><EventPaymentPage /></ProtectedRoute> },
       {
         path: "settings",
         element: <Settings />,

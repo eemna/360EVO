@@ -1,10 +1,9 @@
 import Stripe from "stripe";
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
-
+import { paymentsTotal } from '../middleware/metrics.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-// POST /api/payments/create-intent
 export const createPaymentIntent = async (req, res, next) => {
   try {
     const { eventId } = req.body;
@@ -46,7 +45,7 @@ export const createPaymentIntent = async (req, res, next) => {
 
     // Create Stripe payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // Stripe uses cents
+      amount: Math.round(amount * 100),
       currency: "usd",
       metadata: {
         userId,
@@ -54,7 +53,7 @@ export const createPaymentIntent = async (req, res, next) => {
         referenceType: "EVENT",
       },
     });
-
+    paymentsTotal.inc({ type: 'EVENT', status: 'initiated' }); 
     res.json({
       clientSecret: paymentIntent.client_secret,
       amount,
@@ -65,9 +64,8 @@ export const createPaymentIntent = async (req, res, next) => {
   }
 };
 
-// POST /api/webhooks/stripe
 // Stripe calls this directly signature verification
-export const stripeWebhook = async (req, res, next) => {
+export const stripeWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
 
   let event;
@@ -107,13 +105,14 @@ export const stripeWebhook = async (req, res, next) => {
                 stripePaymentIntentId: pi.id,
               },
             }),
+           
             prisma.eventRegistration.upsert({
               where: { eventId_userId: { eventId, userId } },
               update: {},
               create: { eventId, userId },
             }),
           ]);
-
+           paymentsTotal.inc({ type: 'EVENT', status: 'succeeded' });
           const event = await prisma.event.findUnique({
             where: { id: eventId },
           });
@@ -142,6 +141,7 @@ export const stripeWebhook = async (req, res, next) => {
                 stripePaymentIntentId: pi.id,
               },
             }),
+
             prisma.booking.update({
               where: { id: bookingId },
               data: {
@@ -153,11 +153,11 @@ export const stripeWebhook = async (req, res, next) => {
               },
             }),
           ]);
-
+          paymentsTotal.inc({ type: 'CONSULTATION', status: 'succeeded' });
           await createNotification({
             userId: booking.expertId,
             type: "BOOKING",
-            title: "Payment Received ✅",
+            title: "Payment Received ",
             body: "Payment confirmed. The session is now locked in.",
             link: "/app/expert/reservations",
           });
@@ -173,7 +173,7 @@ export const stripeWebhook = async (req, res, next) => {
           where: { stripePaymentIntentId: pi.id },
           data: { status: "FAILED" },
         });
-
+        paymentsTotal.inc({ type: 'UNKNOWN', status: 'failed' });
         console.log(`[Webhook] Payment failed: ${pi.id}`);
         break;
       }
@@ -190,7 +190,6 @@ export const stripeWebhook = async (req, res, next) => {
   }
 };
 
-// GET /api/payments/my-payments
 export const getMyPayments = async (req, res, next) => {
   try {
     const payments = await prisma.payment.findMany({

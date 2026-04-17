@@ -1,5 +1,6 @@
 import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
+import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import {
@@ -66,6 +67,7 @@ interface Message {
 
 export function MessagesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate(); 
   const { socket, onlineUsers } = useSocket();
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -76,7 +78,7 @@ export function MessagesPage() {
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showEmoji, setShowEmoji] = useState(false);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const editableRef = useRef<HTMLDivElement | null>(null);
   const [lastReadAt, setLastReadAt] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -87,17 +89,22 @@ export function MessagesPage() {
     "conversations",
   );
 
-  const [mentionQuery, setMentionQuery] = useState("");
+  const stripMentionFormat = (content: string) => {
+  return content.replace(/@\[([^\]]+)\]\([^)]+\)/g, "@$1");
+};
+
+const [mentionMatches, setMentionMatches] = useState<User[]>([]);
+const mentionSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionIndex, setMentionIndex] = useState(0);
-  const [allUsers, setAllUsers] = useState<User[]>([]);
+ // const [allUsers, setAllUsers] = useState<User[]>([]);
   const mentionDropdownRef = useRef<HTMLDivElement | null>(null);
 
-  const filteredUsers = users.filter(
+ {/*  const filteredUsers = users.filter(
     (u) =>
       u.name &&
       u.name.toLowerCase().trim().includes(userSearch.toLowerCase().trim()),
-  );
+  );*/}
   const filteredConversations = conversations.filter(
     (conv) =>
       conv.otherUser?.name &&
@@ -138,18 +145,24 @@ export function MessagesPage() {
     }
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const { data } = await api.get("/users/");
-        setUsers(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+useEffect(() => {
+  if (!showNewConversation) return;
+  if (userSearch.trim().length < 1) {
+    const timeout = setTimeout(() => setUsers([]), 0);
+    return () => clearTimeout(timeout);
+  }
 
-    fetchUsers();
-  }, []);
+  const timeout = setTimeout(async () => {
+    try {
+      const { data } = await api.get<User[]>(`/conversations/search?q=${userSearch}`);
+      setUsers(data);
+    } catch {
+      setUsers([]);
+    }
+  }, 200);
+
+  return () => clearTimeout(timeout);
+}, [userSearch, showNewConversation]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -168,27 +181,32 @@ export function MessagesPage() {
     };
   }, []);
 
-  const handleEmojiClick = (emojiData: EmojiClickData) => {
-    const input = inputRef.current;
+const handleEmojiClick = (emojiData: EmojiClickData) => {
+  const div = editableRef.current;
+  if (!div) return;
 
-    if (!input) return;
+  div.focus();
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  range.deleteContents();
+  const textNode = document.createTextNode(emojiData.emoji);
+  range.insertNode(textNode);
+  range.setStartAfter(textNode);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
 
-    const start = input.selectionStart || 0;
-    const end = input.selectionEnd || 0;
-
-    const newValue =
-      messageInput.substring(0, start) +
-      emojiData.emoji +
-      messageInput.substring(end);
-
-    setMessageInput(newValue);
-
-    requestAnimationFrame(() => {
-      input.selectionStart = input.selectionEnd =
-        start + emojiData.emoji.length;
-      input.focus();
-    });
-  };
+  let raw = "";
+  div.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
+    } else if ((node as HTMLElement).dataset?.mention) {
+      raw += (node as HTMLElement).dataset.mention;
+    }
+  });
+  setMessageInput(raw);
+};
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -306,7 +324,7 @@ export function MessagesPage() {
     socket.on("message_read", ({ conversationId, userId, lastReadAt }) => {
       if (conversationId !== selectedConv) return;
 
-      if (userId === user?.id) return; // ignore my own read events
+      if (userId === user?.id) return;
 
       setLastReadAt(lastReadAt);
     });
@@ -319,12 +337,12 @@ export function MessagesPage() {
   }, [socket, selectedConv, user?.id]);
 
   // Fetch all users for @mention
-  useEffect(() => {
+ {/* useEffect(() => {
     api
       .get("/users")
       .then(({ data }) => setAllUsers(data))
       .catch(() => {});
-  }, []);
+  }, []); 
 
   // Users matching @query
   const mentionMatches =
@@ -336,92 +354,168 @@ export function MessagesPage() {
               u.name.toLowerCase().includes(mentionQuery.toLowerCase()),
           )
           .slice(0, 5)
-      : [];
+      : []; */}
 
-  const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setMessageInput(val);
+const handleEditableInput = ( ) => {
+  const div = editableRef.current;
+  if (!div) return;
 
-    const cursor = e.target.selectionStart ?? val.length;
-    const textBeforeCursor = val.substring(0, cursor);
-    const atMatch = textBeforeCursor.match(/@(\w*)$/);
-
-    if (atMatch) {
-      setMentionQuery(atMatch[1]);
-      setMentionOpen(true);
-      setMentionIndex(0);
-    } else {
-      setMentionOpen(false);
-      setMentionQuery("");
-    }
-
-    socket?.emit("typing_start", { conversationId: selectedConv });
-    if (typingTimeout.current) clearTimeout(typingTimeout.current);
-    typingTimeout.current = setTimeout(() => {
-      socket?.emit("typing_stop", { conversationId: selectedConv });
-    }, 1000);
-  };
-
-  // Select user from dropdown
-  const handleMentionSelect = (selectedUser: User) => {
-    const cursor = inputRef.current?.selectionStart ?? messageInput.length;
-    const before = messageInput
-      .substring(0, cursor)
-      .replace(/@(\w*)$/, `@${selectedUser.name} `);
-    const after = messageInput.substring(cursor);
-    setMessageInput(before + after);
-    setMentionOpen(false);
-    setMentionQuery("");
-    setTimeout(() => inputRef.current?.focus(), 0);
-  };
-
-  // Keyboard navigation
-  const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!mentionOpen || mentionMatches.length === 0) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setMentionIndex((i) => Math.min(i + 1, mentionMatches.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setMentionIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" || e.key === "Tab") {
-      e.preventDefault();
-      handleMentionSelect(mentionMatches[mentionIndex]);
-    } else if (e.key === "Escape") {
-      setMentionOpen(false);
-    }
-  };
-
-  const renderMessageContent = (content: string) => {
-    const parts = content.split(/(@\w+(?:\s\w+)?)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith("@")) {
-        return (
-          <span
-            key={i}
-            className="text-indigo-600 font-semibold bg-indigo-50 px-0.5 rounded"
-          >
-            {part}
-          </span>
-        );
+  let raw = "";
+  div.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as HTMLElement;
+      if (el.dataset.mention) {
+        raw += el.dataset.mention;
+      } else {
+        raw += el.textContent;
       }
-      return <span key={i}>{part}</span>;
-    });
-  };
-
-  const handleSendMessage = async () => {
-    if (!messageInput.trim() || !selectedConv) return;
-
-    try {
-      await api.post(`/conversations/${selectedConv}/messages`, {
-        content: messageInput,
-      });
-
-      setMessageInput("");
-    } catch (err) {
-      console.error(err);
     }
-  };
+  });
+
+  setMessageInput(raw);
+
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+  const textBeforeCursor =
+    range.startContainer.textContent?.substring(0, range.startOffset) ?? "";
+  const atMatch = textBeforeCursor.match(/@(\w*)$/);
+
+  if (atMatch) {
+    setMentionOpen(true);
+    setMentionIndex(0);
+    if (mentionSearchTimeout.current) clearTimeout(mentionSearchTimeout.current);
+    if (atMatch[1].length > 0) {
+      mentionSearchTimeout.current = setTimeout(async () => {
+        try {
+          const { data } = await api.get<User[]>(`/conversations/search?q=${atMatch[1]}`);
+          setMentionMatches(data);
+        } catch {
+          setMentionMatches([]);
+        }
+      }, 200);
+    } else {
+      setMentionMatches([]);
+    }
+  } else {
+    setMentionOpen(false);
+    setMentionMatches([]);
+  }
+
+  socket?.emit("typing_start", { conversationId: selectedConv });
+  if (typingTimeout.current) clearTimeout(typingTimeout.current);
+  typingTimeout.current = setTimeout(() => {
+    socket?.emit("typing_stop", { conversationId: selectedConv });
+  }, 1000);
+};
+
+const handleMentionSelect = (selectedUser: User) => {
+  const div = editableRef.current;
+  if (!div) return;
+
+  const selection = window.getSelection();
+  if (!selection || !selection.rangeCount) return;
+  const range = selection.getRangeAt(0);
+
+  const textNode = range.startContainer;
+  if (textNode.nodeType === Node.TEXT_NODE) {
+    const text = textNode.textContent ?? "";
+    const offset = range.startOffset;
+    const atIndex = text.lastIndexOf("@", offset - 1);
+    if (atIndex !== -1) {
+      textNode.textContent = text.substring(0, atIndex) + text.substring(offset);
+      range.setStart(textNode, atIndex);
+      range.setEnd(textNode, atIndex);
+    }
+  }
+
+  const chip = document.createElement("span");
+  chip.contentEditable = "false";
+  chip.dataset.mention = `@[${selectedUser.name}](${selectedUser.id})`;
+  chip.dataset.userid = selectedUser.id;
+  chip.textContent = `@${selectedUser.name}`;
+  chip.style.cssText =
+    "color:#4f46e5;background:#eef2ff;padding:0 4px;border-radius:4px;cursor:pointer;font-weight:600;user-select:all;";
+  chip.addEventListener("click", () => navigate(`/app/profile/${selectedUser.id}`));
+
+  const space = document.createTextNode("\u00A0");
+  range.insertNode(space);
+  range.insertNode(chip);
+
+  range.setStartAfter(space);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+
+  let raw = "";
+  div.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
+    } else if ((node as HTMLElement).dataset?.mention) {
+      raw += (node as HTMLElement).dataset.mention;
+    }
+  });
+  setMessageInput(raw);
+
+  setMentionOpen(false);
+  setMentionMatches([]);
+  div.focus();
+};
+
+const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  if (!mentionOpen || mentionMatches.length === 0) return;
+  if (e.key === "ArrowDown") {
+    e.preventDefault();
+    setMentionIndex((i) => Math.min(i + 1, mentionMatches.length - 1));
+  } else if (e.key === "ArrowUp") {
+    e.preventDefault();
+    setMentionIndex((i) => Math.max(i - 1, 0));
+  } else if (e.key === "Enter" || e.key === "Tab") {
+    e.preventDefault();
+    handleMentionSelect(mentionMatches[mentionIndex]);
+  } else if (e.key === "Escape") {
+    setMentionOpen(false);
+  }
+};
+
+
+const renderMessageContent = (content: string) => {
+  const parts = content.split(/(@\[[^\]]+\]\([^)]+\))/g);
+  
+  return parts.map((part, i) => {
+    const mentionMatch = part.match(/^@\[([^\]]+)\]\(([^)]+)\)$/);
+    
+    if (mentionMatch) {
+      const name = mentionMatch[1];
+      const userId = mentionMatch[2];
+      return (
+        <span
+          key={i}
+          onClick={() => navigate(`/app/profile/${userId}`)}
+          className="text-indigo-600 font-semibold bg-indigo-50 px-0.5 rounded cursor-pointer hover:underline"
+        >
+          @{name}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
+const handleSendMessage = async () => {
+  if (!messageInput.trim() || !selectedConv) return;
+  try {
+    await api.post(`/conversations/${selectedConv}/messages`, {
+      content: messageInput,
+    });
+    setMessageInput("");
+    if (editableRef.current) editableRef.current.innerHTML = "";
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const selectedConversation = conversations.find((c) => c.id === selectedConv);
@@ -476,7 +570,7 @@ export function MessagesPage() {
                 key={conv.id}
                 onClick={() => {
                   setSelectedConv(conv.id);
-                  setMobileView("chat"); // switch to chat panel on mobile
+                  setMobileView("chat");
                 }}
                 className={cn(
                   "flex w-full gap-3 border-b border-gray-100 p-4 text-left transition-all hover:bg-gray-50",
@@ -523,7 +617,7 @@ export function MessagesPage() {
                           typing...
                         </span>
                       ) : (
-                        conv.lastMessage?.content || "No messages yet"
+                        conv.lastMessage ? stripMentionFormat(conv.lastMessage.content) : "No messages yet"
                       )}
                     </p>
                     {conv.unread > 0 && (
@@ -638,9 +732,7 @@ export function MessagesPage() {
                             : "bg-white border border-gray-200",
                         )}
                       >
-                        {isMe
-                          ? message.content
-                          : renderMessageContent(message.content)}
+                        {renderMessageContent(message.content)}
                       </div>
 
                       {isMe &&
@@ -668,20 +760,21 @@ export function MessagesPage() {
                 <Paperclip className="h-5 w-5" />
               </Button>
               <div className="flex-1 relative">
-                <Input
-                  value={messageInput}
-                  onChange={handleMessageInputChange}
-                  ref={inputRef}
-                  placeholder="Type your message... use @ to mention"
-                  className="pr-12 py-3 rounded-xl bg-gray-50 border-gray-200 focus:border-indigo-300 focus:ring-indigo-200 focus:bg-white"
-                  onKeyDown={(e) => {
-                    handleMentionKeyDown(e);
-                    if (e.key === "Enter" && !e.shiftKey && !mentionOpen) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                />
+                <div
+  ref={editableRef}
+  contentEditable
+  suppressContentEditableWarning
+  onInput={() => handleEditableInput()}
+  onKeyDown={(e) => {
+    handleMentionKeyDown(e);
+    if (e.key === "Enter" && !e.shiftKey && !mentionOpen) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  }}
+  data-placeholder="Type your message... use @ to mention"
+  className="flex-1 min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-indigo-300 focus:bg-white text-sm empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+/>
 
                 {/* @mention dropdown */}
                 {mentionOpen && mentionMatches.length > 0 && (
@@ -762,13 +855,14 @@ export function MessagesPage() {
             </div>
 
             <div className="space-y-2">
-              {filteredUsers.length === 0 && (
-                <p className="text-sm text-gray-500 text-center">
-                  No users available
-                </p>
-              )}
+{userSearch.length === 0 && (
+  <p className="text-sm text-gray-500 text-center">Type a name to search users</p>
+)}
+{userSearch.length > 0 && users.length === 0 && (
+  <p className="text-sm text-gray-500 text-center">No users found</p>
+)}
 
-              {filteredUsers.map((u) => (
+              {users.map((u) => (
                 <button
                   key={u.id}
                   onClick={async () => {
@@ -779,7 +873,7 @@ export function MessagesPage() {
                       });
 
                       setSelectedConv(data.id);
-                      socket?.emit("join_conversation", data.id); // ← ADD THIS
+                      socket?.emit("join_conversation", data.id);
 
                       const { data: convs } = await api.get("/conversations");
                       setConversations(

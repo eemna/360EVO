@@ -2,7 +2,6 @@ import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
 import { runProjectAssessment } from "../services/assessmentService.js";
 
-//  Get pending projects
 export const getPendingProjects = async (req, res, next) => {
   try {
     const projects = await prisma.project.findMany({
@@ -21,7 +20,6 @@ export const getPendingProjects = async (req, res, next) => {
   }
 };
 
-//  Approve project
 export const approveProject = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -50,7 +48,6 @@ export const approveProject = async (req, res, next) => {
   }
 };
 
-//  Reject project
 export const rejectProject = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -72,54 +69,76 @@ export const rejectProject = async (req, res, next) => {
   }
 };
 
-//  Get all users
 export const getAllUsers = async (req, res, next) => {
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isSuspended: true,
-        createdAt: true,
-        profile: {
-          select: {
-            expertise: true,
-            expertApplicationStatus: true,
+    const { search, role } = req.query;
+
+    if (!search?.toString().trim()) {
+      const users = await prisma.user.findMany({
+        where: { ...(role && { role }) },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isSuspended: true,
+          createdAt: true,
+          profile: {
+            select: { expertise: true, expertApplicationStatus: true },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      });
+      return res.json(users);
+    }
+
+    const tsQuery = search
+      .toString()
+      .trim()
+      .split(/\s+/)
+      .map((word) => `${word}:*`)
+      .join(" & ");
+
+const users = role
+  ? await prisma.$queryRaw`
+      SELECT u.id, u.name, u.email, u.role, u."isSuspended", u."createdAt",
+        json_build_object('expertise', p.expertise, 'expertApplicationStatus', p."expertApplicationStatus") AS profile
+      FROM "User" u
+      LEFT JOIN "Profile" p ON p."userId" = u.id
+      WHERE u.search_vector @@ to_tsquery('english', ${tsQuery})
+        AND u.role = ${role}::"Role"
+      ORDER BY ts_rank(u.search_vector, to_tsquery('english', ${tsQuery})) DESC
+      LIMIT 50`
+  : await prisma.$queryRaw`
+      SELECT u.id, u.name, u.email, u.role, u."isSuspended", u."createdAt",
+        json_build_object('expertise', p.expertise, 'expertApplicationStatus', p."expertApplicationStatus") AS profile
+      FROM "User" u
+      LEFT JOIN "Profile" p ON p."userId" = u.id
+      WHERE u.search_vector @@ to_tsquery('english', ${tsQuery})
+      ORDER BY ts_rank(u.search_vector, to_tsquery('english', ${tsQuery})) DESC
+      LIMIT 50`;
 
     res.json(users);
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 
-// Update user role
 export const updateUserRole = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
-    const validRoles = ["MEMBER", "EXPERT", "STARTUP", "INVESTOR", "ADMIN"];
 
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({
-        message: "Invalid role value",
-      });
+    if (id === req.user.id) {
+      return res.status(400).json({ message: "Cannot change your own role" });
     }
-    const updated = await prisma.user.update({
-      where: { id },
-      data: { role },
-    });
 
+    const validRoles = ["MEMBER", "EXPERT", "STARTUP", "INVESTOR", "ADMIN"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ message: "Invalid role value" });
+    }
+
+    const updated = await prisma.user.update({ where: { id }, data: { role } });
     res.json(updated);
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
 };
 export const approveExpert = async (req, res, next) => {
   try {
@@ -248,4 +267,16 @@ export const unsuspendUser = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+export const getevents = async (req, res, next) => {
+  try {
+    const events = await prisma.event.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        organizer: { select: { name: true } },
+        _count: { select: { registrations: true } },
+      },
+    });
+    res.json(events);
+  } catch (error) { next(error); }
 };

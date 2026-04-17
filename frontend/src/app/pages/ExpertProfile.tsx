@@ -91,7 +91,6 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
     };
   }, [user, profileUser.id, isOwnProfile]);
 
-  // Early return AFTER all hooks
   if (!profileUser.profile) return null;
 
   const profile = profileUser.profile;
@@ -118,7 +117,6 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
         comment: reviewComment,
       })
       .then(({ data }) => {
-        // Mark booking as reviewed in state immediately
         setMyBookings((prev) =>
           prev.map((b) =>
             b.id === reviewBooking.id ? { ...b, review: data } : b,
@@ -340,7 +338,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                   )}
                   {booking.status === "ACCEPTED" && (
                     <Badge className="bg-green-100 text-green-700 border-green-200">
-                      Confirmed ✅
+                      Confirmed 
                     </Badge>
                   )}
                   {booking.status === "COMPLETED" && (
@@ -412,7 +410,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                   {/* Already reviewed */}
                   {booking.status === "COMPLETED" && booking.review && (
                     <p className="text-sm text-green-600 font-medium">
-                      ✅ Review submitted
+                       Review submitted
                     </p>
                   )}
 
@@ -420,7 +418,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                   {booking.status === "COMPLETED" &&
                     reviewedIds.has(booking.id) && (
                       <p className="text-sm text-green-600 font-medium">
-                        ✅ Review submitted
+                        Review submitted
                       </p>
                     )}
                 </div>

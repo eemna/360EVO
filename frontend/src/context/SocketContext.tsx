@@ -1,9 +1,9 @@
-// SocketContext.ts
+
 import { createContext, useContext } from "react";
 import type { Socket } from "socket.io-client";
 
 interface SocketContextType {
-  socket: Socket | null; // same type, no change needed here
+  socket: Socket | null; 
   onlineUsers: Set<string>;
 }
 

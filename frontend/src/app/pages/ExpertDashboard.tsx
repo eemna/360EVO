@@ -26,7 +26,6 @@ interface EarningsData {
   thisMonthSessions: number;
 }
 
-// Profile completeness helper
 
 interface ProfileFields {
   avatar?: string | null;
@@ -53,7 +52,6 @@ const getProfileCompleteness = (profile: ProfileFields | null | undefined) => {
   return { percent, missing };
 };
 
-// Component
 export function ExpertDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -68,7 +66,6 @@ export function ExpertDashboard() {
   });
   const [loadingEarnings, setLoadingEarnings] = useState(true);
 
-  // Fetch earnings
   useEffect(() => {
     api
       .get("/consultations/earnings")

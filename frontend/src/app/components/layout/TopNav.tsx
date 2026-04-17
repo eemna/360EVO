@@ -22,6 +22,7 @@ import {
   Users,
   Briefcase,
   GraduationCap,
+  Layers,
 } from "lucide-react";
 import { useLocation } from "react-router";
 
@@ -206,6 +207,11 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               <Button variant="ghost" size="icon">
                 <Users className="h-5 w-5" />
               </Button>
+            </Link>
+            <Link to="/app/programs">
+              <Button variant="ghost" size="icon">
+             <Layers className="h-5 w-5" />
+             </Button>
             </Link>
             <Link to="/app/projects">
               <Button variant="ghost" size="icon">
