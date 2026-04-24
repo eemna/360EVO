@@ -1,10 +1,12 @@
-version: "3.8"
-
 services:
   backend:
     image: emna08/360evo-backend:latest
+    ports:
+      - "5001:5001"
     env_file:
       - ./backend/.env
+    networks:
+      - app-network
 
   frontend:
     image: emna08/360evo-frontend:latest
@@ -12,3 +14,36 @@ services:
       - "80:80"
     depends_on:
       - backend
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus-config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+     - "9100:9100"
+    networks:
+     - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,4 +1,9 @@
 import Groq from "groq-sdk";
+import {
+  llmCallsTotal,
+  llmCallDuration,
+  llmRetries,
+} from "../middleware/metrics.js";
 
 export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
   const groq = new Groq({
@@ -6,9 +11,10 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
   });
   const MAX_RETRIES = 3;
   let attempt = 0;
-
+  const end = llmCallDuration.startTimer({ service: "callLlm" });
   while (attempt < MAX_RETRIES) {
     const start = Date.now();
+
     try {
       const response = await groq.chat.completions.create({
         model: "llama-3.1-8b-instant",
@@ -22,21 +28,19 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
 
       const latency = Date.now() - start;
       console.log(`[LLM] Success in ${latency}ms (attempt ${attempt + 1})`);
-
+      end();
+      llmCallsTotal.inc({ service: "callLlm", success: "true" });
       return response.choices[0].message.content.trim();
     } catch (error) {
       const isRateLimit = error?.status === 429 || error?.status === 529;
-
       if (isRateLimit && attempt < MAX_RETRIES - 1) {
+        llmRetries.inc({ attempt: String(attempt + 1) });
         const delay = Math.pow(2, attempt) * 1000;
-        console.warn(`[LLM] Rate limited, retrying in ${delay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
         attempt++;
       } else {
-        console.error(
-          `[LLM] Failed after ${attempt + 1} attempts:`,
-          error.message,
-        );
+        end();
+        llmCallsTotal.inc({ service: "callLlm", success: "false" });
         throw error;
       }
     }
@@ -75,16 +79,16 @@ const EXPERTS = {
 // ── MoE 1: Project Assessment (4 experts)
 export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
   console.log("[MoE] Running 4 experts in parallel for project:", project.id);
-
+  const end = llmCallDuration.startTimer({ service: "runMixtureOfExperts" });
   const [trlResult, marketResult, teamResult, tractionResult] =
     await Promise.all([
       // Expert 1 — TRL
       callLlm(
         `Project: ${project.title} | Stage: ${project.stage}
-Technologies: ${project.technologies?.join(", ") || "none"}
-Description: ${project.shortDesc}
-Rule-based TRL score: ${trlScore}/9
-Respond ONLY with: {"trlNarrative":"<2 sentences on technical maturity>","trlRisk":"<1 sentence on biggest technical risk>"}`,
+         Technologies: ${project.technologies?.join(", ") || "none"}
+         Description: ${project.shortDesc}
+         Rule-based TRL score: ${trlScore}/9
+         Respond ONLY with: {"trlNarrative":"<2 sentences on technical maturity>","trlRisk":"<1 sentence on biggest technical risk>"}`,
         EXPERTS.trl,
         300,
       )
@@ -130,7 +134,8 @@ Respond ONLY with: {"tractionNarrative":"<2 sentences on traction>","tractionRis
         .then((raw) => parseJsonResponse(raw))
         .catch(() => null),
     ]);
-
+  end();
+  llmCallsTotal.inc({ service: "runMixtureOfExperts", success: "true" });
   console.log("[MoE] Experts completed:", {
     trl: !!trlResult,
     market: !!marketResult,
@@ -174,7 +179,9 @@ export async function createThesisAlignmentMoE(
     "[MoE] Running thesis alignment experts for project:",
     project.id,
   );
-
+  const end = llmCallDuration.startTimer({
+    service: "createThesisAlignmentMoE",
+  });
   const [financialExpert, strategicExpert] = await Promise.all([
     // Expert 1 — Financial fit
     callLlm(
@@ -205,7 +212,8 @@ Respond ONLY with: {"alignmentSummary":"<2 sentences>","thesisMatches":["<match1
       .then((raw) => parseJsonResponse(raw))
       .catch(() => null),
   ]);
-
+  end();
+  llmCallsTotal.inc({ service: "createThesisAlignmentMoE", success: "true" });
   const alignmentScore = Math.round(
     (financialExpert?.financialScore || 0) * 0.4 +
       (strategicExpert?.strategicScore || 0) * 0.6,
@@ -228,7 +236,7 @@ Respond ONLY with: {"alignmentSummary":"<2 sentences>","thesisMatches":["<match1
 // ── MoE 3: Pitch Analysis (2 experts)
 export async function createPitchAnalysisMoE(project, assessment) {
   console.log("[MoE] Running pitch analysis experts for project:", project.id);
-
+  const end = llmCallDuration.startTimer({ service: "createPitchAnalysisMoE" });
   const [clarityExpert, appealExpert] = await Promise.all([
     // Expert 1 — Clarity
     callLlm(
@@ -262,7 +270,8 @@ Use real sentences, not placeholders.`,
       .then((raw) => parseJsonResponse(raw))
       .catch(() => null),
   ]);
-
+  end();
+  llmCallsTotal.inc({ service: "createPitchAnalysisMoE", success: "true" });
   return {
     pitchStrengths: appealExpert?.pitchStrengths || [],
     pitchWeaknesses: appealExpert?.pitchWeaknesses || [],

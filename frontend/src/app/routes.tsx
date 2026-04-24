@@ -36,6 +36,13 @@ import DdInboxPage from "./pages/Ddinboxpage";
 import DataRoomPage from "./pages/Dataroompage";
 import DealBriefPage from "./pages/Dealbriefpage";
 import ConsultationPaymentPage from "./pages/ConsultationPaymentPage";
+import ProgramsPage from "./pages/Programspage";
+import ProgramDetailPage from "./pages/Programdetailpage";
+import MyApplicationsPage from "./pages/MyApplicationsPage";
+import EventPaymentPage from "./pages/EventPaymentPage";
+import CreateProgramPage from "./pages/CreateProgramPage";
+import ProgramPaymentPage from "./pages/ProgramPaymentPage";
+import SearchResultsPage from "./pages/Searchresultspage";
 
 export const router = createBrowserRouter([
   {
@@ -162,6 +169,41 @@ export const router = createBrowserRouter([
       { path: "events/:id", element: <EventDetailPage /> },
       { path: "events/:id/edit", element: <CreateEventForm /> },
       {
+        path: "programs/create",
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <CreateProgramPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "programs/:id/edit",
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <CreateProgramPage />
+          </RoleRoute>
+        ),
+      },
+      { path: "programs", element: <ProgramsPage /> },
+      {
+        path: "programs/my-applications",
+        element: (
+          <ProtectedRoute>
+            <MyApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      { path: "programs/:id", element: <ProgramDetailPage /> },
+      { path: "programs/:id/pay", element: <ProgramPaymentPage /> },
+      {
+        path: "events/:id/pay",
+        element: (
+          <ProtectedRoute>
+            <EventPaymentPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "settings",
         element: <Settings />,
       },
@@ -215,6 +257,10 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      {
+  path: "search",
+  element: <SearchResultsPage />,
+},
     ],
   },
   {

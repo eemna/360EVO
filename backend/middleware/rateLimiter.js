@@ -1,12 +1,15 @@
 import ratelimit from "../config/upstash.js";
+import { rateLimitHits, rateLimitRequests } from "./metrics.js";
 
 const rateLimiter = async (req, res, next) => {
   try {
-    const identifier = req.ip; // unique per user/IP
-
+    const identifier = req.ip;
     const { success } = await ratelimit.limit(identifier);
 
+    rateLimitRequests.inc({ type: "global", allowed: String(success) });
+
     if (!success) {
+      rateLimitHits.inc({ type: "global" });
       return res.status(429).json({
         message: "Too many requests, please try again later.",
       });

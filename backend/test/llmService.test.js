@@ -204,7 +204,6 @@ describe("callLlm — mocking & prompt shape", () => {
   });
 });
 
-//parseJsonResponse (already tested, kept here for completeness)
 
 describe("parseJsonResponse — JSON parsing edge cases", () => {
   test("parses clean JSON", () => {
@@ -254,7 +253,6 @@ describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   beforeEach(() => {
     mockCreate.mockReset();
 
-    // Four experts are called in parallel — mock all four in order
     mockCreate
       .mockResolvedValueOnce(
         groqResponse(
@@ -291,7 +289,7 @@ describe("runMixtureOfExperts — prompt shape & aggregation", () => {
     await runMixtureOfExperts(baseProject, 4, {});
     const trlPrompt = mockCreate.mock.calls[0][0].messages[1].content;
     expect(trlPrompt).toContain("AgroSense");
-    expect(trlPrompt).toContain("4"); // trlScore
+    expect(trlPrompt).toContain("4");
   });
 
   test("TRL expert system prompt is the trl specialist text", async () => {
@@ -317,9 +315,8 @@ describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   test("Traction expert prompt contains milestone counts", async () => {
     await runMixtureOfExperts(baseProject, 4, { traction: 50 });
     const tractionPrompt = mockCreate.mock.calls[3][0].messages[1].content;
-    // 2 milestones total, 1 completed
-    expect(tractionPrompt).toContain("2"); // milestones planned
-    expect(tractionPrompt).toContain("1"); // milestones completed
+    expect(tractionPrompt).toContain("2");
+    expect(tractionPrompt).toContain("1");
   });
 
   test("aggregator builds executiveSummary from TRL + market narratives", async () => {
@@ -350,13 +347,12 @@ describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   });
 
   test("gracefully handles a failing expert (null instead of crash)", async () => {
-    // Override: market expert throws
     mockCreate.mockReset();
     mockCreate
       .mockResolvedValueOnce(
         groqResponse('{"trlNarrative":"ok","trlRisk":"risk"}'),
       )
-      .mockRejectedValueOnce(new Error("LLM timeout")) // market fails
+      .mockRejectedValueOnce(new Error("LLM timeout"))
       .mockResolvedValueOnce(
         groqResponse('{"teamNarrative":"ok","teamRisk":"risk"}'),
       )
@@ -417,7 +413,7 @@ describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
       baseAssessment,
     );
     const prompt = mockCreate.mock.calls[0][0].messages[1].content;
-    expect(prompt).toContain("72"); // irScore
+    expect(prompt).toContain("72");
   });
 
   test("strategic expert prompt contains investor thesis text", async () => {
@@ -441,7 +437,6 @@ describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
   });
 
   test("alignmentScore is correctly blended (40% financial + 60% strategic)", async () => {
-    // financialScore=80, strategicScore=70 → 80*0.4 + 70*0.6 = 32+42 = 74
     const result = await createThesisAlignmentMoE(
       baseInvestorProfile,
       baseProject,
@@ -475,7 +470,7 @@ describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
       .mockResolvedValueOnce(
         groqResponse('{"financialFit":"ok","financialScore":60}'),
       )
-      .mockRejectedValueOnce(new Error("timeout")); // strategic fails
+      .mockRejectedValueOnce(new Error("timeout"));
 
     const result = await createThesisAlignmentMoE(
       baseInvestorProfile,
@@ -484,7 +479,7 @@ describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
     );
     expect(result.thesisMatches).toEqual([]);
     expect(result.recommendedQuestions).toEqual([]);
-    expect(result.alignmentScore).toBe(24); // 60*0.4 + 0*0.6
+    expect(result.alignmentScore).toBe(24);
   });
 });
 
@@ -528,8 +523,8 @@ describe("createPitchAnalysisMoE — prompt shape & output mapping", () => {
   test("appeal expert prompt contains TRL and IR scores", async () => {
     await createPitchAnalysisMoE(baseProject, baseAssessment);
     const prompt = mockCreate.mock.calls[1][0].messages[1].content;
-    expect(prompt).toContain("4"); // trlScore
-    expect(prompt).toContain("72"); // irScore
+    expect(prompt).toContain("4");
+    expect(prompt).toContain("72");
   });
 
   test("appeal expert prompt contains funding amount and currency", async () => {

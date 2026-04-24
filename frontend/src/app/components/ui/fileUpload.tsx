@@ -201,7 +201,6 @@ export function FileUpload({
 
   return (
     <div className="w-full">
-      {/* ALWAYS render hidden input */}
       <Input
         ref={fileInputRef}
         type="file"

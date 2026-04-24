@@ -82,7 +82,7 @@ export const getUserById = async (req, res, next) => {
 
     res.json({
       ...user,
-      computedStatus, // null for non-experts
+      computedStatus,
     });
   } catch (error) {
     next(error);

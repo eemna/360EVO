@@ -1,9 +1,18 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
+import {
+  llmCallsTotal,
+  llmCallDuration,
+  ddAiScansTotal,
+  ddDealBriefsTotal,
+} from "../middleware/metrics.js";
 
 export async function createDocumentRiskScan(documents) {
   const docsWithText = documents.filter((d) => d.textExtract);
-
+  const end = llmCallDuration.startTimer({ service: "createDocumentRiskScan" });
+  ddAiScansTotal.inc({ cached: "false" });
   if (docsWithText.length === 0) {
+    end();
+    llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
     return {
       riskFlags: ["No extractable text found in uploaded documents"],
       highlights: [],
@@ -56,6 +65,8 @@ export async function createDocumentRiskScan(documents) {
     };
 
     if (merged.riskFlags.length === 0 && merged.highlights.length === 0) {
+      end();
+      llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
       return {
         riskFlags: ["No significant insights extracted"],
         highlights: [],
@@ -80,11 +91,17 @@ Now produce a final assessment. Respond ONLY with valid JSON:
       200,
     );
 
-    const synth = await parseJsonResponse(synthRaw).catch(() => ({
-      overallRiskLevel: "MEDIUM",
-      summary: `Analysis completed across ${docsWithText.length} document(s).`,
-    }));
-
+    let synth;
+    try {
+      synth = parseJsonResponse(synthRaw);
+    } catch {
+      synth = {
+        overallRiskLevel: "MEDIUM",
+        summary: `Analysis completed across ${docsWithText.length} document(s).`,
+      };
+    }
+    end();
+    llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
     return {
       riskFlags: merged.riskFlags,
       highlights: merged.highlights,
@@ -110,16 +127,22 @@ Respond ONLY with valid JSON in exactly this format:
     600,
   );
 
-  return parseJsonResponse(raw);
+  const result = parseJsonResponse(raw);
+  end();
+  llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
+  return result;
 }
 
 export async function suggestQaAnswer(question, documents) {
+  const end = llmCallDuration.startTimer({ service: "suggestQaAnswer" });
   const context = documents
     .filter((d) => d.textExtract)
     .map((d) => `[${d.name}]\n${d.textExtract?.slice(0, 2000)}`)
     .join("\n\n---\n\n");
 
   if (!context) {
+    end();
+    llmCallsTotal.inc({ service: "suggestQaAnswer", success: "true" });
     return {
       suggestedAnswer: "No document content available to answer this question.",
       confidenceLevel: "LOW",
@@ -127,7 +150,7 @@ export async function suggestQaAnswer(question, documents) {
     };
   }
 
-const raw = await callLlm(
+  const raw = await callLlm(
     `An INVESTOR asked the following question about a startup:
 "${question}"
 
@@ -148,8 +171,10 @@ Respond ONLY with valid JSON:
     "You are a startup advisor helping a startup reply to an investor question. Respond only in valid JSON, no markdown.",
     300,
   );
-
-  return parseJsonResponse(raw);
+  const result = parseJsonResponse(raw);
+  end();
+  llmCallsTotal.inc({ service: "suggestQaAnswer", success: "true" });
+  return result;
 }
 
 export async function createDealBrief(
@@ -159,6 +184,8 @@ export async function createDealBrief(
   investorProfile,
   riskScanContent,
 ) {
+  const end = llmCallDuration.startTimer({ service: "createDealBrief" });
+  ddDealBriefsTotal.inc();
   const raw = await callLlm(
     `Generate a structured investor deal brief for this startup.
 Use only the provided information. Do not invent facts.
@@ -204,5 +231,8 @@ Respond ONLY with valid JSON in exactly this format:
     1500,
   );
 
-  return parseJsonResponse(raw);
+  const result = parseJsonResponse(raw);
+  end();
+  llmCallsTotal.inc({ service: "createDealBrief", success: "true" });
+  return result;
 }

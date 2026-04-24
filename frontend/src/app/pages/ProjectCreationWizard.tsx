@@ -92,7 +92,6 @@ const TECH_TAGS = [
 
 const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "INR", "SGD", "JPY"];
 
-// Zod validation schema
 const projectSchema = z.object({
   // Step 1: Basics
   title: z
@@ -201,13 +200,16 @@ export function ProjectCreationWizard({
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
   >("idle");
-  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track submission
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [heroFile, setHeroFile] = useState<UploadedFile | null>(null);
+  const heroFileRef = useRef<UploadedFile | null>(null);
   const [loadingProject, setLoadingProject] = useState(false);
 
   const [supportingDocs, setSupportingDocs] = useState<UploadedDocument[]>([]);
+  const supportingDocsRef = useRef<UploadedDocument[]>([]);
+
   const { showToast } = useToast();
   const {
     register,
@@ -301,6 +303,7 @@ export function ProjectCreationWizard({
       setCurrentStep(currentStep - 1);
     }
   };
+
   const mapFormToApi = useCallback(
     (values: ProjectFormData) => ({
       title: values.title,
@@ -333,18 +336,18 @@ export function ProjectCreationWizard({
       })),
 
       documents: [
-        ...(heroFile
+        ...(heroFileRef.current
           ? [
               {
                 name: "Hero Image",
-                fileUrl: heroFile.fileUrl,
-                fileKey: heroFile.fileKey,
+                fileUrl: heroFileRef.current.fileUrl,
+                fileKey: heroFileRef.current.fileKey,
                 fileType: "HERO_IMAGE",
               },
             ]
           : []),
 
-        ...supportingDocs.map((file) => ({
+        ...supportingDocsRef.current.map((file) => ({
           name: file.name,
           fileUrl: file.fileUrl,
           fileKey: file.fileKey,
@@ -352,7 +355,7 @@ export function ProjectCreationWizard({
         })),
       ],
     }),
-    [heroFile, supportingDocs],
+    [],
   );
 
   const onSubmit = async (data: ProjectFormData) => {
@@ -371,17 +374,14 @@ export function ProjectCreationWizard({
       let id = currentProjectId;
 
       if (!id) {
-        // First time :create project
         const res = await api.post("/projects", payload);
 
         id = res.data.id;
         setCurrentProjectId(id);
       } else {
-        //  Update existing draft
         await api.put(`/projects/${id}`, payload);
       }
 
-      // Submit project
       await api.post(`/projects/${id}/submit`);
       if (onProjectSaved) {
         await onProjectSaved();
@@ -405,6 +405,7 @@ export function ProjectCreationWizard({
       setIsSubmitting(false);
     }
   };
+
   const handleNewProject = () => {
     setCurrentProjectId(null);
     setCurrentStep(0);
@@ -425,8 +426,11 @@ export function ProjectCreationWizard({
     });
 
     setHeroFile(null);
+    heroFileRef.current = null;
     setSupportingDocs([]);
+    supportingDocsRef.current = [];
   };
+
   const toggleTechTag = (tag: string) => {
     const currentTags = techTags || [];
     if (currentTags.includes(tag)) {
@@ -438,10 +442,12 @@ export function ProjectCreationWizard({
       setValue("techTags", [...currentTags, tag]);
     }
   };
+
   const handleClose = () => {
     handleNewProject();
     onClose();
   };
+
   useEffect(() => {
     if (!isOpen || !externalProjectId) return;
 
@@ -479,29 +485,27 @@ export function ProjectCreationWizard({
                 : "",
             })) || [],
         });
+
         const hero = project.documents?.find(
           (doc) => doc.fileType === "HERO_IMAGE",
         );
 
-        setHeroFile(
-          hero
-            ? {
-                name: hero.name,
-                fileUrl: hero.fileUrl,
-                fileKey: hero.fileKey,
-              }
-            : null,
-        );
+        const heroVal = hero
+          ? { name: hero.name, fileUrl: hero.fileUrl, fileKey: hero.fileKey }
+          : null;
+        setHeroFile(heroVal);
+        heroFileRef.current = heroVal;
 
-        setSupportingDocs(
+        const docsVal =
           project.documents
             ?.filter((doc) => doc.fileType === "DOCUMENT")
             .map((doc) => ({
               name: doc.name,
               fileUrl: doc.fileUrl,
               fileKey: doc.fileKey,
-            })) || [],
-        );
+            })) || [];
+        setSupportingDocs(docsVal);
+        supportingDocsRef.current = docsVal;
       } catch (error) {
         console.error("Failed to load project", error);
       } finally {
@@ -511,6 +515,7 @@ export function ProjectCreationWizard({
 
     loadProject();
   }, [isOpen, externalProjectId, reset]);
+
   const saveDraft = async () => {
     if (isSubmitting) return;
 
@@ -522,7 +527,6 @@ export function ProjectCreationWizard({
       let id = currentProjectId;
 
       if (!id) {
-        //  First time → create draft
         const res = await api.post("/projects", payload);
         if (onProjectSaved) {
           await onProjectSaved();
@@ -530,7 +534,6 @@ export function ProjectCreationWizard({
         id = res.data.id;
         setCurrentProjectId(id);
       } else {
-        //  Existing draft → update
         await api.put(`/projects/${id}`, payload);
         if (onProjectSaved) {
           await onProjectSaved();
@@ -574,7 +577,9 @@ export function ProjectCreationWizard({
       });
 
       setHeroFile(null);
+      heroFileRef.current = null;
       setSupportingDocs([]);
+      supportingDocsRef.current = [];
     }
   }, [isOpen, externalProjectId, reset]);
 
@@ -593,7 +598,7 @@ export function ProjectCreationWizard({
         if (isSubmitting) return;
 
         try {
-          const values = getValues(); // ✅ moved here
+          const values = getValues();
 
           setSaveStatus("saving");
           await api.put(`/projects/${currentProjectId}`, mapFormToApi(values));
@@ -602,7 +607,7 @@ export function ProjectCreationWizard({
           console.error(error);
           setSaveStatus("error");
         }
-      }, 60000);
+      }, 3000);
     });
 
     return () => {
@@ -611,7 +616,8 @@ export function ProjectCreationWizard({
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
+}, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
+
   if (!isOpen) return null;
 
   return (
@@ -1175,14 +1181,17 @@ export function ProjectCreationWizard({
                           onFileSelect={(file) => {
                             if (!file) {
                               setHeroFile(null);
+                              heroFileRef.current = null;
                               return;
                             }
 
-                            setHeroFile({
+                            const newHeroFile = {
                               name: "Hero Image",
                               fileUrl: file.url,
                               fileKey: file.publicId,
-                            });
+                            };
+                            setHeroFile(newHeroFile);
+                            heroFileRef.current = newHeroFile;
                           }}
                         />
                       </div>
@@ -1205,6 +1214,7 @@ export function ProjectCreationWizard({
                           initialFiles={supportingDocs}
                           onFilesChange={(files) => {
                             setSupportingDocs(files);
+                            supportingDocsRef.current = files;
                           }}
                         />
                       </div>

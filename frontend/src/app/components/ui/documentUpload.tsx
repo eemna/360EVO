@@ -101,7 +101,6 @@ export function DocumentUpload({
     onFilesChange(successFiles);
   }, [uploadedFiles, onFilesChange]);
   const validateFile = (file: File): { valid: boolean; error?: string } => {
-    // Check if max files limit reached
     if (uploadedFiles.length >= maxFiles) {
       return {
         valid: false,
@@ -109,7 +108,6 @@ export function DocumentUpload({
       };
     }
 
-    // Check file size
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
       return {
@@ -118,7 +116,6 @@ export function DocumentUpload({
       };
     }
 
-    // Check file type
     const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
     const isAccepted = acceptedTypes.some(
       (type) => type.toLowerCase() === fileExtension,

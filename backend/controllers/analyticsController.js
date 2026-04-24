@@ -59,13 +59,11 @@ export const trackInterest = async (projectId) => {
     console.error("[Analytics] Failed to track interest:", err.message);
   }
 };
-// GET /api/projects/:id/analytics?range=7d|30d|90d
 export const getProjectAnalytics = async (req, res, next) => {
   try {
     const { id: projectId } = req.params;
     const userId = req.user.id;
 
-    // Only owner can see analytics
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       select: { ownerId: true },

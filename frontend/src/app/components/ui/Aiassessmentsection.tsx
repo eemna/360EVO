@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"; // ← add useRef
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import { Button } from "./button";
 import { Skeleton } from "./skeleton";
@@ -11,7 +11,7 @@ import { AINarrativePanel } from "./Ainarrativepanel";
 import { ThesisAlignmentPanel } from "./Thesisalignmentpanel";
 import { PitchAnalysisCard } from "./Pitchanalysiscard";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { BrainCircuit, TrendingUp, Lightbulb, Sparkles } from "lucide-react"; // ← add Sparkles
+import { BrainCircuit, TrendingUp, Lightbulb, Sparkles } from "lucide-react";
 
 interface AIAssessment {
   trlScore: number;
@@ -79,7 +79,6 @@ export default function AIAssessmentSection({
     setIsPolling(false);
   };
 
-  //start polling until llmModel flips to groq
   const startPolling = () => {
     setIsPolling(true);
     let attempts = 0;
@@ -125,7 +124,7 @@ export default function AIAssessmentSection({
     try {
       setTriggering(true);
       const { data } = await api.post(`/ai/assess/${projectId}`);
-      setAssessment(data); // show rule-based immediately
+      setAssessment(data); 
 
       if (data.llmModel !== "groq/moe-4experts") {
         startPolling();
@@ -276,7 +275,6 @@ export default function AIAssessmentSection({
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <span>◈</span> AI Narrative
-            {/* ── NEW: subtle spinner inside the narrative card while polling ── */}
             {isPolling && <LoadingSpinner size="sm" />}
           </CardTitle>
         </CardHeader>

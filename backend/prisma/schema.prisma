@@ -49,6 +49,7 @@ model User {
   programApplications  ProgramApplication[] @relation("UserApplications")
   programParticipants  ProgramParticipant[] @relation("UserParticipants")
   payments             Payment[]
+  eventApplications    EventApplication[]
   search_vector Unsupported("tsvector")?
   @@index([email])
 }
@@ -283,6 +284,7 @@ model Event {
   price   Decimal  @default(0)
   search_vector Unsupported("tsvector")?
   registrations EventRegistration[]
+  applications  EventApplication[]
   
 }
 
@@ -295,7 +297,18 @@ model EventRegistration {
 
   @@unique([eventId, userId])
 }
+model EventApplication {
+  id        String   @id @default(uuid())
+  eventId   String
+  userId    String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
 
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+}
 model WeeklyAvailability {
   id        String  @id @default(uuid())
   profileId String
@@ -540,6 +553,7 @@ model Program {
   organizerId         String
   status              ProgramStatus        @default(DRAFT)
   coverImage          String?
+  price               Decimal              @default(0)
   createdAt           DateTime             @default(now())
   organizer           User                 @relation("OrganizerPrograms", fields: [organizerId], references: [id], onDelete: Cascade)
   applications        ProgramApplication[]

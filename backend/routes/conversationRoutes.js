@@ -7,17 +7,21 @@ import {
   getConversations,
   markAsRead,
   deleteConversation,
+  searchUsers,
 } from "../controllers/conversationController.js";
 
 const router = express.Router();
 
 router.post("/", protect, createConversation);
-router.post("/:id/messages", protect, sendMessage);
-router.get("/:id/messages", protect, getMessages);
 router.get("/", protect, getConversations);
 router.put("/messages/read", protect, markAsRead);
+router.get("/search", protect, searchUsers);
 router.get("/me-test", protect, (req, res) => {
   res.json({ userId: req.user.id });
 });
+
+router.post("/:id/messages", protect, sendMessage);
+router.get("/:id/messages", protect, getMessages);
 router.delete("/:id", protect, deleteConversation);
+
 export default router;
