@@ -32,6 +32,7 @@ interface Event {
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
   organizer: Organizer;
   _count: { registrations: number };
+  price: number;
 }
 
 interface Pagination {
@@ -122,8 +123,10 @@ function getDateFilter(value: string): string | undefined {
 }
 function isEventPast(event: Event): boolean {
   const now = new Date();
-  
-  const endTime = event.endDate ? new Date(event.endDate) : new Date(event.date);
+
+  const endTime = event.endDate
+    ? new Date(event.endDate)
+    : new Date(event.date);
   return endTime < now;
 }
 
@@ -143,13 +146,14 @@ function EventCard({ event }: { event: Event }) {
     <div
       onClick={() => navigate(`/app/events/${event.id}`)}
       className={`bg-white rounded-2xl border shadow-sm transition-all duration-200 cursor-pointer overflow-hidden group relative
-        ${unavailable
-          ? "border-gray-100 opacity-70 hover:opacity-80"
-          : "border-gray-100 hover:shadow-md"
+        ${
+          unavailable
+            ? "border-gray-100 opacity-70 hover:opacity-80"
+            : "border-gray-100 hover:shadow-md"
         }`}
     >
       {/* Cover Image */}
-      <div className="relative h-52 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+      <div className="relative h-36 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
         {event.coverImage ? (
           <img
             src={event.coverImage}
@@ -165,7 +169,9 @@ function EventCard({ event }: { event: Event }) {
 
         {/* Type Badge */}
         <div className="absolute top-3 right-3">
-          <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${TYPE_COLORS[event.type]}`}>
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold border ${TYPE_COLORS[event.type]}`}
+          >
             {TYPE_LABELS[event.type]}
           </span>
         </div>
@@ -188,13 +194,15 @@ function EventCard({ event }: { event: Event }) {
       </div>
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className={`font-semibold text-lg leading-snug mb-3 line-clamp-2 transition-colors
-          ${unavailable ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}>
+      <div className="p-4">
+        <h3
+          className={`font-semibold text-sm leading-snug mb-2 line-clamp-2 transition-colors
+          ${unavailable ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}
+        >
           {event.title}
         </h3>
 
-        <div className="space-y-2 mb-4">
+        <div className="space-y-1.5 mb-3">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <Calendar className="w-4 h-4 flex-shrink-0 text-blue-500" />
             <span>{date}</span>
@@ -209,19 +217,29 @@ function EventCard({ event }: { event: Event }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-          <div className="text-sm text-gray-500">
-            <span className="text-gray-400">Organized by </span>
-            <span className="font-medium text-gray-700">{event.organizer.name}</span>
-          </div>
-          <div className="flex items-center gap-1 text-sm text-gray-500">
-            <Users className="w-4 h-4" />
-            <span>{event._count.registrations}</span>
-            {event.capacity && (
-              <span className="text-gray-400">/ {event.capacity}</span>
-            )}
-          </div>
-        </div>
+<div className="flex items-center justify-between pt-3 border-t border-gray-100">
+  <div className="text-sm text-gray-500">
+    <span className="text-gray-400">Organized by </span>
+    <span className="font-medium text-gray-700">
+      {event.organizer.name}
+    </span>
+  </div>
+
+  <div className="flex items-center gap-3">
+    <div className="flex items-center gap-1 text-sm text-gray-500">
+      <Users className="w-4 h-4" />
+      <span>{event._count.registrations}</span>
+      {event.capacity && (
+        <span className="text-gray-400">/ {event.capacity}</span>
+      )}
+    </div>
+
+    <span className="text-sm font-semibold text-blue-600">
+      {Number(event.price) > 0 ? `$${Number(event.price).toFixed(2)}` : "Free"}
+
+    </span>
+  </div>
+</div>
       </div>
     </div>
   );
@@ -265,7 +283,7 @@ export default function EventsPage() {
 
       const params: Record<string, string> = {
         page: String(page),
-        limit: "9",
+        limit: "6",
       };
 
       if (search.trim()) params.search = search.trim();
@@ -377,7 +395,8 @@ export default function EventsPage() {
 
       {/* Events Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
           {[...Array(6)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
@@ -395,7 +414,8 @@ export default function EventsPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
           {events.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}

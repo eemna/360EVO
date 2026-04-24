@@ -1,12 +1,11 @@
 import { prisma } from "../config/prisma.js";
 
-// get all notifications for the logged-in user
 export const getNotifications = async (req, res, next) => {
   try {
     const notifications = await prisma.notification.findMany({
       where: { userId: req.user.id },
       orderBy: { createdAt: "desc" },
-      take: 30, // last 30 notifications
+      take: 30,
     });
 
     const unreadCount = await prisma.notification.count({
@@ -19,7 +18,6 @@ export const getNotifications = async (req, res, next) => {
   }
 };
 
-// mark one as read
 export const markOneRead = async (req, res, next) => {
   try {
     const notification = await prisma.notification.update({
@@ -32,7 +30,6 @@ export const markOneRead = async (req, res, next) => {
   }
 };
 
-// mark all as read
 export const markAllRead = async (req, res, next) => {
   try {
     await prisma.notification.updateMany({

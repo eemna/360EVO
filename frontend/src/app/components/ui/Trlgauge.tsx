@@ -40,7 +40,6 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
     return () => clearTimeout(t);
   }, [score]);
 
-  // Semi-circle: starts at 210deg, sweeps 240deg
   const startAngle = -210;
   const totalArc = 240;
   const pct = (animated - 1) / 8;

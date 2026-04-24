@@ -505,7 +505,7 @@ export function ManageReservations() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
-                            <span>({booking.price})</span>
+                            <span>${Number(booking.price).toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -628,7 +628,7 @@ export function ManageReservations() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <DollarSign className="size-4" />
-                        <span>{booking.price}</span>
+                        <span>${Number(booking.price).toFixed(2)}</span>
                       </div>
                     </div>
                   </CardHeader>
@@ -690,7 +690,7 @@ export function ManageReservations() {
                           </div>
                           <div className="flex items-center gap-1.5">
                             <DollarSign className="size-4" />
-                            <span>{booking.price}</span>
+                            <span>${Number(booking.price).toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -832,7 +832,7 @@ export function ManageReservations() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <DollarSign className="size-4" />
-                        <span>{booking.price}</span>
+                        <span>${Number(booking.price).toFixed(2)}</span>
                       </div>
                     </div>
                   </CardHeader>

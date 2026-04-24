@@ -2,6 +2,8 @@ import axios from "axios";
 
 let inMemoryToken: string | null = null;
 
+let refreshPromise: Promise<string> | null = null;
+
 export const setApiToken = (token: string | null) => {
   inMemoryToken = token;
 };
@@ -35,14 +37,27 @@ api.interceptors.response.use(
       !originalRequest.url?.includes("/auth/refresh-token")
     ) {
       originalRequest._retry = true;
+
       try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
-          {},
-          { withCredentials: true },
-        );
-        const newToken = res.data.accessToken;
-        inMemoryToken = newToken;
+        if (!refreshPromise) {
+          refreshPromise = axios
+            .post(
+              `${import.meta.env.VITE_API_URL}/auth/refresh-token`,
+              {},
+              { withCredentials: true },
+            )
+            .then((res) => {
+              const newToken: string = res.data.accessToken;
+              inMemoryToken = newToken;
+              return newToken;
+            })
+            .finally(() => {
+              refreshPromise = null;
+            });
+        }
+
+        const newToken = await refreshPromise;
+
         return api({
           ...originalRequest,
           headers: {
@@ -52,9 +67,11 @@ api.interceptors.response.use(
         });
       } catch {
         inMemoryToken = null;
+        refreshPromise = null;
         window.location.href = "/login";
       }
     }
+
     return Promise.reject(error);
   },
 );

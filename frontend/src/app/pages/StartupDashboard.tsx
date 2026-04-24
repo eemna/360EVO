@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Pencil,
   Trash2,
+  BookOpen
 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "../components/ui/button";
@@ -208,7 +209,7 @@ export default function StartupDashboard() {
             Manage your projects and track performance
           </p>
         </div>
-        
+
         <ProjectCreationWizard
           isOpen={isWizardOpen}
           onClose={() => {
@@ -220,23 +221,31 @@ export default function StartupDashboard() {
           setLoading={setWizardLoading}
           onProjectSaved={fetchDashboard}
         />
-  <div className="flex items-center gap-2">
-    <Button
-      variant="outline"
-      onClick={() => navigate("/app/events/my")}
-      className="gap-2"
-    >
-      <Calendar className="size-4" />
-      My Events
-    </Button>
-    <Button
-      onClick={() => setIsWizardOpen(true)}
-      className="bg-blue-600 hover:bg-blue-700 gap-2"
-    >
-      <Plus className="size-5" />
-      Create Project
-    </Button>
-  </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate("/app/events/my")}
+            className="gap-2"
+          >
+            <Calendar className="size-4" />
+            My Events
+          </Button>
+<Button
+  variant="outline"
+  onClick={() => navigate("/app/programs/my-applications")}
+  className="gap-2"
+>
+  <BookOpen className="size-4" />
+  My Applications
+</Button>
+          <Button
+            onClick={() => setIsWizardOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 gap-2"
+          >
+            <Plus className="size-5" />
+            Create Project
+          </Button>
+        </div>
       </div>
 
       {/* STATS — all 4 in one row */}

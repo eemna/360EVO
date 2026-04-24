@@ -37,12 +37,10 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 function PaymentForm({
   clientSecret,
   amount,
-  bookingId,
   onSuccess,
 }: {
   clientSecret: string;
   amount: number;
-  bookingId: string;
   onSuccess: () => void;
 }) {
   const stripe = useStripe();
@@ -72,9 +70,14 @@ function PaymentForm({
         return;
       }
 
-      if (paymentIntent?.status === "succeeded") {
-        await pollBookingStatus();
-      }
+if (paymentIntent?.status === "succeeded") {
+  await api.post("/payments/consultation/confirm", {
+    paymentIntentId: paymentIntent.id,
+  });
+  showToast({ type: "success", title: "Payment Confirmed 🎉", 
+    message: "Your session is now fully confirmed!" });
+  onSuccess();
+}
     } catch {
       setCardError("Something went wrong. Please try again.");
     } finally {
@@ -82,46 +85,7 @@ function PaymentForm({
     }
   };
 
-  const pollBookingStatus = async () => {
-    const maxAttempts = 10;
-    let attempts = 0;
-    let cancelled = false;
 
-    const cleanup = () => {
-      cancelled = true;
-    };
-
-    while (attempts < maxAttempts && !cancelled) {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      if (cancelled) return; // ← check after await too
-
-      const { data } = await api.get("/consultations");
-      const updated = data.find((b: BookingDetail) => b.id === bookingId);
-
-      if (updated?.status === "ACCEPTED") {
-        showToast({
-          type: "success",
-          title: "Payment Confirmed 🎉",
-          message: "Your session is now fully confirmed!",
-        });
-        onSuccess();
-        return;
-      }
-
-      attempts++;
-    }
-
-    if (!cancelled) {
-      showToast({
-        type: "success",
-        title: "Payment Received",
-        message: "Your booking will be confirmed shortly.",
-      });
-      onSuccess();
-    }
-
-    return cleanup;
-  };
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="bg-gray-50 rounded-xl p-4 space-y-2">
@@ -279,7 +243,6 @@ export default function ConsultationPaymentPage() {
               <PaymentForm
                 clientSecret={clientSecret}
                 amount={amount}
-                bookingId={bookingId!}
                 onSuccess={() => navigate(-1)}
               />
             </Elements>

@@ -6,10 +6,10 @@ const rateLimiter = async (req, res, next) => {
     const identifier = req.ip;
     const { success } = await ratelimit.limit(identifier);
 
-    rateLimitRequests.inc({ type: 'global', allowed: String(success) });
+    rateLimitRequests.inc({ type: "global", allowed: String(success) });
 
     if (!success) {
-      rateLimitHits.inc({ type: 'global' });
+      rateLimitHits.inc({ type: "global" });
       return res.status(429).json({
         message: "Too many requests, please try again later.",
       });

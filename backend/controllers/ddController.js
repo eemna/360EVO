@@ -11,7 +11,13 @@ import {
 } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
-import { ddRequestsTotal, activeDataRooms, ddDocumentsUploaded, ddQaThreadsTotal, llmCacheHits } from '../middleware/metrics.js';
+import {
+  ddRequestsTotal,
+  activeDataRooms,
+  ddDocumentsUploaded,
+  ddQaThreadsTotal,
+  llmCacheHits,
+} from "../middleware/metrics.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 GlobalWorkerOptions.workerSrc = pathToFileURL(
@@ -64,7 +70,7 @@ export const requestDueDiligence = async (req, res, next) => {
     const ddRequest = await prisma.ddRequest.create({
       data: { projectId, investorId, message, nda: nda || false },
     });
-    ddRequestsTotal.inc({ status: 'pending' });
+    ddRequestsTotal.inc({ status: "pending" });
     await prisma.notification.create({
       data: {
         userId: project.ownerId,
@@ -85,7 +91,6 @@ export const requestDueDiligence = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getDdRequests = async (req, res, next) => {
   try {
@@ -165,8 +170,8 @@ export const approveDdRequest = async (req, res, next) => {
 
       return { updated, dataRoom };
     });
-   ddRequestsTotal.inc({ status: 'approved' });
-   activeDataRooms.inc();
+    ddRequestsTotal.inc({ status: "approved" });
+    activeDataRooms.inc();
     res.json(result);
   } catch (error) {
     next(error);
@@ -192,7 +197,7 @@ export const declineDdRequest = async (req, res, next) => {
       where: { id },
       data: { status: "DECLINED", reviewedAt: new Date() },
     });
-    ddRequestsTotal.inc({ status: 'declined' });
+    ddRequestsTotal.inc({ status: "declined" });
     await prisma.notification.create({
       data: {
         userId: ddRequest.investorId,
@@ -315,7 +320,7 @@ export const addDocument = async (req, res, next) => {
         textExtract,
       },
     });
-ddDocumentsUploaded.inc();
+    ddDocumentsUploaded.inc();
     await prisma.dataRoomActivity.create({
       data: { dataRoomId, userId, action: "UPLOADED_DOCUMENT", docName: name },
     });
@@ -414,7 +419,7 @@ export const createQaThread = async (req, res, next) => {
         responses: true,
       },
     });
-ddQaThreadsTotal.inc();
+    ddQaThreadsTotal.inc();
     await prisma.notification.create({
       data: {
         userId: dataRoom.project.ownerId,
@@ -578,7 +583,7 @@ export const runAiScan = async (req, res, next) => {
         },
       });
       if (cached && cached.inputHash === inputHash) {
-        llmCacheHits.inc({ type: 'DD_SUMMARY' });
+        llmCacheHits.inc({ type: "DD_SUMMARY" });
         return res.json({ cached: true, data: cached.content });
       }
     }

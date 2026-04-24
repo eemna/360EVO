@@ -4,6 +4,7 @@ import TopNav from "./TopNav";
 import LeftSidebar from "./LeftSidebar";
 import { SocketProvider } from "../../../providers/SocketProvider";
 import { BookmarkProvider } from "../../../providers/BookmarkProvider";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
 export default function AppLayout() {
   const [SidebarOpen, setIsSidebarOpen] = useState(false);
   return (
@@ -19,7 +20,9 @@ export default function AppLayout() {
             />
 
             <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+              <ErrorBoundary>
               <Outlet />
+              </ErrorBoundary>
             </main>
           </div>
         </div>

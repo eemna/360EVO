@@ -8,11 +8,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // restore session via httpOnly refresh token cookie
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        // Cookie is sent automatically (withCredentials: true)
         const res = await api.post("/auth/refresh-token");
         const newToken = res.data.accessToken;
 

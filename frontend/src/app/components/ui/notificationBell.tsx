@@ -22,7 +22,7 @@ export function NotificationBell() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    let cancelled = false; // prevent state update if component unmounts
+    let cancelled = false;
 
     api
       .get("/notifications")
@@ -35,11 +35,10 @@ export function NotificationBell() {
       .catch(console.error);
 
     return () => {
-      cancelled = true; // cleanup
+      cancelled = true;
     };
   }, []);
 
-  // Real-time socket listener
   useEffect(() => {
     if (!socket) return;
 
@@ -55,7 +54,6 @@ export function NotificationBell() {
     };
   }, [socket]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
