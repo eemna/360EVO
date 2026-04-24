@@ -1,16 +1,18 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
 import {
-  llmCallsTotal, llmCallDuration,
-  ddAiScansTotal, ddDealBriefsTotal
-} from '../middleware/metrics.js';
+  llmCallsTotal,
+  llmCallDuration,
+  ddAiScansTotal,
+  ddDealBriefsTotal,
+} from "../middleware/metrics.js";
 
 export async function createDocumentRiskScan(documents) {
   const docsWithText = documents.filter((d) => d.textExtract);
-  const end = llmCallDuration.startTimer({ service: 'createDocumentRiskScan' });
-  ddAiScansTotal.inc({ cached: 'false' });
+  const end = llmCallDuration.startTimer({ service: "createDocumentRiskScan" });
+  ddAiScansTotal.inc({ cached: "false" });
   if (docsWithText.length === 0) {
-        end();
-         llmCallsTotal.inc({ service: 'createDocumentRiskScan', success: 'true' });
+    end();
+    llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
     return {
       riskFlags: ["No extractable text found in uploaded documents"],
       highlights: [],
@@ -52,15 +54,19 @@ export async function createDocumentRiskScan(documents) {
     );
 
     const merged = {
-      riskFlags: unique(chunkResults.flatMap((r) => r.riskFlags || [])).slice( 0,8
-        ,),
-      highlights: unique(chunkResults.flatMap((r) => r.highlights || [])).slice(0,6,
-),
+      riskFlags: unique(chunkResults.flatMap((r) => r.riskFlags || [])).slice(
+        0,
+        8,
+      ),
+      highlights: unique(chunkResults.flatMap((r) => r.highlights || [])).slice(
+        0,
+        6,
+      ),
     };
 
     if (merged.riskFlags.length === 0 && merged.highlights.length === 0) {
       end();
-      llmCallsTotal.inc({ service: 'createDocumentRiskScan', success: 'true' });
+      llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
       return {
         riskFlags: ["No significant insights extracted"],
         highlights: [],
@@ -85,14 +91,17 @@ Now produce a final assessment. Respond ONLY with valid JSON:
       200,
     );
 
-let synth;
-try {
-  synth = parseJsonResponse(synthRaw);
-} catch {
-  synth = { overallRiskLevel: "MEDIUM", summary: `Analysis completed across ${docsWithText.length} document(s).` };
-}
-  end();
-  llmCallsTotal.inc({ service: 'createDocumentRiskScan', success: 'true' });
+    let synth;
+    try {
+      synth = parseJsonResponse(synthRaw);
+    } catch {
+      synth = {
+        overallRiskLevel: "MEDIUM",
+        summary: `Analysis completed across ${docsWithText.length} document(s).`,
+      };
+    }
+    end();
+    llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
     return {
       riskFlags: merged.riskFlags,
       highlights: merged.highlights,
@@ -119,21 +128,21 @@ Respond ONLY with valid JSON in exactly this format:
   );
 
   const result = parseJsonResponse(raw);
-    end();
-  llmCallsTotal.inc({ service: 'createDocumentRiskScan', success: 'true' });
+  end();
+  llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
   return result;
 }
 
 export async function suggestQaAnswer(question, documents) {
-  const end = llmCallDuration.startTimer({ service: 'suggestQaAnswer' });
+  const end = llmCallDuration.startTimer({ service: "suggestQaAnswer" });
   const context = documents
     .filter((d) => d.textExtract)
     .map((d) => `[${d.name}]\n${d.textExtract?.slice(0, 2000)}`)
     .join("\n\n---\n\n");
 
   if (!context) {
-        end();
-    llmCallsTotal.inc({ service: 'suggestQaAnswer', success: 'true' });
+    end();
+    llmCallsTotal.inc({ service: "suggestQaAnswer", success: "true" });
     return {
       suggestedAnswer: "No document content available to answer this question.",
       confidenceLevel: "LOW",
@@ -164,7 +173,7 @@ Respond ONLY with valid JSON:
   );
   const result = parseJsonResponse(raw);
   end();
-  llmCallsTotal.inc({ service: 'suggestQaAnswer', success: 'true' });
+  llmCallsTotal.inc({ service: "suggestQaAnswer", success: "true" });
   return result;
 }
 
@@ -175,7 +184,7 @@ export async function createDealBrief(
   investorProfile,
   riskScanContent,
 ) {
-  const end = llmCallDuration.startTimer({ service: 'createDealBrief' });
+  const end = llmCallDuration.startTimer({ service: "createDealBrief" });
   ddDealBriefsTotal.inc();
   const raw = await callLlm(
     `Generate a structured investor deal brief for this startup.
@@ -224,6 +233,6 @@ Respond ONLY with valid JSON in exactly this format:
 
   const result = parseJsonResponse(raw);
   end();
-  llmCallsTotal.inc({ service: 'createDealBrief', success: 'true' });
+  llmCallsTotal.inc({ service: "createDealBrief", success: "true" });
   return result;
 }

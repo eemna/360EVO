@@ -42,7 +42,6 @@ export const getPublicExpertProfile = async (req, res, next) => {
       );
 
       if (todayAvailability) {
-        // Check if fully booked today
         const [startHour, startMinute] = todayAvailability.startTime
           .split(":")
           .map(Number);

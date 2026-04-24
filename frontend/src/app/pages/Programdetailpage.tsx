@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Skeleton } from "../components/ui/skeleton";
@@ -54,6 +59,7 @@ interface Program {
   coverImage: string | null;
   organizer: { name: string };
   _count: { applications: number; participants: number };
+  price: number;
 }
 type ProjectStatus = "DRAFT" | "PENDING" | "APPROVED" | "REJECTED";
 
@@ -63,9 +69,21 @@ type Project = {
   status: ProjectStatus;
 };
 const TYPE_CONFIG = {
-  INCUBATION: { label: "Incubation", icon: BookOpen, color: "text-blue-600 bg-blue-50" },
-  ACCELERATION: { label: "Acceleration", icon: Rocket, color: "text-orange-600 bg-orange-50" },
-  MENTORSHIP: { label: "Mentorship", icon: TrendingUp, color: "text-green-600 bg-green-50" },
+  INCUBATION: {
+    label: "Incubation",
+    icon: BookOpen,
+    color: "text-blue-600 bg-blue-50",
+  },
+  ACCELERATION: {
+    label: "Acceleration",
+    icon: Rocket,
+    color: "text-orange-600 bg-orange-50",
+  },
+  MENTORSHIP: {
+    label: "Mentorship",
+    icon: TrendingUp,
+    color: "text-green-600 bg-green-50",
+  },
 };
 
 function formatDate(date: string) {
@@ -80,7 +98,6 @@ function daysUntil(date: string) {
   return Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
 }
 
-// Application Modal
 function ApplicationModal({
   open,
   onOpenChange,
@@ -102,12 +119,19 @@ function ApplicationModal({
   const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     if (open && user?.role === "STARTUP") {
-      api.get("/projects/mine").then(({ data }) => setProjects(data)).catch(() => {});
+      api
+        .get("/projects/mine")
+        .then(({ data }) => setProjects(data))
+        .catch(() => {});
     }
   }, [open, user]);
   const handleSubmit = async () => {
     if (!motivation.trim()) {
-      showToast({ type: "error", title: "Please fill in your motivation", message: "" });
+      showToast({
+        type: "error",
+        title: "Please fill in your motivation",
+        message: "",
+      });
       return;
     }
     try {
@@ -137,9 +161,12 @@ function ApplicationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl">Apply to {program.title}</DialogTitle>
+          <DialogTitle className="text-xl">
+            Apply to {program.title}
+          </DialogTitle>
           <DialogDescription>
-            Complete the application form below. All fields help us evaluate your fit for the program.
+            Complete the application form below. All fields help us evaluate
+            your fit for the program.
           </DialogDescription>
         </DialogHeader>
 
@@ -153,15 +180,16 @@ function ApplicationModal({
               </span>
             </div>
             <p className="text-xs text-indigo-700">
-              Starts {formatDate(program.startDate)} · {program.capacity} spots ·
-              Deadline {formatDate(program.applicationDeadline)}
+              Starts {formatDate(program.startDate)} · {program.capacity} spots
+              · Deadline {formatDate(program.applicationDeadline)}
             </p>
           </div>
 
           {/* Motivation */}
           <div className="space-y-2">
             <Label htmlFor="motivation">
-              Why do you want to join this program? <span className="text-red-500">*</span>
+              Why do you want to join this program?{" "}
+              <span className="text-red-500">*</span>
             </Label>
             <Textarea
               id="motivation"
@@ -171,13 +199,16 @@ function ApplicationModal({
               rows={4}
               maxLength={1000}
             />
-            <p className="text-xs text-gray-400 text-right">{motivation.length}/1000</p>
+            <p className="text-xs text-gray-400 text-right">
+              {motivation.length}/1000
+            </p>
           </div>
 
           {/* Experience */}
           <div className="space-y-2">
             <Label htmlFor="experience">
-              Relevant experience <span className="text-gray-400 text-xs">(optional)</span>
+              Relevant experience{" "}
+              <span className="text-gray-400 text-xs">(optional)</span>
             </Label>
             <Textarea
               id="experience"
@@ -192,7 +223,8 @@ function ApplicationModal({
           {/* Goals */}
           <div className="space-y-2">
             <Label htmlFor="goals">
-              What are your specific goals? <span className="text-gray-400 text-xs">(optional)</span>
+              What are your specific goals?{" "}
+              <span className="text-gray-400 text-xs">(optional)</span>
             </Label>
             <Textarea
               id="goals"
@@ -203,22 +235,32 @@ function ApplicationModal({
               maxLength={600}
             />
           </div>
-{user?.role === "STARTUP" && projects.length > 0 && (
-      <div className="space-y-2">
-        <Label>Attach a Project <span className="text-gray-400 text-xs">(optional)</span></Label>
-        <Select value={selectedProjectId} onValueChange={setSelectedProjectId}>
-          <SelectTrigger><SelectValue placeholder="Select a project..." /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">None</SelectItem>
-            {projects
-            .filter((p) => p.status === "APPROVED")
-            .map((p) => (
-              <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-    )}
+          {user?.role === "STARTUP" && projects.length > 0 && (
+            <div className="space-y-2">
+              <Label>
+                Attach a Project{" "}
+                <span className="text-gray-400 text-xs">(optional)</span>
+              </Label>
+              <Select
+                value={selectedProjectId}
+                onValueChange={setSelectedProjectId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a project..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {projects
+                    .filter((p) => p.status === "APPROVED")
+                    .map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.title}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           {/* Requirements reminder */}
           {program.requirements.length > 0 && (
             <div className="bg-amber-50 border border-amber-100 rounded-xl p-3">
@@ -228,7 +270,10 @@ function ApplicationModal({
               </p>
               <ul className="space-y-1">
                 {program.requirements.map((req, i) => (
-                  <li key={i} className="text-xs text-amber-600 flex items-start gap-1.5">
+                  <li
+                    key={i}
+                    className="text-xs text-amber-600 flex items-start gap-1.5"
+                  >
                     <ChevronRight className="size-3 mt-0.5 flex-shrink-0" />
                     {req}
                   </li>
@@ -239,7 +284,11 @@ function ApplicationModal({
         </div>
 
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={submitting}
+          >
             Cancel
           </Button>
           <Button
@@ -247,7 +296,11 @@ function ApplicationModal({
             disabled={submitting || !motivation.trim()}
             className="bg-indigo-600 hover:bg-indigo-700 gap-2"
           >
-            {submitting ? <LoadingSpinner size="sm" /> : <CheckCircle2 className="size-4" />}
+            {submitting ? (
+              <LoadingSpinner size="sm" />
+            ) : (
+              <CheckCircle2 className="size-4" />
+            )}
             {submitting ? "Submitting..." : "Submit Application"}
           </Button>
         </DialogFooter>
@@ -267,7 +320,7 @@ export default function ProgramDetailPage() {
   const [applyOpen, setApplyOpen] = useState(false);
   const [hasApplied, setHasApplied] = useState(false);
   const [checkingApplication, setCheckingApplication] = useState(true);
-const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN";
   const fetchProgram = async () => {
     try {
       setLoading(true);
@@ -370,7 +423,9 @@ const isAdmin = user?.role === "ADMIN";
             </Badge>
           </div>
           <h1 className="text-2xl font-bold text-white">{program.title}</h1>
-          <p className="text-sm text-white/80 mt-1">by {program.organizer.name}</p>
+          <p className="text-sm text-white/80 mt-1">
+            by {program.organizer.name}
+          </p>
         </div>
       </div>
 
@@ -482,13 +537,23 @@ const isAdmin = user?.role === "ADMIN";
                     {formatDate(program.endDate)}
                   </span>
                 </div>
+                <div className="flex items-center justify-between text-sm">
+  <span className="text-gray-500 flex items-center gap-1.5">
+     Fee
+  </span>
+  <span className="font-semibold text-gray-800">
+    {program.price === 0 ? "Free" : `$${program.price}`}
+  </span>
+</div>
               </div>
 
               {/* Deadline */}
               {isOpen && days >= 0 && (
                 <div
                   className={`rounded-xl p-3 text-center ${
-                    days <= 7 ? "bg-red-50 border border-red-200" : "bg-gray-50 border border-gray-200"
+                    days <= 7
+                      ? "bg-red-50 border border-red-200"
+                      : "bg-gray-50 border border-gray-200"
                   }`}
                 >
                   <Clock
@@ -509,65 +574,67 @@ const isAdmin = user?.role === "ADMIN";
                 </div>
               )}
 
-{/* CTA */}
-{!user ? (
-  <Button
-    className="w-full bg-indigo-600 hover:bg-indigo-700"
-    onClick={() => navigate("/login")}
-  >
-    Log in to Apply
-  </Button>
-) : checkingApplication ? (
-  <Button className="w-full" disabled>
-    <LoadingSpinner size="sm" />
-  </Button>
-) : hasApplied ? (
-  <div className="flex items-center gap-2 justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
-    <CheckCircle2 className="size-4 text-green-600" />
-    <span className="text-sm font-medium text-green-700">
-      Application Submitted
-    </span>
-  </div>
-) : canApply ? (
-  <Button
-    className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
-    onClick={() => setApplyOpen(true)}
-  >
-    <Rocket className="size-4" />
-    Apply Now
-  </Button>
-) : (
-  <Button className="w-full" disabled>
-    {!isOpen
-      ? program.status === "CLOSED" ? "Applications Closed" : program.status
-      : spotsLeft === 0
-      ? "Program Full"
-      : days < 0
-      ? "Deadline Passed"
-      : "Unavailable"}
-  </Button>
-)}
+              {/* CTA */}
+              {!user ? (
+                <Button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  onClick={() => navigate("/login")}
+                >
+                  Log in to Apply
+                </Button>
+              ) : checkingApplication ? (
+                <Button className="w-full" disabled>
+                  <LoadingSpinner size="sm" />
+                </Button>
+              ) : hasApplied ? (
+                <div className="flex items-center gap-2 justify-center p-3 bg-green-50 border border-green-200 rounded-xl">
+                  <CheckCircle2 className="size-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-700">
+                    Application Submitted
+                  </span>
+                </div>
+              ) : canApply ? (
+                <Button
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
+                  onClick={() => setApplyOpen(true)}
+                >
+                  <Rocket className="size-4" />
+                  Apply Now
+                </Button>
+              ) : (
+                <Button className="w-full" disabled>
+                  {!isOpen
+                    ? program.status === "CLOSED"
+                      ? "Applications Closed"
+                      : program.status
+                    : spotsLeft === 0
+                      ? "Program Full"
+                      : days < 0
+                        ? "Deadline Passed"
+                        : "Unavailable"}
+                </Button>
+              )}
 
-{!isAdmin && (
-  <Button
-    variant="ghost"
-    size="sm"
-    className="w-full text-xs text-indigo-600"
-    onClick={() => navigate("/app/programs/my-applications")}
-  >
-    View my applications →
-  </Button>
-)}
+              {!isAdmin && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-indigo-600"
+                  onClick={() => navigate("/app/programs/my-applications")}
+                >
+                  View my applications →
+                </Button>
+              )}
               {isAdmin && (
-  <Button
-    variant="outline"
-    size="sm"
-    className="w-full text-xs gap-1.5"
-    onClick={() => navigate(`/app/programs/${program.id}/edit`)}
-  >
-    Edit Program
-  </Button>
-)}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs gap-1.5"
+                  onClick={() => navigate(`/app/programs/${program.id}/edit`)}
+                >
+                  Edit Program
+                </Button>
+              )}
             </CardContent>
           </Card>
 
@@ -575,7 +642,9 @@ const isAdmin = user?.role === "ADMIN";
           <Card className="border border-gray-200">
             <CardContent className="pt-4 pb-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">Applications received</span>
+                <span className="text-sm text-gray-500">
+                  Applications received
+                </span>
                 <span className="font-semibold text-gray-800">
                   {program._count.applications}
                 </span>

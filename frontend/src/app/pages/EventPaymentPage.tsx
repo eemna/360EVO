@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
@@ -57,24 +62,36 @@ function PaymentForm({
       setPaying(true);
       setCardError("");
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: cardElement },
-      });
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: { card: cardElement },
+        },
+      );
 
       if (error) {
         setCardError(error.message || "Payment failed");
-        showToast({ type: "error", title: "Payment failed", message: error.message || "" });
+        showToast({
+          type: "error",
+          title: "Payment failed",
+          message: error.message || "",
+        });
         return;
       }
 
-      if (paymentIntent?.status === "succeeded") {
-        showToast({
-          type: "success",
-          title: "Payment successful!",
-          message: `You're registered for "${event.title}"`,
-        });
-        onSuccess();
-      }
+if (paymentIntent?.status === "succeeded") {
+  try {
+    await api.post("/payments/confirm", { paymentIntentId: paymentIntent.id });
+  } catch (err) {
+    console.error("Confirm failed:", err);
+  }
+  showToast({
+    type: "success",
+    title: "Payment successful!",
+    message: `You're registered for "${event.title}"`,
+  });
+  onSuccess();
+}
     } finally {
       setPaying(false);
     }
@@ -113,7 +130,10 @@ function PaymentForm({
       {/* Security note */}
       <div className="flex items-center gap-2 text-xs text-gray-400">
         <Lock className="size-3" />
-        <span>Payments are processed securely by Stripe. We never store your card details.</span>
+        <span>
+          Payments are processed securely by Stripe. We never store your card
+          details.
+        </span>
       </div>
 
       <Button
@@ -137,7 +157,13 @@ function PaymentForm({
   );
 }
 
-function SuccessScreen({ event, onDone }: { event: EventInfo; onDone: () => void }) {
+function SuccessScreen({
+  event,
+  onDone,
+}: {
+  event: EventInfo;
+  onDone: () => void;
+}) {
   return (
     <Card className="border-2 border-green-200 bg-green-50">
       <CardContent className="py-12 text-center space-y-4">
@@ -146,7 +172,7 @@ function SuccessScreen({ event, onDone }: { event: EventInfo; onDone: () => void
         </div>
         <h2 className="text-xl font-bold text-green-900">You're registered!</h2>
         <p className="text-green-700 text-sm">
-          Your spot for <strong>{event.title}</strong> is confirmed. Check your notifications for details.
+          Your spot for <strong>{event.title}</strong> is confirmed. 
         </p>
         <Button onClick={onDone} className="bg-green-600 hover:bg-green-700">
           View Event
@@ -183,18 +209,24 @@ export default function EventPaymentPage() {
 
         if (Number(eventData.price) === 0) {
           await api.post(`/events/${eventId}/register`);
-          showToast({ type: "success", title: "Registered!", message: "You're registered for this free event." });
+          showToast({
+            type: "success",
+            title: "Registered!",
+            message: "You're registered for this free event.",
+          });
           navigate(`/app/events/${eventId}`);
           return;
         }
 
         // Create payment intent
-        const { data: intentData } = await api.post("/payments/create-intent", { eventId });
+        const { data: intentData } = await api.post("/payments/create-intent", {
+          eventId,
+        });
         setClientSecret(intentData.clientSecret);
       } catch (err: unknown) {
         const msg =
-          (err as { response?: { data?: { message?: string } } })?.response?.data
-            ?.message ?? "Failed to initialize payment";
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message ?? "Failed to initialize payment";
         showToast({ type: "error", title: "Error", message: msg });
         navigate(`/app/events/${eventId}`);
       } finally {
@@ -218,7 +250,10 @@ export default function EventPaymentPage() {
   if (paid) {
     return (
       <div className="max-w-md mx-auto">
-        <SuccessScreen event={event} onDone={() => navigate(`/app/events/${eventId}`)} />
+        <SuccessScreen
+          event={event}
+          onDone={() => navigate(`/app/events/${eventId}`)}
+        />
       </div>
     );
   }
@@ -236,7 +271,9 @@ export default function EventPaymentPage() {
         Back to Event
       </Button>
 
-      <h1 className="text-2xl font-bold text-gray-900">Complete Registration</h1>
+      <h1 className="text-2xl font-bold text-gray-900">
+        Complete Registration
+      </h1>
 
       {/* Event summary */}
       <Card className="border border-gray-200">
@@ -254,7 +291,9 @@ export default function EventPaymentPage() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">{event.title}</h3>
+              <h3 className="font-semibold text-gray-900 truncate">
+                {event.title}
+              </h3>
               <div className="space-y-0.5 mt-1">
                 <p className="text-xs text-gray-500 flex items-center gap-1">
                   <Calendar className="size-3" />

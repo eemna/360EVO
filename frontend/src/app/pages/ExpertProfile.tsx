@@ -338,7 +338,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                   )}
                   {booking.status === "ACCEPTED" && (
                     <Badge className="bg-green-100 text-green-700 border-green-200">
-                      Confirmed 
+                      Confirmed
                     </Badge>
                   )}
                   {booking.status === "COMPLETED" && (
@@ -410,7 +410,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                   {/* Already reviewed */}
                   {booking.status === "COMPLETED" && booking.review && (
                     <p className="text-sm text-green-600 font-medium">
-                       Review submitted
+                      Review submitted
                     </p>
                   )}
 

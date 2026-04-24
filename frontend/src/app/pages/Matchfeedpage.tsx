@@ -13,20 +13,9 @@ import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useToast } from "../../context/ToastContext";
 import api from "../../services/axios";
 import { TRLBadge } from "../components/ui/Aiassessmentsection";
-import { Eye, Target, RefreshCw} from "lucide-react";
+import { Eye, Target, RefreshCw } from "lucide-react";
 
-{/* interface InvestorProfile {
-  industries: string[];
-  stages: string[];
-  technologies: string[];
-  fundingMin: string | number | null;
-  fundingMax: string | number | null;
-  currency: string;
-  geographicPrefs: string[];
-  riskTolerance: "LOW" | "MEDIUM" | "HIGH";
-  dealStructures: string[];
-  investmentThesis: string;
-} */}
+
 
 interface AIAssessment {
   trlScore: number;
@@ -336,8 +325,7 @@ function MatchCard({
 
 export default function MatchFeedPage() {
   const { showToast } = useToast();
-  // const navigate = useNavigate();
-  // const [profile, setProfile] = useState<InvestorProfile | null>(null);
+ 
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -345,17 +333,7 @@ export default function MatchFeedPage() {
     "active",
   );
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  {/* useEffect(() => {
-  api.get("/investor-profile")
-    .then(({ data }) => setProfile(data))
-    .catch(() => setProfile(null));
-}, []); */}
-
- { /* const profileComplete =
-  profile &&
-  (profile.industries?.length ?? 0) > 0 &&
-  (profile.stages?.length ?? 0) > 0 &&
-  (profile.investmentThesis?.length ?? 0) > 50; */}
+  
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -444,7 +422,7 @@ export default function MatchFeedPage() {
         </div>
         <Button
           onClick={handleGenerate}
-          disabled={generating }
+          disabled={generating}
           className="bg-indigo-600 hover:bg-indigo-700 gap-2"
         >
           {generating ? (
@@ -458,32 +436,6 @@ export default function MatchFeedPage() {
           )}
         </Button>
       </div>
-      {/* No profile banner */}
- { /*    {!loading && !profileComplete && (
-        <div className="rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Zap className="size-5 text-indigo-600" />
-            </div>
-            <div>
-              <p className="font-semibold text-indigo-900 text-sm">
-                Complete your investor profile to unlock AI matching
-              </p>
-              <p className="text-xs text-indigo-600 mt-0.5">
-                Add your thesis, sectors, and preferences so we can find the
-                best projects for you.
-              </p>
-            </div>
-          </div>
-          <Button
-            onClick={() => navigate("/app/investor/setup")}
-            className="bg-indigo-600 hover:bg-indigo-700 flex-shrink-0"
-          >
-            Set Up Profile →
-          </Button>
-        </div>
-      )} */
-}
 
 
       {/* Filter tabs */}

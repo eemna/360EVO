@@ -67,7 +67,7 @@ interface Message {
 
 export function MessagesPage() {
   const { user } = useAuth();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
   const { socket, onlineUsers } = useSocket();
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
@@ -90,21 +90,18 @@ export function MessagesPage() {
   );
 
   const stripMentionFormat = (content: string) => {
-  return content.replace(/@\[([^\]]+)\]\([^)]+\)/g, "@$1");
-};
+    return content.replace(/@\[([^\]]+)\]\([^)]+\)/g, "@$1");
+  };
 
-const [mentionMatches, setMentionMatches] = useState<User[]>([]);
-const mentionSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [mentionMatches, setMentionMatches] = useState<User[]>([]);
+  const mentionSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
   const [mentionOpen, setMentionOpen] = useState(false);
   const [mentionIndex, setMentionIndex] = useState(0);
- // const [allUsers, setAllUsers] = useState<User[]>([]);
   const mentionDropdownRef = useRef<HTMLDivElement | null>(null);
 
- {/*  const filteredUsers = users.filter(
-    (u) =>
-      u.name &&
-      u.name.toLowerCase().trim().includes(userSearch.toLowerCase().trim()),
-  );*/}
+
   const filteredConversations = conversations.filter(
     (conv) =>
       conv.otherUser?.name &&
@@ -145,24 +142,26 @@ const mentionSearchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
     }
   };
 
-useEffect(() => {
-  if (!showNewConversation) return;
-  if (userSearch.trim().length < 1) {
-    const timeout = setTimeout(() => setUsers([]), 0);
-    return () => clearTimeout(timeout);
-  }
-
-  const timeout = setTimeout(async () => {
-    try {
-      const { data } = await api.get<User[]>(`/conversations/search?q=${userSearch}`);
-      setUsers(data);
-    } catch {
-      setUsers([]);
+  useEffect(() => {
+    if (!showNewConversation) return;
+    if (userSearch.trim().length < 1) {
+      const timeout = setTimeout(() => setUsers([]), 0);
+      return () => clearTimeout(timeout);
     }
-  }, 200);
 
-  return () => clearTimeout(timeout);
-}, [userSearch, showNewConversation]);
+    const timeout = setTimeout(async () => {
+      try {
+        const { data } = await api.get<User[]>(
+          `/conversations/search?q=${userSearch}`,
+        );
+        setUsers(data);
+      } catch {
+        setUsers([]);
+      }
+    }, 200);
+
+    return () => clearTimeout(timeout);
+  }, [userSearch, showNewConversation]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -181,32 +180,32 @@ useEffect(() => {
     };
   }, []);
 
-const handleEmojiClick = (emojiData: EmojiClickData) => {
-  const div = editableRef.current;
-  if (!div) return;
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
+    const div = editableRef.current;
+    if (!div) return;
 
-  div.focus();
-  const selection = window.getSelection();
-  if (!selection || !selection.rangeCount) return;
-  const range = selection.getRangeAt(0);
-  range.deleteContents();
-  const textNode = document.createTextNode(emojiData.emoji);
-  range.insertNode(textNode);
-  range.setStartAfter(textNode);
-  range.collapse(true);
-  selection.removeAllRanges();
-  selection.addRange(range);
+    div.focus();
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    const textNode = document.createTextNode(emojiData.emoji);
+    range.insertNode(textNode);
+    range.setStartAfter(textNode);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
 
-  let raw = "";
-  div.childNodes.forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
-    } else if ((node as HTMLElement).dataset?.mention) {
-      raw += (node as HTMLElement).dataset.mention;
-    }
-  });
-  setMessageInput(raw);
-};
+    let raw = "";
+    div.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
+      } else if ((node as HTMLElement).dataset?.mention) {
+        raw += (node as HTMLElement).dataset.mention;
+      }
+    });
+    setMessageInput(raw);
+  };
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -336,186 +335,173 @@ const handleEmojiClick = (emojiData: EmojiClickData) => {
     };
   }, [socket, selectedConv, user?.id]);
 
-  // Fetch all users for @mention
- {/* useEffect(() => {
-    api
-      .get("/users")
-      .then(({ data }) => setAllUsers(data))
-      .catch(() => {});
-  }, []); 
 
-  // Users matching @query
-  const mentionMatches =
-    mentionQuery.length > 0
-      ? allUsers
-          .filter(
-            (u) =>
-              u.id !== user?.id &&
-              u.name.toLowerCase().includes(mentionQuery.toLowerCase()),
-          )
-          .slice(0, 5)
-      : []; */}
 
-const handleEditableInput = ( ) => {
-  const div = editableRef.current;
-  if (!div) return;
+  const handleEditableInput = () => {
+    const div = editableRef.current;
+    if (!div) return;
 
-  let raw = "";
-  div.childNodes.forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as HTMLElement;
-      if (el.dataset.mention) {
-        raw += el.dataset.mention;
-      } else {
-        raw += el.textContent;
-      }
-    }
-  });
-
-  setMessageInput(raw);
-
-  const selection = window.getSelection();
-  if (!selection || !selection.rangeCount) return;
-  const range = selection.getRangeAt(0);
-  const textBeforeCursor =
-    range.startContainer.textContent?.substring(0, range.startOffset) ?? "";
-  const atMatch = textBeforeCursor.match(/@(\w*)$/);
-
-  if (atMatch) {
-    setMentionOpen(true);
-    setMentionIndex(0);
-    if (mentionSearchTimeout.current) clearTimeout(mentionSearchTimeout.current);
-    if (atMatch[1].length > 0) {
-      mentionSearchTimeout.current = setTimeout(async () => {
-        try {
-          const { data } = await api.get<User[]>(`/conversations/search?q=${atMatch[1]}`);
-          setMentionMatches(data);
-        } catch {
-          setMentionMatches([]);
+    let raw = "";
+    div.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const el = node as HTMLElement;
+        if (el.dataset.mention) {
+          raw += el.dataset.mention;
+        } else {
+          raw += el.textContent;
         }
-      }, 200);
+      }
+    });
+
+    setMessageInput(raw);
+
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    const textBeforeCursor =
+      range.startContainer.textContent?.substring(0, range.startOffset) ?? "";
+    const atMatch = textBeforeCursor.match(/@(\w*)$/);
+
+    if (atMatch) {
+      setMentionOpen(true);
+      setMentionIndex(0);
+      if (mentionSearchTimeout.current)
+        clearTimeout(mentionSearchTimeout.current);
+      if (atMatch[1].length > 0) {
+        mentionSearchTimeout.current = setTimeout(async () => {
+          try {
+            const { data } = await api.get<User[]>(
+              `/conversations/search?q=${atMatch[1]}`,
+            );
+            setMentionMatches(data);
+          } catch {
+            setMentionMatches([]);
+          }
+        }, 200);
+      } else {
+        setMentionMatches([]);
+      }
     } else {
+      setMentionOpen(false);
       setMentionMatches([]);
     }
-  } else {
+
+    socket?.emit("typing_start", { conversationId: selectedConv });
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket?.emit("typing_stop", { conversationId: selectedConv });
+    }, 1000);
+  };
+
+  const handleMentionSelect = (selectedUser: User) => {
+    const div = editableRef.current;
+    if (!div) return;
+
+    const selection = window.getSelection();
+    if (!selection || !selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
+
+    const textNode = range.startContainer;
+    if (textNode.nodeType === Node.TEXT_NODE) {
+      const text = textNode.textContent ?? "";
+      const offset = range.startOffset;
+      const atIndex = text.lastIndexOf("@", offset - 1);
+      if (atIndex !== -1) {
+        textNode.textContent =
+          text.substring(0, atIndex) + text.substring(offset);
+        range.setStart(textNode, atIndex);
+        range.setEnd(textNode, atIndex);
+      }
+    }
+
+    const chip = document.createElement("span");
+    chip.contentEditable = "false";
+    chip.dataset.mention = `@[${selectedUser.name}](${selectedUser.id})`;
+    chip.dataset.userid = selectedUser.id;
+    chip.textContent = `@${selectedUser.name}`;
+    chip.style.cssText =
+      "color:#4f46e5;background:#eef2ff;padding:0 4px;border-radius:4px;cursor:pointer;font-weight:600;user-select:all;";
+    chip.addEventListener("click", () =>
+      navigate(`/app/profile/${selectedUser.id}`),
+    );
+
+    const space = document.createTextNode("\u00A0");
+    range.insertNode(space);
+    range.insertNode(chip);
+
+    range.setStartAfter(space);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+
+    let raw = "";
+    div.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
+      } else if ((node as HTMLElement).dataset?.mention) {
+        raw += (node as HTMLElement).dataset.mention;
+      }
+    });
+    setMessageInput(raw);
+
     setMentionOpen(false);
     setMentionMatches([]);
-  }
+    div.focus();
+  };
 
-  socket?.emit("typing_start", { conversationId: selectedConv });
-  if (typingTimeout.current) clearTimeout(typingTimeout.current);
-  typingTimeout.current = setTimeout(() => {
-    socket?.emit("typing_stop", { conversationId: selectedConv });
-  }, 1000);
-};
-
-const handleMentionSelect = (selectedUser: User) => {
-  const div = editableRef.current;
-  if (!div) return;
-
-  const selection = window.getSelection();
-  if (!selection || !selection.rangeCount) return;
-  const range = selection.getRangeAt(0);
-
-  const textNode = range.startContainer;
-  if (textNode.nodeType === Node.TEXT_NODE) {
-    const text = textNode.textContent ?? "";
-    const offset = range.startOffset;
-    const atIndex = text.lastIndexOf("@", offset - 1);
-    if (atIndex !== -1) {
-      textNode.textContent = text.substring(0, atIndex) + text.substring(offset);
-      range.setStart(textNode, atIndex);
-      range.setEnd(textNode, atIndex);
+  const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!mentionOpen || mentionMatches.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setMentionIndex((i) => Math.min(i + 1, mentionMatches.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setMentionIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      handleMentionSelect(mentionMatches[mentionIndex]);
+    } else if (e.key === "Escape") {
+      setMentionOpen(false);
     }
-  }
+  };
 
-  const chip = document.createElement("span");
-  chip.contentEditable = "false";
-  chip.dataset.mention = `@[${selectedUser.name}](${selectedUser.id})`;
-  chip.dataset.userid = selectedUser.id;
-  chip.textContent = `@${selectedUser.name}`;
-  chip.style.cssText =
-    "color:#4f46e5;background:#eef2ff;padding:0 4px;border-radius:4px;cursor:pointer;font-weight:600;user-select:all;";
-  chip.addEventListener("click", () => navigate(`/app/profile/${selectedUser.id}`));
+  const renderMessageContent = (content: string) => {
+    const parts = content.split(/(@\[[^\]]+\]\([^)]+\))/g);
 
-  const space = document.createTextNode("\u00A0");
-  range.insertNode(space);
-  range.insertNode(chip);
+    return parts.map((part, i) => {
+      const mentionMatch = part.match(/^@\[([^\]]+)\]\(([^)]+)\)$/);
 
-  range.setStartAfter(space);
-  range.collapse(true);
-  selection.removeAllRanges();
-  selection.addRange(range);
-
-  let raw = "";
-  div.childNodes.forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      raw += node.textContent?.replace(/\u00A0/g, " ") ?? "";
-    } else if ((node as HTMLElement).dataset?.mention) {
-      raw += (node as HTMLElement).dataset.mention;
-    }
-  });
-  setMessageInput(raw);
-
-  setMentionOpen(false);
-  setMentionMatches([]);
-  div.focus();
-};
-
-const handleMentionKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-  if (!mentionOpen || mentionMatches.length === 0) return;
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    setMentionIndex((i) => Math.min(i + 1, mentionMatches.length - 1));
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault();
-    setMentionIndex((i) => Math.max(i - 1, 0));
-  } else if (e.key === "Enter" || e.key === "Tab") {
-    e.preventDefault();
-    handleMentionSelect(mentionMatches[mentionIndex]);
-  } else if (e.key === "Escape") {
-    setMentionOpen(false);
-  }
-};
-
-
-const renderMessageContent = (content: string) => {
-  const parts = content.split(/(@\[[^\]]+\]\([^)]+\))/g);
-  
-  return parts.map((part, i) => {
-    const mentionMatch = part.match(/^@\[([^\]]+)\]\(([^)]+)\)$/);
-    
-    if (mentionMatch) {
-      const name = mentionMatch[1];
-      const userId = mentionMatch[2];
-      return (
-        <span
-          key={i}
-          onClick={() => navigate(`/app/profile/${userId}`)}
-          className="text-indigo-600 font-semibold bg-indigo-50 px-0.5 rounded cursor-pointer hover:underline"
-        >
-          @{name}
-        </span>
-      );
-    }
-    return <span key={i}>{part}</span>;
-  });
-};
-
-const handleSendMessage = async () => {
-  if (!messageInput.trim() || !selectedConv) return;
-  try {
-    await api.post(`/conversations/${selectedConv}/messages`, {
-      content: messageInput,
+      if (mentionMatch) {
+        const name = mentionMatch[1];
+        const userId = mentionMatch[2];
+        return (
+          <span
+            key={i}
+            onClick={() => navigate(`/app/profile/${userId}`)}
+            className="text-indigo-600 font-semibold bg-indigo-50 px-0.5 rounded cursor-pointer hover:underline"
+          >
+            @{name}
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
     });
-    setMessageInput("");
-    if (editableRef.current) editableRef.current.innerHTML = "";
-  } catch (err) {
-    console.error(err);
-  }
-};
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageInput.trim() || !selectedConv) return;
+    try {
+      await api.post(`/conversations/${selectedConv}/messages`, {
+        content: messageInput,
+      });
+      setMessageInput("");
+      if (editableRef.current) editableRef.current.innerHTML = "";
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const selectedConversation = conversations.find((c) => c.id === selectedConv);
@@ -616,8 +602,10 @@ const handleSendMessage = async () => {
                         <span className="text-indigo-600 italic">
                           typing...
                         </span>
+                      ) : conv.lastMessage ? (
+                        stripMentionFormat(conv.lastMessage.content)
                       ) : (
-                        conv.lastMessage ? stripMentionFormat(conv.lastMessage.content) : "No messages yet"
+                        "No messages yet"
                       )}
                     </p>
                     {conv.unread > 0 && (
@@ -761,20 +749,20 @@ const handleSendMessage = async () => {
               </Button>
               <div className="flex-1 relative">
                 <div
-  ref={editableRef}
-  contentEditable
-  suppressContentEditableWarning
-  onInput={() => handleEditableInput()}
-  onKeyDown={(e) => {
-    handleMentionKeyDown(e);
-    if (e.key === "Enter" && !e.shiftKey && !mentionOpen) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  }}
-  data-placeholder="Type your message... use @ to mention"
-  className="flex-1 min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-indigo-300 focus:bg-white text-sm empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
-/>
+                  ref={editableRef}
+                  contentEditable
+                  suppressContentEditableWarning
+                  onInput={() => handleEditableInput()}
+                  onKeyDown={(e) => {
+                    handleMentionKeyDown(e);
+                    if (e.key === "Enter" && !e.shiftKey && !mentionOpen) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  data-placeholder="Type your message... use @ to mention"
+                  className="flex-1 min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-indigo-300 focus:bg-white text-sm empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
+                />
 
                 {/* @mention dropdown */}
                 {mentionOpen && mentionMatches.length > 0 && (
@@ -855,12 +843,16 @@ const handleSendMessage = async () => {
             </div>
 
             <div className="space-y-2">
-{userSearch.length === 0 && (
-  <p className="text-sm text-gray-500 text-center">Type a name to search users</p>
-)}
-{userSearch.length > 0 && users.length === 0 && (
-  <p className="text-sm text-gray-500 text-center">No users found</p>
-)}
+              {userSearch.length === 0 && (
+                <p className="text-sm text-gray-500 text-center">
+                  Type a name to search users
+                </p>
+              )}
+              {userSearch.length > 0 && users.length === 0 && (
+                <p className="text-sm text-gray-500 text-center">
+                  No users found
+                </p>
+              )}
 
               {users.map((u) => (
                 <button
