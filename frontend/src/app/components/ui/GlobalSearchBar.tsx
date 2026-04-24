@@ -40,7 +40,7 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
 const TYPE_URL: Record<string, (id: string) => string> = {
   project: (id) => `/app/startup/projects/${id}`,
   user: (id) => `/app/profile/${id}`,
-  expert:  (id) => `/app/profile/${id}`,
+  expert: (id) => `/app/profile/${id}`,
   event: (id) => `/app/events/${id}`,
   program: (id) => `/app/programs/${id}`,
 };
