@@ -4,7 +4,7 @@ import { sendEmail } from "../utils/email.js";
 
 export const getPrograms = async (req, res, next) => {
   try {
-    const { type, status = "OPEN", search, page = 1, limit = 12 } = req.query;
+    const { type, status = "OPEN", search, page = 1, limit = 8 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
@@ -243,7 +243,9 @@ export const updateApplicationStatus = async (req, res, next) => {
 
       if (price === 0) {
         await prisma.programParticipant.upsert({
-          where: { programId_userId: { programId: app.programId, userId: app.userId } },
+          where: {
+            programId_userId: { programId: app.programId, userId: app.userId },
+          },
           update: {},
           create: { programId: app.programId, userId: app.userId },
         });
@@ -290,9 +292,10 @@ export const updateApplicationStatus = async (req, res, next) => {
                 </div>
               </div>
             `,
-          }).catch((err) => console.error("Free program enrollment email failed:", err));
+          }).catch((err) =>
+            console.error("Free program enrollment email failed:", err),
+          );
         }
-
       } else {
         await createNotification({
           userId: app.userId,
@@ -302,7 +305,6 @@ export const updateApplicationStatus = async (req, res, next) => {
           link: `/app/programs/${app.programId}/pay`,
         });
       }
-
     } else if (status === "REJECTED") {
       await prisma.programParticipant.deleteMany({
         where: { programId: app.programId, userId: app.userId },

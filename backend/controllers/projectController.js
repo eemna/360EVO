@@ -86,20 +86,19 @@ export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { teamMembers, milestones, documents, ...projectData } = req.body;
- 
+
     const project = await prisma.project.findUnique({
       where: { id },
     });
- 
+
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
- 
+
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({ message: "Not allowed" });
     }
- 
-    
+
     await prisma.$transaction(
       async (tx) => {
         // Update main project
@@ -107,13 +106,13 @@ export const updateProject = async (req, res, next) => {
           where: { id },
           data: projectData,
         });
- 
+
         // Replace teamMembers
         if (Array.isArray(teamMembers)) {
           await tx.teamMember.deleteMany({
             where: { projectId: id },
           });
- 
+
           if (teamMembers.length > 0) {
             await tx.teamMember.createMany({
               data: teamMembers.map((member) => ({
@@ -123,13 +122,13 @@ export const updateProject = async (req, res, next) => {
             });
           }
         }
- 
+
         // Replace milestones
         if (Array.isArray(milestones)) {
           await tx.milestone.deleteMany({
             where: { projectId: id },
           });
- 
+
           if (milestones.length > 0) {
             await tx.milestone.createMany({
               data: milestones.map((m) => ({
@@ -139,13 +138,13 @@ export const updateProject = async (req, res, next) => {
             });
           }
         }
- 
+
         // Replace documents
         if (Array.isArray(documents)) {
           await tx.projectDocument.deleteMany({
             where: { projectId: id },
           });
- 
+
           if (documents.length > 0) {
             await tx.projectDocument.createMany({
               data: documents.map((doc) => ({
@@ -160,7 +159,7 @@ export const updateProject = async (req, res, next) => {
         timeout: 15000,
       },
     );
- 
+
     const updatedProject = await prisma.project.findUnique({
       where: { id },
       include: {
@@ -175,7 +174,7 @@ export const updateProject = async (req, res, next) => {
         type: "THESIS_ALIGNMENT",
       },
     });
- 
+
     await prisma.match.updateMany({
       where: { projectId: id },
       data: { thesisAlignmentSummary: null },

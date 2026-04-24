@@ -32,17 +32,17 @@ import searchRouter from "./routes/searchroute.js";
 let job, matchRegenerationJob, narrativeRetryJob, analyticsJob;
 
 async function loadCron() {
-if (process.env.NODE_ENV !== "test") {
-  try {
-    const cron = await import("./config/cron.js");
-    job = cron.default;
-    matchRegenerationJob = cron.matchRegenerationJob;
-    narrativeRetryJob = cron.narrativeRetryJob;
-    analyticsJob = cron.analyticsJob;
-  } catch (e) {
-    console.error("Cron load failed:", e.message);
+  if (process.env.NODE_ENV !== "test") {
+    try {
+      const cron = await import("./config/cron.js");
+      job = cron.default;
+      matchRegenerationJob = cron.matchRegenerationJob;
+      narrativeRetryJob = cron.narrativeRetryJob;
+      analyticsJob = cron.analyticsJob;
+    } catch (e) {
+      console.error("Cron load failed:", e.message);
+    }
   }
-}
 }
 
 await loadCron();

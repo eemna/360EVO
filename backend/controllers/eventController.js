@@ -36,11 +36,18 @@ export const getEvents = async (req, res, next) => {
 
       return res.json({
         events,
-        pagination: { total, page: Number(page), limit: take, totalPages: Math.ceil(total / take) },
+        pagination: {
+          total,
+          page: Number(page),
+          limit: take,
+          totalPages: Math.ceil(total / take),
+        },
       });
     }
 
-    const tsQuery = search.toString().trim()
+    const tsQuery = search
+      .toString()
+      .trim()
       .split(/\s+/)
       .map((word) => `${word}:*`)
       .join(" & ");
@@ -73,7 +80,12 @@ export const getEvents = async (req, res, next) => {
 
     return res.json({
       events,
-      pagination: { total, page: Number(page), limit: take, totalPages: Math.ceil(total / take) },
+      pagination: {
+        total,
+        page: Number(page),
+        limit: take,
+        totalPages: Math.ceil(total / take),
+      },
     });
   } catch (error) {
     next(error);
@@ -155,7 +167,6 @@ export const createEvent = async (req, res, next) => {
       price,
     } = req.body;
 
-    
     if (role === "EXPERT" && type !== "WORKSHOP") {
       return res
         .status(403)
@@ -309,7 +320,9 @@ export const applyToEvent = async (req, res, next) => {
     if (event.status !== "PUBLISHED")
       return res.status(400).json({ message: "Event is not open" });
     if (event.capacity) {
-      const regCount = await prisma.eventRegistration.count({ where: { eventId } });
+      const regCount = await prisma.eventRegistration.count({
+        where: { eventId },
+      });
       if (regCount >= event.capacity)
         return res.status(400).json({ message: "Event is fully booked" });
     }
@@ -342,7 +355,9 @@ export const getMyEventApplications = async (req, res, next) => {
   try {
     const applications = await prisma.eventApplication.findMany({
       where: { userId: req.user.id },
-      include: { event: { include: { organizer: { select: { name: true } } } } },
+      include: {
+        event: { include: { organizer: { select: { name: true } } } },
+      },
       orderBy: { createdAt: "desc" },
     });
     res.json(applications);
@@ -378,7 +393,9 @@ export const cancelRegistration = async (req, res, next) => {
       return res.json({ message: "Application cancelled" });
     }
 
-    return res.status(404).json({ message: "No registration or application found" });
+    return res
+      .status(404)
+      .json({ message: "No registration or application found" });
   } catch (error) {
     next(error);
   }

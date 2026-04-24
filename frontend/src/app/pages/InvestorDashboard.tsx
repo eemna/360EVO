@@ -25,7 +25,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Calendar,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import { FolderOpen, FileSearch } from "lucide-react";
 
@@ -627,21 +627,24 @@ export default function InvestorDashboard() {
               </div>
               <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
             </button>
-                      <button
-  onClick={() => navigate("/app/programs/my-applications")}
-  className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
->
-  <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
-    <BookOpen className="size-5 text-indigo-600" />
-  </div>
-  <div>
-    <p className="text-sm font-semibold text-gray-900">My Applications</p>
-    <p className="text-xs text-gray-400">Programs you've applied to</p>
-  </div>
-  <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
-</button>
+            <button
+              onClick={() => navigate("/app/programs/my-applications")}
+              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
+            >
+              <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
+                <BookOpen className="size-5 text-indigo-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  My Applications
+                </p>
+                <p className="text-xs text-gray-400">
+                  Programs you've applied to
+                </p>
+              </div>
+              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
+            </button>
           </div>
-
         </div>
 
         {/* Right sidebar */}

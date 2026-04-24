@@ -8,7 +8,7 @@ import {
   ArrowRight,
   Pencil,
   Trash2,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "../components/ui/button";
@@ -230,14 +230,14 @@ export default function StartupDashboard() {
             <Calendar className="size-4" />
             My Events
           </Button>
-<Button
-  variant="outline"
-  onClick={() => navigate("/app/programs/my-applications")}
-  className="gap-2"
->
-  <BookOpen className="size-4" />
-  My Applications
-</Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate("/app/programs/my-applications")}
+            className="gap-2"
+          >
+            <BookOpen className="size-4" />
+            My Applications
+          </Button>
           <Button
             onClick={() => setIsWizardOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 gap-2"

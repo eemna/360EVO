@@ -258,9 +258,9 @@ export const router = createBrowserRouter([
         ),
       },
       {
-  path: "search",
-  element: <SearchResultsPage />,
-},
+        path: "search",
+        element: <SearchResultsPage />,
+      },
     ],
   },
   {

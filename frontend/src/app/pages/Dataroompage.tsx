@@ -50,7 +50,6 @@ import {
   Download,
 } from "lucide-react";
 
-
 interface DataRoomDocument {
   id: string;
   name: string;
@@ -108,7 +107,6 @@ interface DataRoom {
   activity: ActivityItem[];
   dealBrief: { id: string } | null;
 }
-
 
 function ExpiryCountdown({ expiresAt }: { expiresAt: string }) {
   const [now] = useState(() => Date.now());
@@ -168,7 +166,6 @@ const ACTION_LABELS: Record<string, string> = {
   UPLOADED_DOCUMENT: "Uploaded a document",
   DELETED_DOCUMENT: "Deleted a document",
 };
-
 
 export default function DataRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -404,7 +401,6 @@ export default function DataRoomPage() {
       setReplying(null);
     }
   };
-
 
   if (loading) {
     return (

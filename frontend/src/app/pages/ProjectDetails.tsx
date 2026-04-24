@@ -168,7 +168,7 @@ export default function ProjectDetailsPage() {
         const { data } = await api.get(`/projects/${id}/updates`);
         setUpdates(data);
       } catch {
-        //  
+        //
       } finally {
         setUpdatesLoading(false);
       }

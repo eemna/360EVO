@@ -8,7 +8,6 @@ const request = (await import("supertest")).default;
 const { default: app } = await import("../server.js");
 const { prisma } = await import("../config/prisma.js");
 
-
 import jwt from "jsonwebtoken";
 async function createAndLoginUser({
   name = "Test User",
@@ -37,12 +36,11 @@ async function createAndLoginUser({
   const accessToken = jwt.sign(
     { id: user.id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "1d" },
   );
 
   return { accessToken, userId: user.id, email };
 }
-
 
 describe("Project Lifecycle — create → submit → approve → gallery", () => {
   let startupToken, startupUserId, startupEmail;
@@ -62,22 +60,31 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     location: "Tunis, Tunisia",
   };
 
-beforeAll(async () => {
-  ({ accessToken: startupToken, userId: startupUserId, email: startupEmail } =
-    await createAndLoginUser({ role: "STARTUP", companyName: "Supply Chain AI" }));
+  beforeAll(async () => {
+    ({
+      accessToken: startupToken,
+      userId: startupUserId,
+      email: startupEmail,
+    } = await createAndLoginUser({
+      role: "STARTUP",
+      companyName: "Supply Chain AI",
+    }));
 
-  const { userId: memberId, email: mEmail } = await createAndLoginUser({
-    role: "MEMBER",
-  });
-  adminEmail = mEmail;
-  await prisma.user.update({ where: { id: memberId }, data: { role: "ADMIN" } });
+    const { userId: memberId, email: mEmail } = await createAndLoginUser({
+      role: "MEMBER",
+    });
+    adminEmail = mEmail;
+    await prisma.user.update({
+      where: { id: memberId },
+      data: { role: "ADMIN" },
+    });
 
-  adminToken = jwt.sign(
-    { id: memberId, role: "ADMIN" },
-    process.env.JWT_SECRET,
-    { expiresIn: "1d" }
-  );
-}, 30000);
+    adminToken = jwt.sign(
+      { id: memberId, role: "ADMIN" },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" },
+    );
+  }, 30000);
 
   afterAll(async () => {
     const emails = [startupEmail, adminEmail].filter(Boolean);
@@ -87,7 +94,7 @@ beforeAll(async () => {
     await prisma.$disconnect();
   });
 
-  //  CREATE 
+  //  CREATE
 
   test("1 — startup can create a project → status DRAFT", async () => {
     const res = await request(app)
@@ -109,7 +116,7 @@ beforeAll(async () => {
     expect(res.statusCode).toBe(401);
   });
 
-  //  READ / UPDATE 
+  //  READ / UPDATE
 
   test("3 — owner can read their own DRAFT project", async () => {
     const res = await request(app)
@@ -176,22 +183,22 @@ beforeAll(async () => {
 
   // APPROVE
 
-test("9 — admin can approve the project → status APPROVED, visibility PUBLIC", async () => {
-  const res = await request(app)
-    .patch(`/api/admin/projects/${projectId}/approve`)
-    .set("Authorization", `Bearer ${adminToken}`);
+  test("9 — admin can approve the project → status APPROVED, visibility PUBLIC", async () => {
+    const res = await request(app)
+      .patch(`/api/admin/projects/${projectId}/approve`)
+      .set("Authorization", `Bearer ${adminToken}`);
 
-  expect(res.statusCode).toBe(200);
-  expect(res.body.status).toBe("APPROVED");
-});
+    expect(res.statusCode).toBe(200);
+    expect(res.body.status).toBe("APPROVED");
+  });
 
-test("10 — non-admin cannot call the admin approve endpoint", async () => {
-  const res = await request(app)
-    .patch(`/api/admin/projects/${projectId}/approve`)
-    .set("Authorization", `Bearer ${startupToken}`);
+  test("10 — non-admin cannot call the admin approve endpoint", async () => {
+    const res = await request(app)
+      .patch(`/api/admin/projects/${projectId}/approve`)
+      .set("Authorization", `Bearer ${startupToken}`);
 
-  expect([401, 403]).toContain(res.statusCode);
-});
+    expect([401, 403]).toContain(res.statusCode);
+  });
 
   // GALLERY
 
@@ -224,7 +231,7 @@ test("10 — non-admin cannot call the admin approve endpoint", async () => {
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  // PROJECT UPDATES 
+  // PROJECT UPDATES
 
   test("15 — owner can post an update on an approved project", async () => {
     const res = await request(app)
@@ -252,34 +259,34 @@ test("10 — non-admin cannot call the admin approve endpoint", async () => {
     expect(res.statusCode).toBe(401);
   });
 
-  // REJECTION PATH 
-test("18 — admin can reject a pending project; owner can then delete it", async () => {
-  const createRes = await request(app)
-    .post("/api/projects")
-    .set("Authorization", `Bearer ${startupToken}`)
-    .send({ ...baseProject, title: "Project To Reject" });
-  expect(createRes.statusCode).toBe(201);
-  const pid = createRes.body.id;
+  // REJECTION PATH
+  test("18 — admin can reject a pending project; owner can then delete it", async () => {
+    const createRes = await request(app)
+      .post("/api/projects")
+      .set("Authorization", `Bearer ${startupToken}`)
+      .send({ ...baseProject, title: "Project To Reject" });
+    expect(createRes.statusCode).toBe(201);
+    const pid = createRes.body.id;
 
-  const submitRes = await request(app)
-    .post(`/api/projects/${pid}/submit`)
-    .set("Authorization", `Bearer ${startupToken}`);
-  expect(submitRes.statusCode).toBe(200);
+    const submitRes = await request(app)
+      .post(`/api/projects/${pid}/submit`)
+      .set("Authorization", `Bearer ${startupToken}`);
+    expect(submitRes.statusCode).toBe(200);
 
-  const rejectRes = await request(app)
-    .patch(`/api/admin/projects/${pid}/reject`)
-    .set("Authorization", `Bearer ${adminToken}`);
-  expect(rejectRes.statusCode).toBe(200);
-  expect(rejectRes.body.status).toBe("REJECTED");
+    const rejectRes = await request(app)
+      .patch(`/api/admin/projects/${pid}/reject`)
+      .set("Authorization", `Bearer ${adminToken}`);
+    expect(rejectRes.statusCode).toBe(200);
+    expect(rejectRes.body.status).toBe("REJECTED");
 
-  const deleteRes = await request(app)
-    .delete(`/api/projects/${pid}`)
-    .set("Authorization", `Bearer ${startupToken}`);
-  expect(deleteRes.statusCode).toBe(200);
-  expect(deleteRes.body.message).toMatch(/deleted/i);
-});
+    const deleteRes = await request(app)
+      .delete(`/api/projects/${pid}`)
+      .set("Authorization", `Bearer ${startupToken}`);
+    expect(deleteRes.statusCode).toBe(200);
+    expect(deleteRes.body.message).toMatch(/deleted/i);
+  });
 
-  // STARTUP DASHBOARD 
+  // STARTUP DASHBOARD
   test("19 — startup dashboard returns correct shape and counts", async () => {
     const res = await request(app)
       .get("/api/projects/dashboard")

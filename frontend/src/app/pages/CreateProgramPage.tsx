@@ -251,44 +251,44 @@ export default function CreateProgramPage() {
             </div>
           </div>
 
-<div className="grid grid-cols-3 gap-4">
-  <div className="space-y-2">
-    <Label>Capacity (max participants)</Label>
-    <Input
-      type="number"
-      min="1"
-      value={form.capacity}
-      onChange={(e) => set("capacity", e.target.value)}
-    />
-  </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>Capacity (max participants)</Label>
+              <Input
+                type="number"
+                min="1"
+                value={form.capacity}
+                onChange={(e) => set("capacity", e.target.value)}
+              />
+            </div>
 
-  <div className="space-y-2">
-    <Label>
-      Program Fee (USD){" "}
-      <span className="text-gray-400 text-xs">(0 = free)</span>
-    </Label>
-    <Input
-      type="number"
-      min="0"
-      step="0.01"
-      value={form.price}
-      onChange={(e) => set("price", e.target.value)}
-      placeholder="0.00"
-    />
-  </div>
+            <div className="space-y-2">
+              <Label>
+                Program Fee (USD){" "}
+                <span className="text-gray-400 text-xs">(0 = free)</span>
+              </Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={(e) => set("price", e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
 
-  <div className="space-y-2">
-    <Label>
-      Cover Image URL{" "}
-      <span className="text-gray-400 text-xs">(optional)</span>
-    </Label>
-    <Input
-      placeholder="https://..."
-      value={form.coverImage}
-      onChange={(e) => set("coverImage", e.target.value)}
-    />
-  </div>
-</div>
+            <div className="space-y-2">
+              <Label>
+                Cover Image URL{" "}
+                <span className="text-gray-400 text-xs">(optional)</span>
+              </Label>
+              <Input
+                placeholder="https://..."
+                value={form.coverImage}
+                onChange={(e) => set("coverImage", e.target.value)}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 

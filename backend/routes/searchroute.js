@@ -1,5 +1,5 @@
 import express from "express";
-import { globalSearch, autocomplete } from "../controllers/searchController.js";
+import { globalSearch, autocomplete } from "../controllers/searchcontroller.js";
 import { protect } from "../middleware/auth.js";
 
 const router = express.Router();

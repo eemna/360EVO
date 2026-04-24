@@ -64,7 +64,6 @@ export const generateMatches = async (req, res, next) => {
       investmentThesis: "",
     };
 
-
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
       include: {

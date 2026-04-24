@@ -90,7 +90,7 @@ export const createBooking = async (req, res, next) => {
       .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
-const [localHour, localMinute] = timeSlot.split(":").map(Number);
+    const [localHour, localMinute] = timeSlot.split(":").map(Number);
 
     const bookingStartMins = localHour * 60 + localMinute;
     const bookingEndMins = bookingStartMins + Number(duration);

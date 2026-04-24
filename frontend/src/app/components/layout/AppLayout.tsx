@@ -21,7 +21,7 @@ export default function AppLayout() {
 
             <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
               <ErrorBoundary>
-              <Outlet />
+                <Outlet />
               </ErrorBoundary>
             </main>
           </div>

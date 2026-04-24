@@ -101,7 +101,6 @@ export function MessagesPage() {
   const [mentionIndex, setMentionIndex] = useState(0);
   const mentionDropdownRef = useRef<HTMLDivElement | null>(null);
 
-
   const filteredConversations = conversations.filter(
     (conv) =>
       conv.otherUser?.name &&
@@ -334,8 +333,6 @@ export function MessagesPage() {
       socket.off("typing_stop");
     };
   }, [socket, selectedConv, user?.id]);
-
-
 
   const handleEditableInput = () => {
     const div = editableRef.current;

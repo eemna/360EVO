@@ -109,7 +109,6 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
   }
 });
 
-
 const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
   const end = cronJobDuration.startTimer({ job: "narrative_retry" });
   console.log("[CRON] Checking for failed LLM narratives...");

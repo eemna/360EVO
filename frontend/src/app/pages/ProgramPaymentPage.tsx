@@ -1,14 +1,30 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Skeleton } from "../components/ui/skeleton";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useToast } from "../../context/ToastContext";
 import api from "../../services/axios";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { CreditCard, Lock, BookOpen, CheckCircle2, ArrowLeft } from "lucide-react";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import {
+  CreditCard,
+  Lock,
+  BookOpen,
+  CheckCircle2,
+  ArrowLeft,
+} from "lucide-react";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -45,25 +61,38 @@ function PaymentForm({
       setPaying(true);
       setCardError("");
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: cardElement },
-      });
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: { card: cardElement },
+        },
+      );
 
       if (error) {
         setCardError(error.message || "Payment failed");
-        showToast({ type: "error", title: "Payment failed", message: error.message || "" });
+        showToast({
+          type: "error",
+          title: "Payment failed",
+          message: error.message || "",
+        });
         return;
       }
 
-if (paymentIntent?.status === "succeeded") {
-  try {
-    await api.post("/payments/program/confirm", { paymentIntentId: paymentIntent.id });
-  } catch (err) {
-    console.error("Confirm failed:", err);
-  }
-  showToast({ type: "success", title: "Enrollment confirmed!", message: `You're now enrolled in "${program.title}"` });
-  onSuccess();
-}
+      if (paymentIntent?.status === "succeeded") {
+        try {
+          await api.post("/payments/program/confirm", {
+            paymentIntentId: paymentIntent.id,
+          });
+        } catch (err) {
+          console.error("Confirm failed:", err);
+        }
+        showToast({
+          type: "success",
+          title: "Enrollment confirmed!",
+          message: `You're now enrolled in "${program.title}"`,
+        });
+        onSuccess();
+      }
     } finally {
       setPaying(false);
     }
@@ -79,7 +108,12 @@ if (paymentIntent?.status === "succeeded") {
         <CardElement
           options={{
             style: {
-              base: { fontSize: "14px", color: "#374151", fontFamily: "inherit", "::placeholder": { color: "#9ca3af" } },
+              base: {
+                fontSize: "14px",
+                color: "#374151",
+                fontFamily: "inherit",
+                "::placeholder": { color: "#9ca3af" },
+              },
               invalid: { color: "#dc2626" },
             },
           }}
@@ -103,16 +137,26 @@ if (paymentIntent?.status === "succeeded") {
         disabled={paying || !stripe}
       >
         {paying ? (
-          <><LoadingSpinner size="sm" className="text-white" /> Processing...</>
+          <>
+            <LoadingSpinner size="sm" className="text-white" /> Processing...
+          </>
         ) : (
-          <><Lock className="size-4" /> Pay ${program.price}</>
+          <>
+            <Lock className="size-4" /> Pay ${program.price}
+          </>
         )}
       </Button>
     </div>
   );
 }
 
-function SuccessScreen({ program, onDone }: { program: ProgramInfo; onDone: () => void }) {
+function SuccessScreen({
+  program,
+  onDone,
+}: {
+  program: ProgramInfo;
+  onDone: () => void;
+}) {
   return (
     <Card className="border-2 border-green-200 bg-green-50">
       <CardContent className="py-12 text-center space-y-4">
@@ -145,8 +189,11 @@ export default function ProgramPaymentPage() {
     const init = async () => {
       try {
         setLoading(true);
-        const { data: intentData } = await api.post("/payments/program/create-intent", { programId });
-        
+        const { data: intentData } = await api.post(
+          "/payments/program/create-intent",
+          { programId },
+        );
+
         const { data: programData } = await api.get(`/programs/${programId}`);
         setProgram({
           id: programData.id,
@@ -158,7 +205,9 @@ export default function ProgramPaymentPage() {
         });
         setClientSecret(intentData.clientSecret);
       } catch (err: unknown) {
-        const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message ?? "Failed to initialize payment";
+        const msg =
+          (err as { response?: { data?: { message?: string } } })?.response
+            ?.data?.message ?? "Failed to initialize payment";
         showToast({ type: "error", title: "Error", message: msg });
         navigate(`/app/programs/${programId}`);
       } finally {
@@ -166,7 +215,7 @@ export default function ProgramPaymentPage() {
       }
     };
     if (programId) init();
-  }, [programId,navigate, showToast]);
+  }, [programId, navigate, showToast]);
 
   if (loading || !program) {
     return (
@@ -181,14 +230,22 @@ export default function ProgramPaymentPage() {
   if (paid) {
     return (
       <div className="max-w-md mx-auto">
-        <SuccessScreen program={program} onDone={() => navigate(`/app/programs/${programId}`)} />
+        <SuccessScreen
+          program={program}
+          onDone={() => navigate(`/app/programs/${programId}`)}
+        />
       </div>
     );
   }
 
   return (
     <div className="max-w-md mx-auto space-y-5">
-      <Button variant="ghost" size="sm" onClick={() => navigate(`/app/programs/${programId}`)} className="gap-1 text-gray-500 -ml-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(`/app/programs/${programId}`)}
+        className="gap-1 text-gray-500 -ml-2"
+      >
         <ArrowLeft className="size-4" /> Back to Program
       </Button>
 
@@ -201,10 +258,17 @@ export default function ProgramPaymentPage() {
               <BookOpen className="size-6 text-indigo-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">{program.title}</h3>
+              <h3 className="font-semibold text-gray-900 truncate">
+                {program.title}
+              </h3>
               <p className="text-xs text-gray-500 mt-1">{program.type}</p>
               <p className="text-xs text-gray-500">
-                Starts {new Date(program.startDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                Starts{" "}
+                {new Date(program.startDate).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </p>
             </div>
           </div>
@@ -235,8 +299,15 @@ export default function ProgramPaymentPage() {
         </CardHeader>
         <CardContent>
           {clientSecret ? (
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance: { theme: "stripe" } }}>
-              <PaymentForm clientSecret={clientSecret} program={program} onSuccess={() => setPaid(true)} />
+            <Elements
+              stripe={stripePromise}
+              options={{ clientSecret, appearance: { theme: "stripe" } }}
+            >
+              <PaymentForm
+                clientSecret={clientSecret}
+                program={program}
+                onSuccess={() => setPaid(true)}
+              />
             </Elements>
           ) : (
             <div className="py-4 flex justify-center">

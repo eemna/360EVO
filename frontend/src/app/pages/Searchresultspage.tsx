@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import api from "../../services/axios";
 
-// ── types ─────────────────────────────────────────────────────────────────
 interface SearchResult {
   id: string;
   type: string;
@@ -34,7 +33,6 @@ interface SearchResponse {
   };
 }
 
-// ── tab config ────────────────────────────────────────────────────────────
 const TABS = [
   { key: "all",      label: "All",      Icon: Search    },
   { key: "projects", label: "Projects", Icon: Briefcase },
@@ -52,7 +50,6 @@ const BADGE_COLORS: Record<string, string> = {
   program: "bg-orange-50 text-orange-700",
 };
 
-// ── highlighted text renderer ─────────────────────────────────────────────
 function Highlighted({ html }: { html: string }) {
   return (
     <span
@@ -62,9 +59,6 @@ function Highlighted({ html }: { html: string }) {
   );
 }
 
-// ── meta line — hoisted to module scope so it is never re-created during render
-// FIX: was previously defined as a nested component inside ResultCard, which
-// caused "Cannot create components during render" errors.
 function MetaLine({ result }: { result: SearchResult }) {
   const m = result.meta;
   if (result.type === "project") {
@@ -120,7 +114,6 @@ function MetaLine({ result }: { result: SearchResult }) {
   return null;
 }
 
-// ── result card ────────────────────────────────────────────────────────────
 const ICON_MAP: Record<string, React.ReactNode> = {
   project: <Briefcase className="w-4 h-4 text-blue-600" />,
   user:    <User className="w-4 h-4 text-purple-600" />,
@@ -137,7 +130,6 @@ function ResultCard({ result }: { result: SearchResult }) {
       onClick={() => navigate(result.url)}
       className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-blue-100 transition-all cursor-pointer group"
     >
-      {/* Avatar / icon */}
       {result.type === "user" || result.type === "expert" ? (
         <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
           {(result.meta.avatar as string) ? (
@@ -166,7 +158,6 @@ function ResultCard({ result }: { result: SearchResult }) {
         <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-snug">
           <Highlighted html={result.title} />
         </h3>
-        {/* FIX: MetaLine is now a stable module-level component, passed result as a prop */}
         <MetaLine result={result} />
         {result.snippet && (
           <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
@@ -180,7 +171,6 @@ function ResultCard({ result }: { result: SearchResult }) {
   );
 }
 
-// ── skeleton card ──────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
     <div className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl animate-pulse">
@@ -195,7 +185,6 @@ function SkeletonCard() {
   );
 }
 
-// ── main page ──────────────────────────────────────────────────────────────
 export default function SearchResultsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -214,7 +203,7 @@ export default function SearchResultsPage() {
       const res = await api.get("/search", { params: { q, type, page, limit: 10 } });
       setData(res.data);
     } catch {
-      // silently ignore
+      // 
     } finally {
       setLoading(false);
     }

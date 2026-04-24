@@ -1,5 +1,3 @@
-
-
 import {
   calculateTRLScore,
   calculateTRLConfidence,
@@ -23,21 +21,21 @@ import {
   fuzzifyTechnology,
   fuzzifyThesis,
   fuzzifyGeography,
-
   defuzzifyCategory,
 } from "../services/fuzzylogic.js";
 
 import { calculateMatchScore } from "../services/matchingEngine.js";
 
-
 const minimalProject = {
   title: "Test Project",
   tagline: "Short tagline",
-  shortDesc: "A short description that is well over eighty characters long for testing purposes here.",
-  fullDesc: "A full description that is more than three hundred characters long for this test project scenario. "
-    + "We are building a FinTech platform that enables financial inclusion across emerging markets using "
-    + "modern web technologies. Our solution addresses the lack of affordable banking services for the "
-    + "unbanked population in North Africa and Sub-Saharan Africa.",
+  shortDesc:
+    "A short description that is well over eighty characters long for testing purposes here.",
+  fullDesc:
+    "A full description that is more than three hundred characters long for this test project scenario. " +
+    "We are building a FinTech platform that enables financial inclusion across emerging markets using " +
+    "modern web technologies. Our solution addresses the lack of affordable banking services for the " +
+    "unbanked population in North Africa and Sub-Saharan Africa.",
   stage: "MVP",
   industry: "FinTech",
   technologies: ["React", "Node.js", "PostgreSQL"],
@@ -49,11 +47,21 @@ const minimalProject = {
     { name: "Bob", role: "CTO", photo: "http://example.com/bob.jpg" },
   ],
   milestones: [
-    { title: "MVP", description: "Built MVP", completedAt: new Date(), order: 1 },
+    {
+      title: "MVP",
+      description: "Built MVP",
+      completedAt: new Date(),
+      order: 1,
+    },
     { title: "Beta", description: "Beta launch", completedAt: null, order: 2 },
   ],
   documents: [
-    { name: "pitch.pdf", fileUrl: "http://example.com/pitch.pdf", fileKey: "pitch", fileType: "application/pdf" },
+    {
+      name: "pitch.pdf",
+      fileUrl: "http://example.com/pitch.pdf",
+      fileKey: "pitch",
+      fileType: "application/pdf",
+    },
   ],
   updates: [{ content: "Update 1" }, { content: "Update 2" }],
 };
@@ -70,7 +78,8 @@ const investorProfile = {
   dealStructures: [],
   mustHaves: {},
   exclusions: {},
-  investmentThesis: "We invest in FinTech startups using modern web technologies to solve financial inclusion problems in emerging markets.",
+  investmentThesis:
+    "We invest in FinTech startups using modern web technologies to solve financial inclusion problems in emerging markets.",
 };
 
 // TRL SCORE
@@ -187,11 +196,13 @@ describe("financialScore", () => {
   });
 
   test("funding + currency + PDF doc → 100", () => {
-    expect(financialScore({
-      fundingSought: 500000,
-      currency: "USD",
-      documents: [{ name: "pitch.pdf", fileType: "application/pdf" }],
-    })).toBe(100);
+    expect(
+      financialScore({
+        fundingSought: 500000,
+        currency: "USD",
+        documents: [{ name: "pitch.pdf", fileType: "application/pdf" }],
+      }),
+    ).toBe(100);
   });
 
   test("funding only → 40", () => {
@@ -226,7 +237,6 @@ describe("marketScore", () => {
 });
 
 describe("teamScore", () => {
- 
   test("no team → 20 (every() on empty array is vacuously true, adds role bonus)", () => {
     expect(teamScore({})).toBe(20);
   });
@@ -257,9 +267,11 @@ describe("tractionScore", () => {
   });
 
   test("1 milestone planned → 20", () => {
-    expect(tractionScore({
-      milestones: [{ completedAt: null }],
-    })).toBe(20);
+    expect(
+      tractionScore({
+        milestones: [{ completedAt: null }],
+      }),
+    ).toBe(20);
   });
 
   test("completed milestone + updates → higher score", () => {
@@ -289,11 +301,13 @@ describe("competitiveScore", () => {
   });
 
   test("3+ techs + long tagline + mature stage → 100", () => {
-    expect(competitiveScore({
-      technologies: ["React", "Node.js", "AI"],
-      tagline: "A tagline that is definitely longer than twenty characters",
-      stage: "MVP",
-    })).toBe(100);
+    expect(
+      competitiveScore({
+        technologies: ["React", "Node.js", "AI"],
+        tagline: "A tagline that is definitely longer than twenty characters",
+        stage: "MVP",
+      }),
+    ).toBe(100);
   });
 });
 
@@ -323,7 +337,6 @@ describe("irCompositeScore", () => {
     recommendations.forEach((r) => expect(typeof r).toBe("string"));
   });
 
-  
   test("empty project → composite equals teamScore({}) * 0.2 = 4", () => {
     const { composite } = irCompositeScore({});
     expect(composite).toBe(4);
@@ -332,7 +345,7 @@ describe("irCompositeScore", () => {
   test("breakdown contains all 5 dimensions", () => {
     const { breakdown } = irCompositeScore(minimalProject);
     ["financial", "market", "team", "traction", "competitive"].forEach((k) =>
-      expect(breakdown).toHaveProperty(k)
+      expect(breakdown).toHaveProperty(k),
     );
   });
 });
@@ -447,16 +460,15 @@ describe("fuzzifyFunding", () => {
   test("in range → high > 0.8", () => {
     const result = fuzzifyFunding(
       { fundingMin: 100000, fundingMax: 1000000 },
-      { fundingSought: 500000 }
+      { fundingSought: 500000 },
     );
     expect(result.high).toBeGreaterThan(0.8);
   });
 
-
   test("far outside range → low > 0", () => {
     const result = fuzzifyFunding(
       { fundingMin: 900000, fundingMax: 1000000 },
-      { fundingSought: 10000 }
+      { fundingSought: 10000 },
     );
     expect(result.low).toBe(1.0);
   });
@@ -489,7 +501,7 @@ describe("fuzzifyThesis", () => {
   test("matching thesis → high > 0", () => {
     const result = fuzzifyThesis(
       "FinTech startups using web technology for financial inclusion",
-      "We build FinTech solutions for financial inclusion using web technology"
+      "We build FinTech solutions for financial inclusion using web technology",
     );
     expect(result.high).toBeGreaterThan(0);
   });
@@ -499,11 +511,10 @@ describe("fuzzifyThesis", () => {
     expect(result.medium).toBe(0.5);
   });
 
-  
   test("returns _rawSimilarity > 0 for matching multi-word text", () => {
     const result = fuzzifyThesis(
       "fintech blockchain investment capital",
-      "fintech blockchain investment capital"
+      "fintech blockchain investment capital",
     );
     expect(result).toHaveProperty("_rawSimilarity");
     expect(result._rawSimilarity).toBeGreaterThan(0);
@@ -511,11 +522,10 @@ describe("fuzzifyThesis", () => {
 });
 
 describe("fuzzifyGeography", () => {
- 
   test("exact location string match → high = 1", () => {
     const result = fuzzifyGeography(
       { geographicPrefs: ["Tunisia"] },
-      { location: "Tunisia" }
+      { location: "Tunisia" },
     );
     expect(result.high).toBe(1.0);
   });
@@ -523,13 +533,16 @@ describe("fuzzifyGeography", () => {
   test("global preference → high = 1", () => {
     const result = fuzzifyGeography(
       { geographicPrefs: ["Global"] },
-      { location: "Anywhere" }
+      { location: "Anywhere" },
     );
     expect(result.high).toBe(1.0);
   });
 
   test("no prefs → medium 0.5", () => {
-    const result = fuzzifyGeography({ geographicPrefs: [] }, { location: "Tunisia" });
+    const result = fuzzifyGeography(
+      { geographicPrefs: [] },
+      { location: "Tunisia" },
+    );
     expect(result.medium).toBe(0.5);
   });
 });
@@ -563,11 +576,15 @@ describe("defuzzifyCategory", () => {
 
 describe("textSimilarity", () => {
   test("identical texts → 1", () => {
-    expect(textSimilarity("fintech investment africa", "fintech investment africa")).toBeCloseTo(1);
+    expect(
+      textSimilarity("fintech investment africa", "fintech investment africa"),
+    ).toBeCloseTo(1);
   });
 
   test("completely different → 0", () => {
-    expect(textSimilarity("agriculture farming crops", "blockchain crypto nft")).toBe(0);
+    expect(
+      textSimilarity("agriculture farming crops", "blockchain crypto nft"),
+    ).toBe(0);
   });
 
   test("partial overlap → between 0 and 1", () => {
@@ -577,7 +594,10 @@ describe("textSimilarity", () => {
   });
 
   test("abbreviation expansion: AI matches artificial intelligence", () => {
-    const sim = textSimilarity("ai machine learning", "artificial intelligence machine learning");
+    const sim = textSimilarity(
+      "ai machine learning",
+      "artificial intelligence machine learning",
+    );
     expect(sim).toBeGreaterThan(0.5);
   });
 });
@@ -588,26 +608,49 @@ describe("calculateMatchScore", () => {
   const assessment = { trlScore: 7, irScore: 72 };
 
   test("returns matchScore, categoryScores, reasoning", async () => {
-    const result = await calculateMatchScore(investorProfile, minimalProject, assessment);
+    const result = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      assessment,
+    );
     expect(result).toHaveProperty("matchScore");
     expect(result).toHaveProperty("categoryScores");
     expect(result).toHaveProperty("reasoning");
   });
 
   test("matchScore is 0–100", async () => {
-    const { matchScore } = await calculateMatchScore(investorProfile, minimalProject, assessment);
+    const { matchScore } = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      assessment,
+    );
     expect(matchScore).toBeGreaterThanOrEqual(0);
     expect(matchScore).toBeLessThanOrEqual(100);
   });
 
   test("categoryScores contains all expected keys", async () => {
-    const { categoryScores } = await calculateMatchScore(investorProfile, minimalProject, assessment);
-    ["industry", "stage", "technology", "funding", "geography", "irBonus", "thesisBonus"]
-      .forEach((k) => expect(categoryScores).toHaveProperty(k));
+    const { categoryScores } = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      assessment,
+    );
+    [
+      "industry",
+      "stage",
+      "technology",
+      "funding",
+      "geography",
+      "irBonus",
+      "thesisBonus",
+    ].forEach((k) => expect(categoryScores).toHaveProperty(k));
   });
 
   test("well-matching investor + project → score > 50", async () => {
-    const { matchScore } = await calculateMatchScore(investorProfile, minimalProject, assessment);
+    const { matchScore } = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      assessment,
+    );
     expect(matchScore).toBeGreaterThan(50);
   });
 
@@ -616,7 +659,11 @@ describe("calculateMatchScore", () => {
       ...investorProfile,
       exclusions: { industries: ["FinTech"] },
     };
-    const { matchScore } = await calculateMatchScore(exclusiveProfile, minimalProject, assessment);
+    const { matchScore } = await calculateMatchScore(
+      exclusiveProfile,
+      minimalProject,
+      assessment,
+    );
     expect(matchScore).toBe(0);
   });
 
@@ -626,8 +673,16 @@ describe("calculateMatchScore", () => {
       mustHaves: { minTRL: 9 },
     };
     const lowTrlAssessment = { trlScore: 3, irScore: 50 };
-    const { matchScore: penalised } = await calculateMatchScore(strictProfile, minimalProject, lowTrlAssessment);
-    const { matchScore: normal } = await calculateMatchScore(investorProfile, minimalProject, lowTrlAssessment);
+    const { matchScore: penalised } = await calculateMatchScore(
+      strictProfile,
+      minimalProject,
+      lowTrlAssessment,
+    );
+    const { matchScore: normal } = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      lowTrlAssessment,
+    );
     expect(penalised).toBeLessThan(normal);
   });
 
@@ -643,16 +698,26 @@ describe("calculateMatchScore", () => {
       exclusions: {},
       investmentThesis: "",
     };
-    await expect(calculateMatchScore(emptyProfile, minimalProject, null)).resolves.toBeDefined();
+    await expect(
+      calculateMatchScore(emptyProfile, minimalProject, null),
+    ).resolves.toBeDefined();
   });
 
   test("null assessment → does not throw, irBonus = 0", async () => {
-    const { categoryScores } = await calculateMatchScore(investorProfile, minimalProject, null);
+    const { categoryScores } = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      null,
+    );
     expect(categoryScores.irBonus).toBe(0);
   });
 
   test("reasoning.irScore matches assessment", async () => {
-    const { reasoning } = await calculateMatchScore(investorProfile, minimalProject, assessment);
+    const { reasoning } = await calculateMatchScore(
+      investorProfile,
+      minimalProject,
+      assessment,
+    );
     expect(reasoning.irScore).toBe(72);
   });
 });

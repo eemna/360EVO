@@ -9,7 +9,6 @@ const { default: app } = await import("../server.js");
 const { prisma } = await import("../config/prisma.js");
 import crypto from "crypto";
 
-
 describe("Auth Flow — register → verify → login → reset", () => {
   const testEmail = `authtest_${Date.now()}@example.com`;
   const testPassword = "TestPass123!";
@@ -27,18 +26,14 @@ describe("Auth Flow — register → verify → login → reset", () => {
   });
 
   test("1 — registers a new user", async () => {
-    const res = await request(app)
-      .post("/api/auth/register")
-      .send(testUser);
+    const res = await request(app).post("/api/auth/register").send(testUser);
 
     expect(res.statusCode).toBe(201);
     expect(res.body.message).toContain("Registration successful");
   });
 
   test("2 — blocks duplicate registration", async () => {
-    const res = await request(app)
-      .post("/api/auth/register")
-      .send(testUser);
+    const res = await request(app).post("/api/auth/register").send(testUser);
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toContain("already exists");

@@ -1,6 +1,5 @@
 import { prisma } from "../config/prisma.js";
 
-
 function highlight(text, q) {
   if (!text || !q) return text ?? "";
   const words = q
@@ -13,7 +12,6 @@ function highlight(text, q) {
   return text.replace(pattern, "<mark>$1</mark>");
 }
 
-
 function snippet(text, maxLen = 160) {
   if (!text) return "";
   const plain = text.replace(/<[^>]*>/g, "");
@@ -22,12 +20,7 @@ function snippet(text, maxLen = 160) {
 
 export const globalSearch = async (req, res, next) => {
   try {
-    const {
-      q = "",
-      type = "all",
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { q = "", type = "all", page = 1, limit = 10 } = req.query;
 
     const trimmed = q.toString().trim();
 
@@ -35,7 +28,13 @@ export const globalSearch = async (req, res, next) => {
       return res.json({
         q: trimmed,
         type,
-        results: { projects: [], users: [], experts: [], events: [], programs: [] },
+        results: {
+          projects: [],
+          users: [],
+          experts: [],
+          events: [],
+          programs: [],
+        },
         pagination: { page: 1, limit: Number(limit), totals: {} },
       });
     }
@@ -46,16 +45,10 @@ export const globalSearch = async (req, res, next) => {
     const fetchAll = type === "all";
     const shouldFetch = (t) => fetchAll || type === t;
 
-    const [
-      projectRows,
-      userRows,
-      expertRows,
-      eventRows,
-      programRows,
-    ] = await Promise.all([
-
-      shouldFetch("projects")
-        ? prisma.$queryRaw`
+    const [projectRows, userRows, expertRows, eventRows, programRows] =
+      await Promise.all([
+        shouldFetch("projects")
+          ? prisma.$queryRaw`
             SELECT
               p.id,
               p.title,
@@ -77,10 +70,10 @@ export const globalSearch = async (req, res, next) => {
             ORDER BY rank DESC
             LIMIT ${take} OFFSET ${skip}
           `
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      shouldFetch("users")
-        ? prisma.$queryRaw`
+        shouldFetch("users")
+          ? prisma.$queryRaw`
             SELECT
               u.id,
               u.name,
@@ -99,10 +92,10 @@ export const globalSearch = async (req, res, next) => {
             ORDER BY rank DESC
             LIMIT ${take} OFFSET ${skip}
           `
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      shouldFetch("experts")
-        ? prisma.$queryRaw`
+        shouldFetch("experts")
+          ? prisma.$queryRaw`
             SELECT
               u.id,
               u.name,
@@ -126,10 +119,10 @@ export const globalSearch = async (req, res, next) => {
             ORDER BY rank DESC
             LIMIT ${take} OFFSET ${skip}
           `
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      shouldFetch("events")
-        ? prisma.$queryRaw`
+        shouldFetch("events")
+          ? prisma.$queryRaw`
             SELECT
               e.id,
               e.title,
@@ -153,10 +146,10 @@ export const globalSearch = async (req, res, next) => {
             ORDER BY rank DESC
             LIMIT ${take} OFFSET ${skip}
           `
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      shouldFetch("programs")
-        ? prisma.$queryRaw`
+        shouldFetch("programs")
+          ? prisma.$queryRaw`
             SELECT
               p.id,
               p.title,
@@ -179,8 +172,8 @@ export const globalSearch = async (req, res, next) => {
             ORDER BY rank DESC
             LIMIT ${take} OFFSET ${skip}
           `
-        : Promise.resolve([]),
-    ]);
+          : Promise.resolve([]),
+      ]);
 
     const projects = projectRows.map((r) => ({
       id: r.id,
@@ -188,7 +181,7 @@ export const globalSearch = async (req, res, next) => {
       title: highlight(r.title, trimmed),
       snippet: highlight(snippet(r.description), trimmed),
       meta: { stage: r.stage, industry: r.industry, owner: r.ownerName },
-      url: `/app/projects/${r.id}`,
+      url: `/app/startup/projects/${r.id}`,
       rank: Number(r.rank),
     }));
 
@@ -214,7 +207,7 @@ export const globalSearch = async (req, res, next) => {
         availability: r.availabilityStatus,
         avatar: r.avatar,
       },
-      url: `/app/experts/${r.id}`,
+      url: `/app/profile/${r.id}`,
       rank: Number(r.rank),
     }));
 
