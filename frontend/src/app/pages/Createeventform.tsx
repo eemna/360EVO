@@ -414,21 +414,21 @@ export default function CreateEventForm() {
                 className="rounded-xl border-gray-200"
               />
             </Field>
-           <Field
+            <Field
               label="Ticket Price (USD)"
               icon={<DollarSign className="w-4 h-4" />}
               hint="Set 0 for free events"
             >
-            <Input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.price}
-              onChange={set("price")}
-              placeholder="0.00"
-              className="rounded-xl border-gray-200"
-            />
-           </Field>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.price}
+                onChange={set("price")}
+                placeholder="0.00"
+                className="rounded-xl border-gray-200"
+              />
+            </Field>
             <Field
               label="Cover Image URL"
               icon={<Image className="w-4 h-4" />}

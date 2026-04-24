@@ -6,7 +6,7 @@ import {
   confirmPayment,
   createProgramPaymentIntent,
   confirmProgramPayment,
-  confirmConsultationPayment
+  confirmConsultationPayment,
 } from "../controllers/paymentController.js";
 
 const router = express.Router();

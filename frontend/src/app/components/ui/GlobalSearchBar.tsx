@@ -1,6 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router";
-import { Search, X, Briefcase, User, Star, Calendar, BookOpen } from "lucide-react";
+import {
+  Search,
+  X,
+  Briefcase,
+  User,
+  Star,
+  Calendar,
+  BookOpen,
+} from "lucide-react";
 import api from "../../../services/axios";
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -23,31 +31,31 @@ interface Suggestion {
 
 const TYPE_ICON: Record<string, React.ReactNode> = {
   project: <Briefcase className="w-3.5 h-3.5" />,
-  user:    <User className="w-3.5 h-3.5" />,
-  expert:  <Star className="w-3.5 h-3.5" />,
-  event:   <Calendar className="w-3.5 h-3.5" />,
+  user: <User className="w-3.5 h-3.5" />,
+  expert: <Star className="w-3.5 h-3.5" />,
+  event: <Calendar className="w-3.5 h-3.5" />,
   program: <BookOpen className="w-3.5 h-3.5" />,
 };
 
 const TYPE_URL: Record<string, (id: string) => string> = {
-  project: (id) => `/app/projects/${id}`,
-  user:    (id) => `/app/profile/${id}`,
-  expert:  (id) => `/app/experts/${id}`,
-  event:   (id) => `/app/events/${id}`,
+  project: (id) => `/app/startup/projects/${id}`,
+  user: (id) => `/app/profile/${id}`,
+  expert:  (id) => `/app/profile/${id}`,
+  event: (id) => `/app/events/${id}`,
   program: (id) => `/app/programs/${id}`,
 };
 
 const MIN_CHARS = 2;
 
 export default function GlobalSearchBar() {
-  const navigate      = useNavigate();
-  const [query, setQuery]             = useState("");
+  const navigate = useNavigate();
+  const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [open, setOpen]               = useState(false);
-  const [loading, setLoading]         = useState(false);
-  const [activeIdx, setActiveIdx]     = useState(-1);
-  const inputRef                      = useRef<HTMLInputElement>(null);
-  const containerRef                  = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const debouncedQ = useDebounce(query, 300);
 
@@ -90,7 +98,10 @@ export default function GlobalSearchBar() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -104,12 +115,15 @@ export default function GlobalSearchBar() {
     navigate(`/app/search?q=${encodeURIComponent(query.trim())}`);
   }, [query, navigate]);
 
-  const pickSuggestion = useCallback((s: Suggestion) => {
-    setOpen(false);
-    setQuery("");
-    setSuggestions([]);
-    navigate(TYPE_URL[s.type](s.id));
-  }, [navigate]);
+  const pickSuggestion = useCallback(
+    (s: Suggestion) => {
+      setOpen(false);
+      setQuery("");
+      setSuggestions([]);
+      navigate(TYPE_URL[s.type](s.id));
+    },
+    [navigate],
+  );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open || suggestions.length === 0) {
@@ -152,10 +166,15 @@ export default function GlobalSearchBar() {
             const value = e.target.value;
             setQuery(value);
             if (value.trim().length >= MIN_CHARS) setOpen(true);
-            else { setSuggestions([]); setOpen(false); }
+            else {
+              setSuggestions([]);
+              setOpen(false);
+            }
           }}
           onKeyDown={onKeyDown}
-          onFocus={() => { if (suggestions.length > 0) setOpen(true); }}
+          onFocus={() => {
+            if (suggestions.length > 0) setOpen(true);
+          }}
         />
         {query && (
           <button
@@ -186,39 +205,42 @@ export default function GlobalSearchBar() {
             </div>
           )}
 
-          {!loading && Object.entries(grouped).map(([category, items]) => (
-            <div key={category}>
-              <div className="px-4 pt-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                {category}
-              </div>
-              {items.map((s) => {
-                const flatIdx = suggestions.indexOf(s);
-                return (
-                  <button
-                    key={s.id}
-                    type="button"
-                    aria-label={`Go to ${s.label}`}
-                    onMouseDown={() => pickSuggestion(s)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
-                      flatIdx === activeIdx
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    <span className="text-gray-400 flex-shrink-0">
-                      {TYPE_ICON[s.type]}
-                    </span>
-                    <span className="flex-1 truncate font-medium">{s.label}</span>
-                    {s.meta && (
-                      <span className="text-xs text-gray-400 flex-shrink-0">
-                        {s.meta}
+          {!loading &&
+            Object.entries(grouped).map(([category, items]) => (
+              <div key={category}>
+                <div className="px-4 pt-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  {category}
+                </div>
+                {items.map((s) => {
+                  const flatIdx = suggestions.indexOf(s);
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      aria-label={`Go to ${s.label}`}
+                      onMouseDown={() => pickSuggestion(s)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
+                        flatIdx === activeIdx
+                          ? "bg-blue-50 text-blue-700"
+                          : "text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span className="text-gray-400 flex-shrink-0">
+                        {TYPE_ICON[s.type]}
                       </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+                      <span className="flex-1 truncate font-medium">
+                        {s.label}
+                      </span>
+                      {s.meta && (
+                        <span className="text-xs text-gray-400 flex-shrink-0">
+                          {s.meta}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
 
           {!loading && suggestions.length > 0 && (
             <div className="border-t border-gray-100 px-4 py-2.5">

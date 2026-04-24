@@ -12,7 +12,7 @@ import {
   Bookmark,
   Plus,
   Users,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -80,18 +80,24 @@ export function ExpertDashboard() {
   const [myEvents, setMyEvents] = useState<ExpertEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   useEffect(() => {
-    api.get("/events/user/mine")
+    api
+      .get("/events/user/mine")
       .then(({ data }) => setMyEvents(data))
       .catch(console.error)
       .finally(() => setLoadingEvents(false));
   }, []);
 
-  const totalEventRegistrations = myEvents.reduce((sum, e) => sum + e._count.registrations, 0);
+  const totalEventRegistrations = myEvents.reduce(
+    (sum, e) => sum + e._count.registrations,
+    0,
+  );
   const totalEventRevenue = myEvents.reduce((sum, e) => {
-  const price = Math.round(Number(e.price) * 100) / 100;
-  return sum + (price * e._count.registrations);
-}, 0);
-  const publishedEvents = myEvents.filter(e => e.status === "PUBLISHED").length;
+    const price = Math.round(Number(e.price) * 100) / 100;
+    return sum + price * e._count.registrations;
+  }, 0);
+  const publishedEvents = myEvents.filter(
+    (e) => e.status === "PUBLISHED",
+  ).length;
 
   useEffect(() => {
     api
@@ -244,7 +250,7 @@ export function ExpertDashboard() {
             </Card>
           </div>
         </div>
-{/* ── Event Stats ── */}
+        {/* ── Event Stats ── */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
@@ -309,7 +315,9 @@ export function ExpertDashboard() {
                   <div>
                     <p className="text-sm text-gray-500">Event Revenue</p>
                     <p className="text-2xl font-bold text-gray-900 mt-1">
-                      {loadingEvents ? "..." : `$${totalEventRevenue.toFixed(2)}`}
+                      {loadingEvents
+                        ? "..."
+                        : `$${totalEventRevenue.toFixed(2)}`}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       From paid ticket sales
@@ -327,42 +335,67 @@ export function ExpertDashboard() {
           <div className="mt-4 space-y-3">
             {loadingEvents ? (
               [...Array(2)].map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+                <div
+                  key={i}
+                  className="h-16 bg-gray-100 rounded-xl animate-pulse"
+                />
               ))
             ) : myEvents.length === 0 ? (
               <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                 <Calendar className="size-8 text-gray-300 mx-auto mb-2" />
                 <p className="text-sm text-gray-500">No events yet</p>
-                <Button size="sm" onClick={() => navigate("/app/events/create")}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700">
+                <Button
+                  size="sm"
+                  onClick={() => navigate("/app/events/create")}
+                  className="mt-3 bg-blue-600 hover:bg-blue-700"
+                >
                   Create your first workshop
                 </Button>
               </div>
             ) : (
               myEvents.slice(0, 3).map((event) => (
-                <div key={event.id} onClick={() => navigate(`/app/events/${event.id}`)}
-                  className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4 cursor-pointer hover:shadow-sm transition-all">
+                <div
+                  key={event.id}
+                  onClick={() => navigate(`/app/events/${event.id}`)}
+                  className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4 cursor-pointer hover:shadow-sm transition-all"
+                >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">{event.title}</p>
+                    <p className="font-medium text-gray-900 text-sm truncate">
+                      {event.title}
+                    </p>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      {new Date(event.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                      {" · "}{event._count.registrations} attendees
-                      {Number(event.price) > 0 && ` · $${(Number(event.price) * event._count.registrations).toFixed(0)} earned`}
+                      {new Date(event.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                      {" · "}
+                      {event._count.registrations} attendees
+                      {Number(event.price) > 0 &&
+                        ` · $${(Number(event.price) * event._count.registrations).toFixed(0)} earned`}
                     </p>
                   </div>
-                  <span className={`ml-3 text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
-                    event.status === "PUBLISHED" ? "bg-green-100 text-green-700" :
-                    event.status === "CANCELLED" ? "bg-red-100 text-red-700" :
-                    "bg-yellow-100 text-yellow-700"
-                  }`}>
+                  <span
+                    className={`ml-3 text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0 ${
+                      event.status === "PUBLISHED"
+                        ? "bg-green-100 text-green-700"
+                        : event.status === "CANCELLED"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
                     {event.status}
                   </span>
                 </div>
               ))
             )}
             {myEvents.length > 2 && (
-              <Button variant="ghost" size="sm" className="text-blue-600 w-full"
-                onClick={() => navigate("/app/events/my")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 w-full"
+                onClick={() => navigate("/app/events/my")}
+              >
                 View all {myEvents.length} events →
               </Button>
             )}
@@ -467,14 +500,14 @@ export function ExpertDashboard() {
               <Calendar className="size-4 mr-2" />
               My Events
             </Button>
-            
-<Button
-  variant="outline"
-  onClick={() => navigate("/app/programs/my-applications")}
->
-  <BookOpen className="size-4 mr-2" />
-  My Applications
-</Button>
+
+            <Button
+              variant="outline"
+              onClick={() => navigate("/app/programs/my-applications")}
+            >
+              <BookOpen className="size-4 mr-2" />
+              My Applications
+            </Button>
           </div>
         </div>
       </div>

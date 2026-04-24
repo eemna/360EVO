@@ -79,19 +79,21 @@ function PaymentForm({
         return;
       }
 
-if (paymentIntent?.status === "succeeded") {
-  try {
-    await api.post("/payments/confirm", { paymentIntentId: paymentIntent.id });
-  } catch (err) {
-    console.error("Confirm failed:", err);
-  }
-  showToast({
-    type: "success",
-    title: "Payment successful!",
-    message: `You're registered for "${event.title}"`,
-  });
-  onSuccess();
-}
+      if (paymentIntent?.status === "succeeded") {
+        try {
+          await api.post("/payments/confirm", {
+            paymentIntentId: paymentIntent.id,
+          });
+        } catch (err) {
+          console.error("Confirm failed:", err);
+        }
+        showToast({
+          type: "success",
+          title: "Payment successful!",
+          message: `You're registered for "${event.title}"`,
+        });
+        onSuccess();
+      }
     } finally {
       setPaying(false);
     }
@@ -172,7 +174,7 @@ function SuccessScreen({
         </div>
         <h2 className="text-xl font-bold text-green-900">You're registered!</h2>
         <p className="text-green-700 text-sm">
-          Your spot for <strong>{event.title}</strong> is confirmed. 
+          Your spot for <strong>{event.title}</strong> is confirmed.
         </p>
         <Button onClick={onDone} className="bg-green-600 hover:bg-green-700">
           View Event

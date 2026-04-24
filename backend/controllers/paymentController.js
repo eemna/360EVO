@@ -13,20 +13,24 @@ export const createPaymentIntent = async (req, res, next) => {
 
     const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) return res.status(404).json({ message: "Event not found" });
-    if (event.status !== "PUBLISHED") return res.status(400).json({ message: "Event is not published" });
+    if (event.status !== "PUBLISHED")
+      return res.status(400).json({ message: "Event is not published" });
 
-const price = event.price.toNumber();
+    const price = event.price.toNumber();
 
-if (price === 0) {
-  return res.status(400).json({ message: "This event is free." });
-}
+    if (price === 0) {
+      return res.status(400).json({ message: "This event is free." });
+    }
 
-const amountInCents = Math.round(price * 100);
+    const amountInCents = Math.round(price * 100);
 
     const alreadyRegistered = await prisma.eventRegistration.findUnique({
       where: { eventId_userId: { eventId, userId } },
     });
-    if (alreadyRegistered) return res.status(400).json({ message: "Already registered for this event" });
+    if (alreadyRegistered)
+      return res
+        .status(400)
+        .json({ message: "Already registered for this event" });
 
     const application = await prisma.eventApplication.findUnique({
       where: { eventId_userId: { eventId, userId } },
@@ -37,20 +41,20 @@ const amountInCents = Math.round(price * 100);
       });
     }
 
-const paymentIntent = await stripe.paymentIntents.create({
-  amount: amountInCents,
-  currency: "usd",
-  metadata: { userId, eventId, referenceType: "EVENT" },
-});
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: "usd",
+      metadata: { userId, eventId, referenceType: "EVENT" },
+    });
 
     paymentsTotal.inc({ type: "EVENT", status: "initiated" });
-const amount = event.price.toNumber();
+    const amount = event.price.toNumber();
 
-res.json({ 
-  clientSecret: paymentIntent.client_secret, 
-  amount, 
-  eventTitle: event.title 
-});
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      amount,
+      eventTitle: event.title,
+    });
   } catch (error) {
     next(error);
   }
@@ -81,10 +85,13 @@ export const stripeWebhook = async (req, res) => {
         const existing = await prisma.payment.findUnique({
           where: { stripePaymentIntentId: pi.id },
         });
-if (existing) {
-  console.log("[Webhook] Duplicate, skipping — existing payment:", existing.id);
-  break;
-}
+        if (existing) {
+          console.log(
+            "[Webhook] Duplicate, skipping — existing payment:",
+            existing.id,
+          );
+          break;
+        }
         if (referenceType === "EVENT") {
           await prisma.$transaction([
             prisma.payment.create({
@@ -106,9 +113,9 @@ if (existing) {
             }),
           ]);
           paymentsTotal.inc({ type: "EVENT", status: "succeeded" });
-         const dbEvent = await prisma.event.findUnique({
-  where: { id: eventId },
-});
+          const dbEvent = await prisma.event.findUnique({
+            where: { id: eventId },
+          });
           await createNotification({
             userId,
             type: "EVENT",
@@ -117,36 +124,50 @@ if (existing) {
             link: `/app/events/${eventId}`,
           });
           if (dbEvent) {
-  await createNotification({
-    userId: dbEvent.organizerId,
-    type: "EVENT",
-    title: "New Registration",
-    body: `Someone just registered for "${dbEvent.title}".`,
-    link: `/app/events/${eventId}`,
-  });
-}
+            await createNotification({
+              userId: dbEvent.organizerId,
+              type: "EVENT",
+              title: "New Registration",
+              body: `Someone just registered for "${dbEvent.title}".`,
+              link: `/app/events/${eventId}`,
+            });
+          }
 
           const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { name: true, email: true },
-  });
-if (user && dbEvent) {
-  const eventDate = new Date(dbEvent.date).toLocaleDateString("en-US", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric",
-    timeZone: "UTC",
-  });
+            where: { id: userId },
+            select: { name: true, email: true },
+          });
+          if (user && dbEvent) {
+            const eventDate = new Date(dbEvent.date).toLocaleDateString(
+              "en-US",
+              {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+                timeZone: "UTC",
+              },
+            );
 
-  const eventTime = new Date(dbEvent.date).toLocaleTimeString("en-US", {
-    hour: "2-digit", minute: "2-digit", timeZone: "UTC",
-  });
+            const eventTime = new Date(dbEvent.date).toLocaleTimeString(
+              "en-US",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+                timeZone: "UTC",
+              },
+            );
 
-  const locationLine = dbEvent.location ? dbEvent.location : dbEvent.virtualLink ? `Online — ${dbEvent.virtualLink}`
-      : "To be announced";
+            const locationLine = dbEvent.location
+              ? dbEvent.location
+              : dbEvent.virtualLink
+                ? `Online — ${dbEvent.virtualLink}`
+                : "To be announced";
 
-  sendEmail({
-    to: user.email,
-   subject: `Registration Confirmed — ${dbEvent.title}`,
-    html: `
+            sendEmail({
+              to: user.email,
+              subject: `Registration Confirmed — ${dbEvent.title}`,
+              html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 32px; border-radius: 12px 12px 0 0;">
           <h1 style="color: white; margin: 0; font-size: 24px;">You're registered! 🎉</h1>
@@ -182,8 +203,10 @@ if (user && dbEvent) {
         </div>
       </div>
     `,
-  }).catch((err) => console.error("Paid event confirmation email failed:", err)); }
-
+            }).catch((err) =>
+              console.error("Paid event confirmation email failed:", err),
+            );
+          }
         } else if (referenceType === "CONSULTATION") {
           const booking = await prisma.booking.findUnique({
             where: { id: bookingId },
@@ -267,27 +290,34 @@ export const confirmPayment = async (req, res, next) => {
   try {
     const { paymentIntentId } = req.body;
     const userId = req.user.id;
- 
+
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
- 
-    if (pi.status !== "succeeded") return res.status(400).json({ message: "Payment not completed" });
-    if (pi.metadata.userId !== userId) return res.status(403).json({ message: "Unauthorized" });
- 
+
+    if (pi.status !== "succeeded")
+      return res.status(400).json({ message: "Payment not completed" });
+    if (pi.metadata.userId !== userId)
+      return res.status(403).json({ message: "Unauthorized" });
+
     const { eventId } = pi.metadata;
- 
+
     const [dbEvent, user] = await Promise.all([
       prisma.event.findUnique({ where: { id: eventId } }),
-      prisma.user.findUnique({ where: { id: userId }, select: { name: true, email: true } }),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      }),
     ]);
- 
+
     // Check if webhook already handled this payment
     const existing = await prisma.payment.findUnique({
       where: { stripePaymentIntentId: pi.id },
     });
- 
+
     if (!existing) {
-      console.log("[confirmPayment] Webhook hasn't fired yet — creating records now");
- 
+      console.log(
+        "[confirmPayment] Webhook hasn't fired yet — creating records now",
+      );
+
       try {
         await prisma.$transaction([
           prisma.payment.create({
@@ -310,47 +340,58 @@ export const confirmPayment = async (req, res, next) => {
         console.log("[confirmPayment] Transaction complete");
       } catch (txError) {
         if (txError.code === "P2002") {
-          console.log("[confirmPayment] Webhook already created the record, skipping.");
+          console.log(
+            "[confirmPayment] Webhook already created the record, skipping.",
+          );
         } else {
-          console.error("[confirmPayment] Transaction failed:", txError.message);
+          console.error(
+            "[confirmPayment] Transaction failed:",
+            txError.message,
+          );
           throw txError;
         }
       }
- 
-
     } else {
-      console.log("[confirmPayment] Webhook already handled this payment — skipping DB writes");
+      console.log(
+        "[confirmPayment] Webhook already handled this payment — skipping DB writes",
+      );
     }
-       await createNotification({
-        userId,
+    await createNotification({
+      userId,
+      type: "EVENT",
+      title: "Registration Confirmed",
+      body: `You're registered for "${dbEvent?.title}".`,
+      link: `/app/events/${eventId}`,
+    });
+
+    if (dbEvent) {
+      await createNotification({
+        userId: dbEvent.organizerId,
         type: "EVENT",
-        title: "Registration Confirmed",
-        body: `You're registered for "${dbEvent?.title}".`,
+        title: "New Registration",
+        body: `Someone just registered for "${dbEvent.title}".`,
         link: `/app/events/${eventId}`,
       });
- 
-      if (dbEvent) {
-        await createNotification({
-          userId: dbEvent.organizerId,
-          type: "EVENT",
-          title: "New Registration",
-          body: `Someone just registered for "${dbEvent.title}".`,
-          link: `/app/events/${eventId}`,
-        });
-      }
+    }
     if (dbEvent && user) {
       const eventDate = new Date(dbEvent.date).toLocaleDateString("en-US", {
-        weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC",
       });
       const eventTime = new Date(dbEvent.date).toLocaleTimeString("en-US", {
-        hour: "2-digit", minute: "2-digit", timeZone: "UTC",
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "UTC",
       });
       const locationLine = dbEvent.location
         ? dbEvent.location
         : dbEvent.virtualLink
-        ? `Online — ${dbEvent.virtualLink}`
-        : "To be announced";
- 
+          ? `Online — ${dbEvent.virtualLink}`
+          : "To be announced";
+
       sendEmail({
         to: user.email,
         subject: `Registration Confirmed — ${dbEvent.title}`,
@@ -380,14 +421,14 @@ export const confirmPayment = async (req, res, next) => {
         `,
       }).catch((err) => console.error("Confirm payment email failed:", err));
     }
- 
+
     res.json({ success: true });
   } catch (error) {
     console.error("[confirmPayment] ERROR:", error.message);
     next(error);
   }
 };
- 
+
 export const createProgramPaymentIntent = async (req, res, next) => {
   try {
     const { programId } = req.body;
@@ -406,29 +447,31 @@ export const createProgramPaymentIntent = async (req, res, next) => {
       where: { programId_userId: { programId, userId } },
     });
     if (existing) {
-      return res.status(400).json({ message: "Already enrolled in this program" });
+      return res
+        .status(400)
+        .json({ message: "Already enrolled in this program" });
     }
-const price = application.program.price.toNumber();
+    const price = application.program.price.toNumber();
 
-if (price === 0) {
-  return res.status(400).json({ message: "This program is free." });
-}
+    if (price === 0) {
+      return res.status(400).json({ message: "This program is free." });
+    }
 
-const amountInCents = Math.round(price * 100);
+    const amountInCents = Math.round(price * 100);
 
-const paymentIntent = await stripe.paymentIntents.create({
-  amount: amountInCents,
-  currency: "usd",
-  metadata: { userId, programId, referenceType: "PROGRAM" },
-});
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: "usd",
+      metadata: { userId, programId, referenceType: "PROGRAM" },
+    });
 
-const amount = application.program.price.toNumber();
+    const amount = application.program.price.toNumber();
 
-res.json({
-  clientSecret: paymentIntent.client_secret,
-  amount,
-  programTitle: application.program.title,
-});
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      amount,
+      programTitle: application.program.title,
+    });
   } catch (error) {
     next(error);
   }
@@ -441,14 +484,19 @@ export const confirmProgramPayment = async (req, res, next) => {
 
     const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
 
-    if (pi.status !== "succeeded") return res.status(400).json({ message: "Payment not completed" });
-    if (pi.metadata.userId !== userId) return res.status(403).json({ message: "Unauthorized" });
+    if (pi.status !== "succeeded")
+      return res.status(400).json({ message: "Payment not completed" });
+    if (pi.metadata.userId !== userId)
+      return res.status(403).json({ message: "Unauthorized" });
 
     const { programId } = pi.metadata;
 
     const [program, user] = await Promise.all([
       prisma.program.findUnique({ where: { id: programId } }),
-      prisma.user.findUnique({ where: { id: userId }, select: { name: true, email: true } }),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { name: true, email: true },
+      }),
     ]);
 
     const existing = await prisma.payment.findUnique({
@@ -477,31 +525,31 @@ export const confirmProgramPayment = async (req, res, next) => {
         ]);
       } catch (txError) {
         if (txError.code === "P2002") {
-          console.log("[confirmProgramPayment] Webhook already created the record, skipping.");
+          console.log(
+            "[confirmProgramPayment] Webhook already created the record, skipping.",
+          );
         } else {
           throw txError;
         }
       }
-
-
     }
-      await createNotification({
-        userId,
-        type: "SYSTEM",
-        title: "Enrollment Confirmed! 🎉",
-        body: `You're now enrolled in "${program?.title}". Welcome!`,
-        link: `/app/programs/${programId}`,
-      });
+    await createNotification({
+      userId,
+      type: "SYSTEM",
+      title: "Enrollment Confirmed! 🎉",
+      body: `You're now enrolled in "${program?.title}". Welcome!`,
+      link: `/app/programs/${programId}`,
+    });
 
-      if (program) {
-        await createNotification({
-          userId: program.organizerId,
-          type: "SYSTEM",
-          title: "New Participant",
-          body: `Someone just enrolled in "${program.title}".`,
-          link: `/app/admin`,
-        });
-      }
+    if (program) {
+      await createNotification({
+        userId: program.organizerId,
+        type: "SYSTEM",
+        title: "New Participant",
+        body: `Someone just enrolled in "${program.title}".`,
+        link: `/app/admin`,
+      });
+    }
     if (program && user) {
       sendEmail({
         to: user.email,
@@ -557,8 +605,7 @@ export const confirmConsultationPayment = async (req, res, next) => {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
     });
-    if (!booking)
-      return res.status(404).json({ message: "Booking not found" });
+    if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     // Check if webhook already handled it
     const existing = await prisma.payment.findUnique({
@@ -592,7 +639,9 @@ export const confirmConsultationPayment = async (req, res, next) => {
         ]);
       } catch (txError) {
         if (txError.code === "P2002") {
-          console.log("[confirmConsultationPayment] Webhook already handled, skipping.");
+          console.log(
+            "[confirmConsultationPayment] Webhook already handled, skipping.",
+          );
         } else {
           throw txError;
         }

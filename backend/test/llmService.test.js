@@ -204,7 +204,6 @@ describe("callLlm — mocking & prompt shape", () => {
   });
 });
 
-
 describe("parseJsonResponse — JSON parsing edge cases", () => {
   test("parses clean JSON", () => {
     expect(parseJsonResponse('{"score":72}')).toEqual({ score: 72 });

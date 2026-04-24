@@ -217,29 +217,30 @@ function EventCard({ event }: { event: Event }) {
           </div>
         </div>
 
-<div className="flex items-center justify-between pt-3 border-t border-gray-100">
-  <div className="text-sm text-gray-500">
-    <span className="text-gray-400">Organized by </span>
-    <span className="font-medium text-gray-700">
-      {event.organizer.name}
-    </span>
-  </div>
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="text-sm text-gray-500">
+            <span className="text-gray-400">Organized by </span>
+            <span className="font-medium text-gray-700">
+              {event.organizer.name}
+            </span>
+          </div>
 
-  <div className="flex items-center gap-3">
-    <div className="flex items-center gap-1 text-sm text-gray-500">
-      <Users className="w-4 h-4" />
-      <span>{event._count.registrations}</span>
-      {event.capacity && (
-        <span className="text-gray-400">/ {event.capacity}</span>
-      )}
-    </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 text-sm text-gray-500">
+              <Users className="w-4 h-4" />
+              <span>{event._count.registrations}</span>
+              {event.capacity && (
+                <span className="text-gray-400">/ {event.capacity}</span>
+              )}
+            </div>
 
-    <span className="text-sm font-semibold text-blue-600">
-      {Number(event.price) > 0 ? `$${Number(event.price).toFixed(2)}` : "Free"}
-
-    </span>
-  </div>
-</div>
+            <span className="text-sm font-semibold text-blue-600">
+              {Number(event.price) > 0
+                ? `$${Number(event.price).toFixed(2)}`
+                : "Free"}
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -396,7 +397,6 @@ export default function EventsPage() {
       {/* Events Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
           {[...Array(6)].map((_, i) => (
             <SkeletonCard key={i} />
           ))}
@@ -415,7 +415,6 @@ export default function EventsPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
           {events.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}

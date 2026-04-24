@@ -70,21 +70,23 @@ function PaymentForm({
         return;
       }
 
-if (paymentIntent?.status === "succeeded") {
-  await api.post("/payments/consultation/confirm", {
-    paymentIntentId: paymentIntent.id,
-  });
-  showToast({ type: "success", title: "Payment Confirmed 🎉", 
-    message: "Your session is now fully confirmed!" });
-  onSuccess();
-}
+      if (paymentIntent?.status === "succeeded") {
+        await api.post("/payments/consultation/confirm", {
+          paymentIntentId: paymentIntent.id,
+        });
+        showToast({
+          type: "success",
+          title: "Payment Confirmed 🎉",
+          message: "Your session is now fully confirmed!",
+        });
+        onSuccess();
+      }
     } catch {
       setCardError("Something went wrong. Please try again.");
     } finally {
       setPaying(false);
     }
   };
-
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

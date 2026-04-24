@@ -34,7 +34,7 @@ interface EventDetail {
   endDate?: string;
   location?: string;
   virtualLink?: string;
-  price: number;  
+  price: number;
   capacity?: number;
   coverImage?: string;
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
@@ -95,70 +95,78 @@ export default function EventDetailPage() {
   const isFull =
     event?.capacity != null && event._count.registrations >= event.capacity;
   const [hasApplied, setHasApplied] = useState(false);
-const [applicationStatus, setApplicationStatus] = useState<string | null>(null);
+  const [applicationStatus, setApplicationStatus] = useState<string | null>(
+    null,
+  );
 
+  useEffect(() => {
+    if (!id) return;
+    const fetchEvent = async () => {
+      try {
+        setLoading(true);
+        const { data } = await api.get(`/events/${id}`);
+        setEvent(data);
 
-useEffect(() => {
-  if (!id) return;
-  const fetchEvent = async () => {
+        setHasApplied(false);
+        setApplicationStatus(null);
+
+        if (data.isRegistered) {
+          return;
+        }
+
+        if (data.applicationStatus) {
+          setHasApplied(true);
+          setApplicationStatus(data.applicationStatus);
+        }
+      } catch {
+        showToast({ type: "error", title: "Event not found", message: "" });
+        navigate("/app/events");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvent();
+  }, [id, navigate, showToast]);
+
+  const handleRegister = async () => {
+    if (!event) return;
     try {
-      setLoading(true);
-      const { data } = await api.get(`/events/${id}`);
-      setEvent(data);
+      setRegistering(true);
 
-      setHasApplied(false);
-      setApplicationStatus(null);
-
-      if (data.isRegistered) {
+      if (event.isRegistered || hasApplied) {
+        await api.delete(`/events/${event.id}/register`);
+        setEvent((prev) => (prev ? { ...prev, isRegistered: false } : prev));
+        setHasApplied(false);
+        setApplicationStatus(null);
+        showToast({
+          type: "success",
+          title: "Cancelled successfully",
+          message: "",
+        });
         return;
       }
 
-      if (data.applicationStatus) {
-        setHasApplied(true);
-        setApplicationStatus(data.applicationStatus);
-      }
-    } catch {
-      showToast({ type: "error", title: "Event not found", message: "" });
-      navigate("/app/events");
+      await api.post(`/events/${event.id}/register`);
+      setHasApplied(true);
+      setApplicationStatus("PENDING");
+      showToast({
+        type: "success",
+        title: "Application submitted!",
+        message: "Waiting for organizer review.",
+      });
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: { message?: string } } })?.response?.data
+          ?.message || "Something went wrong";
+      showToast({
+        type: "error",
+        title: "Action failed",
+        message: errorMessage,
+      });
     } finally {
-      setLoading(false);
+      setRegistering(false);
     }
   };
-  fetchEvent();
-}, [id, navigate, showToast]);
-
-const handleRegister = async () => {
-  if (!event) return;
-  try {
-    setRegistering(true);
-
-    if (event.isRegistered || hasApplied) {
-      await api.delete(`/events/${event.id}/register`);
-      setEvent((prev) => prev ? { ...prev, isRegistered: false } : prev);
-      setHasApplied(false);
-      setApplicationStatus(null);
-      showToast({ type: "success", title: "Cancelled successfully", message: "" });
-      return;
-    }
-
-    await api.post(`/events/${event.id}/register`);
-    setHasApplied(true);
-    setApplicationStatus("PENDING");
-    showToast({
-      type: "success",
-      title: "Application submitted!",
-      message: "Waiting for organizer review.",
-    });
-
-  } catch (err: unknown) {
-    const errorMessage =
-      (err as { response?: { data?: { message?: string } } })?.response
-        ?.data?.message || "Something went wrong";
-    showToast({ type: "error", title: "Action failed", message: errorMessage });
-  } finally {
-    setRegistering(false);
-  }
-};
   const handleDelete = async () => {
     if (!event || !window.confirm("Delete this event? This cannot be undone."))
       return;
@@ -283,37 +291,37 @@ const handleRegister = async () => {
             </p>
           </div>
 
-{/* Attendees preview — only for organizer */}
-{canManage && event.registrations.length > 0 && (
-  <div className="bg-white rounded-2xl border border-gray-100 p-6">
-    <h2 className="font-semibold text-gray-900 mb-3">
-      Attendees ({event._count.registrations})
-    </h2>
-    <div className="space-y-2">
-      {event.registrations.slice(0, 10).map((r) => (
-        <div
-          key={r.id}
-          onClick={() => navigate(`/app/profile/${r.user.id}`)} 
-          className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 rounded-lg px-2 transition-colors"  
-        >
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-sm font-semibold flex-shrink-0">
-            {r.user.name.substring(0, 1).toUpperCase()}
-          </div>
-          <span className="text-sm text-gray-700 hover:text-blue-600 transition-colors">
-            {r.user.name}
-          </span>
-         
-          <ArrowLeft className="size-3 text-gray-300 ml-auto rotate-180" />
-        </div>
-      ))}
-      {event.registrations.length > 10 && (
-        <p className="text-sm text-gray-400 pt-1 px-2">
-          +{event.registrations.length - 10} more attendees
-        </p>
-      )}
-    </div>
-  </div>
-)}
+          {/* Attendees preview — only for organizer */}
+          {canManage && event.registrations.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+              <h2 className="font-semibold text-gray-900 mb-3">
+                Attendees ({event._count.registrations})
+              </h2>
+              <div className="space-y-2">
+                {event.registrations.slice(0, 10).map((r) => (
+                  <div
+                    key={r.id}
+                    onClick={() => navigate(`/app/profile/${r.user.id}`)}
+                    className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 rounded-lg px-2 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-sm font-semibold flex-shrink-0">
+                      {r.user.name.substring(0, 1).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-gray-700 hover:text-blue-600 transition-colors">
+                      {r.user.name}
+                    </span>
+
+                    <ArrowLeft className="size-3 text-gray-300 ml-auto rotate-180" />
+                  </div>
+                ))}
+                {event.registrations.length > 10 && (
+                  <p className="text-sm text-gray-400 pt-1 px-2">
+                    +{event.registrations.length - 10} more attendees
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right — details card */}
@@ -386,91 +394,108 @@ const handleRegister = async () => {
                 )}
               </div>
             </div>
-{/* Price */}
-<div className="flex gap-3">
-  <DollarSign className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-  <p className="text-sm text-gray-700">
-    {Number(event.price) > 0 ? `$${event.price}` : "Free"}
-  </p>
-</div>
+            {/* Price */}
+            <div className="flex gap-3">
+              <DollarSign className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-gray-700">
+                {Number(event.price) > 0 ? `$${event.price}` : "Free"}
+              </p>
+            </div>
             <div className="pt-2 border-t border-gray-100 space-y-3">
               {/* Register / Cancel button — not shown to organizer */}
-{!canManage && event.status === "PUBLISHED" && (
-  <>
-    {event.isRegistered ? (
-      <Button
-        onClick={handleRegister}
-        className="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
-        variant="outline"
-      >
-        <XCircle className="w-4 h-4 mr-2" />
-        {registering ? "Cancelling..." : "Cancel Registration"}
-      </Button>
+              {!canManage && event.status === "PUBLISHED" && (
+                <>
+                  {event.isRegistered ? (
+                    <Button
+                      onClick={handleRegister}
+                      className="w-full bg-red-50 text-red-600 border border-red-200 hover:bg-red-100"
+                      variant="outline"
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      {registering ? "Cancelling..." : "Cancel Registration"}
+                    </Button>
+                  ) : hasApplied ? (
+                    <div className="space-y-2">
+                      <div
+                        className={`flex items-center gap-2 justify-center p-3 rounded-xl border ${
+                          applicationStatus === "ACCEPTED"
+                            ? "bg-green-50 border-green-200"
+                            : applicationStatus === "REJECTED"
+                              ? "bg-red-50 border-red-200"
+                              : "bg-amber-50 border-amber-200"
+                        }`}
+                      >
+                        <CheckCircle2
+                          className={`size-4 ${
+                            applicationStatus === "ACCEPTED"
+                              ? "text-green-600"
+                              : applicationStatus === "REJECTED"
+                                ? "text-red-600"
+                                : "text-amber-600"
+                          }`}
+                        />
+                        <span
+                          className={`text-sm font-medium ${
+                            applicationStatus === "ACCEPTED"
+                              ? "text-green-700"
+                              : applicationStatus === "REJECTED"
+                                ? "text-red-700"
+                                : "text-amber-700"
+                          }`}
+                        >
+                          {applicationStatus === "ACCEPTED"
+                            ? Number(event.price) > 0
+                              ? "Accepted! Complete payment to confirm your spot."
+                              : "Accepted — you are now registered!"
+                            : applicationStatus === "REJECTED"
+                              ? "Application not accepted"
+                              : "Application Pending Review"}
+                        </span>
+                      </div>
 
-    ) : hasApplied ? (
-      <div className="space-y-2">
-        <div className={`flex items-center gap-2 justify-center p-3 rounded-xl border ${
-          applicationStatus === "ACCEPTED" ? "bg-green-50 border-green-200" :
-          applicationStatus === "REJECTED" ? "bg-red-50 border-red-200" :
-          "bg-amber-50 border-amber-200"
-        }`}>
-          <CheckCircle2 className={`size-4 ${
-            applicationStatus === "ACCEPTED" ? "text-green-600" :
-            applicationStatus === "REJECTED" ? "text-red-600" :
-            "text-amber-600"
-          }`} />
-          <span className={`text-sm font-medium ${
-            applicationStatus === "ACCEPTED" ? "text-green-700" :
-            applicationStatus === "REJECTED" ? "text-red-700" :
-            "text-amber-700"
-          }`}>
-            {applicationStatus === "ACCEPTED"
-              ? Number(event.price) > 0
-                ? "Accepted! Complete payment to confirm your spot."
-                : "Accepted — you are now registered!"
-              : applicationStatus === "REJECTED"
-              ? "Application not accepted"
-              : "Application Pending Review"}
-          </span>
-        </div>
+                      {/* Pay button — only if accepted and event is paid */}
+                      {applicationStatus === "ACCEPTED" &&
+                        Number(event.price) > 0 && (
+                          <Button
+                            onClick={() =>
+                              navigate(`/app/events/${event.id}/pay`)
+                            }
+                            className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            Complete Payment — ${event.price}
+                          </Button>
+                        )}
 
-        {/* Pay button — only if accepted and event is paid */}
-        {applicationStatus === "ACCEPTED" && Number(event.price) > 0 && (
-          <Button
-            onClick={() => navigate(`/app/events/${event.id}/pay`)}
-            className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            Complete Payment — ${event.price}
-          </Button>
-        )}
-
-        {/* Cancel application only if still pending */}
-        {applicationStatus === "PENDING" && (
-          <Button
-            onClick={handleRegister}
-            variant="outline"
-            className="w-full text-red-600 border-red-200 hover:bg-red-50"
-            disabled={registering}
-          >
-            <XCircle className="w-4 h-4 mr-2" />
-            {registering ? "Cancelling..." : "Cancel Application"}
-          </Button>
-        )}
-      </div>
-
-    ) : (
-      <Button
-        onClick={handleRegister}
-        disabled={registering || isFull}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
-      >
-        <CheckCircle2 className="w-4 h-4" />
-        {registering ? "Applying..." : isFull ? "Fully Booked" : "Apply Now"}
-      </Button>
-    )}
-  </>
-)}
+                      {/* Cancel application only if still pending */}
+                      {applicationStatus === "PENDING" && (
+                        <Button
+                          onClick={handleRegister}
+                          variant="outline"
+                          className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                          disabled={registering}
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          {registering ? "Cancelling..." : "Cancel Application"}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={handleRegister}
+                      disabled={registering || isFull}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      {registering
+                        ? "Applying..."
+                        : isFull
+                          ? "Fully Booked"
+                          : "Apply Now"}
+                    </Button>
+                  )}
+                </>
+              )}
 
               {/* Organizer actions */}
               {canManage && (

@@ -61,7 +61,7 @@ export async function calculateMatchScore(
   const stageScore = defuzzifyCategory(stageOutput, 20);
 
   // TECHNOLOGY — 20 pts
- 
+
   const technologyOutput = inferTechnology(techFuzzy, { overlapRatio, nlpSim });
   const technologyScore = defuzzifyCategory(technologyOutput, 20);
 
@@ -94,7 +94,7 @@ export async function calculateMatchScore(
     irBonus +
     thesisBonus;
 
-  // ── Hard penalties 
+  // ── Hard penalties
   const mustHaves = investorProfile.mustHaves || {};
   const exclusions = investorProfile.exclusions || {};
   if (mustHaves.minTRL && assessment?.trlScore < mustHaves.minTRL)

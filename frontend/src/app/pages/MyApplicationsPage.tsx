@@ -19,7 +19,6 @@ import {
   Users,
 } from "lucide-react";
 
-
 interface ProgramApplication {
   id: string;
   status: "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
@@ -63,22 +62,53 @@ interface EventAppGroup {
   apps: IncomingEventApplication[];
 }
 
-
 const TYPE_CONFIG = {
-  INCUBATION: { label: "Incubation", icon: BookOpen, color: "bg-blue-100 text-blue-700" },
-  ACCELERATION: { label: "Acceleration", icon: Rocket, color: "bg-orange-100 text-orange-700" },
-  MENTORSHIP: { label: "Mentorship", icon: TrendingUp, color: "bg-green-100 text-green-700" },
+  INCUBATION: {
+    label: "Incubation",
+    icon: BookOpen,
+    color: "bg-blue-100 text-blue-700",
+  },
+  ACCELERATION: {
+    label: "Acceleration",
+    icon: Rocket,
+    color: "bg-orange-100 text-orange-700",
+  },
+  MENTORSHIP: {
+    label: "Mentorship",
+    icon: TrendingUp,
+    color: "bg-green-100 text-green-700",
+  },
 };
 
 const STATUS_CONFIG = {
-  PENDING: { label: "Under Review", icon: Clock, color: "bg-amber-100 text-amber-700 border-amber-200" },
-  ACCEPTED: { label: "Accepted", icon: CheckCircle2, color: "bg-green-100 text-green-700 border-green-200" },
-  REJECTED: { label: "Not Selected", icon: XCircle, color: "bg-red-100 text-red-700 border-red-200" },
-  WITHDRAWN: { label: "Withdrawn", icon: XCircle, color: "bg-gray-100 text-gray-600 border-gray-200" },
+  PENDING: {
+    label: "Under Review",
+    icon: Clock,
+    color: "bg-amber-100 text-amber-700 border-amber-200",
+  },
+  ACCEPTED: {
+    label: "Accepted",
+    icon: CheckCircle2,
+    color: "bg-green-100 text-green-700 border-green-200",
+  },
+  REJECTED: {
+    label: "Not Selected",
+    icon: XCircle,
+    color: "bg-red-100 text-red-700 border-red-200",
+  },
+  WITHDRAWN: {
+    label: "Withdrawn",
+    icon: XCircle,
+    color: "bg-gray-100 text-gray-600 border-gray-200",
+  },
 };
 
 function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function ProgramApplicationCard({ app }: { app: ProgramApplication }) {
@@ -91,19 +121,27 @@ function ProgramApplicationCard({ app }: { app: ProgramApplication }) {
     <Card className="border border-gray-200 hover:shadow-sm transition-shadow">
       <CardContent className="pt-5 pb-5">
         <div className="flex items-start gap-4 flex-wrap">
-          <div className={`p-2.5 rounded-xl flex-shrink-0 ${TYPE_CONFIG[app.program.type].color}`}>
+          <div
+            className={`p-2.5 rounded-xl flex-shrink-0 ${TYPE_CONFIG[app.program.type].color}`}
+          >
             <TypeIcon className="size-5" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-semibold text-gray-900 truncate">{app.program.title}</h3>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${statusCfg.color}`}>
+              <h3 className="font-semibold text-gray-900 truncate">
+                {app.program.title}
+              </h3>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${statusCfg.color}`}
+              >
                 <StatusIcon className="size-3" />
                 {statusCfg.label}
               </span>
             </div>
             <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-              <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${TYPE_CONFIG[app.program.type].color}`}>
+              <span
+                className={`px-1.5 py-0.5 rounded text-xs font-medium ${TYPE_CONFIG[app.program.type].color}`}
+              >
                 {TYPE_CONFIG[app.program.type].label}
               </span>
               <span className="flex items-center gap-1">
@@ -113,12 +151,20 @@ function ProgramApplicationCard({ app }: { app: ProgramApplication }) {
               <span>by {app.program.organizer.name}</span>
             </div>
             {app.responses?.motivation && (
-              <p className="text-xs text-gray-500 mt-2 line-clamp-1 italic">"{app.responses.motivation}"</p>
+              <p className="text-xs text-gray-500 mt-2 line-clamp-1 italic">
+                "{app.responses.motivation}"
+              </p>
             )}
-            <p className="text-xs text-gray-400 mt-1">Applied {formatDate(app.submittedAt)}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Applied {formatDate(app.submittedAt)}
+            </p>
           </div>
-          <Button size="sm" variant="outline" className="flex-shrink-0 gap-1"
-            onClick={() => navigate(`/app/programs/${app.program.id}`)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-shrink-0 gap-1"
+            onClick={() => navigate(`/app/programs/${app.program.id}`)}
+          >
             View Program <ChevronRight className="size-3" />
           </Button>
         </div>
@@ -126,7 +172,8 @@ function ProgramApplicationCard({ app }: { app: ProgramApplication }) {
           <div className="mt-3 p-2.5 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
             <CheckCircle2 className="size-4 text-green-600 flex-shrink-0" />
             <p className="text-xs text-green-700 font-medium">
-              Congratulations! You've been accepted. Check your notifications for next steps.
+              Congratulations! You've been accepted. Check your notifications
+              for next steps.
             </p>
           </div>
         )}
@@ -149,8 +196,12 @@ function EventApplicationCard({ app }: { app: EventApplication }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-semibold text-gray-900 truncate">{app.event.title}</h3>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${statusCfg.color}`}>
+              <h3 className="font-semibold text-gray-900 truncate">
+                {app.event.title}
+              </h3>
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${statusCfg.color}`}
+              >
                 <StatusIcon className="size-3" />
                 {statusCfg.label}
               </span>
@@ -165,10 +216,16 @@ function EventApplicationCard({ app }: { app: EventApplication }) {
               </span>
               <span>by {app.event.organizer.name}</span>
             </div>
-            <p className="text-xs text-gray-400 mt-1">Applied {formatDate(app.createdAt)}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Applied {formatDate(app.createdAt)}
+            </p>
           </div>
-          <Button size="sm" variant="outline" className="flex-shrink-0 gap-1"
-            onClick={() => navigate(`/app/events/${app.event.id}`)}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="flex-shrink-0 gap-1"
+            onClick={() => navigate(`/app/events/${app.event.id}`)}
+          >
             View Event <ChevronRight className="size-3" />
           </Button>
         </div>
@@ -176,7 +233,8 @@ function EventApplicationCard({ app }: { app: EventApplication }) {
           <div className="mt-3 p-2.5 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
             <CheckCircle2 className="size-4 text-green-600 flex-shrink-0" />
             <p className="text-xs text-green-700 font-medium">
-              Accepted! Check your notifications — you may need to complete payment to confirm your spot.
+              Accepted! Check your notifications — you may need to complete
+              payment to confirm your spot.
             </p>
           </div>
         )}
@@ -185,59 +243,74 @@ function EventApplicationCard({ app }: { app: EventApplication }) {
   );
 }
 
-
 function IncomingApplicationsPanel() {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const [groups, setGroups] = useState<EventAppGroup[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  api.get("/events/user/mine")
-    .then(async ({ data: events }) => {
-      const results = await Promise.allSettled(
-        events.map((e: { id: string; title: string }) =>
-          api.get(`/events/${e.id}/applications`).then(({ data }) => ({
-            eventId: e.id,
-            eventTitle: e.title,
-            apps: data,
-          }))
-        )
-      );
-      const resolved = results
-        .filter((r) => r.status === "fulfilled")
-        .map((r) => (r as PromiseFulfilledResult<EventAppGroup>).value)
-        .filter((g) => g.apps.length > 0);
-      setGroups(resolved);
-    })
-    .catch(() => {})
-    .finally(() => setLoading(false));
-}, []);
+  useEffect(() => {
+    api
+      .get("/events/user/mine")
+      .then(async ({ data: events }) => {
+        const results = await Promise.allSettled(
+          events.map((e: { id: string; title: string }) =>
+            api.get(`/events/${e.id}/applications`).then(({ data }) => ({
+              eventId: e.id,
+              eventTitle: e.title,
+              apps: data,
+            })),
+          ),
+        );
+        const resolved = results
+          .filter((r) => r.status === "fulfilled")
+          .map((r) => (r as PromiseFulfilledResult<EventAppGroup>).value)
+          .filter((g) => g.apps.length > 0);
+        setGroups(resolved);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
-const updateStatus = async (
-  eventId: string,
-  appId: string,
-  status: "ACCEPTED" | "REJECTED"
-) => {
-  try {
-    await api.put(`/events/${eventId}/applications/${appId}/status`, { status });
-    setGroups((prev) =>
-      prev.map((g) =>
-        g.eventId === eventId
-          ? { ...g, apps: g.apps.map((a) => (a.id === appId ? { ...a, status } : a)) }
-          : g
-      )
-    );
-    showToast({ type: "success", title: `Application ${status.toLowerCase()}`, message: "" });
-  } catch {
-    showToast({ type: "error", title: "Failed to update", message: "" });
-  }
-};
+  const updateStatus = async (
+    eventId: string,
+    appId: string,
+    status: "ACCEPTED" | "REJECTED",
+  ) => {
+    try {
+      await api.put(`/events/${eventId}/applications/${appId}/status`, {
+        status,
+      });
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.eventId === eventId
+            ? {
+                ...g,
+                apps: g.apps.map((a) =>
+                  a.id === appId ? { ...a, status } : a,
+                ),
+              }
+            : g,
+        ),
+      );
+      showToast({
+        type: "success",
+        title: `Application ${status.toLowerCase()}`,
+        message: "",
+      });
+    } catch {
+      showToast({ type: "error", title: "Failed to update", message: "" });
+    }
+  };
   if (loading) {
     return (
       <div className="space-y-3">
         {[...Array(2)].map((_, i) => (
-          <Card key={i}><CardContent className="pt-5"><Skeleton className="h-16 w-full" /></CardContent></Card>
+          <Card key={i}>
+            <CardContent className="pt-5">
+              <Skeleton className="h-16 w-full" />
+            </CardContent>
+          </Card>
         ))}
       </div>
     );
@@ -248,9 +321,16 @@ const updateStatus = async (
       <Card>
         <CardContent className="py-16 text-center">
           <Users className="size-10 text-gray-200 mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-gray-700 mb-1">No applications yet</h3>
-          <p className="text-sm text-gray-400">Applications to your events will appear here.</p>
-          <Button className="mt-4 bg-blue-600 hover:bg-blue-700" onClick={() => navigate("/app/events/create")}>
+          <h3 className="text-base font-semibold text-gray-700 mb-1">
+            No applications yet
+          </h3>
+          <p className="text-sm text-gray-400">
+            Applications to your events will appear here.
+          </p>
+          <Button
+            className="mt-4 bg-blue-600 hover:bg-blue-700"
+            onClick={() => navigate("/app/events/create")}
+          >
             Create a Workshop
           </Button>
         </CardContent>
@@ -265,42 +345,65 @@ const updateStatus = async (
           <CardContent className="pt-5 pb-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-900">{group.eventTitle}</h3>
-                <p className="text-xs text-gray-400 mt-0.5">{group.apps.length} application{group.apps.length !== 1 ? "s" : ""}</p>
+                <h3 className="font-semibold text-gray-900">
+                  {group.eventTitle}
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {group.apps.length} application
+                  {group.apps.length !== 1 ? "s" : ""}
+                </p>
               </div>
-              <Button size="sm" variant="outline" onClick={() => navigate(`/app/events/${group.eventId}`)}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/app/events/${group.eventId}`)}
+              >
                 View Event
               </Button>
             </div>
 
             <div className="space-y-2">
               {group.apps.map((app) => (
-                <div key={app.id}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-xl border border-gray-100 bg-gray-50">
+                <div
+                  key={app.id}
+                  className="flex items-center justify-between py-2.5 px-3 rounded-xl border border-gray-100 bg-gray-50"
+                >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800">{app.user.name}</p>
-                    <p className="text-xs text-gray-400">{app.user.email} · {formatDate(app.createdAt)}</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {app.user.name}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {app.user.email} · {formatDate(app.createdAt)}
+                    </p>
                   </div>
 
                   {app.status === "PENDING" ? (
                     <div className="flex gap-2 ml-3">
                       <button
-                        onClick={() => updateStatus(group.eventId, app.id, "ACCEPTED")}
+                        onClick={() =>
+                          updateStatus(group.eventId, app.id, "ACCEPTED")
+                        }
                         className="text-xs px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-lg hover:bg-green-100 font-medium transition-colors"
                       >
                         Accept
                       </button>
                       <button
-                        onClick={() => updateStatus(group.eventId, app.id, "REJECTED")}
+                        onClick={() =>
+                          updateStatus(group.eventId, app.id, "REJECTED")
+                        }
                         className="text-xs px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 font-medium transition-colors"
                       >
                         Reject
                       </button>
                     </div>
                   ) : (
-                    <span className={`ml-3 text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
-                      app.status === "ACCEPTED" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}>
+                    <span
+                      className={`ml-3 text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
+                        app.status === "ACCEPTED"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
                       {app.status}
                     </span>
                   )}
@@ -314,7 +417,6 @@ const updateStatus = async (
   );
 }
 
-
 type Tab = "programs" | "events" | "incoming";
 
 export default function MyApplicationsPage() {
@@ -327,23 +429,41 @@ export default function MyApplicationsPage() {
   const [eventApps, setEventApps] = useState<EventApplication[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [loadingEvents, setLoadingEvents] = useState(true);
-  const [programFilter, setProgramFilter] = useState<"ALL" | "PENDING" | "ACCEPTED" | "REJECTED">("ALL");
-  const [eventFilter, setEventFilter] = useState<"ALL" | "PENDING" | "ACCEPTED" | "REJECTED">("ALL");
+  const [programFilter, setProgramFilter] = useState<
+    "ALL" | "PENDING" | "ACCEPTED" | "REJECTED"
+  >("ALL");
+  const [eventFilter, setEventFilter] = useState<
+    "ALL" | "PENDING" | "ACCEPTED" | "REJECTED"
+  >("ALL");
 
   useEffect(() => {
-    api.get("/programs/my-applications")
+    api
+      .get("/programs/my-applications")
       .then(({ data }) => setProgramApps(data))
-      .catch(() => showToast({ type: "error", title: "Failed to load program applications", message: "" }))
+      .catch(() =>
+        showToast({
+          type: "error",
+          title: "Failed to load program applications",
+          message: "",
+        }),
+      )
       .finally(() => setLoadingPrograms(false));
 
-    api.get("/events/user/applications")
+    api
+      .get("/events/user/applications")
       .then(({ data }) => setEventApps(data))
       .catch(() => {})
       .finally(() => setLoadingEvents(false));
   }, [showToast]);
 
-  const filteredPrograms = programFilter === "ALL" ? programApps : programApps.filter((a) => a.status === programFilter);
-  const filteredEvents = eventFilter === "ALL" ? eventApps : eventApps.filter((a) => a.status === eventFilter);
+  const filteredPrograms =
+    programFilter === "ALL"
+      ? programApps
+      : programApps.filter((a) => a.status === programFilter);
+  const filteredEvents =
+    eventFilter === "ALL"
+      ? eventApps
+      : eventApps.filter((a) => a.status === eventFilter);
 
   const programCounts = {
     ALL: programApps.length,
@@ -360,17 +480,26 @@ export default function MyApplicationsPage() {
   };
 
   const TABS: { key: Tab; label: string; badge?: number }[] = [
-    { key: "programs", label: "Program Applications", badge: programCounts.ALL },
+    {
+      key: "programs",
+      label: "Program Applications",
+      badge: programCounts.ALL,
+    },
     { key: "events", label: "Event Applications", badge: eventCounts.ALL },
-    ...(isExpert ? [{ key: "incoming" as Tab, label: "Manage My Event Applicants" }] : []),
+    ...(isExpert
+      ? [{ key: "incoming" as Tab, label: "Manage My Event Applicants" }]
+      : []),
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">My Applications</h1>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          My Applications
+        </h1>
         <p className="text-gray-500 text-sm mt-1">
-          Track your applications and{isExpert ? " manage your event applicants" : " their status"}
+          Track your applications and
+          {isExpert ? " manage your event applicants" : " their status"}
         </p>
       </div>
 
@@ -388,9 +517,13 @@ export default function MyApplicationsPage() {
           >
             {label}
             {badge !== undefined && badge > 0 && (
-              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-                activeTab === key ? "bg-white/20" : "bg-gray-100 text-gray-600"
-              }`}>
+              <span
+                className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
+                  activeTab === key
+                    ? "bg-white/20"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
                 {badge}
               </span>
             )}
@@ -403,12 +536,15 @@ export default function MyApplicationsPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
             {(["ALL", "PENDING", "ACCEPTED", "REJECTED"] as const).map((f) => (
-              <button key={f} onClick={() => setProgramFilter(f)}
+              <button
+                key={f}
+                onClick={() => setProgramFilter(f)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   programFilter === f
                     ? "bg-indigo-600 text-white border-indigo-600"
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                }`}>
+                }`}
+              >
                 {f === "ALL" ? "All" : (STATUS_CONFIG[f]?.label ?? f)}{" "}
                 <span className="ml-1 opacity-70">({programCounts[f]})</span>
               </button>
@@ -418,7 +554,11 @@ export default function MyApplicationsPage() {
           {loadingPrograms ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <Card key={i}><CardContent className="pt-5"><Skeleton className="h-16 w-full" /></CardContent></Card>
+                <Card key={i}>
+                  <CardContent className="pt-5">
+                    <Skeleton className="h-16 w-full" />
+                  </CardContent>
+                </Card>
               ))}
             </div>
           ) : filteredPrograms.length === 0 ? (
@@ -426,18 +566,26 @@ export default function MyApplicationsPage() {
               <CardContent className="py-16 text-center">
                 <FileSearch className="size-10 text-gray-200 mx-auto mb-3" />
                 <h3 className="text-base font-semibold text-gray-700 mb-1">
-                  {programFilter === "ALL" ? "No applications yet" : `No ${programFilter.toLowerCase()} applications`}
+                  {programFilter === "ALL"
+                    ? "No applications yet"
+                    : `No ${programFilter.toLowerCase()} applications`}
                 </h3>
-                <p className="text-sm text-gray-400 mb-4">Browse available programs and apply to get started.</p>
-                <Button className="bg-indigo-600 hover:bg-indigo-700"
-                  onClick={() => window.location.assign("/app/programs")}>
+                <p className="text-sm text-gray-400 mb-4">
+                  Browse available programs and apply to get started.
+                </p>
+                <Button
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                  onClick={() => window.location.assign("/app/programs")}
+                >
                   Browse Programs
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
-              {filteredPrograms.map((app) => <ProgramApplicationCard key={app.id} app={app} />)}
+              {filteredPrograms.map((app) => (
+                <ProgramApplicationCard key={app.id} app={app} />
+              ))}
             </div>
           )}
         </div>
@@ -448,12 +596,15 @@ export default function MyApplicationsPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2 flex-wrap">
             {(["ALL", "PENDING", "ACCEPTED", "REJECTED"] as const).map((f) => (
-              <button key={f} onClick={() => setEventFilter(f)}
+              <button
+                key={f}
+                onClick={() => setEventFilter(f)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   eventFilter === f
                     ? "bg-indigo-600 text-white border-indigo-600"
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
-                }`}>
+                }`}
+              >
                 {f === "ALL" ? "All" : (STATUS_CONFIG[f]?.label ?? f)}{" "}
                 <span className="ml-1 opacity-70">({eventCounts[f]})</span>
               </button>
@@ -463,7 +614,11 @@ export default function MyApplicationsPage() {
           {loadingEvents ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <Card key={i}><CardContent className="pt-5"><Skeleton className="h-16 w-full" /></CardContent></Card>
+                <Card key={i}>
+                  <CardContent className="pt-5">
+                    <Skeleton className="h-16 w-full" />
+                  </CardContent>
+                </Card>
               ))}
             </div>
           ) : filteredEvents.length === 0 ? (
@@ -471,18 +626,26 @@ export default function MyApplicationsPage() {
               <CardContent className="py-16 text-center">
                 <FileSearch className="size-10 text-gray-200 mx-auto mb-3" />
                 <h3 className="text-base font-semibold text-gray-700 mb-1">
-                  {eventFilter === "ALL" ? "No event applications yet" : `No ${eventFilter.toLowerCase()} event applications`}
+                  {eventFilter === "ALL"
+                    ? "No event applications yet"
+                    : `No ${eventFilter.toLowerCase()} event applications`}
                 </h3>
-                <p className="text-sm text-gray-400 mb-4">Browse events and apply to attend.</p>
-                <Button className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => window.location.assign("/app/events")}>
+                <p className="text-sm text-gray-400 mb-4">
+                  Browse events and apply to attend.
+                </p>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={() => window.location.assign("/app/events")}
+                >
                   Browse Events
                 </Button>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
-              {filteredEvents.map((app) => <EventApplicationCard key={app.id} app={app} />)}
+              {filteredEvents.map((app) => (
+                <EventApplicationCard key={app.id} app={app} />
+              ))}
             </div>
           )}
         </div>

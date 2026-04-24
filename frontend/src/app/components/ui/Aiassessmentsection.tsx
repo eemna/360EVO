@@ -124,7 +124,7 @@ export default function AIAssessmentSection({
     try {
       setTriggering(true);
       const { data } = await api.post(`/ai/assess/${projectId}`);
-      setAssessment(data); 
+      setAssessment(data);
 
       if (data.llmModel !== "groq/moe-4experts") {
         startPolling();

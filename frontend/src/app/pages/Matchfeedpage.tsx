@@ -15,8 +15,6 @@ import api from "../../services/axios";
 import { TRLBadge } from "../components/ui/Aiassessmentsection";
 import { Eye, Target, RefreshCw } from "lucide-react";
 
-
-
 interface AIAssessment {
   trlScore: number;
   irScore: number;
@@ -325,7 +323,7 @@ function MatchCard({
 
 export default function MatchFeedPage() {
   const { showToast } = useToast();
- 
+
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -333,7 +331,6 @@ export default function MatchFeedPage() {
     "active",
   );
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  
 
   const fetchMatches = useCallback(async () => {
     try {
@@ -436,7 +433,6 @@ export default function MatchFeedPage() {
           )}
         </Button>
       </div>
-
 
       {/* Filter tabs */}
       <div className="flex gap-2 flex-wrap">

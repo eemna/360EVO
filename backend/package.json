@@ -3,20 +3,24 @@
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
-"scripts": {
-  "start": "node server.js",
-  "dev": "nodemon server.js",
-  "build": "prisma generate && prisma migrate deploy",
-  "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
-  "lint": "eslint . --fix",
-  "format": "prettier --write ."
-},
-"jest": {
-  "testEnvironment": "node",
-  "testMatch": ["**/test/**/*.test.js"],
-  "transform": {},
-  "setupFiles": ["./test/setup.js"]
-},
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "build": "prisma generate && prisma migrate deploy",
+    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "lint": "eslint . --fix",
+    "format": "prettier --write ."
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/test/**/*.test.js"
+    ],
+    "transform": {},
+    "setupFiles": [
+      "./test/setup.js"
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

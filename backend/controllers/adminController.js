@@ -295,7 +295,9 @@ export const getEventRegistrations = async (req, res, next) => {
       orderBy: { id: "desc" },
     });
     res.json(registrations);
-  } catch (error) { next(error); }
+  } catch (error) {
+    next(error);
+  }
 };
 export const getEventApplications = async (req, res, next) => {
   try {
@@ -359,16 +361,22 @@ export const updateEventApplicationStatus = async (req, res, next) => {
 
         if (user) {
           const eventDate = new Date(event.date).toLocaleDateString("en-US", {
-            weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "UTC",
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            timeZone: "UTC",
           });
           const eventTime = new Date(event.date).toLocaleTimeString("en-US", {
-            hour: "2-digit", minute: "2-digit", timeZone: "UTC",
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "UTC",
           });
           const locationLine = event.location
             ? event.location
             : event.virtualLink
-            ? `Online — ${event.virtualLink}`
-            : "To be announced";
+              ? `Online — ${event.virtualLink}`
+              : "To be announced";
 
           sendEmail({
             to: user.email,
@@ -397,9 +405,10 @@ export const updateEventApplicationStatus = async (req, res, next) => {
                 </div>
               </div>
             `,
-          }).catch((err) => console.error("Free event confirmation email failed:", err));
+          }).catch((err) =>
+            console.error("Free event confirmation email failed:", err),
+          );
         }
-
       } else {
         await createNotification({
           userId: app.userId,

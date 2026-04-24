@@ -616,7 +616,7 @@ export function ProjectCreationWizard({
         clearTimeout(timeoutRef.current);
       }
     };
-}, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
+  }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
 
   if (!isOpen) return null;
 

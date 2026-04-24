@@ -152,10 +152,11 @@ function ProgramCard({
             <Calendar className="size-3" />
             {formatDate(program.startDate)}
           </span>
-            <span className="flex items-center gap-1">
-     {Number(program.price) === 0 ? "Free" : `$${Number(program.price).toFixed(2)}`}
-
-  </span>
+          <span className="flex items-center gap-1">
+            {Number(program.price) === 0
+              ? "Free"
+              : `$${Number(program.price).toFixed(2)}`}
+          </span>
         </div>
 
         {program.status === "OPEN" && days >= 0 && (
@@ -241,7 +242,7 @@ export default function ProgramsPage() {
             status: statusFilter !== "all" ? statusFilter : undefined,
             search: search.trim() || undefined,
             page,
-            limit: 12,
+            limit: 8,
           },
         });
         setPrograms(res.data);
@@ -409,15 +410,17 @@ export default function ProgramsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-
             {myPrograms.map((program) => (
-              <ProgramCard key={program.id} program={program} isAdmin={isAdmin} />
+              <ProgramCard
+                key={program.id}
+                program={program}
+                isAdmin={isAdmin}
+              />
             ))}
           </div>
         )
       ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-
           {[...Array(6)].map((_, i) => (
             <ProgramCardSkeleton key={i} />
           ))}

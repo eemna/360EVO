@@ -538,13 +538,13 @@ export default function ProgramDetailPage() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-  <span className="text-gray-500 flex items-center gap-1.5">
-     Fee
-  </span>
-  <span className="font-semibold text-gray-800">
-    {program.price === 0 ? "Free" : `$${program.price}`}
-  </span>
-</div>
+                  <span className="text-gray-500 flex items-center gap-1.5">
+                    Fee
+                  </span>
+                  <span className="font-semibold text-gray-800">
+                    {program.price === 0 ? "Free" : `$${program.price}`}
+                  </span>
+                </div>
               </div>
 
               {/* Deadline */}
