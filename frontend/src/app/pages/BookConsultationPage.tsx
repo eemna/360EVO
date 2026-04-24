@@ -102,7 +102,6 @@ export function BookConsultationPage() {
       cancelled = true;
     };
   }, [expertId]);
-  // Check if a date is available based on weekly schedule
   const isDateAvailable = (date: Date) => {
     if (!expert?.profile?.weeklyAvailability) return false;
 
@@ -144,16 +143,13 @@ export function BookConsultationPage() {
       const slotEnd = new Date(current);
       slotEnd.setMinutes(slotEnd.getMinutes() + duration);
 
-      // Stop if duration exceeds availability window
       if (slotEnd > end) break;
 
-      //  Remove past time
       if (slotStart <= new Date()) {
         current.setMinutes(current.getMinutes() + 30);
         continue;
       }
 
-      //  Check overlap with existing bookings
       const isOverlapping = bookings.some((booking) => {
         const bookingStart = new Date(booking.startDateTime);
         const bookingEnd = new Date(booking.endDateTime);

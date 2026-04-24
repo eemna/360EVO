@@ -1,11 +1,22 @@
-import { useState, useEffect  } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useToast } from "../../context/ToastContext";
 import TagInputSection from "../components/ui/TagInputSection";
@@ -14,7 +25,7 @@ import { ArrowLeft, BookOpen } from "lucide-react";
 
 export default function CreateProgramPage() {
   const { id } = useParams();
-   const isEdit = Boolean(id);
+  const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
@@ -29,15 +40,17 @@ export default function CreateProgramPage() {
     applicationDeadline: "",
     capacity: "20",
     coverImage: "",
+    price: "0",
   });
 
   const [benefits, setBenefits] = useState<string[]>([]);
   const [requirements, setRequirements] = useState<string[]>([]);
   const [newBenefit, setNewBenefit] = useState("");
   const [newRequirement, setNewRequirement] = useState("");
-useEffect(() => {
+  useEffect(() => {
     if (!id) return;
-    api.get(`/programs/${id}`)
+    api
+      .get(`/programs/${id}`)
       .then(({ data }) => {
         setForm({
           title: data.title,
@@ -49,27 +62,48 @@ useEffect(() => {
           applicationDeadline: data.applicationDeadline.split("T")[0],
           capacity: String(data.capacity),
           coverImage: data.coverImage ?? "",
+          price: String(data.price ?? "0"),
         });
         setBenefits(data.benefits ?? []);
         setRequirements(data.requirements ?? []);
       })
       .catch(() => {
-        showToast({ type: "error", title: "Failed to load program", message: "" });
+        showToast({
+          type: "error",
+          title: "Failed to load program",
+          message: "",
+        });
         navigate(-1);
       })
       .finally(() => setLoading(false));
-  }, [id , navigate,showToast]);
+  }, [id, navigate, showToast]);
   const set = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
-const handleSubmit = async () => {
-    if (!form.title || !form.description || !form.startDate || !form.endDate || !form.applicationDeadline) {
-      showToast({ type: "error", title: "Please fill in all required fields", message: "" });
+  const handleSubmit = async () => {
+    if (
+      !form.title ||
+      !form.description ||
+      !form.startDate ||
+      !form.endDate ||
+      !form.applicationDeadline
+    ) {
+      showToast({
+        type: "error",
+        title: "Please fill in all required fields",
+        message: "",
+      });
       return;
     }
     try {
       setSubmitting(true);
-      const payload = { ...form, capacity: Number(form.capacity), benefits, requirements };
+      const payload = {
+        ...form,
+        capacity: Number(form.capacity),
+        price: Number(form.price),
+        benefits,
+        requirements,
+      };
 
       if (isEdit) {
         await api.put(`/programs/${id}`, payload);
@@ -89,12 +123,21 @@ const handleSubmit = async () => {
       setSubmitting(false);
     }
   };
-    if (loading) return <div className="flex justify-center py-20"><LoadingSpinner /></div>;
-
+  if (loading)
+    return (
+      <div className="flex justify-center py-20">
+        <LoadingSpinner />
+      </div>
+    );
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1 -ml-2 text-gray-500">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate(-1)}
+        className="gap-1 -ml-2 text-gray-500"
+      >
         <ArrowLeft className="size-4" />
         Back
       </Button>
@@ -104,31 +147,50 @@ const handleSubmit = async () => {
           <BookOpen className="size-5 text-indigo-600" />
         </div>
         <div>
-                <h1 className="text-2xl font-semibold text-gray-900">
-        {isEdit ? "Edit Program" : "Create Program"}
-      </h1>
-          <p className="text-gray-500 text-sm">Set up a new incubation, acceleration, or mentorship program</p>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {isEdit ? "Edit Program" : "Create Program"}
+          </h1>
+          <p className="text-gray-500 text-sm">
+            Set up a new incubation, acceleration, or mentorship program
+          </p>
         </div>
       </div>
 
       <Card className="border border-gray-200">
-        <CardHeader><CardTitle className="text-base">Program Details</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Program Details</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Title <span className="text-red-500">*</span></Label>
-            <Input placeholder="e.g., Spring 2025 Accelerator" value={form.title} onChange={(e) => set("title", e.target.value)} />
+            <Label>
+              Title <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              placeholder="e.g., Spring 2025 Accelerator"
+              value={form.title}
+              onChange={(e) => set("title", e.target.value)}
+            />
           </div>
 
           <div className="space-y-2">
-            <Label>Description <span className="text-red-500">*</span></Label>
-            <Textarea placeholder="Describe the program, its goals, and what participants will gain..." value={form.description} onChange={(e) => set("description", e.target.value)} rows={4} />
+            <Label>
+              Description <span className="text-red-500">*</span>
+            </Label>
+            <Textarea
+              placeholder="Describe the program, its goals, and what participants will gain..."
+              value={form.description}
+              onChange={(e) => set("description", e.target.value)}
+              rows={4}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Type</Label>
               <Select value={form.type} onValueChange={(v) => set("type", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="INCUBATION">Incubation</SelectItem>
                   <SelectItem value="ACCELERATION">Acceleration</SelectItem>
@@ -138,11 +200,18 @@ const handleSubmit = async () => {
             </div>
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => set("status", v)}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.status}
+                onValueChange={(v) => set("status", v)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="DRAFT">Draft</SelectItem>
-                  <SelectItem value="OPEN">Open (accept applications)</SelectItem>
+                  <SelectItem value="OPEN">
+                    Open (accept applications)
+                  </SelectItem>
                   <SelectItem value="CLOSED">Closed</SelectItem>
                 </SelectContent>
               </Select>
@@ -151,33 +220,82 @@ const handleSubmit = async () => {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Start Date <span className="text-red-500">*</span></Label>
-              <Input type="date" value={form.startDate} onChange={(e) => set("startDate", e.target.value)} />
+              <Label>
+                Start Date <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="date"
+                value={form.startDate}
+                onChange={(e) => set("startDate", e.target.value)}
+              />
             </div>
             <div className="space-y-2">
-              <Label>End Date <span className="text-red-500">*</span></Label>
-              <Input type="date" value={form.endDate} onChange={(e) => set("endDate", e.target.value)} />
+              <Label>
+                End Date <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="date"
+                value={form.endDate}
+                onChange={(e) => set("endDate", e.target.value)}
+              />
             </div>
             <div className="space-y-2">
-              <Label>Application Deadline <span className="text-red-500">*</span></Label>
-              <Input type="date" value={form.applicationDeadline} onChange={(e) => set("applicationDeadline", e.target.value)} />
+              <Label>
+                Application Deadline <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type="date"
+                value={form.applicationDeadline}
+                onChange={(e) => set("applicationDeadline", e.target.value)}
+              />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Capacity (max participants)</Label>
-            <Input type="number" min="1" value={form.capacity} onChange={(e) => set("capacity", e.target.value)} className="w-32" />
-          </div>
+<div className="grid grid-cols-3 gap-4">
+  <div className="space-y-2">
+    <Label>Capacity (max participants)</Label>
+    <Input
+      type="number"
+      min="1"
+      value={form.capacity}
+      onChange={(e) => set("capacity", e.target.value)}
+    />
+  </div>
 
-          <div className="space-y-2">
-            <Label>Cover Image URL <span className="text-gray-400 text-xs">(optional)</span></Label>
-            <Input placeholder="https://..." value={form.coverImage} onChange={(e) => set("coverImage", e.target.value)} />
-          </div>
+  <div className="space-y-2">
+    <Label>
+      Program Fee (USD){" "}
+      <span className="text-gray-400 text-xs">(0 = free)</span>
+    </Label>
+    <Input
+      type="number"
+      min="0"
+      step="0.01"
+      value={form.price}
+      onChange={(e) => set("price", e.target.value)}
+      placeholder="0.00"
+    />
+  </div>
+
+  <div className="space-y-2">
+    <Label>
+      Cover Image URL{" "}
+      <span className="text-gray-400 text-xs">(optional)</span>
+    </Label>
+    <Input
+      placeholder="https://..."
+      value={form.coverImage}
+      onChange={(e) => set("coverImage", e.target.value)}
+    />
+  </div>
+</div>
         </CardContent>
       </Card>
 
       <Card className="border border-gray-200">
-        <CardHeader><CardTitle className="text-base">Benefits & Requirements</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle className="text-base">Benefits & Requirements</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-5">
           <TagInputSection
             label="Benefits"
@@ -190,7 +308,9 @@ const handleSubmit = async () => {
                 setNewBenefit("");
               }
             }}
-            onRemove={(item) => setBenefits((prev) => prev.filter((b) => b !== item))}
+            onRemove={(item) =>
+              setBenefits((prev) => prev.filter((b) => b !== item))
+            }
             emptyMessage="No benefits added yet"
             variant="green"
           />
@@ -205,7 +325,9 @@ const handleSubmit = async () => {
                 setNewRequirement("");
               }
             }}
-            onRemove={(item) => setRequirements((prev) => prev.filter((r) => r !== item))}
+            onRemove={(item) =>
+              setRequirements((prev) => prev.filter((r) => r !== item))
+            }
             emptyMessage="No requirements added yet"
             variant="orange"
           />
@@ -213,11 +335,25 @@ const handleSubmit = async () => {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button variant="outline" onClick={() => navigate(-1)}>Cancel</Button>
-      <Button onClick={handleSubmit} disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 gap-2">
-        {submitting ? <LoadingSpinner size="sm" /> : <BookOpen className="size-4" />}
-        {submitting ? "Saving..." : isEdit ? "Save Changes" : "Create Program"}
-      </Button>
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+        >
+          {submitting ? (
+            <LoadingSpinner size="sm" />
+          ) : (
+            <BookOpen className="size-4" />
+          )}
+          {submitting
+            ? "Saving..."
+            : isEdit
+              ? "Save Changes"
+              : "Create Program"}
+        </Button>
       </div>
     </div>
   );

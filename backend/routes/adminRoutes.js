@@ -11,6 +11,9 @@ import {
   suspendUser,
   unsuspendUser,
   getevents,
+  getEventRegistrations,
+  getEventApplications,
+  updateEventApplicationStatus,
 } from "../controllers/adminController.js";
 import {
   getAdminStats,
@@ -40,4 +43,7 @@ router.get("/programs/:id/applications", getProgramApplications);
 router.get("/reports/revenue", getRevenueReport);
 
 router.get("/events", getevents);
+router.get("/events/:id/registrations", getEventRegistrations);
+router.get("/events/:id/applications", getEventApplications);
+router.put("/events/:id/applications/:appId/status", updateEventApplicationStatus);
 export default router;

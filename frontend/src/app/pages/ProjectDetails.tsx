@@ -143,7 +143,6 @@ export default function ProjectDetailsPage() {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        // Read source from URL query
         const source = searchParams.get("source") ?? "direct";
 
         const res = await api.get(`/projects/${id}?source=${source}`);
@@ -169,7 +168,7 @@ export default function ProjectDetailsPage() {
         const { data } = await api.get(`/projects/${id}/updates`);
         setUpdates(data);
       } catch {
-        //  optional
+        //  
       } finally {
         setUpdatesLoading(false);
       }

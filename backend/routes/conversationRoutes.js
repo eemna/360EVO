@@ -7,7 +7,7 @@ import {
   getConversations,
   markAsRead,
   deleteConversation,
-  searchUsers
+  searchUsers,
 } from "../controllers/conversationController.js";
 
 const router = express.Router();
@@ -15,7 +15,7 @@ const router = express.Router();
 router.post("/", protect, createConversation);
 router.get("/", protect, getConversations);
 router.put("/messages/read", protect, markAsRead);
-router.get('/search', protect, searchUsers);
+router.get("/search", protect, searchUsers);
 router.get("/me-test", protect, (req, res) => {
   res.json({ userId: req.user.id });
 });

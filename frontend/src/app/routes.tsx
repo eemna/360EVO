@@ -41,6 +41,8 @@ import ProgramDetailPage from "./pages/Programdetailpage";
 import MyApplicationsPage from "./pages/MyApplicationsPage";
 import EventPaymentPage from "./pages/EventPaymentPage";
 import CreateProgramPage from "./pages/CreateProgramPage";
+import ProgramPaymentPage from "./pages/ProgramPaymentPage";
+import SearchResultsPage from "./pages/Searchresultspage";
 
 export const router = createBrowserRouter([
   {
@@ -166,26 +168,41 @@ export const router = createBrowserRouter([
       { path: "events/my", element: <MyEventsPage /> },
       { path: "events/:id", element: <EventDetailPage /> },
       { path: "events/:id/edit", element: <CreateEventForm /> },
-      { 
-        path: "programs/create", 
+      {
+        path: "programs/create",
         element: (
           <RoleRoute allowedRoles={["ADMIN"]}>
             <CreateProgramPage />
-         </RoleRoute>
-                  ) 
+          </RoleRoute>
+        ),
       },
-      { 
-  path: "programs/:id/edit", 
-  element: (
-    <RoleRoute allowedRoles={["ADMIN"]}>
-      <CreateProgramPage />
-    </RoleRoute>
-  ) 
-},
+      {
+        path: "programs/:id/edit",
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <CreateProgramPage />
+          </RoleRoute>
+        ),
+      },
       { path: "programs", element: <ProgramsPage /> },
-      { path: "programs/my-applications", element: <ProtectedRoute><MyApplicationsPage /></ProtectedRoute> },
+      {
+        path: "programs/my-applications",
+        element: (
+          <ProtectedRoute>
+            <MyApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
       { path: "programs/:id", element: <ProgramDetailPage /> },
-      { path: "events/:id/pay", element: <ProtectedRoute><EventPaymentPage /></ProtectedRoute> },
+      { path: "programs/:id/pay", element: <ProgramPaymentPage /> },
+      {
+        path: "events/:id/pay",
+        element: (
+          <ProtectedRoute>
+            <EventPaymentPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "settings",
         element: <Settings />,
@@ -240,6 +257,10 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      {
+  path: "search",
+  element: <SearchResultsPage />,
+},
     ],
   },
   {

@@ -21,7 +21,6 @@ export const addBookmark = async (req, res, next) => {
     trackBookmark(projectId);
     res.status(201).json(bookmark);
   } catch (error) {
-    // @@unique violation  already bookmarked
     if (error.code === "P2002") {
       return res.status(400).json({ message: "Already bookmarked" });
     }

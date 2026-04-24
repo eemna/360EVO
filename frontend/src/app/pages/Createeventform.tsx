@@ -12,6 +12,7 @@ import {
   Clock,
   FileText,
   Tag,
+  DollarSign,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -35,6 +36,7 @@ interface FormData {
   virtualLink: string;
   capacity: string;
   coverImage: string;
+  price: string;
 }
 
 const INITIAL: FormData = {
@@ -47,6 +49,7 @@ const INITIAL: FormData = {
   virtualLink: "",
   capacity: "",
   coverImage: "",
+  price: "0",
 };
 
 function Field({
@@ -110,6 +113,7 @@ export default function CreateEventForm() {
           virtualLink: data.virtualLink ?? "",
           capacity: data.capacity ? String(data.capacity) : "",
           coverImage: data.coverImage ?? "",
+          price: data.price ? String(data.price) : "0",
         });
       })
       .catch(() => {
@@ -158,13 +162,14 @@ export default function CreateEventForm() {
         title: form.title.trim(),
         description: form.description.trim(),
         type: form.type,
-        date: new Date(form.date).toISOString(),
+        date: form.date + ":00.000Z",
         location: form.location.trim() || undefined,
         virtualLink: form.virtualLink.trim() || undefined,
         capacity: form.capacity ? Number(form.capacity) : undefined,
         coverImage: form.coverImage.trim() || undefined,
+        price: Number(form.price) || 0,
       };
-      if (form.endDate) payload.endDate = new Date(form.endDate).toISOString();
+      if (form.endDate) payload.endDate = form.endDate + ":00.000Z";
 
       if (isEditing) {
         await api.put(`/events/${id}`, payload);
@@ -393,7 +398,7 @@ export default function CreateEventForm() {
             Extra Details
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Field
               label="Capacity"
               icon={<Users className="w-4 h-4" />}
@@ -409,7 +414,21 @@ export default function CreateEventForm() {
                 className="rounded-xl border-gray-200"
               />
             </Field>
-
+           <Field
+              label="Ticket Price (USD)"
+              icon={<DollarSign className="w-4 h-4" />}
+              hint="Set 0 for free events"
+            >
+            <Input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.price}
+              onChange={set("price")}
+              placeholder="0.00"
+              className="rounded-xl border-gray-200"
+            />
+           </Field>
             <Field
               label="Cover Image URL"
               icon={<Image className="w-4 h-4" />}
