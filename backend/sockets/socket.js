@@ -48,7 +48,7 @@ export const initializeSocket = (io) => {
       io.emit("user_online", userId);
     }
 
-    socket.join(userId); // personal room
+    socket.join(userId);
 
     socket.on("join_conversation", (conversationId) => {
       socket.join(conversationId);
@@ -84,7 +84,6 @@ export const initializeSocket = (io) => {
   });
 };
 
-// Helper
 export const isUserOnline = (userId) => {
   return onlineUsers.has(userId);
 };

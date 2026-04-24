@@ -11,7 +11,13 @@ import {
 } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
-
+import {
+  ddRequestsTotal,
+  activeDataRooms,
+  ddDocumentsUploaded,
+  ddQaThreadsTotal,
+  llmCacheHits,
+} from "../middleware/metrics.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 GlobalWorkerOptions.workerSrc = pathToFileURL(
@@ -41,7 +47,6 @@ async function extractTextFromPdf(buffer) {
 }
 // DD REQUESTS
 
-// POST /api/dd-requests
 export const requestDueDiligence = async (req, res, next) => {
   try {
     const investorId = req.user.id;
@@ -62,12 +67,10 @@ export const requestDueDiligence = async (req, res, next) => {
         .json({ message: "Project not found or not approved" });
     }
 
-    // @@unique prevents duplicates automatically
     const ddRequest = await prisma.ddRequest.create({
       data: { projectId, investorId, message, nda: nda || false },
     });
-
-    // Notify project owner
+    ddRequestsTotal.inc({ status: "pending" });
     await prisma.notification.create({
       data: {
         userId: project.ownerId,
@@ -80,7 +83,6 @@ export const requestDueDiligence = async (req, res, next) => {
 
     res.status(201).json(ddRequest);
   } catch (error) {
-    // Handle duplicate request (@@unique violation)
     if (error.code === "P2002") {
       return res
         .status(400)
@@ -90,15 +92,12 @@ export const requestDueDiligence = async (req, res, next) => {
   }
 };
 
-// GET /api/dd-requests/received  (startup sees requests for their projects)
-// GET /api/dd-requests/sent      (investor sees their own requests)
 export const getDdRequests = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const { type } = req.params; // "received" or "sent"
+    const { type } = req.params;
 
     if (type === "received") {
-      // Startup: find requests for projects they own
       const requests = await prisma.ddRequest.findMany({
         where: { project: { ownerId: userId } },
         include: {
@@ -111,7 +110,6 @@ export const getDdRequests = async (req, res, next) => {
       return res.json(requests);
     }
 
-    // Investor: their own sent requests
     const requests = await prisma.ddRequest.findMany({
       where: { investorId: userId },
       include: {
@@ -128,7 +126,6 @@ export const getDdRequests = async (req, res, next) => {
   }
 };
 
-// PUT /api/dd-requests/:id/approve
 export const approveDdRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -173,14 +170,14 @@ export const approveDdRequest = async (req, res, next) => {
 
       return { updated, dataRoom };
     });
-
+    ddRequestsTotal.inc({ status: "approved" });
+    activeDataRooms.inc();
     res.json(result);
   } catch (error) {
     next(error);
   }
 };
 
-// PUT /api/dd-requests/:id/decline
 export const declineDdRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -200,7 +197,7 @@ export const declineDdRequest = async (req, res, next) => {
       where: { id },
       data: { status: "DECLINED", reviewedAt: new Date() },
     });
-
+    ddRequestsTotal.inc({ status: "declined" });
     await prisma.notification.create({
       data: {
         userId: ddRequest.investorId,
@@ -218,7 +215,6 @@ export const declineDdRequest = async (req, res, next) => {
 
 // DATA ROOM
 
-// Helper — checks access + expiry, returns dataRoom or throws
 async function getAccessibleDataRoom(dataRoomId, userId) {
   const dataRoom = await prisma.dataRoom.findUnique({
     where: { id: dataRoomId },
@@ -239,7 +235,6 @@ async function getAccessibleDataRoom(dataRoomId, userId) {
   return { dataRoom, isInvestor, isOwner };
 }
 
-// GET /api/data-rooms/:id
 export const getDataRoom = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -270,7 +265,6 @@ export const getDataRoom = async (req, res, next) => {
       },
     });
 
-    // Log activity
     await prisma.dataRoomActivity.create({
       data: { dataRoomId: id, userId, action: "VIEWED_ROOM" },
     });
@@ -286,7 +280,6 @@ export const getDataRoom = async (req, res, next) => {
   }
 };
 
-// POST /api/data-rooms/:id/documents
 export const addDocument = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
@@ -299,7 +292,6 @@ export const addDocument = async (req, res, next) => {
         .status(403)
         .json({ message: "Only the startup can upload documents" });
 
-    // Extract text from PDF for AI features
     let textExtract = null;
     if (fileType === "application/pdf" && fileUrl) {
       try {
@@ -328,13 +320,11 @@ export const addDocument = async (req, res, next) => {
         textExtract,
       },
     });
-
-    // Log activity
+    ddDocumentsUploaded.inc();
     await prisma.dataRoomActivity.create({
       data: { dataRoomId, userId, action: "UPLOADED_DOCUMENT", docName: name },
     });
 
-    // Reset aiSummaryGenerated so the scan runs again with new docs
     await prisma.dataRoom.update({
       where: { id: dataRoomId },
       data: { aiSummaryGenerated: false },
@@ -348,7 +338,6 @@ export const addDocument = async (req, res, next) => {
   }
 };
 
-// DELETE /api/data-rooms/:id/documents/:docId
 export const deleteDocument = async (req, res, next) => {
   try {
     const { id: dataRoomId, docId } = req.params;
@@ -370,7 +359,6 @@ export const deleteDocument = async (req, res, next) => {
     next(error);
   }
 };
-// PUT /api/data-rooms/:id/documents/:docId  (update accessLevel)
 export const updateDocumentAccess = async (req, res, next) => {
   try {
     const { id: dataRoomId, docId } = req.params;
@@ -409,7 +397,6 @@ export const updateDocumentAccess = async (req, res, next) => {
 };
 // Q&A
 
-// POST /api/data-rooms/:id/qa
 export const createQaThread = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
@@ -432,8 +419,7 @@ export const createQaThread = async (req, res, next) => {
         responses: true,
       },
     });
-
-    // Notify startup owner
+    ddQaThreadsTotal.inc();
     await prisma.notification.create({
       data: {
         userId: dataRoom.project.ownerId,
@@ -444,7 +430,6 @@ export const createQaThread = async (req, res, next) => {
       },
     });
 
-    // Emit via Socket.io
     if (global.io) {
       global.io.to(`dataroom_${dataRoomId}`).emit("new_qa_thread", thread);
     }
@@ -456,7 +441,6 @@ export const createQaThread = async (req, res, next) => {
     next(error);
   }
 };
-// GET /api/data-rooms/:id/qa
 export const getQaThreads = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
@@ -483,14 +467,12 @@ export const getQaThreads = async (req, res, next) => {
     next(error);
   }
 };
-// GET /api/data-rooms/:id/activity
 export const getActivity = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
     const userId = req.user.id;
 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
-    // Only startup owner sees full activity log
     if (!isOwner) return res.status(403).json({ message: "Forbidden" });
 
     const activity = await prisma.dataRoomActivity.findMany({
@@ -507,7 +489,6 @@ export const getActivity = async (req, res, next) => {
     next(error);
   }
 };
-// POST /api/data-rooms/:id/qa/:threadId/reply
 export const replyToQaThread = async (req, res, next) => {
   try {
     const { id: dataRoomId, threadId } = req.params;
@@ -531,7 +512,6 @@ export const replyToQaThread = async (req, res, next) => {
       include: { responder: { select: { name: true } } },
     });
 
-    // Notify investor
     await prisma.notification.create({
       data: {
         userId: dataRoom.investorId,
@@ -559,7 +539,6 @@ export const replyToQaThread = async (req, res, next) => {
 
 // AI FEATURES
 
-// POST /api/data-rooms/:id/ai/scan
 export const runAiScan = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
@@ -574,7 +553,6 @@ export const runAiScan = async (req, res, next) => {
         .status(403)
         .json({ message: "Only investors can trigger the scan" });
 
-    // Always fetch documents to compute hash
     const fullRoom = await prisma.dataRoom.findUnique({
       where: { id: dataRoomId },
       include: {
@@ -584,7 +562,6 @@ export const runAiScan = async (req, res, next) => {
       },
     });
 
-    // Hash based on document IDs + uploadedAt — changes when docs are added/removed
     const inputHash = crypto
       .createHash("sha256")
       .update(
@@ -595,7 +572,6 @@ export const runAiScan = async (req, res, next) => {
       )
       .digest("hex");
 
-    // Check cache — only valid if hash matches (same documents)
     if (dataRoom.aiSummaryGenerated) {
       const cached = await prisma.llmInsight.findUnique({
         where: {
@@ -606,13 +582,12 @@ export const runAiScan = async (req, res, next) => {
           },
         },
       });
-      // Return cache ONLY if documents haven't changed
       if (cached && cached.inputHash === inputHash) {
+        llmCacheHits.inc({ type: "DD_SUMMARY" });
         return res.json({ cached: true, data: cached.content });
       }
     }
 
-    // Run fresh scan
     const scan = await createDocumentRiskScan(fullRoom.documents);
 
     await prisma.llmInsight.upsert({
@@ -646,7 +621,6 @@ export const runAiScan = async (req, res, next) => {
   }
 };
 
-// POST /api/data-rooms/:id/ai/suggest-answer
 export const suggestAnswer = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
@@ -674,7 +648,6 @@ export const suggestAnswer = async (req, res, next) => {
       fullRoom.documents,
     );
 
-    // Save to the thread — startup reviews before sending
     await prisma.ddQaThread.update({
       where: { id: threadId },
       data: { aiSuggestedAnswer: suggestion.suggestedAnswer },
@@ -688,7 +661,6 @@ export const suggestAnswer = async (req, res, next) => {
   }
 };
 
-// POST /api/data-rooms/:id/ai/deal-brief
 export const generateDealBrief = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;
@@ -756,7 +728,6 @@ export const generateDealBrief = async (req, res, next) => {
   }
 };
 
-// GET /api/data-rooms/:id/ai/deal-brief
 export const getDealBrief = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;

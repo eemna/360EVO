@@ -4,7 +4,12 @@ import { prisma } from "../config/prisma.js";
 import { calculateMatchScore } from "../services/matchingEngine.js";
 import { generateNarrative } from "../services/narrativeGenerator.js";
 import { runMixtureOfExperts } from "../services/llmservice.js";
-
+import {
+  cronJobRuns,
+  cronJobDuration,
+  cronMatchesUpdated,
+  cronNarrativesRetried,
+} from "../middleware/metrics.js";
 const job = new cron.CronJob("*/10 * * * *", function () {
   https
     .get(process.env.API_URL, (res) => {
@@ -15,10 +20,10 @@ const job = new cron.CronJob("*/10 * * * *", function () {
 });
 
 const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
+  const end = cronJobDuration.startTimer({ job: "match_regeneration" });
   console.log("[CRON] Starting daily match regeneration...");
 
   try {
-    // Get all investor profiles
     const investors = await prisma.investorProfile.findMany();
 
     if (investors.length === 0) {
@@ -26,7 +31,6 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
       return;
     }
 
-    // Get all approved projects with assessments
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
       include: {
@@ -64,7 +68,6 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
         });
       }
 
-      // Batch upsert matches for this investor
       await Promise.all(
         matchResults.map((match) =>
           prisma.match.upsert({
@@ -93,18 +96,22 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
 
       totalMatches += matchResults.length;
     }
-
+    cronMatchesUpdated.set(totalMatches);
+    cronJobRuns.inc({ job: "match_regeneration", status: "success" });
     console.log(
       `[CRON] Match regeneration complete. ${totalMatches} matches updated.`,
     );
   } catch (error) {
+    cronJobRuns.inc({ job: "match_regeneration", status: "failed" });
     console.error("[CRON] Match regeneration failed:", error);
+  } finally {
+    end();
   }
 });
 
-// Finds AiAssessment rows where executiveSummary is null and retries
-// Max 3 retries per project (tracked via version field)
+
 const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
+  const end = cronJobDuration.startTimer({ job: "narrative_retry" });
   console.log("[CRON] Checking for failed LLM narratives...");
 
   try {
@@ -186,22 +193,25 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
         );
       }
     }
+    cronNarrativesRetried.inc();
+
+    cronJobRuns.inc({ job: "narrative_retry", status: "success" });
   } catch (error) {
+    cronJobRuns.inc({ job: "narrative_retry", status: "failed" });
     console.error("[CRON] Narrative retry job failed:", error);
+  } finally {
+    end();
   }
 });
 
-// Runs at midnight every day — ensures today's analytics row exists for active projects
 const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
+  const end = cronJobDuration.startTimer({ job: "analytics" });
   console.log(
     "[CRON] Midnight analytics: ensuring today's rows exist for active projects",
   );
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Just ensure every approved project has a row for today
-    // (views/bookmarks/interests are tracked in real-time, this is just insurance)
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
       select: { id: true },
@@ -217,8 +227,12 @@ const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
     console.log(
       `[CRON] Ensured analytics rows for ${projects.length} projects`,
     );
+    cronJobRuns.inc({ job: "analytics", status: "success" });
   } catch (err) {
+    cronJobRuns.inc({ job: "analytics", status: "failed" });
     console.error("[CRON] Analytics job failed:", err.message);
+  } finally {
+    end();
   }
 });
 export { job, matchRegenerationJob, narrativeRetryJob, analyticsJob };

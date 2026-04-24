@@ -31,7 +31,6 @@ interface PrivacySettings {
   profileVisible: boolean;
 }
 
-// Reusable toggle using Radix + inline styles
 function Toggle({
   checked,
   onCheckedChange,

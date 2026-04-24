@@ -142,7 +142,6 @@ export default function ProjectAnalyticsDashboard({
     analytics.length > 0 &&
     (totals.views > 0 || totals.bookmarks > 0 || totals.interests > 0);
 
-  // ✅ Computed OUTSIDE JSX
   const maxMetric =
     Math.max(totals.views, totals.bookmarks, totals.interests) || 1;
 

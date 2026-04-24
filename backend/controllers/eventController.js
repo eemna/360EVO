@@ -1,58 +1,79 @@
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
-import { sendEmail } from "../utils/email.js";
+// import { sendEmail } from "../utils/email.js";
 
 export const getEvents = async (req, res, next) => {
   try {
-    const {
-      type, // CONFERENCE | NETWORKING | PITCH_DAY | WORKSHOP
-      search, // title / description search
-      date, // ISO date string — filter events on or after this date
-      page = 1,
-      limit = 12,
-    } = req.query;
-
+    const { type, search, date, page = 1, limit = 6 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
 
-    const where = {
-      status: "PUBLISHED",
-      ...(type && { type }),
-      ...(date && {
-        OR: [
-          { date: { gte: new Date(date) } },
-          { endDate: { gte: new Date(date) } },
-        ],
-      }),
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: "insensitive" } },
-          { description: { contains: search, mode: "insensitive" } },
-        ],
-      }),
-    };
+    if (!search?.toString().trim()) {
+      const where = {
+        status: "PUBLISHED",
+        ...(type && { type }),
+        ...(date && {
+          OR: [
+            { date: { gte: new Date(date) } },
+            { endDate: { gte: new Date(date) } },
+          ],
+        }),
+      };
 
-    const [events, total] = await Promise.all([
-      prisma.event.findMany({
-        where,
-        orderBy: { date: "asc" },
-        skip,
-        take: Number(limit),
-        include: {
-          organizer: { select: { id: true, name: true } },
-          _count: { select: { registrations: true } },
-        },
-      }),
-      prisma.event.count({ where }),
-    ]);
+      const [events, total] = await Promise.all([
+        prisma.event.findMany({
+          where,
+          orderBy: { date: "asc" },
+          skip,
+          take,
+          include: {
+            organizer: { select: { id: true, name: true } },
+            _count: { select: { registrations: true } },
+          },
+        }),
+        prisma.event.count({ where }),
+      ]);
 
-    res.json({
+      return res.json({
+        events,
+        pagination: { total, page: Number(page), limit: take, totalPages: Math.ceil(total / take) },
+      });
+    }
+
+    const tsQuery = search.toString().trim()
+      .split(/\s+/)
+      .map((word) => `${word}:*`)
+      .join(" & ");
+
+    const events = await prisma.$queryRaw`
+      SELECT
+        e.id, e.title, e.description, e.type, e.date, e."endDate",
+        e.location, e."virtualLink", e.capacity, e."coverImage",
+        e.status, e.price,
+        json_build_object('id', u.id, 'name', u.name) AS organizer,
+        json_build_object('registrations', COUNT(er.id)::int) AS "_count"
+      FROM "Event" e
+      LEFT JOIN "User" u ON u.id = e."organizerId"
+      LEFT JOIN "EventRegistration" er ON er."eventId" = e.id
+      WHERE e.status = 'PUBLISHED'
+        AND e.search_vector @@ to_tsquery('english', ${tsQuery})
+      GROUP BY e.id, u.id, u.name
+      ORDER BY ts_rank(e.search_vector, to_tsquery('english', ${tsQuery})) DESC
+      LIMIT ${take} OFFSET ${skip}
+    `;
+
+    const countResult = await prisma.$queryRaw`
+      SELECT COUNT(*)::int AS total
+      FROM "Event" e
+      WHERE e.status = 'PUBLISHED'
+        AND e.search_vector @@ to_tsquery('english', ${tsQuery})
+    `;
+
+    const total = countResult[0]?.total ?? 0;
+
+    return res.json({
       events,
-      pagination: {
-        total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / Number(limit)),
-      },
+      pagination: { total, page: Number(page), limit: take, totalPages: Math.ceil(total / take) },
     });
   } catch (error) {
     next(error);
@@ -84,9 +105,7 @@ export const getEventById = async (req, res, next) => {
       include: {
         organizer: { select: { id: true, name: true } },
         registrations: {
-          include: {
-            user: { select: { id: true, name: true } },
-          },
+          include: { user: { select: { id: true, name: true } } },
         },
         _count: { select: { registrations: true } },
       },
@@ -96,13 +115,25 @@ export const getEventById = async (req, res, next) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    // Check if the requesting user is registered (if authenticated)
     let isRegistered = false;
+    let applicationStatus = null;
+
     if (req.user) {
       isRegistered = event.registrations.some((r) => r.userId === req.user.id);
+
+      if (!isRegistered) {
+        const application = await prisma.eventApplication.findUnique({
+          where: {
+            eventId_userId: { eventId: id, userId: req.user.id },
+          },
+        });
+        if (application) {
+          applicationStatus = application.status;
+        }
+      }
     }
 
-    res.json({ ...event, isRegistered });
+    res.json({ ...event, isRegistered, applicationStatus });
   } catch (error) {
     next(error);
   }
@@ -121,9 +152,10 @@ export const createEvent = async (req, res, next) => {
       virtualLink,
       capacity,
       coverImage,
+      price,
     } = req.body;
 
-    // Role-type validation
+    
     if (role === "EXPERT" && type !== "WORKSHOP") {
       return res
         .status(403)
@@ -149,6 +181,7 @@ export const createEvent = async (req, res, next) => {
         virtualLink: virtualLink || null,
         capacity: capacity ? Number(capacity) : null,
         coverImage: coverImage || null,
+        price: price ? Number(price) : 0,
         organizerId,
         hostType,
         status: "DRAFT",
@@ -187,6 +220,7 @@ export const updateEvent = async (req, res, next) => {
       location,
       virtualLink,
       capacity,
+      price,
       coverImage,
       status,
     } = req.body;
@@ -203,6 +237,7 @@ export const updateEvent = async (req, res, next) => {
         }),
         ...(location !== undefined && { location }),
         ...(virtualLink !== undefined && { virtualLink }),
+        ...(price !== undefined && { price: Number(price) }),
         ...(capacity !== undefined && {
           capacity: capacity ? Number(capacity) : null,
         }),
@@ -264,117 +299,53 @@ export const publishEvent = async (req, res, next) => {
   }
 };
 
-export const registerForEvent = async (req, res, next) => {
+export const applyToEvent = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { id: eventId } = req.params;
     const userId = req.user.id;
 
-    const event = await prisma.event.findUnique({
-      where: { id },
-      include: { _count: { select: { registrations: true } } },
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    if (!event) return res.status(404).json({ message: "Event not found" });
+    if (event.status !== "PUBLISHED")
+      return res.status(400).json({ message: "Event is not open" });
+    if (event.capacity) {
+      const regCount = await prisma.eventRegistration.count({ where: { eventId } });
+      if (regCount >= event.capacity)
+        return res.status(400).json({ message: "Event is fully booked" });
+    }
+
+    const existing = await prisma.eventApplication.findUnique({
+      where: { eventId_userId: { eventId, userId } },
     });
+    if (existing)
+      return res.status(400).json({ message: "Already applied to this event" });
 
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
-    }
-
-    if (event.status !== "PUBLISHED") {
-      return res
-        .status(400)
-        .json({ message: "Event is not open for registration" });
-    }
-
-    // Check capacity
-    if (event.capacity && event._count.registrations >= event.capacity) {
-      return res.status(400).json({ message: "Event is fully booked" });
-    }
-
-    const existing = await prisma.eventRegistration.findUnique({
-      where: { eventId_userId: { eventId: id, userId } },
-    });
-
-    if (existing) {
-      return res
-        .status(400)
-        .json({ message: "Already registered for this event" });
-    }
-
-    const registration = await prisma.eventRegistration.create({
-      data: { eventId: id, userId },
+    const application = await prisma.eventApplication.create({
+      data: { eventId, userId, status: "PENDING" },
     });
 
     await createNotification({
-      userId,
+      userId: event.organizerId,
       type: "EVENT",
-      title: "Registration confirmed",
-      body: `You are registered for "${event.title}"`,
-      link: `/events/${id}`,
+      title: "New Event Application",
+      body: `Someone applied to join "${event.title}".`,
+      link: `/app/events/${eventId}`,
     });
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { name: true, email: true },
+    res.status(201).json(application);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyEventApplications = async (req, res, next) => {
+  try {
+    const applications = await prisma.eventApplication.findMany({
+      where: { userId: req.user.id },
+      include: { event: { include: { organizer: { select: { name: true } } } } },
+      orderBy: { createdAt: "desc" },
     });
-
-    const eventDate = new Date(event.date).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      timeZone: "UTC",
-    });
-
-    const eventTime = new Date(event.date).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      timeZone: "UTC",
-    });
-
-    const locationLine = event.location
-      ? event.location
-      : event.virtualLink
-        ? `Online — ${event.virtualLink}`
-        : "To be announced";
-
-    sendEmail({
-      to: user.email,
-      subject: `Registration Confirmed — ${event.title}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 32px; border-radius: 12px 12px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">You're registered! 🎉</h1>
-          </div>
-          <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb;">
-            <p style="color: #374151; font-size: 16px;">Hi <strong>${user.name}</strong>,</p>
-            <p style="color: #374151;">Your registration has been confirmed for:</p>
-            <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
-              <h2 style="color: #1f2937; margin: 0 0 12px 0;">${event.title}</h2>
-              <p style="margin: 6px 0; color: #6b7280;">
-                <strong style="color: #374151;">Type:</strong> ${event.type.replace("_", " ")}
-              </p>
-              <p style="margin: 6px 0; color: #6b7280;">
-                <strong style="color: #374151;">Date:</strong> ${eventDate}
-              </p>
-              <p style="margin: 6px 0; color: #6b7280;">
-                <strong style="color: #374151;">Time:</strong> ${eventTime}
-              </p>
-              <p style="margin: 6px 0; color: #6b7280;">
-                <strong style="color: #374151;">Location:</strong> ${locationLine}
-              </p>
-            </div>
-            <p style="color: #6b7280; font-size: 14px;">
-              Manage your registrations from your 
-              <a href="${process.env.CLIENT_URL}/app/events/my" style="color: #2563eb;">My Events</a> page.
-            </p>
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">
-              © 360EVO — Innovation & Investment Platform
-            </p>
-          </div>
-        </div>
-      `,
-    }).catch((err) => console.error("Confirmation email failed:", err));
-
-    res.status(201).json({ message: "Registered successfully", registration });
+    res.json(applications);
   } catch (error) {
     next(error);
   }
@@ -389,15 +360,25 @@ export const cancelRegistration = async (req, res, next) => {
       where: { eventId_userId: { eventId: id, userId } },
     });
 
-    if (!registration) {
-      return res.status(404).json({ message: "Registration not found" });
+    if (registration) {
+      await prisma.eventRegistration.delete({
+        where: { eventId_userId: { eventId: id, userId } },
+      });
+      return res.json({ message: "Registration cancelled" });
     }
 
-    await prisma.eventRegistration.delete({
+    const application = await prisma.eventApplication.findUnique({
       where: { eventId_userId: { eventId: id, userId } },
     });
 
-    res.json({ message: "Registration cancelled" });
+    if (application) {
+      await prisma.eventApplication.delete({
+        where: { eventId_userId: { eventId: id, userId } },
+      });
+      return res.json({ message: "Application cancelled" });
+    }
+
+    return res.status(404).json({ message: "No registration or application found" });
   } catch (error) {
     next(error);
   }

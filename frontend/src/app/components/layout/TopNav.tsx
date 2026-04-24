@@ -22,8 +22,11 @@ import {
   Users,
   Briefcase,
   GraduationCap,
+  Layers,
+  Search,
 } from "lucide-react";
 import { useLocation } from "react-router";
+import GlobalSearchBar from "../ui/GlobalSearchBar"; 
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -40,32 +43,37 @@ interface Notification {
 
 export default function TopNav({ onMenuClick }: TopNavProps) {
   const { user, logout } = useAuth();
-
   const navigate = useNavigate();
   const { onlineUsers, socket } = useSocket();
   const isOnline = onlineUsers.has(user?.id ?? "");
 
-  // Messages
   const [unreadMessages, setUnreadMessages] = useState(0);
-
-  // Notifications
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+
   const notifRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const lastMessageIdRef = useRef<string | null>(null);
+  const pathnameRef = useRef(location.pathname);
+  const userIdRef = useRef(user?.id);
+
+  useEffect(() => { pathnameRef.current = location.pathname; }, [location.pathname]);
+  useEffect(() => { userIdRef.current = user?.id; }, [user?.id]);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
+
   const handleMarkAllRead = useCallback(async () => {
     try {
       await api.put("/notifications/read-all");
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch {
-      // silent fail
+      // l
     }
   }, []);
 
@@ -74,39 +82,31 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
       await api.put(`/notifications/${n.id}/read`);
       setUnreadCount((prev) => Math.max(0, prev - 1));
       setNotifications((prev) =>
-        prev.map((item) =>
-          item.id === n.id ? { ...item, isRead: true } : item,
-        ),
+        prev.map((item) => item.id === n.id ? { ...item, isRead: true } : item),
       );
     }
     if (n.link) navigate(n.link);
     setNotifOpen(false);
   };
-  // Fetch unread messages
+
   useEffect(() => {
     let cancelled = false;
-    api
-      .get("/conversations")
+    api.get("/conversations")
       .then(({ data }) => {
         if (!cancelled) {
           const total = data.reduce(
-            (sum: number, conv: { unread: number }) => sum + conv.unread,
-            0,
+            (sum: number, conv: { unread: number }) => sum + conv.unread, 0,
           );
           setUnreadMessages(total);
         }
       })
       .catch(console.error);
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user]);
 
-  // Fetch notifications on mount
   useEffect(() => {
     let cancelled = false;
-    api
-      .get("/notifications")
+    api.get("/notifications")
       .then(({ data }) => {
         if (!cancelled) {
           setNotifications(data.notifications);
@@ -114,9 +114,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
         }
       })
       .catch(console.error);
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -124,21 +122,17 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
     const handleNewMessage = (message: { id: string; senderId: string }) => {
       if (lastMessageIdRef.current === message.id) return;
       lastMessageIdRef.current = message.id;
-
       if (
-        message.senderId !== user?.id &&
-        location.pathname !== "/app/conversation"
+        message.senderId !== userIdRef.current &&
+        pathnameRef.current !== "/app/conversation"
       ) {
         setUnreadMessages((prev) => prev + 1);
       }
     };
     socket.on("new_message", handleNewMessage);
-    return () => {
-      socket.off("new_message", handleNewMessage);
-    };
-  }, [socket, user, location.pathname]);
+    return () => { socket.off("new_message", handleNewMessage); };
+  }, [socket]);
 
-  // Socket: new notification
   useEffect(() => {
     if (!socket) return;
     const handleNewNotification = (notification: Notification) => {
@@ -146,12 +140,9 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
       setUnreadCount((prev) => prev + 1);
     };
     socket.on("new_notification", handleNewNotification);
-    return () => {
-      socket.off("new_notification", handleNewNotification);
-    };
+    return () => { socket.off("new_notification", handleNewNotification); };
   }, [socket]);
 
-  // Close notification dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
@@ -164,25 +155,44 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
 
   useEffect(() => {
     const path = location.pathname;
-
     if (path === "/app/conversation") {
       Promise.resolve().then(() => setUnreadMessages(0));
     }
-
     if (path === "/app/notifications") {
       Promise.resolve().then(() => handleMarkAllRead());
     }
+
   }, [location.pathname, handleMarkAllRead]);
+
   return (
     <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
+      {mobileSearchOpen && (
+        <div className="lg:hidden absolute inset-x-0 top-0 z-10 flex items-center h-16 bg-white px-4 gap-3 shadow-md">
+          <div className="flex-1">
+            <GlobalSearchBar />
+          </div>
+          <button
+            type="button"
+            aria-label="Close search"
+            onClick={() => setMobileSearchOpen(false)}
+            className="shrink-0 text-gray-500 hover:text-gray-800 text-sm font-medium"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       <div className="mx-auto max-w-7xl px-4">
-        <div className="flex h-16 items-center gap-4">
-          {/* Hamburger */}
+        <div className="flex h-16 items-center gap-3">
+
           <Button
             onClick={onMenuClick}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            variant="ghost"
+            size="icon"
+            className="lg:hidden shrink-0"
+            aria-label="Open menu"
           >
-            <Menu className="size-6 text-gray-600" />
+            <Menu className="size-5 text-gray-600" />
           </Button>
 
           {/* Logo */}
@@ -190,35 +200,53 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
               <span className="text-sm font-bold text-white">360</span>
             </div>
-            <span className="hidden font-bold text-gray-900 sm:inline">
-              360EVO
-            </span>
+            <span className="hidden font-bold text-gray-900 sm:inline">360EVO</span>
           </Link>
 
-          {/* Right side icons */}
-          <div className="ml-auto flex items-center gap-2">
-            <Link to="/app">
-              <Button variant="ghost" size="icon">
-                <Home className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/app/events">
-              <Button variant="ghost" size="icon">
-                <Users className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/app/projects">
-              <Button variant="ghost" size="icon">
-                <Briefcase className="h-5 w-5" />
-              </Button>
-            </Link>
-            <Link to="/app/experts">
-              <Button variant="ghost" size="icon">
-                <GraduationCap className="h-5 w-5" />
-              </Button>
-            </Link>
-            {/* Messages */}
-            <Link to="/app/conversation">
+          <div className="hidden lg:flex flex-1 max-w-sm xl:max-w-md mx-2">
+            <GlobalSearchBar />
+          </div>
+
+          <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
+
+            <button
+              type="button"
+              aria-label="Open search"
+              onClick={() => setMobileSearchOpen(true)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+
+            <div className="hidden sm:flex items-center gap-0.5">
+              <Link to="/app" onClick={() => setMobileSearchOpen(false)} aria-label="Home">
+                <Button variant="ghost" size="icon">
+                  <Home className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/app/events" onClick={() => setMobileSearchOpen(false)} aria-label="Events">
+                <Button variant="ghost" size="icon">
+                  <Users className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/app/programs" onClick={() => setMobileSearchOpen(false)} aria-label="Programs">
+                <Button variant="ghost" size="icon">
+                  <Layers className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/app/projects" onClick={() => setMobileSearchOpen(false)} aria-label="Projects">
+                <Button variant="ghost" size="icon">
+                  <Briefcase className="h-5 w-5" />
+                </Button>
+              </Link>
+              <Link to="/app/experts" onClick={() => setMobileSearchOpen(false)} aria-label="Experts">
+                <Button variant="ghost" size="icon">
+                  <GraduationCap className="h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
+
+            <Link to="/app/conversation" aria-label="Messages">
               <Button variant="ghost" size="icon" className="relative">
                 <MessageSquare className="h-5 w-5" />
                 {unreadMessages > 0 && (
@@ -229,7 +257,6 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               </Button>
             </Link>
 
-            {/* ── Notification Bell ── */}
             <div
               className="relative"
               ref={notifRef}
@@ -240,10 +267,10 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                 variant="ghost"
                 size="icon"
                 className="relative"
+                aria-label="Notifications"
                 onClick={() => setNotifOpen((prev) => !prev)}
               >
-                <Bell className="h-5 w-5 cursor-pointer" />
-
+                <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white px-1">
                     {unreadCount > 99 ? "99+" : unreadCount}
@@ -251,16 +278,13 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                 )}
               </Button>
 
-              {/* Dropdown */}
               {notifOpen && (
                 <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-                  {/* Header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-                    <h3 className="font-semibold text-gray-800">
-                      Notifications
-                    </h3>
+                    <h3 className="font-semibold text-gray-800">Notifications</h3>
                     {unreadCount > 0 && (
                       <button
+                        type="button"
                         onClick={handleMarkAllRead}
                         className="text-xs text-indigo-600 hover:underline"
                       >
@@ -269,29 +293,23 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                     )}
                   </div>
 
-                  {/* List */}
                   <div className="max-h-80 overflow-y-auto divide-y divide-gray-200">
                     {notifications.length === 0 ? (
-                      <p className="text-center text-gray-400 py-8 text-sm">
-                        No notifications
-                      </p>
+                      <p className="text-center text-gray-400 py-8 text-sm">No notifications</p>
                     ) : (
                       notifications.slice(0, 5).map((n) => (
                         <div
                           key={n.id}
+                          role="button"
+                          tabIndex={0}
                           onClick={() => handleClickNotification(n)}
-                          className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition ${
-                            !n.isRead ? "bg-indigo-50" : ""
-                          }`}
+                          onKeyDown={(e) => e.key === "Enter" && handleClickNotification(n)}
+                          className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition ${!n.isRead ? "bg-indigo-50" : ""}`}
                         >
-                          <p
-                            className={`text-sm font-medium ${!n.isRead ? "text-indigo-800" : "text-gray-800"}`}
-                          >
+                          <p className={`text-sm font-medium ${!n.isRead ? "text-indigo-800" : "text-gray-800"}`}>
                             {n.title}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {n.body}
-                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">{n.body}</p>
                           <p className="text-xs text-gray-400 mt-1">
                             {new Date(n.createdAt).toLocaleString()}
                           </p>
@@ -300,13 +318,10 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                     )}
                   </div>
 
-                  {/* Footer */}
                   <div className="p-3 border-b border-gray-200 text-center">
                     <button
-                      onClick={() => {
-                        setNotifOpen(false);
-                        navigate("/app/notifications");
-                      }}
+                      type="button"
+                      onClick={() => { setNotifOpen(false); navigate("/app/notifications"); }}
                       className="text-sm text-indigo-600 hover:underline"
                     >
                       View all notifications
@@ -315,18 +330,13 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                 </div>
               )}
             </div>
-            {/* ── End Notification Bell ── */}
 
-            {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-10 w-10 rounded-full"
-                >
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full" aria-label="User menu">
                   <div className="relative">
                     <Avatar>
-                      <AvatarImage src={user?.profile?.avatar ?? undefined} />
+                      <AvatarImage src={user?.profile?.avatar ?? undefined} alt={user?.name ?? "User avatar"} />
                       <AvatarFallback>
                         {user?.name?.charAt(0)?.toUpperCase() || "U"}
                       </AvatarFallback>
@@ -352,9 +362,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                 </Link>
                 <DropdownMenuSeparator />
                 <Link to="/">
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Sign out
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>Sign out</DropdownMenuItem>
                 </Link>
               </DropdownMenuContent>
             </DropdownMenu>

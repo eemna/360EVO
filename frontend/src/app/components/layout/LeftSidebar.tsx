@@ -13,6 +13,7 @@ import {
   Settings,
   X,
   GraduationCap,
+  Layers,
 } from "lucide-react";
 import { cn } from "../ui/utils";
 export interface Profile {
@@ -35,6 +36,7 @@ const menuItems = [
   { icon: Home, label: "Dashboard", path: "/app" },
   { icon: User, label: "My Profile", path: "/app/profile/me" },
   { icon: Users, label: "Events", path: "/app/events" },
+  { icon: Layers, label: "Programs", path: "/app/programs" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
   { icon: GraduationCap, label: "Find Experts", path: "/app/experts" },
   { icon: MessageSquare, label: "Messages", path: "/app/conversation" },
@@ -51,7 +53,6 @@ export default function LeftSidebar({
 
   return (
     <>
-      {/* Overlay (mobile only) */}
       <div
         className={cn(
           "fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 lg:hidden",
@@ -69,7 +70,6 @@ export default function LeftSidebar({
         )}
       >
         <div className="relative h-full overflow-y-auto p-4 bg-gray-50">
-          {/* Close Button (mobile only) */}
           <Button
             onClick={onClose}
             className="absolute right-4 top-4 lg:hidden p-2 rounded-md hover:bg-gray-100 transition"
@@ -77,7 +77,6 @@ export default function LeftSidebar({
             <X className="h-5 w-5 text-gray-600" />
           </Button>
 
-          {/* Profile Card */}
           <Card className="overflow-hidden border-none shadow mb-4">
             <div className="h-16 bg-gradient-to-r from-blue-600 to-indigo-600" />
             <div className="relative px-4 pb-4">
@@ -99,7 +98,6 @@ export default function LeftSidebar({
             </div>
           </Card>
 
-          {/* Navigation */}
           <Card className="p-2 border-none shadow">
             <nav className="space-y-1">
               {menuItems.map((item) => {
