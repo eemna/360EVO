@@ -92,7 +92,6 @@ function EventRow({
         past ? "opacity-70" : ""
       }`}
     >
-      {/* Cover thumbnail */}
       <div className="w-20 h-20 rounded-xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 flex-shrink-0">
         {event.coverImage ? (
           <img

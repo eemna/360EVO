@@ -221,7 +221,6 @@ export default function RegistrationPage() {
 
         <Card className="p-8 shadow-md border border-gray-200">
           <form onSubmit={handleSubmit}>
-            {/* ── STEP 1: Choose Role ── */}
             {currentStep === 1 && (
               <div className="space-y-5">
                 <div className="text-center">
@@ -303,7 +302,6 @@ export default function RegistrationPage() {
               </div>
             )}
 
-            {/* ── STEP 2: Basic Info ── */}
             {currentStep === 2 && (
               <div className="space-y-6">
                 <h2 className="text-2xl text-center font-semibold">
@@ -364,7 +362,6 @@ export default function RegistrationPage() {
               </div>
             )}
 
-            {/* ── STEP 3: Role-specific details ── */}
             {currentStep === 3 && (
               <div className="space-y-4">
                 {/* STARTUP */}

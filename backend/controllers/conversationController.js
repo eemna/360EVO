@@ -32,10 +32,7 @@ export const createConversation = async (req, res, next) => {
       return await tx.conversation.create({
         data: {
           participants: {
-            create: [
-              { userId: currentUserId },
-              { userId: otherUserId },
-            ],
+            create: [{ userId: currentUserId }, { userId: otherUserId }],
           },
         },
         include: { participants: true },
@@ -66,40 +63,39 @@ export const sendMessage = async (req, res, next) => {
       return next({ statusCode: 403, message: "Not allowed" });
     }
 
-const message = await prisma.$transaction(async (tx) => {
-  const msg = await tx.message.create({
-    data: {
-      conversationId: id,
-      senderId,
-      content: content.trim(),
-    },
-    include: {
-      sender: {
-        select: {
-          id: true,
-          name: true,
-          profile: { select: { avatar: true } },
+    const message = await prisma.$transaction(async (tx) => {
+      const msg = await tx.message.create({
+        data: {
+          conversationId: id,
+          senderId,
+          content: content.trim(),
         },
-      },
-    },
-  });
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              profile: { select: { avatar: true } },
+            },
+          },
+        },
+      });
 
-  await tx.conversation.update({
-    where: { id },
-    data: { lastMessageAt: new Date() },
-  });
+      await tx.conversation.update({
+        where: { id },
+        data: { lastMessageAt: new Date() },
+      });
 
-  return msg;
-});
+      return msg;
+    });
 
     global.io.to(id).emit("new_message", message);
 
-
-        const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+    const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
     const mentionedUserIds = new Set();
     let match;
     while ((match = mentionRegex.exec(content)) !== null) {
-      const mentionedId = match[2]; 
+      const mentionedId = match[2];
       if (mentionedId && mentionedId !== senderId) {
         mentionedUserIds.add(mentionedId);
       }
@@ -126,7 +122,6 @@ const message = await prisma.$transaction(async (tx) => {
         conversationId: id,
       });
     }
-
 
     const otherParticipant = await prisma.conversationParticipant.findFirst({
       where: { conversationId: id, userId: { not: senderId } },
@@ -203,7 +198,7 @@ export const getMessages = async (req, res, next) => {
     next(error);
   }
 };
-6
+6;
 export const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -340,7 +335,11 @@ export const searchUsers = async (req, res, next) => {
 
     if (!q || q.trim().length < 1) return res.json([]);
 
-    const tsQuery = q.trim().split(/\s+/).map(word => `${word}:*`).join(' & ');
+    const tsQuery = q
+      .trim()
+      .split(/\s+/)
+      .map((word) => `${word}:*`)
+      .join(" & ");
 
     const users = await prisma.$queryRaw`
       SELECT 

@@ -1,9 +1,8 @@
-
 import { createContext, useContext } from "react";
 import type { Socket } from "socket.io-client";
 
 interface SocketContextType {
-  socket: Socket | null; 
+  socket: Socket | null;
   onlineUsers: Set<string>;
 }
 

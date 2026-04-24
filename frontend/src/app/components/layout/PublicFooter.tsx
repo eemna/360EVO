@@ -5,7 +5,6 @@ export default function Footer() {
     <footer className="bg-gradient-to-r from-blue-900 to-indigo-900 text-gray-200">
       <div className="max-w-7xl mx-auto px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
-          {/* Company Info */}
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="size-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -45,7 +44,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Product */}
           <div>
             <h3 className="text-white font-semibold mb-4">Product</h3>
             <ul className="space-y-2 text-sm">
@@ -77,7 +75,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company */}
           <div>
             <h3 className="text-white font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-sm">
@@ -109,7 +106,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
           <div>
             <h3 className="text-white font-semibold mb-4">Contact</h3>
             <ul className="space-y-3 text-sm">
@@ -133,7 +129,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm">© 2026 360EVO. All rights reserved.</p>

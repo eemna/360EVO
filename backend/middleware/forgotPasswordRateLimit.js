@@ -7,10 +7,13 @@ const forgotPasswordRateLimit = async (req, res, next) => {
     const identifier = `forgot:${email}`;
     const { success } = await forgotLimiter.limit(identifier);
 
-    rateLimitRequests.inc({ type: 'forgot_password', allowed: String(success) });
+    rateLimitRequests.inc({
+      type: "forgot_password",
+      allowed: String(success),
+    });
 
     if (!success) {
-      rateLimitHits.inc({ type: 'forgot_password' });
+      rateLimitHits.inc({ type: "forgot_password" });
       return res.status(429).json({
         message: "Too many reset attempts. Try again later.",
       });

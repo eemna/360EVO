@@ -204,7 +204,7 @@ describe("penalties", () => {
         exclusions: { industries: ["EdTech"] },
         mustHaves: { minTRL: 9 },
       },
-      { ...project, location: "Tokyo, Japan" }, // ← add this, no geo match
+      { ...project, location: "Tokyo, Japan" },
       { trlScore: 1, irScore: 10 },
     );
     expect(matchScore).toBe(0);

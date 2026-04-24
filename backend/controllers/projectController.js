@@ -86,75 +86,81 @@ export const updateProject = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { teamMembers, milestones, documents, ...projectData } = req.body;
-
+ 
     const project = await prisma.project.findUnique({
       where: { id },
     });
-
+ 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-
+ 
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({ message: "Not allowed" });
     }
-
-    await prisma.$transaction(async (tx) => {
-      // Update main project
-      await tx.project.update({
-        where: { id },
-        data: projectData,
-      });
-
-      // Replace teamMembers
-      if (Array.isArray(teamMembers)) {
-        await tx.teamMember.deleteMany({
-          where: { projectId: id },
+ 
+    
+    await prisma.$transaction(
+      async (tx) => {
+        // Update main project
+        await tx.project.update({
+          where: { id },
+          data: projectData,
         });
-
-        if (teamMembers.length > 0) {
-          await tx.teamMember.createMany({
-            data: teamMembers.map((member) => ({
-              ...member,
-              projectId: id,
-            })),
+ 
+        // Replace teamMembers
+        if (Array.isArray(teamMembers)) {
+          await tx.teamMember.deleteMany({
+            where: { projectId: id },
           });
+ 
+          if (teamMembers.length > 0) {
+            await tx.teamMember.createMany({
+              data: teamMembers.map((member) => ({
+                ...member,
+                projectId: id,
+              })),
+            });
+          }
         }
-      }
-
-      // Replace milestones
-      if (Array.isArray(milestones)) {
-        await tx.milestone.deleteMany({
-          where: { projectId: id },
-        });
-
-        if (milestones.length > 0) {
-          await tx.milestone.createMany({
-            data: milestones.map((m) => ({
-              ...m,
-              projectId: id,
-            })),
+ 
+        // Replace milestones
+        if (Array.isArray(milestones)) {
+          await tx.milestone.deleteMany({
+            where: { projectId: id },
           });
+ 
+          if (milestones.length > 0) {
+            await tx.milestone.createMany({
+              data: milestones.map((m) => ({
+                ...m,
+                projectId: id,
+              })),
+            });
+          }
         }
-      }
-
-      // Replace documents
-      if (Array.isArray(documents)) {
-        await tx.projectDocument.deleteMany({
-          where: { projectId: id },
-        });
-
-        if (documents.length > 0) {
-          await tx.projectDocument.createMany({
-            data: documents.map((doc) => ({
-              ...doc,
-              projectId: id,
-            })),
+ 
+        // Replace documents
+        if (Array.isArray(documents)) {
+          await tx.projectDocument.deleteMany({
+            where: { projectId: id },
           });
+ 
+          if (documents.length > 0) {
+            await tx.projectDocument.createMany({
+              data: documents.map((doc) => ({
+                ...doc,
+                projectId: id,
+              })),
+            });
+          }
         }
-      }
-    });
-
+      },
+      {
+        timeout: 15000,
+      },
+    );
+ 
     const updatedProject = await prisma.project.findUnique({
       where: { id },
       include: {
@@ -169,7 +175,7 @@ export const updateProject = async (req, res, next) => {
         type: "THESIS_ALIGNMENT",
       },
     });
-
+ 
     await prisma.match.updateMany({
       where: { projectId: id },
       data: { thesisAlignmentSummary: null },

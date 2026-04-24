@@ -50,7 +50,6 @@ import {
   Download,
 } from "lucide-react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DataRoomDocument {
   id: string;
@@ -110,7 +109,6 @@ interface DataRoom {
   dealBrief: { id: string } | null;
 }
 
-// ─── Helper Components ─────────────────────────────────────────────────────────
 
 function ExpiryCountdown({ expiresAt }: { expiresAt: string }) {
   const [now] = useState(() => Date.now());
@@ -171,7 +169,6 @@ const ACTION_LABELS: Record<string, string> = {
   DELETED_DOCUMENT: "Deleted a document",
 };
 
-// ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function DataRoomPage() {
   const { id } = useParams<{ id: string }>();
@@ -256,7 +253,7 @@ export default function DataRoomPage() {
   useEffect(() => {
     if (!dataRoom || !dataRoom.isInvestor) return;
     if (dataRoom.documents.length === 0) return;
-    runAiScan(true); // silent = true, don't show toast
+    runAiScan(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataRoom?.id]);
 
@@ -279,7 +276,6 @@ export default function DataRoomPage() {
     }
   };
 
-  // ── Document upload ──────────────────────────────────────────────────────────
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !dataRoom) return;
@@ -337,7 +333,7 @@ export default function DataRoomPage() {
     }
   };
 
-  // ── Q&A ──────────────────────────────────────────────────────────────────────
+  // ── Q&A
   const handleAskQuestion = async () => {
     if (!newQuestion.trim()) return;
     try {
@@ -409,7 +405,6 @@ export default function DataRoomPage() {
     }
   };
 
-  // ─── Render ───────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
