@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Button } from "../components/ui/button";
 import api from "../../services/axios";
-import { AxiosError } from "axios";
+//import { AxiosError } from "axios";
 import { InputField } from "../components/ui/inputField";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
@@ -40,44 +40,45 @@ export default function LoginPage() {
         message: "Welcome back!",
       });
       navigate("/app");
+
     } catch (err: unknown) {
-      if (err instanceof AxiosError) {
-        const status = err.response?.status;
-        const message = err.response?.data?.message;
+      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      const status = axiosErr?.response?.status;
+      const message = axiosErr?.response?.data?.message;
 
-        if (status === 403 && message === "Email not verified") {
-          showToast({
-            type: "warning",
-            title: "Email Not Verified",
-            message:
-              "Please verify your email first. Check your inbox or spam folder.",
-          });
+      if (status === 403 && message === "Please verify your email first") {
+        showToast({
+          type: "warning",
+          title: "Email Not Verified",
+          message: "Please verify your email first. Check your inbox or spam folder.",
+        });
+        navigate("/verify-email", { state: { pendingEmail: email } });
+        return;
+      }
 
-          navigate("/verify-email", { state: { pendingEmail: email } });
-          return;
-        }
+      if (status === 401) {
+        showToast({
+          type: "error",
+          title: "Invalid Credentials",
+          message: "Incorrect email or password. Please try again.",
+        });
+        return;
+      }
 
-        if (status === 401) {
-          showToast({
-            type: "error",
-            title: "Invalid Credentials",
-            message: "Incorrect email or password. Please try again.",
-          });
-          return;
-        }
-
+      if (status) {
         showToast({
           type: "error",
           title: "Login Failed",
           message: message || "Something went wrong",
         });
-      } else {
-        showToast({
-          type: "error",
-          title: "Unexpected Error",
-          message: "Something went wrong",
-        });
+        return;
       }
+
+      showToast({
+        type: "error",
+        title: "Unexpected Error",
+        message: "Something went wrong",
+      });
     } finally {
       setLoading(false);
     }

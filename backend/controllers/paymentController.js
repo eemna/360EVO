@@ -203,9 +203,9 @@ export const stripeWebhook = async (req, res) => {
         </div>
       </div>
     `,
-}).catch((emailErr) => {
-  console.error("EVENT email failed:", emailErr.response?.body || emailErr.message);
-});
+            }).catch((err) =>
+              console.error("Paid event confirmation email failed:", err),
+            );
           }
         } else if (referenceType === "CONSULTATION") {
           const booking = await prisma.booking.findUnique({
@@ -252,7 +252,6 @@ export const stripeWebhook = async (req, res) => {
       case "payment_intent.payment_failed": {
         const pi = event.data.object;
 
-        // Update payment record to FAILED if it exists
         await prisma.payment.updateMany({
           where: { stripePaymentIntentId: pi.id },
           data: { status: "FAILED" },
@@ -266,7 +265,6 @@ export const stripeWebhook = async (req, res) => {
         console.log(`[Webhook] Unhandled event type: ${event.type}`);
     }
 
-    // Always return 200 to Stripe — otherwise it retries
     res.json({ received: true });
   } catch (error) {
     console.error("[Webhook] Processing error:", error);
@@ -308,15 +306,12 @@ export const confirmPayment = async (req, res, next) => {
       }),
     ]);
 
-    // Check if webhook already handled this payment
     const existing = await prisma.payment.findUnique({
       where: { stripePaymentIntentId: pi.id },
     });
 
     if (!existing) {
-      console.log(
-        "[confirmPayment] Webhook hasn't fired yet — creating records now",
-      );
+      console.log("[confirmPayment] Webhook hasn't fired yet — creating records now");
 
       try {
         await prisma.$transaction([
@@ -340,40 +335,86 @@ export const confirmPayment = async (req, res, next) => {
         console.log("[confirmPayment] Transaction complete");
       } catch (txError) {
         if (txError.code === "P2002") {
-          console.log(
-            "[confirmPayment] Webhook already created the record, skipping.",
-          );
+          console.log("[confirmPayment] Webhook already created the record, skipping.");
         } else {
-          console.error(
-            "[confirmPayment] Transaction failed:",
-            txError.message,
-          );
+          console.error("[confirmPayment] Transaction failed:", txError.message);
           throw txError;
         }
       }
-    } else {
-      console.log(
-        "[confirmPayment] Webhook already handled this payment — skipping DB writes",
-      );
-    }
-    await createNotification({
-      userId,
-      type: "EVENT",
-      title: "Registration Confirmed",
-      body: `You're registered for "${dbEvent?.title}".`,
-      link: `/app/events/${eventId}`,
-    });
 
-    if (dbEvent) {
+   
       await createNotification({
-        userId: dbEvent.organizerId,
+        userId,
         type: "EVENT",
-        title: "New Registration",
-        body: `Someone just registered for "${dbEvent.title}".`,
+        title: "Registration Confirmed",
+        body: `You're registered for "${dbEvent?.title}".`,
         link: `/app/events/${eventId}`,
       });
-    }
 
+      if (dbEvent) {
+        await createNotification({
+          userId: dbEvent.organizerId,
+          type: "EVENT",
+          title: "New Registration",
+          body: `Someone just registered for "${dbEvent.title}".`,
+          link: `/app/events/${eventId}`,
+        });
+      }
+
+      if (dbEvent && user) {
+        const eventDate = new Date(dbEvent.date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          timeZone: "UTC",
+        });
+        const eventTime = new Date(dbEvent.date).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "UTC",
+        });
+        const locationLine = dbEvent.location
+          ? dbEvent.location
+          : dbEvent.virtualLink
+            ? `Online — ${dbEvent.virtualLink}`
+            : "To be announced";
+
+        sendEmail({
+          to: user.email,
+          subject: `Registration Confirmed — ${dbEvent.title}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 32px; border-radius: 12px 12px 0 0;">
+                <h1 style="color: white; margin: 0; font-size: 24px;">You're registered! 🎉</h1>
+              </div>
+              <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb;">
+                <p style="color: #374151; font-size: 16px;">Hi <strong>${user.name}</strong>,</p>
+                <p style="color: #374151;">Your payment was successful and your spot is confirmed for:</p>
+                <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                  <h2 style="color: #1f2937; margin: 0 0 12px 0;">${dbEvent.title}</h2>
+                  <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Type:</strong> ${dbEvent.type.replace("_", " ")}</p>
+                  <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Date:</strong> ${eventDate}</p>
+                  <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Time:</strong> ${eventTime}</p>
+                  <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Location:</strong> ${locationLine}</p>
+                  <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Amount Paid:</strong> $${pi.amount / 100}</p>
+                </div>
+                <p style="color: #6b7280; font-size: 14px;">
+                  Manage your registrations from your
+                  <a href="${process.env.CLIENT_URL}/app/events/my" style="color: #2563eb;">My Events</a> page.
+                </p>
+                <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">© 360EVO — Innovation & Investment Platform</p>
+              </div>
+            </div>
+          `,
+        })
+        .then(() => console.log("[confirmPayment] Email sent to", user.email))
+        .catch((err) => console.error("[confirmPayment] Email FAILED:", err.response?.body || err.message));
+      }
+
+    } else {
+      console.log("[confirmPayment] Webhook already handled — skipping notifications & email");
+    }
 
     res.json({ success: true });
   } catch (error) {
@@ -503,7 +544,37 @@ export const confirmProgramPayment = async (req, res, next) => {
         link: `/app/admin`,
       });
     }
-
+    if (program && user) {
+      sendEmail({
+        to: user.email,
+        subject: `Enrollment Confirmed — ${program.title}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 32px; border-radius: 12px 12px 0 0;">
+              <h1 style="color: white; margin: 0; font-size: 24px;">You're enrolled! 🎉</h1>
+            </div>
+            <div style="background: #f9fafb; padding: 32px; border-radius: 0 0 12px 12px; border: 1px solid #e5e7eb;">
+              <p style="color: #374151; font-size: 16px;">Hi <strong>${user.name}</strong>,</p>
+              <p style="color: #374151;">Your payment was successful and your spot in the program is confirmed:</p>
+              <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h2 style="color: #1f2937; margin: 0 0 12px 0;">${program.title}</h2>
+                <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Type:</strong> ${program.type}</p>
+                <p style="margin: 6px 0; color: #6b7280;">
+                  <strong style="color: #374151;">Starts:</strong>
+                  ${new Date(program.startDate).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                </p>
+                <p style="margin: 6px 0; color: #6b7280;"><strong style="color: #374151;">Amount Paid:</strong> $${pi.amount / 100}</p>
+              </div>
+              <p style="color: #6b7280; font-size: 14px;">
+                View your programs from your
+                <a href="${process.env.CLIENT_URL}/app/programs/my-applications" style="color: #4f46e5;">My Applications</a> page.
+              </p>
+              <p style="color: #9ca3af; font-size: 12px; margin-top: 24px;">© 360EVO — Innovation & Investment Platform</p>
+            </div>
+          </div>
+        `,
+      }).catch((err) => console.error("Program enrollment email failed:", err));
+    }
 
     res.json({ success: true });
   } catch (error) {
@@ -530,7 +601,6 @@ export const confirmConsultationPayment = async (req, res, next) => {
     });
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
-    // Check if webhook already handled it
     const existing = await prisma.payment.findUnique({
       where: { stripePaymentIntentId: pi.id },
     });

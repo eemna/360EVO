@@ -368,7 +368,6 @@ export default function DataRoomPage() {
         ),
       );
 
-      // Pre-fill the reply box with the suggestion
       setReplyText(data.suggestedAnswer);
       setExpandedThread(threadId);
 
@@ -595,15 +594,11 @@ export default function DataRoomPage() {
         <div className="lg:col-span-2 space-y-4">
           {/* Tab nav */}
           <div className="flex items-center gap-1 border-b border-gray-200">
-            {[
-              { key: "documents", label: "Documents", icon: FolderOpen },
-              {
-                key: "qa",
-                label: `Q&A (${qaThreads.length})`,
-                icon: MessageSquare,
-              },
-              { key: "activity", label: "Activity", icon: Activity },
-            ].map(({ key, label, icon: Icon }) => (
+           {[
+  { key: "documents", label: "Documents", icon: FolderOpen },
+  { key: "qa", label: `Q&A (${qaThreads.length})`, icon: MessageSquare },
+  ...(isOwner ? [{ key: "activity", label: "Activity", icon: Activity }] : []),
+].map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
                 onClick={() => setActiveTab(key as typeof activeTab)}

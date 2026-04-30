@@ -10,17 +10,21 @@ export function calculateTRLScore(project) {
   const hasDocuments = project.documents?.length > 0;
   const hasUpdates = project.updates?.length > 0;
 
-  let score;
+ 
 
+ const hasIpProtection = project.ipStatus === "PENDING" || 
+                          project.ipStatus === "GRANTED";
+  const hasPilots = (project.pilotUsers ?? 0) > 0;
+ let score;
   if (stage === "IDEA") {
     if (hasTeam && hasMilestones && project.fullDesc?.length > 200) score = 3;
     else if (project.shortDesc?.length > 50) score = 2;
     else score = 1;
   } else if (stage === "PROTOTYPE") {
-    if (hasDocuments && hasCompletedMilestone) score = 5;
+    if (hasDocuments && hasCompletedMilestone && hasIpProtection) score = 5;
     else score = 4;
   } else if (stage === "MVP") {
-    if (hasUpdates && hasCompletedMilestone && hasTeam) score = 7;
+    if (hasUpdates && hasCompletedMilestone && hasTeam && hasPilots) score = 7;
     else score = 6;
   } else if (stage === "GROWTH") {
     score = 8;
@@ -37,6 +41,8 @@ export function calculateTRLScore(project) {
     hasCompletedMilestone,
     hasDocuments,
     hasUpdates,
+    ipStatus: project.ipStatus ?? "NONE",
+    pilotUsers: project.pilotUsers ?? 0,
   };
 
   return { score, breakdown };

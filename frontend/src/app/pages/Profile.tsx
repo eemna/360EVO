@@ -137,7 +137,6 @@ export default function Profile() {
 
     if (user) fetchProfile();
   }, [id, user]);
-  //  Fetch user
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData || !formData.profile) return;
@@ -383,8 +382,8 @@ export default function Profile() {
                         avatar: file.url,
                       });
 
-                      setUser(data); // update auth
-                      setProfileUser(data); // update profile page
+                      setUser(data);
+                      setProfileUser(data);
                     } catch (err) {
                       console.error(err);
                     } finally {

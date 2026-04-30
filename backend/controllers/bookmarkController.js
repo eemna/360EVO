@@ -105,13 +105,11 @@ export const expressInterest = async (req, res, next) => {
         .json({ message: "Cannot express interest in your own project" });
     }
 
-    // 1. Save interest record
     const interest = await prisma.projectInterest.create({
       data: { projectId, userId, message: message.trim() },
       include: { user: { select: { id: true, name: true } } },
     });
     trackInterest(projectId);
-    // 2. Find existing conversation between the two users or create new one
     const existing = await prisma.conversation.findFirst({
       where: {
         AND: [
@@ -131,7 +129,6 @@ export const expressInterest = async (req, res, next) => {
         },
       }));
 
-    // 3. Send the message into the conversation
     const msg = await prisma.message.create({
       data: {
         conversationId: conversation.id,
@@ -140,7 +137,6 @@ export const expressInterest = async (req, res, next) => {
       },
     });
 
-    // 4. Emit real-time socket to owner
     if (global.io) {
       global.io.to(project.ownerId).emit("new_message", {
         conversationId: conversation.id,
@@ -148,7 +144,6 @@ export const expressInterest = async (req, res, next) => {
       });
     }
 
-    // 5. Notify project owner
     await createNotification({
       userId: project.ownerId,
       type: "PROJECT_UPDATE",

@@ -18,19 +18,19 @@ export const httpDuration = new client.Histogram({
 export const rateLimitHits = new client.Counter({
   name: "rate_limit_hits_total",
   help: "Total requests blocked by rate limiter",
-  labelNames: ["type"], // 'global' or 'forgot_password'
+  labelNames: ["type"],
 });
 
 export const rateLimitRequests = new client.Counter({
   name: "rate_limit_requests_total",
   help: "Total requests checked by rate limiter",
-  labelNames: ["type", "allowed"], // allowed: 'true' or 'false'
+  labelNames: ["type", "allowed"], 
 });
 
 export const cronJobRuns = new client.Counter({
   name: "cron_job_runs_total",
   help: "Total cron job executions",
-  labelNames: ["job", "status"], // status: 'success' or 'failed'
+  labelNames: ["job", "status"],
 });
 
 export const cronJobDuration = new client.Histogram({

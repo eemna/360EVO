@@ -53,28 +53,40 @@ function matchScoreColor(score: number) {
   return { text: "text-red-600", bg: "bg-red-100 border-red-200" };
 }
 
-function CategoryScoreBar({
-  label,
-  value,
-  max = 25,
-}: {
-  label: string;
-  value: number;
-  max?: number;
+function formatReasoningValue(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (typeof v === "number") return String(v);
+  return String(v);
+}
+
+const CATEGORY_META: Record<string, { label: string; max: number; color: string }> = {
+  industry:   { label: "Industry",   max: 25, color: "#6366f1" },
+  stage:      { label: "Stage",      max: 20, color: "#8b5cf6" },
+  technology: { label: "Technology", max: 20, color: "#06b6d4" },
+  funding:    { label: "Funding",    max: 15, color: "#f59e0b" },
+  geography:  { label: "Geography",  max: 10, color: "#10b981" },
+  irBonus:    { label: "IR Bonus",   max: 10, color: "#f97316" },
+};
+
+function CategoryScoreBar({ label, value, max = 25, color = "#6366f1" }: {
+  label: string; value: number; max?: number; color?: string;
 }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
-    <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-24 text-right flex-shrink-0 capitalize">
-        {label}
-      </span>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-600 font-medium">{label}</span>
+        <span className="text-xs font-mono font-semibold text-gray-700">
+          {value}<span className="text-gray-400 font-normal">/{max}</span>
+        </span>
+      </div>
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
         <div
-          className="h-full rounded-full bg-indigo-500 transition-all duration-700"
-          style={{ width: `${pct}%` }}
+          className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
-      <span className="text-xs font-mono text-gray-400 w-6">{value}</span>
     </div>
   );
 }
@@ -91,72 +103,98 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
     );
   }
 
-  const cats = match.categoryScores;
-  const maxValues: Record<string, number> = {
-    industry: 25,
-    stage: 20,
-    technology: 20,
-    funding: 15,
-    geography: 10,
-    irBonus: 10,
-  };
+  const cats = match.categoryScores as Record<string, number>;
+  const reasoning = match.reasoning as Record<string, unknown>;
+const ORDER = ["industry", "stage", "technology", "funding", "geography", "irBonus"];
+const POSITIVE_VALUES = new Set(["Exact", "Strong overlap", "Strong", "Match", "In range", "Semantic match", "Adjacent"]);
+const NEGATIVE_VALUES = new Set(["Weak", "Mismatch", "Out of range", "Outside range"]);
+
+const SKIP_KEYS = new Set([
+  "thesisMembership",
+  "_raw",
+]);
 
   return (
-    <div className="space-y-5">
-      <div className="flex items-center gap-3">
-        <div
-          className={`text-2xl font-bold ${matchScoreColor(match.matchScore).text}`}
-        >
+    <div className="space-y-6">
+      {/* Score header */}
+      <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+        <div className={`text-3xl font-bold ${matchScoreColor(match.matchScore).text}`}>
           {match.matchScore}
         </div>
         <div>
-          <p className="text-xs font-semibold text-gray-700">Match Score</p>
-          <p className="text-xs text-gray-400">{match.project.title}</p>
+          <p className="text-xs font-semibold text-gray-700">Overall Match</p>
+          <p className="text-xs text-gray-400 truncate max-w-[160px]">
+            {match.project.title}
+          </p>
         </div>
       </div>
 
+      {/* Category scores */}
       <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-          Category Scores
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+          Category Breakdown
         </p>
-        <div className="space-y-2">
-          {Object.entries(cats).map(([k, v]) => (
-            <CategoryScoreBar
-              key={k}
-              label={k}
-              value={v}
-              max={maxValues[k] ?? 25}
-            />
-          ))}
+        <div className="space-y-3">
+
+{ORDER.map((k) => {
+  const v = cats[k];
+  if (v === undefined) return null;
+
+  const meta = CATEGORY_META[k];
+  return (
+    <CategoryScoreBar
+      key={k}
+      label={meta.label}
+      value={v}
+      max={meta.max}
+      color={meta.color}
+    />
+  );
+})}
+        </div>
+
+        {/* Total bar */}
+        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
+          <span className="text-xs font-semibold text-gray-500"> Total (incl. IR bonus) </span>
+          <span className={`text-sm font-bold ${matchScoreColor(match.matchScore).text}`}>
+            {match.matchScore} / 100
+          </span>
         </div>
       </div>
 
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-          Reasoning
-        </p>
-        <div className="space-y-1.5">
-          {Object.entries(match.reasoning).map(([k, v]) => (
-            <div key={k} className="flex items-start gap-2 text-sm">
-              <span
-                className={`mt-0.5 w-3 h-3 rounded-full flex-shrink-0 ${
-                  v === true
-                    ? "bg-green-400"
-                    : v === false
-                      ? "bg-red-300"
-                      : "bg-gray-200"
-                }`}
-              />
-              <span className="text-gray-600 capitalize">
-                {k.replace(/([A-Z])/g, " $1").trim()}:{" "}
-                <span className="font-medium text-gray-800">
-                  {typeof v === "boolean" ? (v ? "Yes" : "No") : String(v)}
-                </span>
-              </span>
-            </div>
-          ))}
+      {/* Reasoning flags */}
+      {Object.keys(reasoning).filter(k => !SKIP_KEYS.has(k)).length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
+            Signals
+          </p>
+          <div className="space-y-2">
+            {Object.entries(reasoning)
+              .filter(([k]) => !SKIP_KEYS.has(k))
+              .map(([k, v]) => {
+                const formatted = formatReasoningValue(v);
+                const isPositive = POSITIVE_VALUES.has(formatted);
+                const isNegative = NEGATIVE_VALUES.has(formatted);
+                return (
+                  <div key={k} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="text-gray-500 capitalize">
+                      {k.replace(/([A-Z])/g, " $1").trim()}
+                    </span>
+                    <span className={`font-semibold px-2 py-0.5 rounded-full text-xs ${
+                      isPositive
+                        ? "bg-green-50 text-green-700"
+                        : isNegative
+                          ? "bg-red-50 text-red-600"
+                          : "bg-gray-100 text-gray-600"
+                    }`}>
+                      {formatted}
+                    </span>
+                  </div>
+                );
+              })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -414,7 +452,7 @@ export default function MatchFeedPage() {
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Match Feed</h1>
           <p className="text-gray-500 text-sm mt-1">
-            AI-scored project matches based on your investment thesis
+             Score = Industry + Stage + Tech + Funding + Geo (90) + IR Bonus (10)
           </p>
         </div>
         <Button

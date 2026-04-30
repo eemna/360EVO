@@ -473,7 +473,6 @@ export const createReview = async (req, res, next) => {
       },
     });
 
-    // Send review as chat message if conversation exists
     const conversation = await prisma.conversation.findFirst({
       where: {
         AND: [

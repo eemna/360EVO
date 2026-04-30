@@ -16,7 +16,6 @@ const router = express.Router();
 // Score a project — admin only
 router.post("/assess/:projectId", protect, authorize("ADMIN"), assessProject);
 
-// Get assessment for a project — any logged in user
 router.get("/assessment/:projectId", protect, getAssessment);
 
 // Generate matches for current investor

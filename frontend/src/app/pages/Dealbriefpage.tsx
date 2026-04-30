@@ -88,7 +88,6 @@ export default function DealBriefPage() {
       const { data } = await api.get(`/data-rooms/${id}/ai/deal-brief`);
       setBrief(data);
     } catch {
-      // 404 means not generated yet — that's fine
       setBrief(null);
     } finally {
       setLoading(false);

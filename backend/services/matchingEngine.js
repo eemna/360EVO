@@ -10,36 +10,38 @@ import {
   inferFunding,
   inferTechnology,
   inferGeography,
-  inferThesis,
   defuzzifyCategory,
 } from "./fuzzylogic.js";
 
 function irBonusCrisp(assessment) {
   if (!assessment?.irScore) return 0;
-  if (assessment.irScore >= 70) return 10;
-  if (assessment.irScore >= 50) return 5;
-  return 0;
+
+  return Math.round((assessment.irScore / 100) * 10);
 }
 
-export async function calculateMatchScore(
+export function calculateMatchScore(
   investorProfile,
   project,
   assessment,
 ) {
-  const irScore = assessment?.irScore || 0;
+ const irScore = assessment?.irScore || 0;
+
+
 
   const thesisFuzzy = fuzzifyThesis(
     investorProfile.investmentThesis,
     project.fullDesc,
   );
+
   const thesisSim = thesisFuzzy._rawSimilarity || 0;
+
 
   const industryFuzzy = fuzzifyIndustry(
     investorProfile.industries,
     project.industry,
   );
 
-  const industryHigh = industryFuzzy.high;
+  //const industryHigh = industryFuzzy.high;
 
   const techFuzzy = fuzzifyTechnology(
     investorProfile.technologies,
@@ -79,9 +81,6 @@ export async function calculateMatchScore(
   });
   const geoScore = defuzzifyCategory(geoOutput, 10);
 
-  // THESIS (NLP) — soft bonus up to +5 pts
-  const thesisOutput = inferThesis(thesisFuzzy, { industryHigh });
-  const thesisBonus = Math.round(thesisOutput.high * 5);
 
   const irBonus = irBonusCrisp(assessment);
 
@@ -91,16 +90,16 @@ export async function calculateMatchScore(
     technologyScore +
     fundingScore +
     geoScore +
-    irBonus +
-    thesisBonus;
+    irBonus;
 
   // ── Hard penalties
   const mustHaves = investorProfile.mustHaves || {};
   const exclusions = investorProfile.exclusions || {};
   if (mustHaves.minTRL && assessment?.trlScore < mustHaves.minTRL)
     rawScore -= 20;
-  if (exclusions.industries?.includes(project.industry)) rawScore = 0;
-
+  if (exclusions.industries?.includes(project.industry)) {
+  rawScore -= 50;
+}
   const matchScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
   const categoryScores = {
@@ -110,22 +109,37 @@ export async function calculateMatchScore(
     funding: Math.round(fundingScore),
     geography: Math.round(geoScore),
     irBonus,
-    thesisBonus,
   };
 
-  const reasoning = {
-    industryMatch: industryFuzzy.high === 1.0,
-    industryPartial: industryFuzzy.medium > 0,
-    stageMatch: stageFuzzy.high === 1.0,
-    stageAdjacent: stageFuzzy.medium > 0.5,
-    fundingInRange: fundingFuzzy.high > 0.8,
-    fundingClose: fundingFuzzy.medium > 0.3,
-    geoMatch: geoFuzzy.high === 1.0,
-    thesisNlpRaw: thesisSim,
-    thesisMembership: thesisFuzzy,
-    profileIncomplete: isProfileIncomplete(investorProfile),
-    irScore,
-  };
+const reasoning = {
+  industryFit: industryFuzzy.high === 1.0 ? "Exact" 
+    : industryFuzzy.medium > 0.5 ? "Partial" 
+    : "Weak",
+
+  stageFit: stageFuzzy.high === 1.0 ? "Exact"
+    : stageFuzzy.medium > 0.5 ? "Adjacent"
+    : "Outside range",
+
+  fundingFit: fundingFuzzy.high > 0.8 ? "In range"
+    : fundingFuzzy.medium > 0.3 ? "Close"
+    : "Out of range",
+
+  technologyFit: techFuzzy._overlapRatio > 0.5 ? "Strong overlap"
+    : techFuzzy._nlpSim > 0.2 ? "Semantic match"
+    : "Weak",
+
+  thesisAlignment: thesisSim > 0.35 ? "Strong"
+    : thesisSim > 0.15 ? "Moderate"
+    : "Weak",
+
+  geographyFit: geoFuzzy.high === 1.0 ? "Match"
+    : geoFuzzy.medium > 0 ? "Partial"
+    : "Mismatch",
+
+  irScore: `${irScore}/100`,
+
+  profileComplete: !isProfileIncomplete(investorProfile),
+};
 
   return { matchScore, categoryScores, reasoning };
 }

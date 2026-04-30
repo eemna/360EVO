@@ -40,10 +40,8 @@ export const initializeSocket = (io) => {
 
     onlineUsers.get(userId).add(socket.id);
 
-    // Send online_users event ONLY to this user, Send full online list to the newly connected user
     socket.emit("online_users", Array.from(onlineUsers.keys()));
 
-    // Emit globally only if first active socket
     if (onlineUsers.get(userId).size === 1) {
       io.emit("user_online", userId);
     }

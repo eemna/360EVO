@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { SocketContext } from "../context/SocketContext";
 import { useAuth } from "../hooks/useAuth";
-import { getApiToken } from "../services/axios";
+import { getApiToken} from "../services/axios";
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const socketRef = useRef<Socket | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
@@ -47,12 +47,18 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       });
     });
 
+      newSocket.on("force_logout", () => {
+      console.log("[Socket] Force logout — logging out all tabs");
+      logout();
+      newSocket.disconnect();
+      window.location.href = "/login";
+    });
     return () => {
       newSocket.disconnect();
       socketRef.current = null;
       setSocket(null);
     };
-  }, [user]);
+  }, [user, logout]);
 
   return (
     <SocketContext.Provider value={{ socket, onlineUsers }}>

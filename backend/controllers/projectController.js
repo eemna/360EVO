@@ -2,6 +2,8 @@ import { prisma } from "../config/prisma.js";
 //import { Prisma } from "@prisma/client";
 import { createNotification } from "../utils/createNotification.js";
 import { trackProjectView } from "./analyticsController.js";
+import { runProjectAssessment } from "../services/assessmentService.js";
+
 export const createProject = async (req, res, next) => {
   try {
     console.log("REQ USER:", req.user);
@@ -38,17 +40,16 @@ export const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const project = await prisma.project.findUnique({
-      where: { id },
-      include: {
-        owner: {
-          select: { name: true },
-        },
-        teamMembers: true,
-        milestones: true,
-        documents: true,
-      },
-    });
+const project = await prisma.project.findUnique({
+  where: { id },
+  include: {
+    owner: { select: { name: true } },
+    teamMembers: true,
+    milestones: true,
+    documents: true,
+    interests: true,
+  },
+});
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
@@ -98,16 +99,29 @@ export const updateProject = async (req, res, next) => {
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({ message: "Not allowed" });
     }
+if (project.status === "APPROVED") {
+  const LOCKED_FIELDS = [
+    "title", "fullDesc", "shortDesc", "tagline",
+    "fundingSought", "currency", "industry",
+    "stage", "technologies"
+  ];
+  const hasLockedChange = LOCKED_FIELDS.some(
+    (field) => projectData[field] !== undefined
+  );
+  if (hasLockedChange) {
+    return res.status(403).json({
+      message: "Core fields cannot be edited after approval. Contact admin if changes are needed.",
+    });
+  }
+}
 
     await prisma.$transaction(
       async (tx) => {
-        // Update main project
         await tx.project.update({
           where: { id },
           data: projectData,
         });
 
-        // Replace teamMembers
         if (Array.isArray(teamMembers)) {
           await tx.teamMember.deleteMany({
             where: { projectId: id },
@@ -123,7 +137,6 @@ export const updateProject = async (req, res, next) => {
           }
         }
 
-        // Replace milestones
         if (Array.isArray(milestones)) {
           await tx.milestone.deleteMany({
             where: { projectId: id },
@@ -139,7 +152,6 @@ export const updateProject = async (req, res, next) => {
           }
         }
 
-        // Replace documents
         if (Array.isArray(documents)) {
           await tx.projectDocument.deleteMany({
             where: { projectId: id },
@@ -168,17 +180,24 @@ export const updateProject = async (req, res, next) => {
         documents: true,
       },
     });
-    await prisma.llmInsight.deleteMany({
-      where: {
-        projectId: id,
-        type: "THESIS_ALIGNMENT",
-      },
-    });
+await prisma.llmInsight.deleteMany({
+  where: {
+    projectId: id,
+    type: { in: ["THESIS_ALIGNMENT", "PITCH_ANALYSIS"] },
+  },
+});
 
-    await prisma.match.updateMany({
-      where: { projectId: id },
-      data: { thesisAlignmentSummary: null },
-    });
+await prisma.match.deleteMany({
+  where: { projectId: id },
+});
+if (project.status === "APPROVED") {
+  setImmediate(() => {
+    runProjectAssessment(id)
+      .then(() => console.log(`[Project] Re-assessment done for ${id}`))
+      .catch((err) => console.error(`[Project] Re-assessment failed:`, err.message));
+  });
+}
+
     res.json(updatedProject);
   } catch (error) {
     next(error);
@@ -264,46 +283,49 @@ export const getPublicProjects = async (req, res, next) => {
         const limitNum = Number(limit);
         const offsetNum = Number(skip);
 
-        const projects = await prisma.$queryRaw`
-      SELECT
-        p.id,
-        p."ownerId",
-        p.title,
-        p.tagline,
-        p."shortDesc",
-        p."fullDesc",
-        p.stage,
-        p.industry,
-        p.technologies,
-        p."fundingSought",
-        p.currency,
-        p.location,
-        p.status,
-        p.visibility,
-        p."viewCount",
-        p."createdAt",
-        p."updatedAt",
-        p.featured,
-        ts_rank(p.search_vector, plainto_tsquery('english', ${q})) AS rank,
-        u.name AS "ownerName"
-      FROM "Project" p
-      LEFT JOIN "User" u ON u.id = p."ownerId"
-      WHERE
-        p.status = 'APPROVED'
-        AND p.visibility = 'PUBLIC'
-        AND p.search_vector @@ plainto_tsquery('english', ${q})
-      ORDER BY rank DESC
-      LIMIT ${limitNum}::integer
-      OFFSET ${offsetNum}::integer
-    `;
+const projects = await prisma.$queryRaw`
+  SELECT
+    p.id,
+    p."ownerId",
+    p.title,
+    p.tagline,
+    p."shortDesc",
+    p."fullDesc",
+    p.stage,
+    p.industry,
+    p.technologies,
+    p."fundingSought",
+    p.currency,
+    p.location,
+    p.status,
+    p.visibility,
+    p."viewCount",
+    p."createdAt",
+    p."updatedAt",
+    p.featured,
+    ts_rank(p.search_vector, plainto_tsquery('english', ${q})) AS rank,
+    u.name AS "ownerName",
+    a."trlScore" AS "trlScore"
+  FROM "Project" p
+  LEFT JOIN "User" u ON u.id = p."ownerId"
+  LEFT JOIN "AiAssessment" a ON a."projectId" = p.id
+  WHERE
+    p.status = 'APPROVED'
+    AND p.visibility = 'PUBLIC'
+    AND p.search_vector @@ plainto_tsquery('english', ${q})
+  ORDER BY rank DESC
+  LIMIT ${limitNum}::integer
+  OFFSET ${offsetNum}::integer
+`;
 
-        const shaped = projects.map((p) => ({
-          ...p,
-          owner: { id: p.ownerId, name: p.ownerName },
-          fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
-          viewCount: Number(p.viewCount),
-          rank: Number(p.rank),
-        }));
+const shaped = projects.map((p) => ({
+  ...p,
+  owner: { id: p.ownerId, name: p.ownerName },
+  fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
+  viewCount: Number(p.viewCount),
+  rank: Number(p.rank),
+  aiAssessment: p.trlScore != null ? { trlScore: Number(p.trlScore) } : null,
+}));
 
         return res.json(shaped);
       } catch (searchError) {
@@ -330,6 +352,9 @@ export const getPublicProjects = async (req, res, next) => {
         owner: {
           select: { id: true, name: true },
         },
+        aiAssessment: {
+      select: { trlScore: true },
+    },
       },
     });
 

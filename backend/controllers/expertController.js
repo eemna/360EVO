@@ -174,7 +174,6 @@ export const applyExpert = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    // Check user is not already an expert or pending
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: { profile: true },

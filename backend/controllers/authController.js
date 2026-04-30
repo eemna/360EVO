@@ -13,7 +13,6 @@ import { Prisma } from "@prisma/client";
 
 dotenv.config();
 
-// REGISTER
 
 export const register = async (req, res, next) => {
   try {
@@ -40,14 +39,12 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    //  Ensure role is uppercase
     const normalizedRole = role.toUpperCase();
 
     if (!["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(normalizedRole)) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    // Role specific validation
     if (normalizedRole === "STARTUP" && !companyName) {
       return res.status(400).json({
         message: "Company name is required for startups",
@@ -73,12 +70,10 @@ export const register = async (req, res, next) => {
         },
       });
 
-      //  Create ONLY ONE profile
       await tx.profile.create({
         data: {
           userId: createdUser.id,
 
-          // Expert fields
           expertise:
             normalizedRole === "EXPERT"
               ? Array.isArray(expertise)
@@ -91,7 +86,6 @@ export const register = async (req, res, next) => {
               ? new Prisma.Decimal(hourlyRate)
               : null,
 
-          // Startup fields
           companyName: normalizedRole === "STARTUP" ? companyName : null,
           stage: normalizedRole === "STARTUP" ? stage || null : null,
         },
@@ -128,7 +122,6 @@ export const register = async (req, res, next) => {
   }
 };
 
-// LOGIN
 
 export const login = async (req, res, next) => {
   try {
@@ -166,7 +159,6 @@ export const login = async (req, res, next) => {
     const accessToken = generateAccessToken(userData.id);
     const refreshToken = generateRefreshToken(userData.id);
 
-    //  Hash refresh token before storing
     const hashedRefreshToken = crypto
       .createHash("sha256")
       .update(refreshToken)
@@ -199,7 +191,6 @@ export const login = async (req, res, next) => {
   }
 };
 
-// VERIFY EMAIL
 
 export const verifyEmail = async (req, res, next) => {
   try {
@@ -250,7 +241,6 @@ export const forgotPassword = async (req, res, next) => {
       where: { email },
     });
 
-    // Prevent email enumeration
     if (!user) {
       return res.json({
         message: "If this email exists, a reset link has been sent",
@@ -349,10 +339,8 @@ export const refreshToken = async (req, res, next) => {
       return res.status(401).json({ message: "No refresh token" });
     }
 
-    //  HASH the incoming token
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    // Check DB using hashed version
     const session = await prisma.refreshToken.findUnique({
       where: { tokenHash: hashedToken },
     });
@@ -396,7 +384,6 @@ export const updateEmail = async (req, res, next) => {
       });
     }
 
-    // remove previous tokens
     await prisma.emailVerification.deleteMany({
       where: { userId },
     });
@@ -481,12 +468,10 @@ export const resetPassword = async (req, res, next) => {
 
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
-    //  Correct field name
     const resetRecord = await prisma.passwordReset.findUnique({
       where: { token: hashedToken },
     });
 
-    //  Check existence AND expiration
     if (!resetRecord || resetRecord.expiresAt < new Date()) {
       return res.status(400).json({
         message: "Invalid or expired token",
@@ -500,7 +485,6 @@ export const resetPassword = async (req, res, next) => {
       data: { passwordHash: hashedPassword },
     });
 
-    //  Since userId is unique, delete by userId OR token
     await prisma.passwordReset.delete({
       where: { userId: resetRecord.userId },
     });
@@ -511,13 +495,11 @@ export const resetPassword = async (req, res, next) => {
   }
 };
 
-// GET CURRENT USER
 export const getMe = async (req, res, next) => {
   try {
     let user = await prisma.user.findUnique({
       where: { id: req.user.id },
       select: {
-        // select only what the frontend needs
         id: true,
         name: true,
         email: true,
@@ -560,6 +542,11 @@ export const logout = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;
 
+    const userId = req.user?.id;
+    if (userId && global.io) {
+      global.io.to(userId).emit("force_logout");
+    }
+
     if (token) {
       const hashedToken = crypto
         .createHash("sha256")
@@ -581,7 +568,6 @@ export const logout = async (req, res, next) => {
     next(error);
   }
 };
-// CHANGE PASSWORD (Logged in user)
 export const changePassword = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -641,7 +627,6 @@ export const updateProfile = async (req, res, next) => {
     } = req.body;
 
     const result = await prisma.$transaction(async (tx) => {
-      // Update user only if name provided
       if (name !== undefined) {
         await tx.user.update({
           where: { id: userId },
