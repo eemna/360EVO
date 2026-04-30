@@ -15,7 +15,7 @@ import { Search, MapPin, Target, Eye, Users, Sparkles } from "lucide-react";
 import api from "../../services/axios";
 import { BookmarkButton, InterestButton } from "./Bookmarkfeature";
 import { useNavigate } from "react-router";
-
+import { TRLBadge } from "../components/ui/Aiassessmentsection";
 type Project = {
   id: string;
   title: string;
@@ -32,6 +32,7 @@ type Project = {
     id: string;
     name: string;
   };
+  aiAssessment?: { trlScore: number } | null;
 };
 
 const stageColors = {
@@ -280,12 +281,14 @@ export function ProjectGallery() {
                   {project.tagline}
                 </p>
 
-                <div className="mb-4">
-                  <Badge className={stageColors[project.stage]}>
-                    {project.stage}
-                  </Badge>
-                </div>
-
+  <div className="flex items-center gap-2 mb-4">
+  <Badge className={stageColors[project.stage]}>
+    {project.stage}
+  </Badge>
+  {project.aiAssessment && (
+    <TRLBadge score={project.aiAssessment.trlScore} />
+  )}
+</div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {project.technologies?.slice(0, 3).map((tech) => (
                     <Badge

@@ -59,8 +59,8 @@ interface InvestorProfileData {
   geographicPrefs: string[];
   riskTolerance: "LOW" | "MEDIUM" | "HIGH";
   dealStructures: string[];
-  mustHaves: Record<string, unknown>;
-  exclusions: Record<string, unknown>;
+   mustHaves: { minTRL?: number; [key: string]: unknown };
+  exclusions: { industries?: string[]; [key: string]: unknown };
   investmentThesis: string;
 }
 
@@ -117,6 +117,7 @@ const STEPS = [
   "Industries",
   "Stage & Tech",
   "Funding",
+  "Requirements",
   "Geography & Deal",
   "Investment Thesis",
 ];
@@ -130,7 +131,6 @@ export default function InvestorSetupWizard() {
   const [saving, setSaving] = useState(false);
   const [hasExisting, setHasExisting] = useState(false);
 
-  // Pre-fill if profile exists
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -151,7 +151,6 @@ export default function InvestorSetupWizard() {
         });
         setHasExisting(true);
       } catch {
-        // 404 = no profile yet, start fresh
         setHasExisting(false);
       } finally {
         setLoading(false);
@@ -215,7 +214,6 @@ export default function InvestorSetupWizard() {
   }
 
   const steps = [
-    // Step 0: Industries
     <div className="space-y-4" key="industries">
       <div>
         <Label className="text-sm font-semibold">
@@ -300,8 +298,46 @@ export default function InvestorSetupWizard() {
         </div>
       </div>
     </div>,
+    <div className="space-y-6" key="requirements">
+      <div className="space-y-4">
+        <Label className="text-sm font-semibold">Must-Have Requirements</Label>
+        <p className="text-xs text-gray-500">
+          Projects missing these will be penalized (-20 pts)
+        </p>
+        <div className="space-y-2">
+          <Label className="text-xs">Minimum TRL Score (1-9)</Label>
+          <Input
+            type="number"
+            min={1}
+            max={9}
+            placeholder="e.g. 4 (leave empty for no minimum)"
+            value={data.mustHaves?.minTRL?.toString() ?? ""}
+            onChange={(e) =>
+              set("mustHaves", {
+                ...data.mustHaves,
+                minTRL: e.target.value ? Number(e.target.value) : undefined,
+              })
+            }
+          />
+        </div>
+      </div>
 
-    // Step 3: Geography & Deal
+      <div className="space-y-4">
+        <Label className="text-sm font-semibold">Excluded Industries</Label>
+        <p className="text-xs text-gray-500">
+          Projects in these industries will score 0
+        </p>
+        <ChipToggle
+          options={INDUSTRIES}
+          selected={(data.exclusions?.industries as string[]) ?? []}
+          onChange={(v) =>
+            set("exclusions", { ...data.exclusions, industries: v })
+          }
+        />
+      </div>
+    </div>,
+
+    // Step 4: Geography & Deal
     <div className="space-y-6" key="geo-deal">
       <div>
         <Label className="text-sm font-semibold">Geographic Preferences</Label>

@@ -138,7 +138,7 @@ export default function ProjectDetailsPage() {
   const [ddModalOpen, setDdModalOpen] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
-  //const location = useLocation();
+ 
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const fetchProject = async () => {

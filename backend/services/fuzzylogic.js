@@ -124,11 +124,14 @@ const STOP_WORDS = new Set([
 
 function tokenize(text) {
   if (!text) return [];
-  return text
+
+  const expanded = expandAbbreviations(text);
+
+  return expanded
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
-    .filter((w) => w.length > 2 && !STOP_WORDS.has(w));
+    .filter((w) => w.length > 1 && !STOP_WORDS.has(w));
 }
 
 function tfVector(tokens) {
@@ -263,11 +266,18 @@ export function fuzzifyThesis(investmentThesis, projectFullDesc) {
     return { low: 0.0, medium: 0.5, high: 0.0, _rawSimilarity: 0 };
   if (!projectFullDesc || projectFullDesc.trim().length < 20)
     return { low: 0.0, medium: 0.3, high: 0.0, _rawSimilarity: 0 };
-  const sim = textSimilarity(investmentThesis, projectFullDesc);
+
+  const cosineSim = textSimilarity(investmentThesis, projectFullDesc);
+  const thesisTokens = tokenize(expandAbbreviations(investmentThesis));
+  const descTokens = new Set(tokenize(expandAbbreviations(projectFullDesc)));
+  const hits = thesisTokens.filter(t => descTokens.has(t)).length;
+  const keywordRatio = thesisTokens.length > 0 ? hits / thesisTokens.length : 0;
+  const sim = Math.min(1, cosineSim * 0.4 + keywordRatio * 0.6);
+
   return {
-    high: sigmoid(sim, 0.25, 20),
-    medium: triangular(sim, 0.05, 0.15, 0.4),
-    low: 1 - sigmoid(sim, 0.08, 20),
+    high:   sigmoid(sim, 0.35, 15),
+    medium: triangular(sim, 0.1, 0.25, 0.5),
+    low:    1 - sigmoid(sim, 0.15, 15),
     _rawSimilarity: Math.round(sim * 1000) / 1000,
   };
 }
@@ -291,15 +301,15 @@ export function fuzzifyGeography(investorProfile, project) {
 // Industry inference
 
 export function inferIndustry(raw, { thesisSim }) {
-  const thesisHigh = sigmoid(thesisSim, 0.25, 20);
-  const thesisLow = 1 - sigmoid(thesisSim, 0.08, 20);
+  const thesisHigh = sigmoid(thesisSim, 0.35, 15);
+  const thesisLow  = 1 - sigmoid(thesisSim, 0.15, 15);
 
-  let outHigh = raw.high;
+  let outHigh   = raw.high;
   let outMedium = raw.medium;
-  let outLow = raw.low;
+  let outLow    = raw.low;
 
   const r2 = Math.min(raw.medium, thesisHigh);
-  outHigh = Math.max(outHigh, r2);
+  outHigh   = Math.max(outHigh, r2);
   outMedium = Math.max(0, outMedium - r2);
 
   const r3 = Math.min(raw.medium, thesisLow);
@@ -340,12 +350,12 @@ export function inferStage(raw, { irScore }) {
  * Technology inference
 
  * Rules:
- *   R1: IF overlapRatio=high                    → output.high (exact match is strong)
- *   R2: IF overlapRatio=low AND nlpSim=high     → output.medium
+ *   R1: IF overlapRatio=high                     output.high (exact match is strong)
+ *   R2: IF overlapRatio=low AND nlpSim=high     output.medium
  *       (semantic match without exact tag — partial credit, not full)
- *   R3: IF overlapRatio=high AND nlpSim=high    → output.high boosted
+ *   R3: IF overlapRatio=high AND nlpSim=high    output.high boosted
  *       (both signals agree → more confident)
- *   R4: IF overlapRatio=low AND nlpSim=low      → output.low
+ *   R4: IF overlapRatio=low AND nlpSim=low      output.low
  */
 export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const exactHigh = sigmoid(overlapRatio, 0.5, 10);
@@ -370,12 +380,12 @@ export function inferTechnology(raw, { overlapRatio, nlpSim }) {
  * Funding inference
 
  * Rules:
- *   R1: IF raw=high                             → output.high = raw.high
- *   R2: IF raw=medium AND irScore=high          → output.high  = min(medium, irHigh) * 0.6
- *       (close to range + strong project → partial promotion, not full)
- *   R3: IF raw=low AND irScore=high             → output.medium = min(low, irHigh) * 0.3
- *       (outside range but exceptional project → tiny rescue)
- *   R4: IF raw=low AND irScore=low              → output.low reinforced
+ *   R1: IF raw=high                             output.high = raw.high
+ *   R2: IF raw=medium AND irScore=high           output.high  = min(medium, irHigh) * 0.6
+ *       (close to range + strong project  partial promotion, not full)
+ *   R3: IF raw=low AND irScore=high             output.medium = min(low, irHigh) * 0.3
+ *       (outside range but exceptional project    tiny rescue)
+ *   R4: IF raw=low AND irScore=low               output.low reinforced
  */
 export function inferFunding(raw, { irScore }) {
   const irNorm = irScore / 100;
@@ -399,9 +409,9 @@ export function inferFunding(raw, { irScore }) {
  * Geography inference
 
  * Rules:
- *   R1: IF raw=high                             → output.high = raw.high
- *   R2: IF raw=medium AND projectIsGlobal       → output.high = medium * 0.7
- *   R3: IF raw=low                              → output.low  = raw.low
+ *   R1: IF raw=high                              output.high = raw.high
+ *   R2: IF raw=medium AND projectIsGlobal        output.high = medium * 0.7
+ *   R3: IF raw=low                               output.low  = raw.low
  */
 export function inferGeography(raw, { projectLocation }) {
   const isGlobal = projectLocation?.toLowerCase().includes("global");
@@ -423,11 +433,11 @@ export function inferGeography(raw, { projectLocation }) {
  * Thesis inference
 
  * Rules:
- *   R1: IF raw=high                             → output.high = raw.high
- *   R2: IF raw=high AND industryMatch=exact     → output.high boosted * 1.1 (cap 1)
- *   R3: IF raw=medium AND industryMatch=none    → output.medium reduced * 0.7
- *       (thesis says yes but industry says no → less trustworthy signal)
- *   R4: IF raw=low                              → output.low = raw.low
+ *   R1: IF raw=high                              output.high = raw.high
+ *   R2: IF raw=high AND industryMatch=exact      output.high boosted * 1.1 (cap 1)
+ *   R3: IF raw=medium AND industryMatch=none     output.medium reduced * 0.7
+ *       (thesis says yes but industry says no     less trustworthy signal)
+ *   R4: IF raw=low                               output.low = raw.low
  */
 export function inferThesis(raw, { industryHigh }) {
   let outHigh = raw.high;

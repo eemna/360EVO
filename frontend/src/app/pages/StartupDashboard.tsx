@@ -89,6 +89,7 @@ export default function StartupDashboard() {
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [wizardLoading, setWizardLoading] = useState(false);
   const [pendingDdCount, setPendingDdCount] = useState(0);
+  const [editingProjectStatus, setEditingProjectStatus] = useState<string | null>(null);
 
   const q = search.toLowerCase().trim();
   const projects = allProjects.filter(
@@ -130,11 +131,12 @@ export default function StartupDashboard() {
     }
   };
 
-  const handleEdit = (id: string) => {
-    setEditingProjectId(id);
-    setWizardLoading(true);
-    setIsWizardOpen(true);
-  };
+const handleEdit = (id: string, status: string) => {
+  setEditingProjectId(id);
+  setEditingProjectStatus(status);
+  setWizardLoading(true);
+  setIsWizardOpen(true);
+};
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -210,17 +212,19 @@ export default function StartupDashboard() {
           </p>
         </div>
 
-        <ProjectCreationWizard
-          isOpen={isWizardOpen}
-          onClose={() => {
-            setIsWizardOpen(false);
-            setEditingProjectId(null);
-          }}
-          projectId={editingProjectId}
-          loading={wizardLoading}
-          setLoading={setWizardLoading}
-          onProjectSaved={fetchDashboard}
-        />
+<ProjectCreationWizard
+  isOpen={isWizardOpen}
+  onClose={() => {
+    setIsWizardOpen(false);
+    setEditingProjectId(null);
+    setEditingProjectStatus(null);
+  }}
+  projectId={editingProjectId}
+  projectStatus={editingProjectStatus}
+  loading={wizardLoading}
+  setLoading={setWizardLoading}
+  onProjectSaved={fetchDashboard}
+/>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -371,15 +375,16 @@ export default function StartupDashboard() {
                     </div>
 
                     <div className="flex gap-2 flex-shrink-0">
-                      {project.status === "DRAFT" && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(project.id)}
-                        >
-                          <Pencil className="w-4 h-4 text-blue-600" />
-                        </Button>
-                      )}
+{(project.status === "DRAFT" || project.status === "APPROVED") && (
+  <Button
+    size="icon"
+    variant="ghost"
+    onClick={() => handleEdit(project.id, project.status)}
+    title={project.status === "APPROVED" ? "Edit team & milestones only" : "Edit project"}
+  >
+    <Pencil className={`w-4 h-4 ${project.status === "APPROVED" ? "text-gray-400" : "text-blue-600"}`} />
+  </Button>
+)}
                       <Button
                         size="icon"
                         variant="ghost"

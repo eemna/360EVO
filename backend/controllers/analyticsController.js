@@ -81,7 +81,6 @@ export const getProjectAnalytics = async (req, res, next) => {
       orderBy: { date: "asc" },
     });
 
-    // Summary totals
     const totals = analytics.reduce(
       (acc, row) => {
         acc.views += row.views;

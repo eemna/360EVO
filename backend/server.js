@@ -30,7 +30,7 @@ import programRoutes from "./routes/programRoute.js";
 import searchRouter from "./routes/searchroute.js";
 
 let job, matchRegenerationJob, narrativeRetryJob, analyticsJob;
-
+dotenv.config();
 async function loadCron() {
   if (process.env.NODE_ENV !== "test") {
     try {
@@ -47,7 +47,7 @@ async function loadCron() {
 
 await loadCron();
 
-dotenv.config();
+
 const app = express();
 app.use(helmet());
 
@@ -76,11 +76,14 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(metricsMiddleware);
-if (process.env.NODE_ENV === "production" && job) {
-  job.start();
-  matchRegenerationJob.start();
-  narrativeRetryJob.start();
-  analyticsJob.start();
+if (
+  process.env.NODE_ENV === "production" ||
+  process.env.NODE_ENV === "development"
+) {
+  if (job) job.start();
+  if (matchRegenerationJob) matchRegenerationJob.start();
+  if (narrativeRetryJob) narrativeRetryJob.start();
+  if (analyticsJob) analyticsJob.start();
 }
 app.get("/api/health", (req, res) => {
   res.send("Backend is running ");

@@ -130,6 +130,8 @@ model Project {
   createdAt     DateTime                 @default(now())
   updatedAt     DateTime                 @updatedAt
   featured      Boolean                  @default(false)
+  ipStatus      IpStatus     @default(NONE)
+  pilotUsers    Int          @default(0)
   search_vector Unsupported("tsvector")?
   bookmarks     Bookmark[]
   milestones    Milestone[]
@@ -600,6 +602,11 @@ model Payment {
   user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+enum IpStatus {
+  NONE
+  PENDING
+  GRANTED
+}
 
 enum ProgramType {
   INCUBATION

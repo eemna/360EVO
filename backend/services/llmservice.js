@@ -175,103 +175,189 @@ export async function createThesisAlignmentMoE(
   project,
   assessment,
 ) {
-  console.log(
-    "[MoE] Running thesis alignment experts for project:",
-    project.id,
-  );
-  const end = llmCallDuration.startTimer({
-    service: "createThesisAlignmentMoE",
-  });
+  console.log("[MoE] Running thesis alignment experts for project:", project.id);
+  const end = llmCallDuration.startTimer({ service: "createThesisAlignmentMoE" });
+
   const [financialExpert, strategicExpert] = await Promise.all([
+
     // Expert 1 — Financial fit
-    callLlm(
-      `Investor funding range: ${investorProfile.fundingMin} - ${investorProfile.fundingMax} ${investorProfile.currency || ""}
-Investor stages: ${investorProfile.stages?.join(", ") || "any"}
-Project funding sought: ${project.fundingSought} ${project.currency}
-Project stage: ${project.stage}
-IR Score: ${assessment?.irScore || 0}/100
-Respond ONLY with: {"financialFit":"<2 sentences>","financialScore":<0-100>}`,
-      EXPERTS.financial,
-      200,
-    )
+
+callLlm(
+  `You are evaluating financial and stage fit between an investor and a project.
+
+INVESTOR:
+- Funding range: ${investorProfile.fundingMin ?? "unspecified"} - ${investorProfile.fundingMax ?? "unspecified"} ${investorProfile.currency || ""}
+- Preferred stages: ${investorProfile.stages?.join(", ") || "any"}
+- Risk tolerance: ${investorProfile.riskTolerance || "MEDIUM"}
+- Deal structures: ${investorProfile.dealStructures?.join(", ") || "any"}
+
+PROJECT:
+- Funding sought: ${project.fundingSought} ${project.currency}
+- Stage: ${project.stage}
+- Industry: ${project.industry}
+- IR Score: ${assessment?.irScore || 0}/100
+- TRL Score: ${assessment?.trlScore || 0}/9
+
+Respond ONLY with valid JSON, no markdown:
+{"financialFit":"<2 sentences on financial and stage fit>","financialScore":<0-100>}`,
+  EXPERTS.financial,
+  250,
+)
       .then((raw) => parseJsonResponse(raw))
-      .catch(() => null),
+      .catch((err) => {
+        console.error("[MoE] Financial expert failed:", err.message);
+        return null;
+      }),
 
     // Expert 2 — Strategic fit
     callLlm(
-      `Investor thesis: ${investorProfile.investmentThesis || "not specified"}
-Must-haves: ${JSON.stringify(investorProfile.mustHaves || {})}
-Exclusions: ${JSON.stringify(investorProfile.exclusions || {})}
-Project industry: ${project.industry}
-Technologies: ${project.technologies?.join(", ") || "none"}
-Description: ${project.fullDesc?.slice(0, 400)}
-Respond ONLY with: {"alignmentSummary":"<2 sentences>","thesisMatches":["<match1>","<match2>"],"thesisMismatches":["<gap1>","<gap2>"],"recommendedQuestions":["<q1>","<q2>","<q3>"],"strategicScore":<0-100>}`,
+      `You are evaluating strategic and thesis alignment between an investor and a project.
+
+INVESTOR:
+- Investment thesis: ${investorProfile.investmentThesis || "not specified"}
+- Must-haves: ${JSON.stringify(investorProfile.mustHaves || {})}
+- Target industries: ${investorProfile.industries?.join(", ") || "any"}
+- Target technologies: ${investorProfile.technologies?.join(", ") || "any"}
+- Exclusions (investor will NOT invest if these apply): ${JSON.stringify(investorProfile.exclusions || {})}
+
+
+PROJECT:
+- Title: ${project.title}
+- Industry: ${project.industry}
+- Stage: ${project.stage}
+- Technologies: ${project.technologies?.join(", ") || "none"}
+- Location: ${project.location || "unspecified"}
+- Full description: ${project.fullDesc?.slice(0, 600)}
+- TRL Score: ${assessment?.trlScore || 0}/9
+- IR Score: ${assessment?.irScore || 0}/100
+
+Respond ONLY with valid JSON, no markdown:
+{
+  "alignmentSummary": "<2 sentences summarizing overall thesis fit>",
+  "thesisMatches": ["<specific match 1>", "<specific match 2>"],
+  "thesisMismatches": ["<specific gap 1>", "<specific gap 2>"],
+  "recommendedQuestions": ["<due diligence question 1>", "<due diligence question 2>", "<due diligence question 3>"],
+  "strategicScore": <0-100>
+}`,
       EXPERTS.strategic,
-      400,
+      500,
     )
       .then((raw) => parseJsonResponse(raw))
-      .catch(() => null),
+      .catch((err) => {
+        console.error("[MoE] Strategic expert failed:", err.message);
+        return null;
+      }),
   ]);
+
   end();
   llmCallsTotal.inc({ service: "createThesisAlignmentMoE", success: "true" });
-  const alignmentScore = Math.round(
-    (financialExpert?.financialScore || 0) * 0.4 +
-      (strategicExpert?.strategicScore || 0) * 0.6,
-  );
+
+const exclusions = investorProfile.exclusions || {};
+const industryExcluded = exclusions.industries?.includes(project.industry);
+const techExcluded = project.technologies?.some(t =>
+  exclusions.technologies?.includes(t)
+);
+const isExcluded = industryExcluded || techExcluded;
+
+const rawAlignmentScore = Math.round(
+  (financialExpert?.financialScore || 0) * 0.4 +
+  (strategicExpert?.strategicScore || 0) * 0.6,
+);
+const alignmentScore = isExcluded ? Math.max(0, rawAlignmentScore - 40) : rawAlignmentScore;
 
   return {
-    alignmentScore,
-    alignmentSummary: [
-      financialExpert?.financialFit,
-      strategicExpert?.alignmentSummary,
-    ]
-      .filter(Boolean)
-      .join(" "),
-    thesisMatches: strategicExpert?.thesisMatches || [],
-    thesisMismatches: strategicExpert?.thesisMismatches || [],
-    recommendedQuestions: strategicExpert?.recommendedQuestions || [],
-  };
+  alignmentScore,
+  alignmentSummary: strategicExpert?.alignmentSummary
+    || financialExpert?.financialFit
+    || "Alignment analysis unavailable.",
+  thesisMatches: strategicExpert?.thesisMatches || [],
+  thesisMismatches: strategicExpert?.thesisMismatches || [],
+  recommendedQuestions: strategicExpert?.recommendedQuestions || [],
+};
 }
 
 // ── MoE 3: Pitch Analysis (2 experts)
 export async function createPitchAnalysisMoE(project, assessment) {
   console.log("[MoE] Running pitch analysis experts for project:", project.id);
   const end = llmCallDuration.startTimer({ service: "createPitchAnalysisMoE" });
+
   const [clarityExpert, appealExpert] = await Promise.all([
-    // Expert 1 — Clarity
+
+    // Expert 1 — Clarity & completeness
     callLlm(
-      `Title: ${project.title}
-Tagline: ${project.tagline}
-Short description: ${project.shortDesc}
-Full description: ${project.fullDesc?.slice(0, 500)}
-Milestones: ${project.milestones?.map((m) => m.title).join(", ") || "none"}
-Respond ONLY with valid JSON in exactly this format:
-{"missingElements":["first missing element as a full sentence","second missing element as a full sentence"],"overallClarity":75}
-Use real sentences, not placeholders.`,
+      `You are evaluating pitch clarity and completeness.
+
+PROJECT:
+- Title: ${project.title}
+- Tagline: ${project.tagline}
+- Short description: ${project.shortDesc}
+- Full description: ${project.fullDesc?.slice(0, 600)}
+- Team (${project.teamMembers?.length || 0} members): ${
+        project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none listed"
+      }
+- Milestones (${project.milestones?.length || 0} total, ${
+        project.milestones?.filter((m) => m.completedAt)?.length || 0
+      } completed): ${project.milestones?.map((m) => m.title).join(", ") || "none"}
+
+Identify what is clearly communicated and what critical information is missing for an investor.
+
+Respond ONLY with valid JSON, no markdown:
+{
+  "missingElements": ["<missing element as full sentence>", "<missing element as full sentence>"],
+  "overallClarity": <0-100>
+}`,
       EXPERTS.clarity,
       300,
     )
       .then((raw) => parseJsonResponse(raw))
-      .catch(() => null),
+      .catch((err) => {
+        console.error("[MoE] Clarity expert failed:", err.message);
+        return null;
+      }),
 
-    // Expert 2 — Appeal
+    // Expert 2 — Investor appeal & strengths/weaknesses
     callLlm(
-      `Project: ${project.title} | Industry: ${project.industry} | Stage: ${project.stage}
-Team size: ${project.teamMembers?.length || 0}
-TRL: ${assessment?.trlScore || 0}/9 | IR: ${assessment?.irScore || 0}/100
-Funding: ${project.fundingSought} ${project.currency}
-Technologies: ${project.technologies?.join(", ") || "none"}
-Respond ONLY with valid JSON in exactly this format:
-{"pitchStrengths":["first strength as a full sentence","second strength as a full sentence","third strength as a full sentence"],"pitchWeaknesses":["first weakness as a full sentence","second weakness as a full sentence"],"investorAppeal":72}
-Use real sentences, not placeholders.`,
+      `You are evaluating investor appeal of a startup pitch.
+
+PROJECT:
+- Title: ${project.title}
+- Industry: ${project.industry}
+- Stage: ${project.stage}
+- Full description: ${project.fullDesc?.slice(0, 600)}
+- Technologies: ${project.technologies?.join(", ") || "none"}
+- Funding sought: ${project.fundingSought} ${project.currency}
+- Team size: ${project.teamMembers?.length || 0} members
+- Team: ${project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none"}
+- Milestones completed: ${project.milestones?.filter((m) => m.completedAt)?.length || 0} / ${project.milestones?.length || 0}
+- TRL Score: ${assessment?.trlScore || 0}/9
+- IR Score: ${assessment?.irScore || 0}/100
+
+Rule-based profile completeness scores (your analysis must not contradict these):
+- Team: ${assessment?.irBreakdown?.team ?? "N/A"}/100
+- Market: ${assessment?.irBreakdown?.market ?? "N/A"}/100
+- Traction: ${assessment?.irBreakdown?.traction ?? "N/A"}/100
+- Financial: ${assessment?.irBreakdown?.financial ?? "N/A"}/100
+If a dimension scores 80+, do NOT list it as a weakness. Focus weaknesses on qualitative risks only.
+
+Respond ONLY with valid JSON, no markdown:
+{
+  "pitchStrengths": ["<strength as full sentence>", "<strength as full sentence>", "<strength as full sentence>"],
+  "pitchWeaknesses": ["<weakness as full sentence>", "<weakness as full sentence>"],
+  "investorAppeal": <0-100>
+}`,
       EXPERTS.appeal,
-      300,
+      350,
     )
       .then((raw) => parseJsonResponse(raw))
-      .catch(() => null),
+      .catch((err) => {
+        console.error("[MoE] Appeal expert failed:", err.message);
+        return null;
+      }),
   ]);
+
   end();
   llmCallsTotal.inc({ service: "createPitchAnalysisMoE", success: "true" });
+
   return {
     pitchStrengths: appealExpert?.pitchStrengths || [],
     pitchWeaknesses: appealExpert?.pitchWeaknesses || [],

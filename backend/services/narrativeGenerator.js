@@ -53,14 +53,17 @@ export function generateNarrative(project, trlScore, irScore, irBreakdown) {
   };
 
   const sorted = Object.entries(irBreakdown).sort(([, a], [, b]) => b - a);
-  const top2Strengths = sorted
-    .slice(0, 2)
-    .map(([k]) => strengthMessages[k])
-    .join(" ");
-  const bottom2Risks = sorted
-    .slice(-2)
-    .map(([k]) => riskMessages[k])
-    .join(" ");
+const top2Strengths = sorted
+  .slice(0, 2)
+  .map(([k]) => strengthMessages[k] ?? "")
+  .filter(Boolean)
+  .join(" ");
+
+const bottom2Risks = sorted
+  .slice(-2)
+  .map(([k]) => riskMessages[k] ?? "")
+  .filter(Boolean)
+  .join(" ");
 
   const techList =
     project.technologies?.slice(0, 3).join(", ") || "not specified";

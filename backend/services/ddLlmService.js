@@ -110,7 +110,6 @@ Now produce a final assessment. Respond ONLY with valid JSON:
     };
   }
 
-  // Single-call path — document is small enough to process in one request
   const raw = await callLlm(
     `Analyze these startup documents for investment due diligence:
 

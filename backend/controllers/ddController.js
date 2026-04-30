@@ -45,7 +45,6 @@ async function extractTextFromPdf(buffer) {
 
   return fullText;
 }
-// DD REQUESTS
 
 export const requestDueDiligence = async (req, res, next) => {
   try {
@@ -213,7 +212,6 @@ export const declineDdRequest = async (req, res, next) => {
   }
 };
 
-// DATA ROOM
 
 async function getAccessibleDataRoom(dataRoomId, userId) {
   const dataRoom = await prisma.dataRoom.findUnique({
@@ -536,8 +534,6 @@ export const replyToQaThread = async (req, res, next) => {
     next(error);
   }
 };
-
-// AI FEATURES
 
 export const runAiScan = async (req, res, next) => {
   try {
