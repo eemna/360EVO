@@ -1,5 +1,3 @@
-// STEP 1 — TRL SCORE (Technology Readiness Level 1 to 9)
-// Based on: project stage, prototype existence, milestones, documents
 export function calculateTRLScore(project) {
   const stage = project.stage;
   const hasTeam = project.teamMembers?.length > 0;
@@ -10,30 +8,42 @@ export function calculateTRLScore(project) {
   const hasDocuments = project.documents?.length > 0;
   const hasUpdates = project.updates?.length > 0;
 
- 
+  const hasIpProtection  = project.ipStatus === "PENDING" ||
+                           project.ipStatus === "GRANTED";
+  const hasGrantedIp     = project.ipStatus === "GRANTED";
+  const pilotUsers       = project.pilotUsers ?? 0;
+  const hasPilots        = pilotUsers > 0;
+  const hasScaledPilots  = pilotUsers >= 100;
 
- const hasIpProtection = project.ipStatus === "PENDING" || 
-                          project.ipStatus === "GRANTED";
-  const hasPilots = (project.pilotUsers ?? 0) > 0;
- let score;
+  let score;
   if (stage === "IDEA") {
     if (hasTeam && hasMilestones && project.fullDesc?.length > 200) score = 3;
     else if (project.shortDesc?.length > 50) score = 2;
     else score = 1;
+
+    if (hasIpProtection && score < 3) score = 3;
+
   } else if (stage === "PROTOTYPE") {
     if (hasDocuments && hasCompletedMilestone && hasIpProtection) score = 5;
     else score = 4;
+
   } else if (stage === "MVP") {
     if (hasUpdates && hasCompletedMilestone && hasTeam && hasPilots) score = 7;
     else score = 6;
+
+    if (hasGrantedIp && score < 7) score = 7;
+
   } else if (stage === "GROWTH") {
-    score = 8;
+    score = (hasGrantedIp && hasScaledPilots) ? 9 : 8;
+
   } else if (stage === "SCALING") {
     score = 9;
+
   } else {
     score = 1;
   }
 
+  score = Math.max(1, Math.min(9, score));
   const breakdown = {
     stage,
     hasTeam,
@@ -41,13 +51,13 @@ export function calculateTRLScore(project) {
     hasCompletedMilestone,
     hasDocuments,
     hasUpdates,
-    ipStatus: project.ipStatus ?? "NONE",
-    pilotUsers: project.pilotUsers ?? 0,
+    ipStatus:   project.ipStatus ?? "NONE",
+    pilotUsers,
   };
 
   return { score, breakdown };
 }
-// STEP 2 — TRL CONFIDENCE
+// TRL CONFIDENCE
 export function calculateTRLConfidence(project) {
   const checks = [
     !!project.title,
@@ -64,19 +74,16 @@ export function calculateTRLConfidence(project) {
     project.documents?.length > 0,
   ];
 
-  const filled = checks.filter(Boolean).length; // count how many are true
-  const percentage = (filled / checks.length) * 100; // convert to percentage
+  const filled = checks.filter(Boolean).length;
+  const percentage = (filled / checks.length) * 100;
 
   if (percentage > 75) return "HIGH";
   if (percentage >= 40) return "MEDIUM";
   return "LOW";
 }
 
-// STEP 3 — INVESTMENT READINESS SUB-SCORES (each 0 to 100)
-// 5 dimensions, each scored independently
+//  INVESTMENT READINESS SUB-SCORES (each 0 to 100)
 
-// FINANCIAL — 25% weight
-// Checks: funding goal set, currency, financial docs uploaded
 export function financialScore(project) {
   let score = 0;
 
@@ -90,13 +97,11 @@ export function financialScore(project) {
         d.fileType === "application/pdf",
     )
   )
-    score += 40; // financial doc uploaded
+    score += 40;
 
   return Math.min(score, 100);
 }
 
-// MARKET — 25% weight
-// Checks: industry set, descriptions, technologies listed
 export function marketScore(project) {
   let score = 0;
 
@@ -109,8 +114,6 @@ export function marketScore(project) {
   return Math.min(score, 100);
 }
 
-// TEAM — 20% weight
-// Checks: number of team members, roles defined, photos uploaded
 export function teamScore(project) {
   let score = 0;
   const members = project.teamMembers || [];
@@ -118,43 +121,44 @@ export function teamScore(project) {
   if (members.length >= 1) score += 30;
   if (members.length >= 2) score += 20;
   if (members.length >= 3) score += 10;
-  if (members.every((m) => m.role)) score += 20; // all members have a role defined
-  if (members.some((m) => m.photo)) score += 20; // at least one photo uploaded
+  if (members.every((m) => m.role)) score += 20;
+  if (members.some((m) => m.photo)) score += 20;
 
   return Math.min(score, 100);
 }
 
-// TRACTION — 20% weight
-// Checks: milestones completed, project updates posted, interests received
 export function tractionScore(project) {
   let score = 0;
-  const milestones = project.milestones || [];
+  const milestones = project.milestones ?? [];
   const completed = milestones.filter((m) => m.completedAt !== null).length;
+  const pilotUsers = project.pilotUsers ?? 0;
 
-  if (milestones.length > 0) score += 20; // has planned milestones
-  if (completed >= 1) score += 20; // completed at least 1
-  if (completed >= 3) score += 20; // completed 3 or more
-  if (project.updates?.length >= 1) score += 20; // posted at least 1 update
-  if (project.updates?.length >= 3) score += 20; // posted 3 or more updates
+  if (milestones.length > 0) score += 15;
+  if (completed >= 1)        score += 15;
+  if (completed >= 3)        score += 15;
+  if ((project.updates?.length ?? 0) >= 1) score += 10;
+  if ((project.updates?.length ?? 0) >= 3) score += 10;
+  if (pilotUsers >= 1)       score += 10;
+  if (pilotUsers >= 50)      score += 15;
+  if (pilotUsers >= 100)     score += 10;
 
   return Math.min(score, 100);
 }
 
-// COMPETITIVE — 10% weight
-// Checks: technologies listed, stage maturity, tagline quality
 export function competitiveScore(project) {
   let score = 0;
 
-  if (project.technologies?.length >= 1) score += 30;
-  if (project.technologies?.length >= 3) score += 20;
-  if (project.tagline?.length > 20) score += 25;
-  if (["MVP", "GROWTH", "SCALING"].includes(project.stage)) score += 25;
+  if ((project.technologies?.length ?? 0) >= 1) score += 25;
+  if ((project.technologies?.length ?? 0) >= 3) score += 15;
+  if ((project.tagline?.length ?? 0) > 20)      score += 20;
+  if (["MVP", "GROWTH", "SCALING"].includes(project.stage)) score += 20;
+
+  if (project.ipStatus === "PENDING") score += 10;
+  if (project.ipStatus === "GRANTED") score += 20;
 
   return Math.min(score, 100);
 }
 
-// STEP 4 — COMPOSITE IR SCORE + TOP 3 RECOMMENDATIONS
-// Weights: Financial 25%, Market 25%, Team 20%, Traction 20%, Competitive 10%
 export function irCompositeScore(project) {
   const breakdown = {
     financial: financialScore(project),
@@ -181,10 +185,9 @@ export function irCompositeScore(project) {
   };
 
   const recommendations = Object.entries(breakdown)
-    .sort(([, a], [, b]) => a - b) // sort ascending — weakest first
-    .slice(0, 3) // take the 3 lowest
-    .map(([key]) => dimensionLabels[key]); // map to human-readable text
-
+    .sort(([, a], [, b]) => a - b)
+    .slice(0, 3)
+    .map(([key]) => dimensionLabels[key]);
   return { composite, breakdown, recommendations };
 }
 

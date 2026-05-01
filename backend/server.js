@@ -47,7 +47,6 @@ async function loadCron() {
 
 await loadCron();
 
-
 const app = express();
 app.use(helmet());
 

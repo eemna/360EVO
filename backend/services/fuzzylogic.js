@@ -250,7 +250,7 @@ export function fuzzifyTechnology(investorTechs, projectTechs, projectDesc) {
     investorTechs.join(" "),
     [...(projectTechs || []), projectDesc || ""].join(" "),
   );
-  // Base memberships from combined signal
+ 
   const signal = Math.min(1, Math.max(overlapRatio, nlpSim * 1.5));
   return {
     high: sigmoid(signal, 0.6, 8),
@@ -270,14 +270,14 @@ export function fuzzifyThesis(investmentThesis, projectFullDesc) {
   const cosineSim = textSimilarity(investmentThesis, projectFullDesc);
   const thesisTokens = tokenize(expandAbbreviations(investmentThesis));
   const descTokens = new Set(tokenize(expandAbbreviations(projectFullDesc)));
-  const hits = thesisTokens.filter(t => descTokens.has(t)).length;
+  const hits = thesisTokens.filter((t) => descTokens.has(t)).length;
   const keywordRatio = thesisTokens.length > 0 ? hits / thesisTokens.length : 0;
   const sim = Math.min(1, cosineSim * 0.4 + keywordRatio * 0.6);
 
   return {
-    high:   sigmoid(sim, 0.35, 15),
+    high: sigmoid(sim, 0.35, 15),
     medium: triangular(sim, 0.1, 0.25, 0.5),
-    low:    1 - sigmoid(sim, 0.15, 15),
+    low: 1 - sigmoid(sim, 0.15, 15),
     _rawSimilarity: Math.round(sim * 1000) / 1000,
   };
 }
@@ -302,14 +302,14 @@ export function fuzzifyGeography(investorProfile, project) {
 
 export function inferIndustry(raw, { thesisSim }) {
   const thesisHigh = sigmoid(thesisSim, 0.35, 15);
-  const thesisLow  = 1 - sigmoid(thesisSim, 0.15, 15);
+  const thesisLow = 1 - sigmoid(thesisSim, 0.15, 15);
 
-  let outHigh   = raw.high;
+  let outHigh = raw.high;
   let outMedium = raw.medium;
-  let outLow    = raw.low;
+  let outLow = raw.low;
 
   const r2 = Math.min(raw.medium, thesisHigh);
-  outHigh   = Math.max(outHigh, r2);
+  outHigh = Math.max(outHigh, r2);
   outMedium = Math.max(0, outMedium - r2);
 
   const r3 = Math.min(raw.medium, thesisLow);
@@ -322,10 +322,10 @@ export function inferIndustry(raw, { thesisSim }) {
  * Stage inference
 
  * Rules:
- *   R1: IF raw=high                             → output.high = raw.high
- *   R2: IF raw=medium AND irScore=high          → output.high  = min(medium, irHigh)
- *   R3: IF raw=medium AND irScore=low           → output.low  += min(medium, irLow) * 0.5
- *   R4: IF raw=low                              → output.low  = raw.low
+ *   R1: IF raw=high                             output.high = raw.high
+ *   R2: IF raw=medium AND irScore=high          output.high  = min(medium, irHigh)
+ *   R3: IF raw=medium AND irScore=low           output.low  += min(medium, irLow) * 0.5
+ *   R4: IF raw=low                              output.low  = raw.low
  */
 export function inferStage(raw, { irScore }) {
   const irNorm = irScore / 100;
@@ -368,7 +368,7 @@ export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const r2 = Math.min(exactLow, nlpHigh);
   let outMedium = Math.max(raw.medium, r2);
 
-  const r3 = Math.min(exactHigh, nlpHigh) * 0.3; // small boost, not double-count
+  const r3 = Math.min(exactHigh, nlpHigh) * 0.3;
   outHigh = Math.min(1, outHigh + r3);
 
   let outLow = Math.min(raw.low, Math.min(exactLow, nlpLow));
@@ -434,7 +434,7 @@ export function inferGeography(raw, { projectLocation }) {
 
  * Rules:
  *   R1: IF raw=high                              output.high = raw.high
- *   R2: IF raw=high AND industryMatch=exact      output.high boosted * 1.1 (cap 1)
+ *   R2: IF raw=high AND industryMatch=exact      output.high boosted * 1.1 
  *   R3: IF raw=medium AND industryMatch=none     output.medium reduced * 0.7
  *       (thesis says yes but industry says no     less trustworthy signal)
  *   R4: IF raw=low                               output.low = raw.low
@@ -454,8 +454,7 @@ export function inferThesis(raw, { industryHigh }) {
 }
 
 // STEP 3 — PER-CATEGORY DEFUZZIFICATION
-//
-// Weighted average of output centroids scaled to [0, maxPts].
+
 
 const CENTROIDS = { low: 0.15, medium: 0.5, high: 0.95 };
 

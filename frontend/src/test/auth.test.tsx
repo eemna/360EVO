@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router";
 
-
 vi.mock("../services/axios.ts", () => ({
   default: {
     post: vi.fn(),
@@ -45,7 +44,6 @@ function renderWithRouter(ui: React.ReactElement, search = "") {
 describe("LoginPage", () => {
   beforeEach(() => vi.clearAllMocks());
 
-
   test("renders email and password inputs", () => {
     renderWithRouter(<LoginPage />);
     expect(screen.getByLabelText(/^email$/i)).toBeInTheDocument();
@@ -54,24 +52,29 @@ describe("LoginPage", () => {
 
   test("renders Sign In submit button", () => {
     renderWithRouter(<LoginPage />);
-    expect(screen.getByRole("button", { name: /^sign in$/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^sign in$/i }),
+    ).toBeInTheDocument();
   });
 
   test("renders Forgot Password? button", () => {
     renderWithRouter(<LoginPage />);
-    expect(screen.getByRole("button", { name: /forgot password\?/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /forgot password\?/i }),
+    ).toBeInTheDocument();
   });
 
   test("renders Sign up button", () => {
     renderWithRouter(<LoginPage />);
-    expect(screen.getByRole("button", { name: /^sign up$/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^sign up$/i }),
+    ).toBeInTheDocument();
   });
 
   test("renders welcome heading", () => {
     renderWithRouter(<LoginPage />);
     expect(screen.getByText(/welcome back to 360evo/i)).toBeInTheDocument();
   });
-
 
   test("shows 'Signing in...' and disables button while submitting", async () => {
     vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
@@ -83,15 +86,21 @@ describe("LoginPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText(/signing in/i)).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /signing in/i })).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: /signing in/i }),
+      ).toBeDisabled();
     });
   });
-
 
   test("on success: calls login(), shows toast, navigates to /app", async () => {
     vi.mocked(api.post).mockResolvedValue({
       data: {
-        user: { id: "u1", email: "test@test.com", role: "MEMBER", name: "Test" },
+        user: {
+          id: "u1",
+          email: "test@test.com",
+          role: "MEMBER",
+          name: "Test",
+        },
         accessToken: "tok_abc123",
       },
     });
@@ -113,7 +122,6 @@ describe("LoginPage", () => {
     });
   });
 
-
   test("on 401: shows Invalid Credentials toast, does NOT navigate to /app", async () => {
     vi.mocked(api.post).mockRejectedValue({
       response: { status: 401, data: { message: "Invalid credentials" } },
@@ -126,12 +134,14 @@ describe("LoginPage", () => {
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "error", title: "Invalid Credentials" }),
+        expect.objectContaining({
+          type: "error",
+          title: "Invalid Credentials",
+        }),
       );
       expect(mockNavigate).not.toHaveBeenCalledWith("/app");
     });
   });
-
 
   test("on 403 unverified email: shows warning toast and navigates to /verify-email", async () => {
     vi.mocked(api.post).mockRejectedValue({
@@ -142,13 +152,19 @@ describe("LoginPage", () => {
     });
 
     renderWithRouter(<LoginPage />);
-    await userEvent.type(screen.getByLabelText(/^email$/i), "unverified@test.com");
+    await userEvent.type(
+      screen.getByLabelText(/^email$/i),
+      "unverified@test.com",
+    );
     await userEvent.type(screen.getByLabelText(/^password$/i), "pass123");
     await userEvent.click(screen.getByRole("button", { name: /^sign in$/i }));
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "warning", title: "Email Not Verified" }),
+        expect.objectContaining({
+          type: "warning",
+          title: "Email Not Verified",
+        }),
       );
       expect(mockNavigate).toHaveBeenCalledWith(
         "/verify-email",
@@ -159,10 +175,11 @@ describe("LoginPage", () => {
     });
   });
 
-
   test("clicking Forgot Password? navigates to /forgot-password", async () => {
     renderWithRouter(<LoginPage />);
-    await userEvent.click(screen.getByRole("button", { name: /forgot password\?/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /forgot password\?/i }),
+    );
     expect(mockNavigate).toHaveBeenCalledWith("/forgot-password");
   });
 
@@ -171,7 +188,6 @@ describe("LoginPage", () => {
     await userEvent.click(screen.getByRole("button", { name: /^sign up$/i }));
     expect(mockNavigate).toHaveBeenCalledWith("/register");
   });
-
 
   test("on generic server error: shows Login Failed toast with server message", async () => {
     vi.mocked(api.post).mockRejectedValue({
@@ -219,7 +235,9 @@ describe("RegistrationPage — Step 1: Role Selection", () => {
   test("Continue is ENABLED after selecting a role", async () => {
     renderWithRouter(<RegistrationPage />);
     await userEvent.click(screen.getByText("Member"));
-    expect(screen.getByRole("button", { name: /^continue$/i })).not.toBeDisabled();
+    expect(
+      screen.getByRole("button", { name: /^continue$/i }),
+    ).not.toBeDisabled();
   });
 
   test("clicking a role shows the 'Selected' indicator", async () => {
@@ -279,7 +297,9 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     await userEvent.type(textInputs[0], "John Doe");
     await userEvent.type(textInputs[1], "john@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "abc" } }); // < 8 chars
     fireEvent.change(pwInputs[1], { target: { value: "abc" } });
 
@@ -299,7 +319,9 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     await userEvent.type(textInputs[0], "Jane Smith");
     await userEvent.type(textInputs[1], "jane@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "alllower1" } });
     fireEvent.change(pwInputs[1], { target: { value: "alllower1" } });
 
@@ -319,7 +341,9 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     await userEvent.type(textInputs[0], "Jane Smith");
     await userEvent.type(textInputs[1], "jane@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "NoNumbersHere" } });
     fireEvent.change(pwInputs[1], { target: { value: "NoNumbersHere" } });
 
@@ -339,7 +363,9 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     await userEvent.type(textInputs[0], "Test User");
     await userEvent.type(textInputs[1], "test@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "ALLUPPERCASE1" } });
     fireEvent.change(pwInputs[1], { target: { value: "ALLUPPERCASE1" } });
 
@@ -359,7 +385,9 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     await userEvent.type(textInputs[0], "Alice Wonder");
     await userEvent.type(textInputs[1], "alice@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "StrongPass1" } });
     fireEvent.change(pwInputs[1], { target: { value: "DifferentPass1" } });
 
@@ -379,14 +407,18 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     await userEvent.type(textInputs[0], "Valid User");
     await userEvent.type(textInputs[1], "valid@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "ValidPass1" } });
     fireEvent.change(pwInputs[1], { target: { value: "ValidPass1" } });
 
     await userEvent.click(screen.getByRole("button", { name: /^continue$/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/ready to join as a member/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/ready to join as a member/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -410,7 +442,9 @@ describe("RegistrationPage — Step 3: Role details and submission", () => {
     await userEvent.type(textInputs[0], "Test User");
     await userEvent.type(textInputs[1], "test@example.com");
 
-    const pwInputs = document.querySelectorAll<HTMLInputElement>('input[type="password"]');
+    const pwInputs = document.querySelectorAll<HTMLInputElement>(
+      'input[type="password"]',
+    );
     fireEvent.change(pwInputs[0], { target: { value: "ValidPass1" } });
     fireEvent.change(pwInputs[1], { target: { value: "ValidPass1" } });
 
@@ -429,7 +463,6 @@ describe("RegistrationPage — Step 3: Role details and submission", () => {
   }
 
   beforeEach(() => vi.clearAllMocks());
-
 
   test("MEMBER: shows summary and 'Complete Registration' button", async () => {
     await goToStep3("Member");
@@ -457,10 +490,11 @@ describe("RegistrationPage — Step 3: Role details and submission", () => {
 
   test("INVESTOR: shows investor welcome and wizard teaser text", async () => {
     await goToStep3("Investor");
-    expect(screen.getByText(/ready to join as an investor/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/ready to join as an investor/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/investment thesis/i)).toBeInTheDocument();
   });
-
 
   test("on success: shows 'Check your email' toast and navigates to /login", async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { message: "ok" } });
@@ -554,10 +588,11 @@ describe("ResetPasswordPage", () => {
 
   beforeEach(() => vi.clearAllMocks());
 
-
   test("renders 'Reset Password' heading", () => {
     renderResetPage();
-    expect(screen.getByRole('heading', { name: /^reset password$/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /^reset password$/i }),
+    ).toBeInTheDocument();
   });
 
   test("renders New Password and Confirm Password inputs (with ids)", () => {
@@ -579,7 +614,6 @@ describe("ResetPasswordPage", () => {
       screen.getByRole("button", { name: /^back to login$/i }),
     ).toBeInTheDocument();
   });
-
 
   test("shows 'Password Mismatch' warning when passwords don't match", async () => {
     renderResetPage();
@@ -648,7 +682,6 @@ describe("ResetPasswordPage", () => {
     expect(api.post).not.toHaveBeenCalled();
   });
 
-
   test("on success: shows 'Password successfully updated' message", async () => {
     vi.mocked(api.post).mockResolvedValue({ data: {} });
 
@@ -690,7 +723,10 @@ describe("ResetPasswordPage", () => {
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "success", title: "Password Updated 🎉" }),
+        expect.objectContaining({
+          type: "success",
+          title: "Password Updated 🎉",
+        }),
       );
     });
   });
@@ -722,7 +758,6 @@ describe("ResetPasswordPage", () => {
     });
   });
 
-
   test("on server error: shows error toast and inline error message", async () => {
     vi.mocked(api.post).mockRejectedValue({
       response: { status: 400, data: { message: "Invalid or expired token" } },
@@ -749,7 +784,6 @@ describe("ResetPasswordPage", () => {
     });
   });
 
-
   test("shows 'Updating...' and disables button while submitting", async () => {
     vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
 
@@ -774,7 +808,6 @@ describe("ResetPasswordPage", () => {
     });
   });
 
-
   test("clicking 'Back to login' navigates to /login", async () => {
     renderResetPage();
     await userEvent.click(
@@ -786,7 +819,6 @@ describe("ResetPasswordPage", () => {
 
 describe("VerifyEmailPage", () => {
   beforeEach(() => vi.clearAllMocks());
-
 
   test("without token: renders 'Verify your email' heading", async () => {
     renderWithRouter(<VerifyEmailPage />);
@@ -832,7 +864,6 @@ describe("VerifyEmailPage", () => {
     });
   });
 
-
   test("with valid token: shows 'Verifying...' initially", () => {
     vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
     renderWithRouter(<VerifyEmailPage />, "?token=valid-token-abc");
@@ -871,7 +902,10 @@ describe("VerifyEmailPage", () => {
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "success", title: "Email Verified 🎉" }),
+        expect.objectContaining({
+          type: "success",
+          title: "Email Verified 🎉",
+        }),
       );
     });
   });
@@ -887,7 +921,6 @@ describe("VerifyEmailPage", () => {
       ).not.toBeInTheDocument();
     });
   });
-
 
   test("with bad token: shows inline error message from server", async () => {
     vi.mocked(api.post).mockRejectedValue({
@@ -926,7 +959,6 @@ describe("VerifyEmailPage", () => {
     });
   });
 
-
   test("clicking Back to Login navigates to /login", async () => {
     renderWithRouter(<VerifyEmailPage />);
 
@@ -934,7 +966,9 @@ describe("VerifyEmailPage", () => {
       screen.getByRole("button", { name: /back to login/i });
     });
 
-    await userEvent.click(screen.getByRole("button", { name: /back to login/i }));
+    await userEvent.click(
+      screen.getByRole("button", { name: /back to login/i }),
+    );
     expect(mockNavigate).toHaveBeenCalledWith("/login");
   });
 });

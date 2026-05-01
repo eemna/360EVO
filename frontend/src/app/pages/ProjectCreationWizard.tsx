@@ -128,8 +128,8 @@ const projectSchema = z.object({
     .min(1, "Add at least one team member"),
 
   // Step 4: Funding
-fundingAmount: z.string().optional().default(""),
-currency: z.string().optional().default("USD"),
+  fundingAmount: z.string().optional().default(""),
+  currency: z.string().optional().default("USD"),
   ipStatus: z.enum(["NONE", "PENDING", "GRANTED"]).default("NONE"),
   pilotUsers: z.string().optional().default("0"),
   milestones: z
@@ -215,7 +215,7 @@ export function ProjectCreationWizard({
     "idle" | "saving" | "saved" | "error"
   >("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [heroFile, setHeroFile] = useState<UploadedFile | null>(null);
   const heroFileRef = useRef<UploadedFile | null>(null);
@@ -237,7 +237,7 @@ export function ProjectCreationWizard({
     trigger,
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
-    
+
     defaultValues: {
       title: "",
       tagline: "",
@@ -304,9 +304,9 @@ export function ProjectCreationWizard({
         fieldsToValidate = ["teamMembers"];
         break;
       case 3:
-       fieldsToValidate = isApproved
-    ? ["milestones"]
-    : ["fundingAmount", "currency", "milestones"];
+        fieldsToValidate = isApproved
+          ? ["milestones"]
+          : ["fundingAmount", "currency", "milestones"];
         break;
     }
 
@@ -323,101 +323,111 @@ export function ProjectCreationWizard({
     }
   };
 
-const mapFormToApi = useCallback(
-  (values: ProjectFormData) => {
-    const base = {
-      location: values.location,
-      teamMembers: values.teamMembers.map((member) => ({
-        name: member.name,
-        role: member.role,
-        photo: member.photo ?? null,
-      })),
-      milestones: values.milestones.map((milestone, index) => ({
-        title: milestone.title,
-        description: milestone.title,
-        targetDate: milestone.targetDate ? new Date(milestone.targetDate) : null,
-        completedAt: milestone.completedAt ? new Date(milestone.completedAt) : null,
-        order: index,
-      })),
-      documents: [
-        ...(heroFileRef.current ? [{
-          name: "Hero Image",
-          fileUrl: heroFileRef.current.fileUrl,
-          fileKey: heroFileRef.current.fileKey,
-          fileType: "HERO_IMAGE",
-        }] : []),
-        ...supportingDocsRef.current.map((file) => ({
-          name: file.name,
-          fileUrl: file.fileUrl,
-          fileKey: file.fileKey,
-          fileType: "DOCUMENT",
+  const mapFormToApi = useCallback(
+    (values: ProjectFormData) => {
+      const base = {
+        location: values.location,
+        teamMembers: values.teamMembers.map((member) => ({
+          name: member.name,
+          role: member.role,
+          photo: member.photo ?? null,
         })),
-      ],
-    };
-
-    if (!isApproved) {
-      return {
-        ...base,
-        title: values.title,
-        tagline: values.tagline,
-        shortDesc: values.shortDescription,
-        fullDesc: values.fullDescription,
-        stage: values.stage,
-        industry: values.industry,
-        technologies: values.techTags,
-        fundingSought: values.fundingAmount ? Number(values.fundingAmount) : null,
-        currency: values.currency,
-        ipStatus: values.ipStatus,
-        pilotUsers: Number(values.pilotUsers) || 0,
+        milestones: values.milestones.map((milestone, index) => ({
+          title: milestone.title,
+          description: milestone.title,
+          targetDate: milestone.targetDate
+            ? new Date(milestone.targetDate)
+            : null,
+          completedAt: milestone.completedAt
+            ? new Date(milestone.completedAt)
+            : null,
+          order: index,
+        })),
+        documents: [
+          ...(heroFileRef.current
+            ? [
+                {
+                  name: "Hero Image",
+                  fileUrl: heroFileRef.current.fileUrl,
+                  fileKey: heroFileRef.current.fileKey,
+                  fileType: "HERO_IMAGE",
+                },
+              ]
+            : []),
+          ...supportingDocsRef.current.map((file) => ({
+            name: file.name,
+            fileUrl: file.fileUrl,
+            fileKey: file.fileKey,
+            fileType: "DOCUMENT",
+          })),
+        ],
       };
+
+      if (!isApproved) {
+        return {
+          ...base,
+          title: values.title,
+          tagline: values.tagline,
+          shortDesc: values.shortDescription,
+          fullDesc: values.fullDescription,
+          stage: values.stage,
+          industry: values.industry,
+          technologies: values.techTags,
+          fundingSought: values.fundingAmount
+            ? Number(values.fundingAmount)
+            : null,
+          currency: values.currency,
+          ipStatus: values.ipStatus,
+          pilotUsers: Number(values.pilotUsers) || 0,
+        };
+      }
+
+      return base;
+    },
+    [isApproved],
+  );
+
+  const onSubmit = async (data: ProjectFormData) => {
+    setIsSubmitting(true);
+    try {
+      setSaveStatus("saving");
+      const payload = mapFormToApi(data);
+      let id = currentProjectId;
+
+      if (!id) {
+        const res = await api.post("/projects", payload);
+        id = res.data.id;
+        setCurrentProjectId(id);
+      } else {
+        await api.put(`/projects/${id}`, payload);
+      }
+
+      if (!isApproved) {
+        await api.post(`/projects/${id}/submit`);
+      }
+
+      if (onProjectSaved) await onProjectSaved();
+      setSaveStatus("saved");
+      showToast({
+        type: "success",
+        title: isApproved ? "Changes saved!" : "Project submitted!",
+        message: isApproved
+          ? "Team and milestones updated."
+          : "Your project has been sent for review.",
+      });
+      onClose();
+    } catch (error) {
+      console.error(error);
+      setSaveStatus("error");
+      showToast({
+        type: "error",
+        title: isApproved ? "Save failed" : "Submission failed",
+        message: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    return base;
-  },
-  [isApproved],  
-);
-
-const onSubmit = async (data: ProjectFormData) => {
-  setIsSubmitting(true);
-  try {
-    setSaveStatus("saving");
-    const payload = mapFormToApi(data);
-    let id = currentProjectId;
-
-    if (!id) {
-      const res = await api.post("/projects", payload);
-      id = res.data.id;
-      setCurrentProjectId(id);
-    } else {
-      await api.put(`/projects/${id}`, payload);
-    }
-
-    if (!isApproved) {
-      await api.post(`/projects/${id}/submit`);
-    }
-
-    if (onProjectSaved) await onProjectSaved();
-    setSaveStatus("saved");
-    showToast({
-      type: "success",
-      title: isApproved ? "Changes saved!" : "Project submitted!",
-      message: isApproved
-        ? "Team and milestones updated."
-        : "Your project has been sent for review.",
-    });
-    onClose();
-  } catch (error) {
-    console.error(error);
-    setSaveStatus("error");
-    showToast({
-      type: "error",
-      title: isApproved ? "Save failed" : "Submission failed",
-      message: "Something went wrong. Please try again.",
-    });
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+  };
   const handleNewProject = () => {
     setCurrentProjectId(null);
     setCurrentStep(0);
@@ -590,7 +600,7 @@ const onSubmit = async (data: ProjectFormData) => {
         fundingAmount: "",
         currency: "USD",
         ipStatus: "NONE",
-        pilotUsers: "0",  
+        pilotUsers: "0",
         milestones: [{ title: "", targetDate: "", completedAt: "" }],
       });
 
@@ -644,13 +654,13 @@ const onSubmit = async (data: ProjectFormData) => {
         {/* Header */}
         <div className="flex items-center justify-between px-8 py-6 border-b border-gray-50">
           <div className="flex items-center gap-4">
-<h2 className="text-2xl font-semibold">
-  {isApproved
-    ? "Update Team & Milestones"
-    : isEditMode
-    ? "Edit Project"
-    : "Create New Project"}
-</h2>
+            <h2 className="text-2xl font-semibold">
+              {isApproved
+                ? "Update Team & Milestones"
+                : isEditMode
+                  ? "Edit Project"
+                  : "Create New Project"}
+            </h2>
             {saveStatus === "saving" && (
               <span className="text-sm text-gray-500">Saving...</span>
             )}
@@ -736,137 +746,215 @@ const onSubmit = async (data: ProjectFormData) => {
                 {/* Left Column - Form Fields */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* STEP 1: BASICS */}
-{currentStep === 0 && (
-  <>
-    {/* Approved banner */}
-    {isApproved && (
-      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
-       This project is approved. Core fields are locked and cannot be edited.
-      </div>
-    )}
+                  {currentStep === 0 && (
+                    <>
+                      {/* Approved banner */}
+                      {isApproved && (
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700">
+                          This project is approved. Core fields are locked and
+                          cannot be edited.
+                        </div>
+                      )}
 
-    <div className="space-y-2">
-      <Label htmlFor="title">
-        Project Title <span className="text-red-500">*</span>
-        {isApproved && <span className="ml-2 text-xs text-amber-600 font-normal">Locked</span>}
-      </Label>
-      <Input
-        id="title"
-        {...register("title")}
-        placeholder="Enter your project name"
-        maxLength={60}
-        disabled={isApproved}
-        className={isApproved ? "bg-gray-100 cursor-not-allowed" : ""}
-      />
-      {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
-      <p className="text-sm text-gray-500">{title?.length || 0}/60</p>
-    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="title">
+                          Project Title <span className="text-red-500">*</span>
+                          {isApproved && (
+                            <span className="ml-2 text-xs text-amber-600 font-normal">
+                              Locked
+                            </span>
+                          )}
+                        </Label>
+                        <Input
+                          id="title"
+                          {...register("title")}
+                          placeholder="Enter your project name"
+                          maxLength={60}
+                          disabled={isApproved}
+                          className={
+                            isApproved ? "bg-gray-100 cursor-not-allowed" : ""
+                          }
+                        />
+                        {errors.title && (
+                          <p className="text-sm text-red-600">
+                            {errors.title.message}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {title?.length || 0}/60
+                        </p>
+                      </div>
 
-    <div className="space-y-2">
-      <Label htmlFor="tagline">
-        Tagline <span className="text-red-500">*</span>
-        {isApproved && <span className="ml-2 text-xs text-amber-600 font-normal">Locked</span>}
-      </Label>
-      <Input
-        id="tagline"
-        {...register("tagline")}
-        placeholder="A catchy one-liner"
-        maxLength={100}
-        disabled={isApproved}
-        className={isApproved ? "bg-gray-100 cursor-not-allowed" : ""}
-      />
-      {errors.tagline && <p className="text-sm text-red-600">{errors.tagline.message}</p>}
-      <p className="text-sm text-gray-500">{tagline?.length || 0}/100</p>
-    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="tagline">
+                          Tagline <span className="text-red-500">*</span>
+                          {isApproved && (
+                            <span className="ml-2 text-xs text-amber-600 font-normal">
+                              Locked
+                            </span>
+                          )}
+                        </Label>
+                        <Input
+                          id="tagline"
+                          {...register("tagline")}
+                          placeholder="A catchy one-liner"
+                          maxLength={100}
+                          disabled={isApproved}
+                          className={
+                            isApproved ? "bg-gray-100 cursor-not-allowed" : ""
+                          }
+                        />
+                        {errors.tagline && (
+                          <p className="text-sm text-red-600">
+                            {errors.tagline.message}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {tagline?.length || 0}/100
+                        </p>
+                      </div>
 
-    <div className="space-y-2">
-      <Label htmlFor="shortDescription">
-        Short Description <span className="text-red-500">*</span>
-        {isApproved && <span className="ml-2 text-xs text-amber-600 font-normal">Locked</span>}
-      </Label>
-      <Textarea
-        id="shortDescription"
-        {...register("shortDescription")}
-        placeholder="Describe your project in 2-3 sentences"
-        maxLength={500}
-        disabled={isApproved}
-        className={isApproved ? "bg-gray-100 cursor-not-allowed" : ""}
-        rows={4}
-      />
-      {errors.shortDescription && <p className="text-sm text-red-600">{errors.shortDescription.message}</p>}
-      <p className="text-sm text-gray-500">{shortDescription?.length || 0}/500</p>
-    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="shortDescription">
+                          Short Description{" "}
+                          <span className="text-red-500">*</span>
+                          {isApproved && (
+                            <span className="ml-2 text-xs text-amber-600 font-normal">
+                              Locked
+                            </span>
+                          )}
+                        </Label>
+                        <Textarea
+                          id="shortDescription"
+                          {...register("shortDescription")}
+                          placeholder="Describe your project in 2-3 sentences"
+                          maxLength={500}
+                          disabled={isApproved}
+                          className={
+                            isApproved ? "bg-gray-100 cursor-not-allowed" : ""
+                          }
+                          rows={4}
+                        />
+                        {errors.shortDescription && (
+                          <p className="text-sm text-red-600">
+                            {errors.shortDescription.message}
+                          </p>
+                        )}
+                        <p className="text-sm text-gray-500">
+                          {shortDescription?.length || 0}/500
+                        </p>
+                      </div>
 
-    <div className="space-y-2">
-      <Label>
-        Industry <span className="text-red-500">*</span>
-        {isApproved && <span className="ml-2 text-xs text-amber-600 font-normal">Locked</span>}
-      </Label>
-      <Controller
-        name="industry"
-        control={control}
-        render={({ field }) => (
-          <Select
-            value={field.value}
-            onValueChange={isApproved ? undefined : field.onChange}
-            disabled={isApproved}
-          >
-            <SelectTrigger className={isApproved ? "bg-gray-100 cursor-not-allowed opacity-60" : ""}>
-              <SelectValue placeholder="Select industry" />
-            </SelectTrigger>
-            <SelectContent>
-              {INDUSTRIES.map((industry) => (
-                <SelectItem key={industry} value={industry}>
-                  {industry}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-      />
-      {errors.industry && <p className="text-sm text-red-600">{errors.industry.message}</p>}
-    </div>
+                      <div className="space-y-2">
+                        <Label>
+                          Industry <span className="text-red-500">*</span>
+                          {isApproved && (
+                            <span className="ml-2 text-xs text-amber-600 font-normal">
+                              Locked
+                            </span>
+                          )}
+                        </Label>
+                        <Controller
+                          name="industry"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              value={field.value}
+                              onValueChange={
+                                isApproved ? undefined : field.onChange
+                              }
+                              disabled={isApproved}
+                            >
+                              <SelectTrigger
+                                className={
+                                  isApproved
+                                    ? "bg-gray-100 cursor-not-allowed opacity-60"
+                                    : ""
+                                }
+                              >
+                                <SelectValue placeholder="Select industry" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {INDUSTRIES.map((industry) => (
+                                  <SelectItem key={industry} value={industry}>
+                                    {industry}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+                        {errors.industry && (
+                          <p className="text-sm text-red-600">
+                            {errors.industry.message}
+                          </p>
+                        )}
+                      </div>
 
-    <div className="space-y-2">
-      <Label>Location <span className="text-red-500">*</span></Label>
-      <Input
-        {...register("location")}
-        placeholder="e.g., Tunis, Tunisia"
-      />
-      {errors.location && <p className="text-sm text-red-600">{errors.location.message}</p>}
-    </div>
+                      <div className="space-y-2">
+                        <Label>
+                          Location <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          {...register("location")}
+                          placeholder="e.g., Tunis, Tunisia"
+                        />
+                        {errors.location && (
+                          <p className="text-sm text-red-600">
+                            {errors.location.message}
+                          </p>
+                        )}
+                      </div>
 
-    <div className="space-y-3">
-      <Label>
-        Project Stage <span className="text-red-500">*</span>
-        {isApproved && <span className="ml-2 text-xs text-amber-600 font-normal">Locked</span>}
-      </Label>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {PROJECT_STAGES.map(({ value, label, icon: Icon }) => (
-          <button
-            key={value}
-            type="button"
-            onClick={() => !isApproved && setValue("stage", value)}
-            disabled={isApproved}
-            className={`p-4 rounded-xl border-2 transition-all ${
-              isApproved ? "opacity-50 cursor-not-allowed" : ""
-            } ${
-              stage === value
-                ? "border-blue-600 bg-blue-50"
-                : "border-gray-200 hover:bg-gray-50"
-            }`}
-          >
-            <Icon className={`size-6 mx-auto mb-2 ${stage === value ? "text-blue-600" : "text-gray-400"}`} />
-            <div className={`text-sm font-medium ${stage === value ? "text-blue-600" : "text-gray-700"}`}>
-              {label}
-            </div>
-          </button>
-        ))}
-      </div>
-      {errors.stage && <p className="text-sm text-red-600">{errors.stage.message}</p>}
-    </div>
-  </>
-)}
+                      <div className="space-y-3">
+                        <Label>
+                          Project Stage <span className="text-red-500">*</span>
+                          {isApproved && (
+                            <span className="ml-2 text-xs text-amber-600 font-normal">
+                              Locked
+                            </span>
+                          )}
+                        </Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                          {PROJECT_STAGES.map(
+                            ({ value, label, icon: Icon }) => (
+                              <button
+                                key={value}
+                                type="button"
+                                onClick={() =>
+                                  !isApproved && setValue("stage", value)
+                                }
+                                disabled={isApproved}
+                                className={`p-4 rounded-xl border-2 transition-all ${
+                                  isApproved
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                } ${
+                                  stage === value
+                                    ? "border-blue-600 bg-blue-50"
+                                    : "border-gray-200 hover:bg-gray-50"
+                                }`}
+                              >
+                                <Icon
+                                  className={`size-6 mx-auto mb-2 ${stage === value ? "text-blue-600" : "text-gray-400"}`}
+                                />
+                                <div
+                                  className={`text-sm font-medium ${stage === value ? "text-blue-600" : "text-gray-700"}`}
+                                >
+                                  {label}
+                                </div>
+                              </button>
+                            ),
+                          )}
+                        </div>
+                        {errors.stage && (
+                          <p className="text-sm text-red-600">
+                            {errors.stage.message}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
 
                   {/* STEP 2: DETAILS */}
                   {currentStep === 1 && (
@@ -1055,43 +1143,52 @@ const onSubmit = async (data: ProjectFormData) => {
                             </p>
                           )}
                         </div>
-{/* IP STATUS */}
-<div className="space-y-2">
-  <Label>IP / Patent Status</Label>
-  <Controller
-    name="ipStatus"
-    control={control}
-    render={({ field }) => (
-      <Select value={field.value} onValueChange={field.onChange}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select IP status" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="NONE">No IP protection</SelectItem>
-          <SelectItem value="PENDING">Patent pending</SelectItem>
-          <SelectItem value="GRANTED">Patent granted</SelectItem>
-        </SelectContent>
-      </Select>
-    )}
-  />
-  <p className="text-xs text-gray-500">
-    IP protection increases your TRL score
-  </p>
-</div>
+                        {/* IP STATUS */}
+                        <div className="space-y-2">
+                          <Label>IP / Patent Status</Label>
+                          <Controller
+                            name="ipStatus"
+                            control={control}
+                            render={({ field }) => (
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select IP status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="NONE">
+                                    No IP protection
+                                  </SelectItem>
+                                  <SelectItem value="PENDING">
+                                    Patent pending
+                                  </SelectItem>
+                                  <SelectItem value="GRANTED">
+                                    Patent granted
+                                  </SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          <p className="text-xs text-gray-500">
+                            IP protection increases your TRL score
+                          </p>
+                        </div>
 
-{/* PILOT USERS */}
-<div className="space-y-2">
-  <Label>Number of Pilot Users / Testers</Label>
-  <Input
-    type="number"
-    min={0}
-    {...register("pilotUsers")}
-    placeholder="e.g., 5"
-  />
-  <p className="text-xs text-gray-500">
-    Real users testing your product in production
-  </p>
-</div>
+                        {/* PILOT USERS */}
+                        <div className="space-y-2">
+                          <Label>Number of Pilot Users / Testers</Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            {...register("pilotUsers")}
+                            placeholder="e.g., 5"
+                          />
+                          <p className="text-xs text-gray-500">
+                            Real users testing your product in production
+                          </p>
+                        </div>
                         <div className="space-y-2">
                           <Label>
                             Currency <span className="text-red-500">*</span>
@@ -1193,7 +1290,32 @@ const onSubmit = async (data: ProjectFormData) => {
                                     </p>
                                   )}
                                 </div>
+
                               </div>
+<div className="space-y-2 flex items-center gap-3 pt-6">
+  <Input
+    type="checkbox"
+    id={`milestone-done-${index}`}
+    checked={!!watch(`milestones.${index}.completedAt`)}
+    onChange={(e) => {
+      setValue(
+        `milestones.${index}.completedAt`,
+        e.target.checked
+          ? new Date().toISOString().split("T")[0]
+          : "",
+      );
+    }}
+    className="size-4 rounded border-gray-300"
+  />
+  <Label htmlFor={`milestone-done-${index}`} className="cursor-pointer">
+    Mark as completed
+  </Label>
+  {watch(`milestones.${index}.completedAt`) && (
+    <span className="text-xs text-green-600">
+      ✓ Done on {watch(`milestones.${index}.completedAt`)}
+    </span>
+  )}
+</div>
                             </div>
                           </Card>
                         ))}
@@ -1425,27 +1547,29 @@ const onSubmit = async (data: ProjectFormData) => {
               >
                 New Project
               </Button>
-              <Button type="button" variant="outline" onClick={saveDraft}>
-                <UploadIcon className="size-4 mr-2" />
-                Save Draft
-              </Button>
-
-{currentStep === STEPS.length - 1 ? (
-  <Button
-    type="button"
-    onClick={handleSubmit(onSubmit)}
-    disabled={isSubmitting}
-    className="flex items-center gap-2"
-  >
-    {isSubmitting && <LoadingSpinner size="sm" />}
-    {isSubmitting
-      ? "Saving..."
-      : isApproved
-      ? "Save Changes"
-      : isEditMode
-      ? "Update Project"
-      : "Create Project"}
+{!currentProjectId && (
+  <Button type="button" variant="outline" onClick={saveDraft}>
+    <UploadIcon className="size-4 mr-2" />
+    Save Draft
   </Button>
+)}
+
+              {currentStep === STEPS.length - 1 ? (
+                <Button
+                  type="button"
+                  onClick={handleSubmit(onSubmit)}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2"
+                >
+                  {isSubmitting && <LoadingSpinner size="sm" />}
+                  {isSubmitting
+                    ? "Saving..."
+                    : isApproved
+                      ? "Save Changes"
+                      : isEditMode
+                        ? "Update Project"
+                        : "Create Project"}
+                </Button>
               ) : (
                 <Button type="button" onClick={handleNext}>
                   Next

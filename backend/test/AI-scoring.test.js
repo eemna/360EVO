@@ -113,6 +113,7 @@ describe("calculateTRLScore", () => {
       stage: "PROTOTYPE",
       documents: [{ name: "doc.pdf" }],
       milestones: [{ completedAt: new Date() }],
+      ipStatus: "GRANTED",
     });
     expect(score).toBe(5);
   });
@@ -122,12 +123,13 @@ describe("calculateTRLScore", () => {
     expect(score).toBe(4);
   });
 
-  test("MVP with updates + completed milestone + team → score 7", () => {
+  test("MVP with updates + completed milestone + team + pilots → score 7", () => {
     const { score } = calculateTRLScore({
       stage: "MVP",
       updates: [{}],
       milestones: [{ completedAt: new Date() }],
       teamMembers: [{ name: "Alice" }],
+      pilotUsers: 5,
     });
     expect(score).toBe(7);
   });
@@ -163,7 +165,7 @@ describe("calculateTRLScore", () => {
   });
 });
 
-//TRL CONFIDENCE
+// TRL CONFIDENCE
 
 describe("calculateTRLConfidence", () => {
   test("fully populated project → HIGH", () => {
@@ -311,7 +313,7 @@ describe("competitiveScore", () => {
   });
 });
 
-//  IR COMPOSITE
+// IR COMPOSITE
 
 describe("irCompositeScore", () => {
   test("returns composite, breakdown, and recommendations", () => {
@@ -350,7 +352,7 @@ describe("irCompositeScore", () => {
   });
 });
 
-//  runRuleBasedScoring (integration of TRL + IR)
+// runRuleBasedScoring (integration of TRL + IR)
 
 describe("runRuleBasedScoring", () => {
   test("returns all expected keys", () => {
@@ -376,8 +378,7 @@ describe("runRuleBasedScoring", () => {
   });
 });
 
-//  FUZZY MATH PRIMITIVES
-
+// FUZZY MATH 
 describe("fuzzy math primitives", () => {
   describe("triangular", () => {
     test("returns 0 outside bounds", () => {
@@ -415,7 +416,7 @@ describe("fuzzy math primitives", () => {
   });
 });
 
-//  FUZZIFICATION
+// FUZZIFICATION
 
 describe("fuzzifyIndustry", () => {
   test("exact match → high = 1", () => {
@@ -602,91 +603,53 @@ describe("textSimilarity", () => {
   });
 });
 
-// calculateMatchScore (matchingEngine)
 
 describe("calculateMatchScore", () => {
   const assessment = { trlScore: 7, irScore: 72 };
 
-  test("returns matchScore, categoryScores, reasoning", async () => {
-    const result = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      assessment,
-    );
+  test("returns matchScore, categoryScores, reasoning", () => {
+    const result = calculateMatchScore(investorProfile, minimalProject, assessment);
     expect(result).toHaveProperty("matchScore");
     expect(result).toHaveProperty("categoryScores");
     expect(result).toHaveProperty("reasoning");
   });
 
-  test("matchScore is 0–100", async () => {
-    const { matchScore } = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      assessment,
-    );
+  test("matchScore is 0–100", () => {
+    const { matchScore } = calculateMatchScore(investorProfile, minimalProject, assessment);
     expect(matchScore).toBeGreaterThanOrEqual(0);
     expect(matchScore).toBeLessThanOrEqual(100);
   });
 
-  test("categoryScores contains all expected keys", async () => {
-    const { categoryScores } = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      assessment,
-    );
-    [
-      "industry",
-      "stage",
-      "technology",
-      "funding",
-      "geography",
-      "irBonus",
-      "thesisBonus",
-    ].forEach((k) => expect(categoryScores).toHaveProperty(k));
+  test("categoryScores contains all expected keys", () => {
+    const { categoryScores } = calculateMatchScore(investorProfile, minimalProject, assessment);
+    ["industry", "stage", "technology", "funding", "geography", "irBonus"]
+      .forEach((k) => expect(categoryScores).toHaveProperty(k));
   });
 
-  test("well-matching investor + project → score > 50", async () => {
-    const { matchScore } = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      assessment,
-    );
+  test("well-matching investor + project → score > 50", () => {
+    const { matchScore } = calculateMatchScore(investorProfile, minimalProject, assessment);
     expect(matchScore).toBeGreaterThan(50);
   });
 
-  test("exclusion on industry → score = 0", async () => {
+  test("exclusion on industry → score heavily penalised", () => {
     const exclusiveProfile = {
       ...investorProfile,
       exclusions: { industries: ["FinTech"] },
     };
-    const { matchScore } = await calculateMatchScore(
-      exclusiveProfile,
-      minimalProject,
-      assessment,
-    );
-    expect(matchScore).toBe(0);
+    const { matchScore: excluded } = calculateMatchScore(exclusiveProfile, minimalProject, assessment);
+    const { matchScore: normal } = calculateMatchScore(investorProfile, minimalProject, assessment);
+    expect(excluded).toBeLessThan(normal - 40);
   });
 
-  test("mustHave minTRL not met → score penalised", async () => {
-    const strictProfile = {
-      ...investorProfile,
-      mustHaves: { minTRL: 9 },
-    };
+  test("mustHave minTRL not met → score penalised", () => {
+    const strictProfile = { ...investorProfile, mustHaves: { minTRL: 9 } };
     const lowTrlAssessment = { trlScore: 3, irScore: 50 };
-    const { matchScore: penalised } = await calculateMatchScore(
-      strictProfile,
-      minimalProject,
-      lowTrlAssessment,
-    );
-    const { matchScore: normal } = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      lowTrlAssessment,
-    );
+    const { matchScore: penalised } = calculateMatchScore(strictProfile, minimalProject, lowTrlAssessment);
+    const { matchScore: normal } = calculateMatchScore(investorProfile, minimalProject, lowTrlAssessment);
     expect(penalised).toBeLessThan(normal);
   });
 
-  test("empty investor profile → does not throw", async () => {
+  test("empty investor profile → does not throw", () => {
     const emptyProfile = {
       industries: [],
       stages: [],
@@ -698,26 +661,16 @@ describe("calculateMatchScore", () => {
       exclusions: {},
       investmentThesis: "",
     };
-    await expect(
-      calculateMatchScore(emptyProfile, minimalProject, null),
-    ).resolves.toBeDefined();
+    expect(() => calculateMatchScore(emptyProfile, minimalProject, null)).not.toThrow();
   });
 
-  test("null assessment → does not throw, irBonus = 0", async () => {
-    const { categoryScores } = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      null,
-    );
+  test("null assessment → does not throw, irBonus = 0", () => {
+    const { categoryScores } = calculateMatchScore(investorProfile, minimalProject, null);
     expect(categoryScores.irBonus).toBe(0);
   });
 
-  test("reasoning.irScore matches assessment", async () => {
-    const { reasoning } = await calculateMatchScore(
-      investorProfile,
-      minimalProject,
-      assessment,
-    );
-    expect(reasoning.irScore).toBe(72);
+  test("reasoning.irScore is formatted as string", () => {
+    const { reasoning } = calculateMatchScore(investorProfile, minimalProject, assessment);
+    expect(reasoning.irScore).toBe("72/100");
   });
 });

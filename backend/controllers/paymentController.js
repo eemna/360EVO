@@ -311,7 +311,9 @@ export const confirmPayment = async (req, res, next) => {
     });
 
     if (!existing) {
-      console.log("[confirmPayment] Webhook hasn't fired yet — creating records now");
+      console.log(
+        "[confirmPayment] Webhook hasn't fired yet — creating records now",
+      );
 
       try {
         await prisma.$transaction([
@@ -335,14 +337,18 @@ export const confirmPayment = async (req, res, next) => {
         console.log("[confirmPayment] Transaction complete");
       } catch (txError) {
         if (txError.code === "P2002") {
-          console.log("[confirmPayment] Webhook already created the record, skipping.");
+          console.log(
+            "[confirmPayment] Webhook already created the record, skipping.",
+          );
         } else {
-          console.error("[confirmPayment] Transaction failed:", txError.message);
+          console.error(
+            "[confirmPayment] Transaction failed:",
+            txError.message,
+          );
           throw txError;
         }
       }
 
-   
       await createNotification({
         userId,
         type: "EVENT",
@@ -408,12 +414,18 @@ export const confirmPayment = async (req, res, next) => {
             </div>
           `,
         })
-        .then(() => console.log("[confirmPayment] Email sent to", user.email))
-        .catch((err) => console.error("[confirmPayment] Email FAILED:", err.response?.body || err.message));
+          .then(() => console.log("[confirmPayment] Email sent to", user.email))
+          .catch((err) =>
+            console.error(
+              "[confirmPayment] Email FAILED:",
+              err.response?.body || err.message,
+            ),
+          );
       }
-
     } else {
-      console.log("[confirmPayment] Webhook already handled — skipping notifications & email");
+      console.log(
+        "[confirmPayment] Webhook already handled — skipping notifications & email",
+      );
     }
 
     res.json({ success: true });

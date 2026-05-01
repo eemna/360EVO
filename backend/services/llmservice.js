@@ -87,6 +87,7 @@ export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
         `Project: ${project.title} | Stage: ${project.stage}
          Technologies: ${project.technologies?.join(", ") || "none"}
          Description: ${project.shortDesc}
+         IP Status: ${project.ipStatus ?? "NONE"}
          Rule-based TRL score: ${trlScore}/9
          Respond ONLY with: {"trlNarrative":"<2 sentences on technical maturity>","trlRisk":"<1 sentence on biggest technical risk>"}`,
         EXPERTS.trl,
@@ -126,6 +127,7 @@ Respond ONLY with: {"teamNarrative":"<2 sentences on team quality>","teamRisk":"
 Milestones planned: ${project.milestones?.length || 0}
 Milestones completed: ${project.milestones?.filter((m) => m.completedAt)?.length || 0}
 Updates posted: ${project.updates?.length || 0}
+Pilot users: ${project.pilotUsers ?? 0} 
 Traction IR score: ${irBreakdown?.traction || 0}/100
 Respond ONLY with: {"tractionNarrative":"<2 sentences on traction>","tractionRisk":"<1 sentence on traction gap>"}`,
         EXPERTS.traction,
@@ -175,15 +177,19 @@ export async function createThesisAlignmentMoE(
   project,
   assessment,
 ) {
-  console.log("[MoE] Running thesis alignment experts for project:", project.id);
-  const end = llmCallDuration.startTimer({ service: "createThesisAlignmentMoE" });
+  console.log(
+    "[MoE] Running thesis alignment experts for project:",
+    project.id,
+  );
+  const end = llmCallDuration.startTimer({
+    service: "createThesisAlignmentMoE",
+  });
 
   const [financialExpert, strategicExpert] = await Promise.all([
-
     // Expert 1 — Financial fit
 
-callLlm(
-  `You are evaluating financial and stage fit between an investor and a project.
+    callLlm(
+      `You are evaluating financial and stage fit between an investor and a project.
 
 INVESTOR:
 - Funding range: ${investorProfile.fundingMin ?? "unspecified"} - ${investorProfile.fundingMax ?? "unspecified"} ${investorProfile.currency || ""}
@@ -200,9 +206,9 @@ PROJECT:
 
 Respond ONLY with valid JSON, no markdown:
 {"financialFit":"<2 sentences on financial and stage fit>","financialScore":<0-100>}`,
-  EXPERTS.financial,
-  250,
-)
+      EXPERTS.financial,
+      250,
+    )
       .then((raw) => parseJsonResponse(raw))
       .catch((err) => {
         console.error("[MoE] Financial expert failed:", err.message);
@@ -228,6 +234,7 @@ PROJECT:
 - Technologies: ${project.technologies?.join(", ") || "none"}
 - Location: ${project.location || "unspecified"}
 - Full description: ${project.fullDesc?.slice(0, 600)}
+- IP Status: ${project.ipStatus ?? "NONE"}
 - TRL Score: ${assessment?.trlScore || 0}/9
 - IR Score: ${assessment?.irScore || 0}/100
 
@@ -252,28 +259,31 @@ Respond ONLY with valid JSON, no markdown:
   end();
   llmCallsTotal.inc({ service: "createThesisAlignmentMoE", success: "true" });
 
-const exclusions = investorProfile.exclusions || {};
-const industryExcluded = exclusions.industries?.includes(project.industry);
-const techExcluded = project.technologies?.some(t =>
-  exclusions.technologies?.includes(t)
-);
-const isExcluded = industryExcluded || techExcluded;
+  const exclusions = investorProfile.exclusions || {};
+  const industryExcluded = exclusions.industries?.includes(project.industry);
+  const techExcluded = project.technologies?.some((t) =>
+    exclusions.technologies?.includes(t),
+  );
+  const isExcluded = industryExcluded || techExcluded;
 
-const rawAlignmentScore = Math.round(
-  (financialExpert?.financialScore || 0) * 0.4 +
-  (strategicExpert?.strategicScore || 0) * 0.6,
-);
-const alignmentScore = isExcluded ? Math.max(0, rawAlignmentScore - 40) : rawAlignmentScore;
+  const rawAlignmentScore = Math.round(
+    (financialExpert?.financialScore || 0) * 0.4 +
+      (strategicExpert?.strategicScore || 0) * 0.6,
+  );
+  const alignmentScore = isExcluded
+    ? Math.max(0, rawAlignmentScore - 40)
+    : rawAlignmentScore;
 
   return {
-  alignmentScore,
-  alignmentSummary: strategicExpert?.alignmentSummary
-    || financialExpert?.financialFit
-    || "Alignment analysis unavailable.",
-  thesisMatches: strategicExpert?.thesisMatches || [],
-  thesisMismatches: strategicExpert?.thesisMismatches || [],
-  recommendedQuestions: strategicExpert?.recommendedQuestions || [],
-};
+    alignmentScore,
+    alignmentSummary:
+      strategicExpert?.alignmentSummary ||
+      financialExpert?.financialFit ||
+      "Alignment analysis unavailable.",
+    thesisMatches: strategicExpert?.thesisMatches || [],
+    thesisMismatches: strategicExpert?.thesisMismatches || [],
+    recommendedQuestions: strategicExpert?.recommendedQuestions || [],
+  };
 }
 
 // ── MoE 3: Pitch Analysis (2 experts)
@@ -282,7 +292,6 @@ export async function createPitchAnalysisMoE(project, assessment) {
   const end = llmCallDuration.startTimer({ service: "createPitchAnalysisMoE" });
 
   const [clarityExpert, appealExpert] = await Promise.all([
-
     // Expert 1 — Clarity & completeness
     callLlm(
       `You are evaluating pitch clarity and completeness.
@@ -293,7 +302,8 @@ PROJECT:
 - Short description: ${project.shortDesc}
 - Full description: ${project.fullDesc?.slice(0, 600)}
 - Team (${project.teamMembers?.length || 0} members): ${
-        project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none listed"
+        project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") ||
+        "none listed"
       }
 - Milestones (${project.milestones?.length || 0} total, ${
         project.milestones?.filter((m) => m.completedAt)?.length || 0
@@ -329,6 +339,8 @@ PROJECT:
 - Team size: ${project.teamMembers?.length || 0} members
 - Team: ${project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none"}
 - Milestones completed: ${project.milestones?.filter((m) => m.completedAt)?.length || 0} / ${project.milestones?.length || 0}
+Pilot users: ${project.pilotUsers ?? 0}
+IP Status: ${project.ipStatus ?? "NONE"} 
 - TRL Score: ${assessment?.trlScore || 0}/9
 - IR Score: ${assessment?.irScore || 0}/100
 

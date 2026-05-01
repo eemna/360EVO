@@ -40,9 +40,10 @@ export default function LoginPage() {
         message: "Welcome back!",
       });
       navigate("/app");
-
     } catch (err: unknown) {
-      const axiosErr = err as { response?: { status?: number; data?: { message?: string } } };
+      const axiosErr = err as {
+        response?: { status?: number; data?: { message?: string } };
+      };
       const status = axiosErr?.response?.status;
       const message = axiosErr?.response?.data?.message;
 
@@ -50,7 +51,8 @@ export default function LoginPage() {
         showToast({
           type: "warning",
           title: "Email Not Verified",
-          message: "Please verify your email first. Check your inbox or spam folder.",
+          message:
+            "Please verify your email first. Check your inbox or spam folder.",
         });
         navigate("/verify-email", { state: { pendingEmail: email } });
         return;

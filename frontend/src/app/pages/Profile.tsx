@@ -51,6 +51,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import api from "../../services/axios";
+import { LocationAutocompleteInput } from "../components/ui/LocationAutocompleteInput";
 
 interface PrivacySettings {
   showEmail?: boolean;
@@ -809,18 +810,18 @@ text-white border border-white/30 gap-2"
                     {/* Location */}
                     <div className="space-y-2">
                       <Label>Location </Label>
-                      <Input
-                        value={formData.profile?.location ?? ""}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            profile: {
-                              ...formData.profile!,
-                              location: e.target.value,
-                            },
-                          })
-                        }
-                      />
+                     <LocationAutocompleteInput
+  value={formData.profile?.location ?? ""}
+  onChange={(val) =>
+    setFormData({
+      ...formData,
+      profile: {
+        ...formData.profile!,
+        location: val,
+      },
+    })
+  }
+/>
                     </div>
                     <div className="space-y-2">
                       <Label>Phone</Label>

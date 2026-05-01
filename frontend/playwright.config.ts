@@ -17,10 +17,7 @@ export default defineConfig({
 
   workers: 1,
 
-  reporter: [
-    ["html", { open: "never" }],
-    ["line"],
-  ],
+  reporter: [["html", { open: "never" }], ["line"]],
 
   use: {
     baseURL: "http://localhost:5173",

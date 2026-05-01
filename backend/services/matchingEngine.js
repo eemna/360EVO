@@ -19,14 +19,8 @@ function irBonusCrisp(assessment) {
   return Math.round((assessment.irScore / 100) * 10);
 }
 
-export function calculateMatchScore(
-  investorProfile,
-  project,
-  assessment,
-) {
- const irScore = assessment?.irScore || 0;
-
-
+export function calculateMatchScore(investorProfile, project, assessment) {
+  const irScore = assessment?.irScore || 0;
 
   const thesisFuzzy = fuzzifyThesis(
     investorProfile.investmentThesis,
@@ -34,7 +28,6 @@ export function calculateMatchScore(
   );
 
   const thesisSim = thesisFuzzy._rawSimilarity || 0;
-
 
   const industryFuzzy = fuzzifyIndustry(
     investorProfile.industries,
@@ -81,7 +74,6 @@ export function calculateMatchScore(
   });
   const geoScore = defuzzifyCategory(geoOutput, 10);
 
-
   const irBonus = irBonusCrisp(assessment);
 
   let rawScore =
@@ -98,8 +90,8 @@ export function calculateMatchScore(
   if (mustHaves.minTRL && assessment?.trlScore < mustHaves.minTRL)
     rawScore -= 20;
   if (exclusions.industries?.includes(project.industry)) {
-  rawScore -= 50;
-}
+    rawScore -= 50;
+  }
   const matchScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
   const categoryScores = {
@@ -111,35 +103,49 @@ export function calculateMatchScore(
     irBonus,
   };
 
-const reasoning = {
-  industryFit: industryFuzzy.high === 1.0 ? "Exact" 
-    : industryFuzzy.medium > 0.5 ? "Partial" 
-    : "Weak",
+  const reasoning = {
+    industryFit:
+      industryFuzzy.high === 1.0
+        ? "Exact"
+        : industryFuzzy.medium > 0.5
+          ? "Partial"
+          : "Weak",
 
-  stageFit: stageFuzzy.high === 1.0 ? "Exact"
-    : stageFuzzy.medium > 0.5 ? "Adjacent"
-    : "Outside range",
+    stageFit:
+      stageFuzzy.high === 1.0
+        ? "Exact"
+        : stageFuzzy.medium > 0.5
+          ? "Adjacent"
+          : "Outside range",
 
-  fundingFit: fundingFuzzy.high > 0.8 ? "In range"
-    : fundingFuzzy.medium > 0.3 ? "Close"
-    : "Out of range",
+    fundingFit:
+      fundingFuzzy.high > 0.8
+        ? "In range"
+        : fundingFuzzy.medium > 0.3
+          ? "Close"
+          : "Out of range",
 
-  technologyFit: techFuzzy._overlapRatio > 0.5 ? "Strong overlap"
-    : techFuzzy._nlpSim > 0.2 ? "Semantic match"
-    : "Weak",
+    technologyFit:
+      techFuzzy._overlapRatio > 0.5
+        ? "Strong overlap"
+        : techFuzzy._nlpSim > 0.2
+          ? "Semantic match"
+          : "Weak",
 
-  thesisAlignment: thesisSim > 0.35 ? "Strong"
-    : thesisSim > 0.15 ? "Moderate"
-    : "Weak",
+    thesisAlignment:
+      thesisSim > 0.35 ? "Strong" : thesisSim > 0.15 ? "Moderate" : "Weak",
 
-  geographyFit: geoFuzzy.high === 1.0 ? "Match"
-    : geoFuzzy.medium > 0 ? "Partial"
-    : "Mismatch",
+    geographyFit:
+      geoFuzzy.high === 1.0
+        ? "Match"
+        : geoFuzzy.medium > 0
+          ? "Partial"
+          : "Mismatch",
 
-  irScore: `${irScore}/100`,
+    irScore: `${irScore}/100`,
 
-  profileComplete: !isProfileIncomplete(investorProfile),
-};
+    profileComplete: !isProfileIncomplete(investorProfile),
+  };
 
   return { matchScore, categoryScores, reasoning };
 }

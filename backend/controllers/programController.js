@@ -2,18 +2,40 @@ import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
 import { sendEmail } from "../utils/email.js";
 
+async function syncProgramStatuses() {
+  const now = new Date();
+  await prisma.program.updateMany({
+    where: { status: "OPEN", applicationDeadline: { lt: now } },
+    data: { status: "CLOSED" },
+  });
+  await prisma.program.updateMany({
+    where: { status: { in: ["OPEN", "CLOSED"] }, endDate: { lt: now } },
+    data: { status: "COMPLETED" },
+  });
+}
 export const getPrograms = async (req, res, next) => {
   try {
+    await syncProgramStatuses();
     const { type, status = "OPEN", search, page = 1, limit = 8 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
     if (!search?.toString().trim()) {
-      const where = {
-        ...(status && { status }),
-        ...(type && { type }),
-        ...(status === "OPEN" && { applicationDeadline: { gte: new Date() } }),
-      };
+const where = {
+  ...(type && { type }),
+  ...(status === "OPEN" && {
+    status: "OPEN",
+    applicationDeadline: { gte: new Date() },
+  }),
+  ...(status === "CLOSED" && {
+    OR: [
+      { status: "CLOSED" },
+      { status: "OPEN", applicationDeadline: { lt: new Date() } },
+    ],
+  }),
+  ...(status === "COMPLETED" && { status: "COMPLETED" }),
+  ...(status === "DRAFT" && { status: "DRAFT" }),
+};
 
       const [programs, total] = await prisma.$transaction([
         prisma.program.findMany({

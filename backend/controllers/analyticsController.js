@@ -1,8 +1,17 @@
 import { prisma } from "../config/prisma.js";
+import geoip from "geoip-lite";
 
-export const trackProjectView = async (projectId, source = "direct") => {
+export const trackProjectView = async (projectId, source = "direct", ip = null) => {
+  console.log("[Analytics] IP received:", ip);
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
+
+  let country = "Unknown";
+  if (ip) {
+    const geo = geoip.lookup(ip);
+    console.log("[Analytics] Geo result:", geo);
+    if (geo?.country) country = geo.country;
+  }
 
   try {
     const existing = await prisma.projectAnalytics.findUnique({
@@ -15,17 +24,25 @@ export const trackProjectView = async (projectId, source = "direct") => {
       [source]: (currentSources[source] || 0) + 1,
     };
 
+    const currentGeo = existing?.geo ?? {};
+    const updatedGeo = {
+      ...currentGeo,
+      [country]: (currentGeo[country] || 0) + 1,
+    };
+
     await prisma.projectAnalytics.upsert({
       where: { projectId_date: { projectId, date: today } },
       update: {
         views: { increment: 1 },
         sources: updatedSources,
+        geo: updatedGeo,
       },
       create: {
         projectId,
         date: today,
         views: 1,
         sources: { [source]: 1 },
+        geo: { [country]: 1 },
       },
     });
   } catch (err) {
@@ -81,17 +98,34 @@ export const getProjectAnalytics = async (req, res, next) => {
       orderBy: { date: "asc" },
     });
 
+    const geoMap = {};
     const totals = analytics.reduce(
       (acc, row) => {
         acc.views += row.views;
         acc.bookmarks += row.bookmarks;
         acc.interests += row.interests;
+
+        if (row.geo) {
+          Object.entries(row.geo).forEach(([country, count]) => {
+            geoMap[country] = (geoMap[country] || 0) + count;
+          });
+        }
+
         return acc;
       },
-      { views: 0, bookmarks: 0, interests: 0 },
+      { views: 0, bookmarks: 0, interests: 0 }
     );
 
-    res.json({ analytics, totals, range: req.query.range || "7d" });
+    const geoTable = Object.entries(geoMap)
+      .map(([country, views]) => ({ country, views }))
+      .sort((a, b) => b.views - a.views);
+
+    res.json({
+      analytics,
+      totals,
+      geoTable,
+      range: req.query.range || "7d",
+    });
   } catch (error) {
     next(error);
   }

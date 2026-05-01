@@ -13,7 +13,6 @@ import { Prisma } from "@prisma/client";
 
 dotenv.config();
 
-
 export const register = async (req, res, next) => {
   try {
     const {
@@ -122,7 +121,6 @@ export const register = async (req, res, next) => {
   }
 };
 
-
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -190,7 +188,6 @@ export const login = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const verifyEmail = async (req, res, next) => {
   try {

@@ -4,20 +4,38 @@ import { createNotification } from "../utils/createNotification.js";
 
 export const getEvents = async (req, res, next) => {
   try {
-    const { type, search, date, page = 1, limit = 6 } = req.query;
+    const { type, search, dateFrom, dateTo, page = 1, limit = 6 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
+    const now = new Date();
 
     if (!search?.toString().trim()) {
       const where = {
         status: "PUBLISHED",
         ...(type && { type }),
-        ...(date && {
+...(dateFrom && dateTo
+  ? {
+      AND: [
+        {
           OR: [
-            { date: { gte: new Date(date) } },
-            { endDate: { gte: new Date(date) } },
+            { date: { gte: new Date(dateFrom), lte: new Date(dateTo) } },
+            { endDate: { gte: new Date(dateFrom), lte: new Date(dateTo) } },
           ],
-        }),
+        },
+        {
+          OR: [
+            { endDate: { gte: now } },
+            { endDate: null, date: { gte: now } },
+          ],
+        },
+      ],
+    }
+  : {
+      OR: [
+        { endDate: { gte: now } },
+        { endDate: null, date: { gte: now } },
+      ],
+    }),
       };
 
       const [events, total] = await Promise.all([
@@ -319,6 +337,11 @@ export const applyToEvent = async (req, res, next) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
     if (event.status !== "PUBLISHED")
       return res.status(400).json({ message: "Event is not open" });
+    
+    if (new Date() > new Date(event.endDate ?? event.date)) {
+      return res.status(400).json({ message: "This event has already ended" });
+    }
+
     if (event.capacity) {
       const regCount = await prisma.eventRegistration.count({
         where: { eventId },

@@ -281,14 +281,14 @@ export function ProjectGallery() {
                   {project.tagline}
                 </p>
 
-  <div className="flex items-center gap-2 mb-4">
-  <Badge className={stageColors[project.stage]}>
-    {project.stage}
-  </Badge>
-  {project.aiAssessment && (
-    <TRLBadge score={project.aiAssessment.trlScore} />
-  )}
-</div>
+                <div className="flex items-center gap-2 mb-4">
+                  <Badge className={stageColors[project.stage]}>
+                    {project.stage}
+                  </Badge>
+                  {project.aiAssessment && (
+                    <TRLBadge score={project.aiAssessment.trlScore} />
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {project.technologies?.slice(0, 3).map((tech) => (
                     <Badge

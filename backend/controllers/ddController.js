@@ -212,7 +212,6 @@ export const declineDdRequest = async (req, res, next) => {
   }
 };
 
-
 async function getAccessibleDataRoom(dataRoomId, userId) {
   const dataRoom = await prisma.dataRoom.findUnique({
     where: { id: dataRoomId },

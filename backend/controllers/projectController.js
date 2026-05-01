@@ -40,42 +40,46 @@ export const getProjectById = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-const project = await prisma.project.findUnique({
-  where: { id },
-  include: {
-    owner: { select: { name: true } },
-    teamMembers: true,
-    milestones: true,
-    documents: true,
-    interests: true,
-  },
-});
+    const project = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        owner: { select: { name: true } },
+        teamMembers: true,
+        milestones: true,
+        documents: true,
+        interests: true,
+      },
+    });
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    if (!req.user || req.user.id !== project.ownerId) {
-      await prisma.project.update({
-        where: { id },
-        data: {
-          viewCount: { increment: 1 },
-        },
-      });
-      let source = req.query.source || null;
+if (!req.user || req.user.id !== project.ownerId) {
+  await prisma.project.update({
+    where: { id },
+    data: { viewCount: { increment: 1 } },
+  });
 
-      if (!source) {
-        const referer = req.headers["referer"] || req.headers["referrer"] || "";
-        if (referer.includes("google")) source = "google";
-        else if (referer.includes("linkedin")) source = "linkedin";
-        else if (referer.includes("twitter") || referer.includes("x.com"))
-          source = "twitter";
-        else if (referer.includes("facebook")) source = "facebook";
-        else source = "direct";
-      }
+  const source = req.query.source || "direct";
 
-      trackProjectView(id, source);
-    }
+  const rawIp =
+    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    null;
+
+const isLocalhost =
+  rawIp === "::1" ||
+  rawIp === "127.0.0.1" ||
+  rawIp === "::ffff:127.0.0.1";
+
+const ip =
+  process.env.NODE_ENV !== "production" && isLocalhost
+    ? "41.226.11.1"
+    : rawIp;
+  trackProjectView(id, source, ip);
+}
+
 
     res.json(project);
   } catch (error) {
@@ -99,21 +103,28 @@ export const updateProject = async (req, res, next) => {
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({ message: "Not allowed" });
     }
-if (project.status === "APPROVED") {
-  const LOCKED_FIELDS = [
-    "title", "fullDesc", "shortDesc", "tagline",
-    "fundingSought", "currency", "industry",
-    "stage", "technologies"
-  ];
-  const hasLockedChange = LOCKED_FIELDS.some(
-    (field) => projectData[field] !== undefined
-  );
-  if (hasLockedChange) {
-    return res.status(403).json({
-      message: "Core fields cannot be edited after approval. Contact admin if changes are needed.",
-    });
-  }
-}
+    if (project.status === "APPROVED") {
+      const LOCKED_FIELDS = [
+        "title",
+        "fullDesc",
+        "shortDesc",
+        "tagline",
+        "fundingSought",
+        "currency",
+        "industry",
+        "stage",
+        "technologies",
+      ];
+      const hasLockedChange = LOCKED_FIELDS.some(
+        (field) => projectData[field] !== undefined,
+      );
+      if (hasLockedChange) {
+        return res.status(403).json({
+          message:
+            "Core fields cannot be edited after approval. Contact admin if changes are needed.",
+        });
+      }
+    }
 
     await prisma.$transaction(
       async (tx) => {
@@ -180,23 +191,25 @@ if (project.status === "APPROVED") {
         documents: true,
       },
     });
-await prisma.llmInsight.deleteMany({
-  where: {
-    projectId: id,
-    type: { in: ["THESIS_ALIGNMENT", "PITCH_ANALYSIS"] },
-  },
-});
+    await prisma.llmInsight.deleteMany({
+      where: {
+        projectId: id,
+        type: { in: ["THESIS_ALIGNMENT", "PITCH_ANALYSIS"] },
+      },
+    });
 
-await prisma.match.deleteMany({
-  where: { projectId: id },
-});
-if (project.status === "APPROVED") {
-  setImmediate(() => {
-    runProjectAssessment(id)
-      .then(() => console.log(`[Project] Re-assessment done for ${id}`))
-      .catch((err) => console.error(`[Project] Re-assessment failed:`, err.message));
-  });
-}
+    await prisma.match.deleteMany({
+      where: { projectId: id },
+    });
+    if (project.status === "APPROVED") {
+      setImmediate(() => {
+        runProjectAssessment(id)
+          .then(() => console.log(`[Project] Re-assessment done for ${id}`))
+          .catch((err) =>
+            console.error(`[Project] Re-assessment failed:`, err.message),
+          );
+      });
+    }
 
     res.json(updatedProject);
   } catch (error) {
@@ -283,7 +296,7 @@ export const getPublicProjects = async (req, res, next) => {
         const limitNum = Number(limit);
         const offsetNum = Number(skip);
 
-const projects = await prisma.$queryRaw`
+        const projects = await prisma.$queryRaw`
   SELECT
     p.id,
     p."ownerId",
@@ -318,14 +331,15 @@ const projects = await prisma.$queryRaw`
   OFFSET ${offsetNum}::integer
 `;
 
-const shaped = projects.map((p) => ({
-  ...p,
-  owner: { id: p.ownerId, name: p.ownerName },
-  fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
-  viewCount: Number(p.viewCount),
-  rank: Number(p.rank),
-  aiAssessment: p.trlScore != null ? { trlScore: Number(p.trlScore) } : null,
-}));
+        const shaped = projects.map((p) => ({
+          ...p,
+          owner: { id: p.ownerId, name: p.ownerName },
+          fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
+          viewCount: Number(p.viewCount),
+          rank: Number(p.rank),
+          aiAssessment:
+            p.trlScore != null ? { trlScore: Number(p.trlScore) } : null,
+        }));
 
         return res.json(shaped);
       } catch (searchError) {
@@ -353,8 +367,8 @@ const shaped = projects.map((p) => ({
           select: { id: true, name: true },
         },
         aiAssessment: {
-      select: { trlScore: true },
-    },
+          select: { trlScore: true },
+        },
       },
     });
 

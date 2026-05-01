@@ -1,7 +1,13 @@
 import { calculateMatchScore } from "./matchingEngine.js";
 
 function displayScores(label, { matchScore, categoryScores }) {
-  const maxes = { industry: 25, stage: 20, technology: 20, funding: 15, geography: 10 };
+  const maxes = {
+    industry: 25,
+    stage: 20,
+    technology: 20,
+    funding: 15,
+    geography: 10,
+  };
 
   console.log(`\n${label}`);
   console.log(`── Match Score: ${matchScore}/100 ${"─".repeat(30)}`);
@@ -15,7 +21,9 @@ function displayScores(label, { matchScore, categoryScores }) {
     const pct = Math.round((score / max) * 100);
     const filled = Math.round(pct / 10);
     const bar = "█".repeat(filled) + "░".repeat(10 - filled);
-    console.log(`  ${key.padEnd(14)} ${String(score).padStart(2)}/${max} pts  [${bar}] ${pct}%`);
+    console.log(
+      `  ${key.padEnd(14)} ${String(score).padStart(2)}/${max} pts  [${bar}] ${pct}%`,
+    );
   }
 }
 

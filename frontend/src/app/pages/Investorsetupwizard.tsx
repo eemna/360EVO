@@ -59,7 +59,7 @@ interface InvestorProfileData {
   geographicPrefs: string[];
   riskTolerance: "LOW" | "MEDIUM" | "HIGH";
   dealStructures: string[];
-   mustHaves: { minTRL?: number; [key: string]: unknown };
+  mustHaves: { minTRL?: number; [key: string]: unknown };
   exclusions: { industries?: string[]; [key: string]: unknown };
   investmentThesis: string;
 }
