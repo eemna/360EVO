@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { SocketContext } from "../context/SocketContext";
 import { useAuth } from "../hooks/useAuth";
-import { getApiToken} from "../services/axios";
+import { getApiToken } from "../services/axios";
 
 export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const { user, logout } = useAuth();
@@ -47,7 +47,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
       });
     });
 
-      newSocket.on("force_logout", () => {
+    newSocket.on("force_logout", () => {
       console.log("[Socket] Force logout — logging out all tabs");
       logout();
       newSocket.disconnect();

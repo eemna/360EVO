@@ -122,8 +122,6 @@ export const generateMatches = async (req, res, next) => {
       ),
     );
 
-
-
     const sorted = matchResults.sort((a, b) => b.matchScore - a.matchScore);
 
     res.json({
@@ -139,15 +137,15 @@ export const generateMatches = async (req, res, next) => {
 
       for (const match of top10) {
         try {
-const inputHash = crypto
-  .createHash("sha256")
-  .update(
-    JSON.stringify({
-      investorProfile,
-      projectId: match.projectId,
-    })
-  )
-  .digest("hex");
+          const inputHash = crypto
+            .createHash("sha256")
+            .update(
+              JSON.stringify({
+                investorProfile,
+                projectId: match.projectId,
+              }),
+            )
+            .digest("hex");
 
           const cached = await prisma.llmInsight.findUnique({
             where: {
@@ -209,7 +207,6 @@ const inputHash = crypto
     next(error);
   }
 };
-
 
 export const getMatchFeed = async (req, res, next) => {
   try {
@@ -311,16 +308,16 @@ export const getThesisAlignment = async (req, res, next) => {
       return res.status(404).json({ message: "Project not found." });
     }
 
-    // 3. Build input hash — skip LLM call if nothing changed
-const inputHash = crypto
-  .createHash("sha256")
-  .update(
-    JSON.stringify({
-      investorProfile,
-      projectId,
-    })
-  )
-  .digest("hex");
+    // 3. Build input hash
+    const inputHash = crypto
+      .createHash("sha256")
+      .update(
+        JSON.stringify({
+          investorProfile,
+          projectId,
+        }),
+      )
+      .digest("hex");
 
     // 4. Check cache first
     const cached = await prisma.llmInsight.findUnique({
@@ -337,7 +334,7 @@ const inputHash = crypto
       return res.json({ cached: true, data: cached.content });
     }
 
-    // 5. Call llmService — Groq LLaMA generates the analysis
+    // 5. Call llmService
     const alignment = await createThesisAlignmentMoE(
       investorProfile,
       project,
@@ -406,57 +403,64 @@ export const getPitchAnalysis = async (req, res, next) => {
       return res.status(404).json({ message: "Project not found." });
     }
 
-const inputHash = crypto
-  .createHash("sha256")
-  .update(JSON.stringify({
-    title: project.title,
-    desc: project.fullDesc,
-    milestones: project.milestones,
-    team: project.teamMembers,
-    updatedAt: project.updatedAt,
-    irBreakdown: project.aiAssessment?.irBreakdown,
-    irScore: project.aiAssessment?.irScore,
-  }))
-  .digest("hex");
+    const inputHash = crypto
+      .createHash("sha256")
+      .update(
+        JSON.stringify({
+          title: project.title,
+          desc: project.fullDesc,
+          milestones: project.milestones,
+          team: project.teamMembers,
+          updatedAt: project.updatedAt,
+          irBreakdown: project.aiAssessment?.irBreakdown,
+          irScore: project.aiAssessment?.irScore,
+        }),
+      )
+      .digest("hex");
 
- const cached = await prisma.llmInsight.findFirst({
-  where: {
-    investorId: null,
-    projectId,
-    type: "PITCH_ANALYSIS",
-  },
-});
+    const cached = await prisma.llmInsight.findFirst({
+      where: {
+        investorId: null,
+        projectId,
+        type: "PITCH_ANALYSIS",
+      },
+    });
 
     if (cached && cached.inputHash === inputHash) {
       llmCacheHits.inc({ type: "PITCH_ANALYSIS" });
       return res.json({ cached: true, data: cached.content });
     }
 
-    const analysis = await createPitchAnalysisMoE(project, project.aiAssessment);
+    const analysis = await createPitchAnalysisMoE(
+      project,
+      project.aiAssessment,
+    );
     if (!analysis) {
-      return res.status(503).json({ message: "Pitch analysis temporarily unavailable." });
+      return res
+        .status(503)
+        .json({ message: "Pitch analysis temporarily unavailable." });
     }
 
-const existing = await prisma.llmInsight.findFirst({
-  where: { investorId: null, projectId, type: "PITCH_ANALYSIS" },
-});
+    const existing = await prisma.llmInsight.findFirst({
+      where: { investorId: null, projectId, type: "PITCH_ANALYSIS" },
+    });
 
-if (existing) {
-  await prisma.llmInsight.update({
-    where: { id: existing.id },
-    data: { content: analysis, inputHash },
-  });
-} else {
-  await prisma.llmInsight.create({
-    data: {
-      investorId: null,
-      projectId,
-      type: "PITCH_ANALYSIS",
-      content: analysis,
-      inputHash,
-    },
-  });
-}
+    if (existing) {
+      await prisma.llmInsight.update({
+        where: { id: existing.id },
+        data: { content: analysis, inputHash },
+      });
+    } else {
+      await prisma.llmInsight.create({
+        data: {
+          investorId: null,
+          projectId,
+          type: "PITCH_ANALYSIS",
+          content: analysis,
+          inputHash,
+        },
+      });
+    }
 
     res.json({ cached: false, data: analysis });
   } catch (error) {

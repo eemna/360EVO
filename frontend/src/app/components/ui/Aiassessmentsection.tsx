@@ -147,7 +147,7 @@ export default function AIAssessmentSection({
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>

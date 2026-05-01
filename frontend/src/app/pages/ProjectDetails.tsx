@@ -138,7 +138,7 @@ export default function ProjectDetailsPage() {
   const [ddModalOpen, setDdModalOpen] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
- 
+
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const fetchProject = async () => {
@@ -804,7 +804,7 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-6 pb-10">
+      <div className="max-w-7xl mx-auto px-1 pb-10">
         <AIAssessmentSection
           projectId={id!}
           projectStatus={project.status}
@@ -812,7 +812,9 @@ export default function ProjectDetailsPage() {
         />
       </div>
       {user?.id === project.ownerId && (
-        <ProjectAnalyticsDashboard projectId={project.id} />
+        <div className="max-w-7xl mx-auto px-1 pb-10">
+    <ProjectAnalyticsDashboard projectId={project.id} />
+  </div>
       )}
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>

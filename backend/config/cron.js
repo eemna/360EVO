@@ -205,12 +205,12 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
 
 const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
   const end = cronJobDuration.startTimer({ job: "analytics" });
-  console.log(
-    "[CRON] Midnight analytics: ensuring today's rows exist for active projects",
-  );
+  console.log("[CRON] Midnight analytics: ensuring today's rows exist");
+
   try {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
+
     const projects = await prisma.project.findMany({
       where: { status: "APPROVED" },
       select: { id: true },
@@ -223,9 +223,8 @@ const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
         create: { projectId: project.id, date: today },
       });
     }
-    console.log(
-      `[CRON] Ensured analytics rows for ${projects.length} projects`,
-    );
+
+    console.log(`[CRON] Ensured analytics rows for ${projects.length} projects`);
     cronJobRuns.inc({ job: "analytics", status: "success" });
   } catch (err) {
     cronJobRuns.inc({ job: "analytics", status: "failed" });

@@ -60,17 +60,28 @@ function formatReasoningValue(v: unknown): string {
   return String(v);
 }
 
-const CATEGORY_META: Record<string, { label: string; max: number; color: string }> = {
-  industry:   { label: "Industry",   max: 25, color: "#6366f1" },
-  stage:      { label: "Stage",      max: 20, color: "#8b5cf6" },
+const CATEGORY_META: Record<
+  string,
+  { label: string; max: number; color: string }
+> = {
+  industry: { label: "Industry", max: 25, color: "#6366f1" },
+  stage: { label: "Stage", max: 20, color: "#8b5cf6" },
   technology: { label: "Technology", max: 20, color: "#06b6d4" },
-  funding:    { label: "Funding",    max: 15, color: "#f59e0b" },
-  geography:  { label: "Geography",  max: 10, color: "#10b981" },
-  irBonus:    { label: "IR Bonus",   max: 10, color: "#f97316" },
+  funding: { label: "Funding", max: 15, color: "#f59e0b" },
+  geography: { label: "Geography", max: 10, color: "#10b981" },
+  irBonus: { label: "IR Bonus", max: 10, color: "#f97316" },
 };
 
-function CategoryScoreBar({ label, value, max = 25, color = "#6366f1" }: {
-  label: string; value: number; max?: number; color?: string;
+function CategoryScoreBar({
+  label,
+  value,
+  max = 25,
+  color = "#6366f1",
+}: {
+  label: string;
+  value: number;
+  max?: number;
+  color?: string;
 }) {
   const pct = Math.min(100, (value / max) * 100);
   return (
@@ -78,7 +89,8 @@ function CategoryScoreBar({ label, value, max = 25, color = "#6366f1" }: {
       <div className="flex items-center justify-between">
         <span className="text-xs text-gray-600 font-medium">{label}</span>
         <span className="text-xs font-mono font-semibold text-gray-700">
-          {value}<span className="text-gray-400 font-normal">/{max}</span>
+          {value}
+          <span className="text-gray-400 font-normal">/{max}</span>
         </span>
       </div>
       <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -105,20 +117,39 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
 
   const cats = match.categoryScores as Record<string, number>;
   const reasoning = match.reasoning as Record<string, unknown>;
-const ORDER = ["industry", "stage", "technology", "funding", "geography", "irBonus"];
-const POSITIVE_VALUES = new Set(["Exact", "Strong overlap", "Strong", "Match", "In range", "Semantic match", "Adjacent"]);
-const NEGATIVE_VALUES = new Set(["Weak", "Mismatch", "Out of range", "Outside range"]);
+  const ORDER = [
+    "industry",
+    "stage",
+    "technology",
+    "funding",
+    "geography",
+    "irBonus",
+  ];
+  const POSITIVE_VALUES = new Set([
+    "Exact",
+    "Strong overlap",
+    "Strong",
+    "Match",
+    "In range",
+    "Semantic match",
+    "Adjacent",
+  ]);
+  const NEGATIVE_VALUES = new Set([
+    "Weak",
+    "Mismatch",
+    "Out of range",
+    "Outside range",
+  ]);
 
-const SKIP_KEYS = new Set([
-  "thesisMembership",
-  "_raw",
-]);
+  const SKIP_KEYS = new Set(["thesisMembership", "_raw"]);
 
   return (
     <div className="space-y-6">
       {/* Score header */}
       <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-        <div className={`text-3xl font-bold ${matchScoreColor(match.matchScore).text}`}>
+        <div
+          className={`text-3xl font-bold ${matchScoreColor(match.matchScore).text}`}
+        >
           {match.matchScore}
         </div>
         <div>
@@ -135,35 +166,39 @@ const SKIP_KEYS = new Set([
           Category Breakdown
         </p>
         <div className="space-y-3">
+          {ORDER.map((k) => {
+            const v = cats[k];
+            if (v === undefined) return null;
 
-{ORDER.map((k) => {
-  const v = cats[k];
-  if (v === undefined) return null;
-
-  const meta = CATEGORY_META[k];
-  return (
-    <CategoryScoreBar
-      key={k}
-      label={meta.label}
-      value={v}
-      max={meta.max}
-      color={meta.color}
-    />
-  );
-})}
+            const meta = CATEGORY_META[k];
+            return (
+              <CategoryScoreBar
+                key={k}
+                label={meta.label}
+                value={v}
+                max={meta.max}
+                color={meta.color}
+              />
+            );
+          })}
         </div>
 
         {/* Total bar */}
         <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-          <span className="text-xs font-semibold text-gray-500"> Total (incl. IR bonus) </span>
-          <span className={`text-sm font-bold ${matchScoreColor(match.matchScore).text}`}>
+          <span className="text-xs font-semibold text-gray-500">
+            {" "}
+            Total (incl. IR bonus){" "}
+          </span>
+          <span
+            className={`text-sm font-bold ${matchScoreColor(match.matchScore).text}`}
+          >
             {match.matchScore} / 100
           </span>
         </div>
       </div>
 
       {/* Reasoning flags */}
-      {Object.keys(reasoning).filter(k => !SKIP_KEYS.has(k)).length > 0 && (
+      {Object.keys(reasoning).filter((k) => !SKIP_KEYS.has(k)).length > 0 && (
         <div>
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
             Signals
@@ -176,17 +211,22 @@ const SKIP_KEYS = new Set([
                 const isPositive = POSITIVE_VALUES.has(formatted);
                 const isNegative = NEGATIVE_VALUES.has(formatted);
                 return (
-                  <div key={k} className="flex items-center justify-between gap-2 text-xs">
+                  <div
+                    key={k}
+                    className="flex items-center justify-between gap-2 text-xs"
+                  >
                     <span className="text-gray-500 capitalize">
                       {k.replace(/([A-Z])/g, " $1").trim()}
                     </span>
-                    <span className={`font-semibold px-2 py-0.5 rounded-full text-xs ${
-                      isPositive
-                        ? "bg-green-50 text-green-700"
-                        : isNegative
-                          ? "bg-red-50 text-red-600"
-                          : "bg-gray-100 text-gray-600"
-                    }`}>
+                    <span
+                      className={`font-semibold px-2 py-0.5 rounded-full text-xs ${
+                        isPositive
+                          ? "bg-green-50 text-green-700"
+                          : isNegative
+                            ? "bg-red-50 text-red-600"
+                            : "bg-gray-100 text-gray-600"
+                      }`}
+                    >
                       {formatted}
                     </span>
                   </div>
@@ -452,7 +492,7 @@ export default function MatchFeedPage() {
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">Match Feed</h1>
           <p className="text-gray-500 text-sm mt-1">
-             Score = Industry + Stage + Tech + Funding + Geo (90) + IR Bonus (10)
+            Score = Industry + Stage + Tech + Funding + Geo (90) + IR Bonus (10)
           </p>
         </div>
         <Button

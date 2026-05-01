@@ -431,28 +431,24 @@ export const createReview = async (req, res, next) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
-    // Check 1: only the client (member) can leave a review
     if (booking.memberId !== req.user.id) {
       return res
         .status(403)
         .json({ message: "Only the client can leave a review" });
     }
 
-    // Check 2: booking must be completed before reviewing
     if (booking.status !== "COMPLETED") {
       return res
         .status(400)
         .json({ message: "Can only review completed sessions" });
     }
 
-    // Check 3: rating must be between 1 and 5
     if (!rating || rating < 1 || rating > 5) {
       return res
         .status(400)
         .json({ message: "Rating must be between 1 and 5" });
     }
 
-    // Check 4: prevent duplicate review (one per booking)
     const existing = await prisma.review.findUnique({
       where: { consultationId: req.params.id },
     });

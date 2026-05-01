@@ -1,22 +1,19 @@
+import { jest } from "@jest/globals";
+
 process.env.GROQ_API_KEY = "dummy-test-key";
 
-jest.mock("groq-sdk", () => {
+await jest.unstable_mockModule("groq-sdk", () => {
   const create = jest.fn();
   const MockGroq = jest.fn().mockImplementation(() => ({
     chat: { completions: { create } },
   }));
   MockGroq._create = create;
-  return { __esModule: true, default: MockGroq };
+  return { default: MockGroq };
 });
 
-import {
-  callLlm,
-  parseJsonResponse,
-  runMixtureOfExperts,
-  createThesisAlignmentMoE,
-  createPitchAnalysisMoE,
-} from "../services/llmservice.js";
-import GroqSDK from "groq-sdk";
+const { default: GroqSDK } = await import("groq-sdk");
+const { callLlm, parseJsonResponse, runMixtureOfExperts, createThesisAlignmentMoE, createPitchAnalysisMoE } = 
+  await import("../services/llmservice.js");
 
 const mockCreate = GroqSDK._create;
 
@@ -72,7 +69,6 @@ const baseInvestorProfile = {
 
 const baseAssessment = { trlScore: 4, irScore: 72 };
 
-//callLlm: mocking & prompt shape
 
 describe("callLlm — mocking & prompt shape", () => {
   beforeEach(() => {
@@ -246,7 +242,6 @@ describe("parseJsonResponse — JSON parsing edge cases", () => {
   });
 });
 
-//runMixtureOfExperts: prompt content + shape
 
 describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   beforeEach(() => {
@@ -365,7 +360,6 @@ describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   });
 });
 
-//createThesisAlignmentMoE: prompt shape & score blending
 
 describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
   beforeEach(() => {
@@ -482,7 +476,6 @@ describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
   });
 });
 
-//createPitchAnalysisMoE: prompt shape & output mapping
 
 describe("createPitchAnalysisMoE — prompt shape & output mapping", () => {
   beforeEach(() => {

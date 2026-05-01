@@ -1,4 +1,5 @@
 import { jest } from "@jest/globals";
+import jwt from "jsonwebtoken";
 
 jest.unstable_mockModule("../utils/email.js", () => ({
   sendEmail: jest.fn().mockResolvedValue(true),
@@ -8,7 +9,6 @@ const request = (await import("supertest")).default;
 const { default: app } = await import("../server.js");
 const { prisma } = await import("../config/prisma.js");
 
-import jwt from "jsonwebtoken";
 async function createAndLoginUser({
   name = "Test User",
   role = "STARTUP",

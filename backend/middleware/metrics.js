@@ -24,7 +24,7 @@ export const rateLimitHits = new client.Counter({
 export const rateLimitRequests = new client.Counter({
   name: "rate_limit_requests_total",
   help: "Total requests checked by rate limiter",
-  labelNames: ["type", "allowed"], 
+  labelNames: ["type", "allowed"],
 });
 
 export const cronJobRuns = new client.Counter({

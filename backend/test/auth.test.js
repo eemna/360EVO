@@ -1,4 +1,5 @@
 import { jest } from "@jest/globals";
+import crypto from "crypto";
 
 jest.unstable_mockModule("../utils/email.js", () => ({
   sendEmail: jest.fn().mockResolvedValue(true),
@@ -7,7 +8,6 @@ jest.unstable_mockModule("../utils/email.js", () => ({
 const request = (await import("supertest")).default;
 const { default: app } = await import("../server.js");
 const { prisma } = await import("../config/prisma.js");
-import crypto from "crypto";
 
 describe("Auth Flow — register → verify → login → reset", () => {
   const testEmail = `authtest_${Date.now()}@example.com`;

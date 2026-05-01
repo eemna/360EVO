@@ -534,6 +534,7 @@ model ProjectAnalytics {
   bookmarks Int      @default(0)
   interests Int      @default(0)
   sources   Json?
+  geo       Json?
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, date])

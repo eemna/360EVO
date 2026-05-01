@@ -89,16 +89,20 @@ export default function StartupDashboard() {
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [wizardLoading, setWizardLoading] = useState(false);
   const [pendingDdCount, setPendingDdCount] = useState(0);
-  const [editingProjectStatus, setEditingProjectStatus] = useState<string | null>(null);
-
-  const q = search.toLowerCase().trim();
-  const projects = allProjects.filter(
-    (p) =>
-      !q ||
-      p.title?.toLowerCase().includes(q) ||
-      p.shortDesc?.toLowerCase().includes(q) ||
-      p.tagline?.toLowerCase().includes(q),
-  );
+  const [editingProjectStatus, setEditingProjectStatus] = useState<
+    string | null
+  >(null);
+const [statusFilter, setStatusFilter] = useState<string>("ALL");
+const q = search.toLowerCase().trim();
+const projects = allProjects.filter((p) => {
+  const matchesSearch =
+    !q ||
+    p.title?.toLowerCase().includes(q) ||
+    p.shortDesc?.toLowerCase().includes(q) ||
+    p.tagline?.toLowerCase().includes(q);
+  const matchesStatus = statusFilter === "ALL" || p.status === statusFilter;
+  return matchesSearch && matchesStatus;
+});
 
   const confirmDelete = async () => {
     if (!deleteProjectId) return;
@@ -131,12 +135,12 @@ export default function StartupDashboard() {
     }
   };
 
-const handleEdit = (id: string, status: string) => {
-  setEditingProjectId(id);
-  setEditingProjectStatus(status);
-  setWizardLoading(true);
-  setIsWizardOpen(true);
-};
+  const handleEdit = (id: string, status: string) => {
+    setEditingProjectId(id);
+    setEditingProjectStatus(status);
+    setWizardLoading(true);
+    setIsWizardOpen(true);
+  };
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -212,19 +216,19 @@ const handleEdit = (id: string, status: string) => {
           </p>
         </div>
 
-<ProjectCreationWizard
-  isOpen={isWizardOpen}
-  onClose={() => {
-    setIsWizardOpen(false);
-    setEditingProjectId(null);
-    setEditingProjectStatus(null);
-  }}
-  projectId={editingProjectId}
-  projectStatus={editingProjectStatus}
-  loading={wizardLoading}
-  setLoading={setWizardLoading}
-  onProjectSaved={fetchDashboard}
-/>
+        <ProjectCreationWizard
+          isOpen={isWizardOpen}
+          onClose={() => {
+            setIsWizardOpen(false);
+            setEditingProjectId(null);
+            setEditingProjectStatus(null);
+          }}
+          projectId={editingProjectId}
+          projectStatus={editingProjectStatus}
+          loading={wizardLoading}
+          setLoading={setWizardLoading}
+          onProjectSaved={fetchDashboard}
+        />
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -234,6 +238,19 @@ const handleEdit = (id: string, status: string) => {
             <Calendar className="size-4" />
             My Events
           </Button>
+<Button
+  variant="outline"
+  onClick={() => navigate("/app/startup/dd-requests")}
+  className="gap-2"
+>
+  <FolderOpen className="size-4" />
+  Data Room Requests
+  {pendingDdCount > 0 && (
+    <span className="ml-1 bg-green-600 text-white text-xs rounded-full px-1.5 py-0.5">
+      {pendingDdCount}
+    </span>
+  )}
+</Button>          
           <Button
             variant="outline"
             onClick={() => navigate("/app/programs/my-applications")}
@@ -301,40 +318,54 @@ const handleEdit = (id: string, status: string) => {
               <Bell className="size-4 text-green-700" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-green-900">
-                {pendingDdCount} Due Diligence Request
-                {pendingDdCount > 1 ? "s" : ""} Pending
-              </p>
-              <p className="text-xs text-green-700">
-                Investors are requesting access to your data rooms
-              </p>
+<p className="text-sm font-semibold text-green-900">
+  {pendingDdCount} Investor{pendingDdCount > 1 ? "s" : ""} Want Access to Your Data Room
+</p>
+<p className="text-xs text-green-700">
+  Review and grant or decline access to your project documents
+</p>
             </div>
           </div>
-          <Button
-            size="sm"
-            className="bg-green-600 hover:bg-green-700 gap-2 flex-shrink-0"
-          >
-            <FolderOpen className="size-4" />
-            Review Requests
-          </Button>
+<Button size="sm" className="bg-green-600 hover:bg-green-700 gap-2 flex-shrink-0">
+  <FolderOpen className="size-4" />
+  Review & Grant Access
+</Button>
         </div>
       )}
 
-      {/* PROJECTS — 3 cards per row */}
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h2 className="text-2xl font-semibold text-foreground">
-            My Projects
-          </h2>
-          <Input
-            type="text"
-            placeholder="Search my projects..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-64"
-          />
-        </div>
-
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div className="flex items-center gap-4 flex-wrap">
+    <h2 className="text-2xl font-semibold text-foreground">My Projects</h2>
+    <div className="flex items-center gap-2 flex-wrap">
+      {(["ALL", "DRAFT", "PENDING", "APPROVED", "REJECTED"] as const).map((s) => (
+        <button
+          key={s}
+          onClick={() => setStatusFilter(s)}
+          className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+            statusFilter === s
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
+          }`}
+        >
+          {s === "ALL" ? "All" : s.charAt(0) + s.slice(1).toLowerCase()}
+          <span className="ml-1 opacity-70">
+            ({s === "ALL"
+              ? allProjects.length
+              : allProjects.filter((p) => p.status === s).length})
+          </span>
+        </button>
+      ))}
+    </div>
+  </div>
+  <Input
+    type="text"
+    placeholder="Search my projects..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+    className="w-full sm:w-64"
+  />
+</div>
         {projects.length === 0 ? (
           <div className="text-center py-16 rounded-lg bg-gray-50">
             <h3 className="text-xl font-semibold mb-2">
@@ -375,16 +406,23 @@ const handleEdit = (id: string, status: string) => {
                     </div>
 
                     <div className="flex gap-2 flex-shrink-0">
-{(project.status === "DRAFT" || project.status === "APPROVED") && (
-  <Button
-    size="icon"
-    variant="ghost"
-    onClick={() => handleEdit(project.id, project.status)}
-    title={project.status === "APPROVED" ? "Edit team & milestones only" : "Edit project"}
-  >
-    <Pencil className={`w-4 h-4 ${project.status === "APPROVED" ? "text-gray-400" : "text-blue-600"}`} />
-  </Button>
-)}
+                      {(project.status === "DRAFT" ||
+                        project.status === "APPROVED") && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(project.id, project.status)}
+                          title={
+                            project.status === "APPROVED"
+                              ? "Edit team & milestones only"
+                              : "Edit project"
+                          }
+                        >
+                          <Pencil
+                            className={`w-4 h-4 ${project.status === "APPROVED" ? "text-gray-400" : "text-blue-600"}`}
+                          />
+                        </Button>
+                      )}
                       <Button
                         size="icon"
                         variant="ghost"
