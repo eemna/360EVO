@@ -8,12 +8,12 @@ export function calculateTRLScore(project) {
   const hasDocuments = project.documents?.length > 0;
   const hasUpdates = project.updates?.length > 0;
 
-  const hasIpProtection  = project.ipStatus === "PENDING" ||
-                           project.ipStatus === "GRANTED";
-  const hasGrantedIp     = project.ipStatus === "GRANTED";
-  const pilotUsers       = project.pilotUsers ?? 0;
-  const hasPilots        = pilotUsers > 0;
-  const hasScaledPilots  = pilotUsers >= 100;
+  const hasIpProtection =
+    project.ipStatus === "PENDING" || project.ipStatus === "GRANTED";
+  const hasGrantedIp = project.ipStatus === "GRANTED";
+  const pilotUsers = project.pilotUsers ?? 0;
+  const hasPilots = pilotUsers > 0;
+  const hasScaledPilots = pilotUsers >= 100;
 
   let score;
   if (stage === "IDEA") {
@@ -22,23 +22,18 @@ export function calculateTRLScore(project) {
     else score = 1;
 
     if (hasIpProtection && score < 3) score = 3;
-
   } else if (stage === "PROTOTYPE") {
     if (hasDocuments && hasCompletedMilestone && hasIpProtection) score = 5;
     else score = 4;
-
   } else if (stage === "MVP") {
     if (hasUpdates && hasCompletedMilestone && hasTeam && hasPilots) score = 7;
     else score = 6;
 
     if (hasGrantedIp && score < 7) score = 7;
-
   } else if (stage === "GROWTH") {
-    score = (hasGrantedIp && hasScaledPilots) ? 9 : 8;
-
+    score = hasGrantedIp && hasScaledPilots ? 9 : 8;
   } else if (stage === "SCALING") {
     score = 9;
-
   } else {
     score = 1;
   }
@@ -51,7 +46,7 @@ export function calculateTRLScore(project) {
     hasCompletedMilestone,
     hasDocuments,
     hasUpdates,
-    ipStatus:   project.ipStatus ?? "NONE",
+    ipStatus: project.ipStatus ?? "NONE",
     pilotUsers,
   };
 
@@ -134,13 +129,13 @@ export function tractionScore(project) {
   const pilotUsers = project.pilotUsers ?? 0;
 
   if (milestones.length > 0) score += 15;
-  if (completed >= 1)        score += 15;
-  if (completed >= 3)        score += 15;
+  if (completed >= 1) score += 15;
+  if (completed >= 3) score += 15;
   if ((project.updates?.length ?? 0) >= 1) score += 10;
   if ((project.updates?.length ?? 0) >= 3) score += 10;
-  if (pilotUsers >= 1)       score += 10;
-  if (pilotUsers >= 50)      score += 15;
-  if (pilotUsers >= 100)     score += 10;
+  if (pilotUsers >= 1) score += 10;
+  if (pilotUsers >= 50) score += 15;
+  if (pilotUsers >= 100) score += 10;
 
   return Math.min(score, 100);
 }
@@ -150,7 +145,7 @@ export function competitiveScore(project) {
 
   if ((project.technologies?.length ?? 0) >= 1) score += 25;
   if ((project.technologies?.length ?? 0) >= 3) score += 15;
-  if ((project.tagline?.length ?? 0) > 20)      score += 20;
+  if ((project.tagline?.length ?? 0) > 20) score += 20;
   if (["MVP", "GROWTH", "SCALING"].includes(project.stage)) score += 20;
 
   if (project.ipStatus === "PENDING") score += 10;

@@ -813,8 +813,8 @@ export default function ProjectDetailsPage() {
       </div>
       {user?.id === project.ownerId && (
         <div className="max-w-7xl mx-auto px-1 pb-10">
-    <ProjectAnalyticsDashboard projectId={project.id} />
-  </div>
+          <ProjectAnalyticsDashboard projectId={project.id} />
+        </div>
       )}
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>

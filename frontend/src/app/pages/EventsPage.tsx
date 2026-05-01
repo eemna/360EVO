@@ -99,31 +99,32 @@ function formatDateRange(date: string, endDate?: string) {
   return { date: dateStr, time: timeStr };
 }
 
-function getDateFilter(value: string): { start: string; end: string } | undefined {
+function getDateFilter(
+  value: string,
+): { start: string; end: string } | undefined {
   const now = new Date();
   if (value === "today") {
-    const start = new Date(now); 
+    const start = new Date(now);
     start.setHours(0, 0, 0, 0);
-    const end = new Date(now); 
+    const end = new Date(now);
     end.setHours(23, 59, 59, 999);
     return { start: start.toISOString(), end: end.toISOString() };
   }
-if (value === "week") {
-  const start = new Date(now);
-  const day = start.getDay(); // 0=Sun, 1=Mon...
-  
+  if (value === "week") {
+    const start = new Date(now);
+    const day = start.getDay(); // 0=Sun, 1=Mon...
 
-  const daysBack = day === 0 ? -6 : -(day - 1);
-  
-  start.setDate(start.getDate() + daysBack);
-  start.setHours(0, 0, 0, 0);
-  
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-  end.setHours(23, 59, 59, 999);
-  
-  return { start: start.toISOString(), end: end.toISOString() };
-}
+    const daysBack = day === 0 ? -6 : -(day - 1);
+
+    start.setDate(start.getDate() + daysBack);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23, 59, 59, 999);
+
+    return { start: start.toISOString(), end: end.toISOString() };
+  }
   if (value === "month") {
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
@@ -301,11 +302,11 @@ export default function EventsPage() {
       if (search.trim()) params.search = search.trim();
       if (selectedType) params.type = selectedType;
 
-const dateRange = getDateFilter(selectedDate);
-if (dateRange) {
-  params.dateFrom = dateRange.start;
-  params.dateTo = dateRange.end;
-}
+      const dateRange = getDateFilter(selectedDate);
+      if (dateRange) {
+        params.dateFrom = dateRange.start;
+        params.dateTo = dateRange.end;
+      }
       const { data } = await api.get("/events", { params });
       setEvents(data.events);
       setPagination(data.pagination);

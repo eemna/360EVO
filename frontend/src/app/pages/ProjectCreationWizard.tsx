@@ -1290,32 +1290,37 @@ export function ProjectCreationWizard({
                                     </p>
                                   )}
                                 </div>
-
                               </div>
-<div className="space-y-2 flex items-center gap-3 pt-6">
-  <Input
-    type="checkbox"
-    id={`milestone-done-${index}`}
-    checked={!!watch(`milestones.${index}.completedAt`)}
-    onChange={(e) => {
-      setValue(
-        `milestones.${index}.completedAt`,
-        e.target.checked
-          ? new Date().toISOString().split("T")[0]
-          : "",
-      );
-    }}
-    className="size-4 rounded border-gray-300"
-  />
-  <Label htmlFor={`milestone-done-${index}`} className="cursor-pointer">
-    Mark as completed
-  </Label>
-  {watch(`milestones.${index}.completedAt`) && (
-    <span className="text-xs text-green-600">
-      ✓ Done on {watch(`milestones.${index}.completedAt`)}
-    </span>
-  )}
-</div>
+                              <div className="space-y-2 flex items-center gap-3 pt-6">
+                                <Input
+                                  type="checkbox"
+                                  id={`milestone-done-${index}`}
+                                  checked={
+                                    !!watch(`milestones.${index}.completedAt`)
+                                  }
+                                  onChange={(e) => {
+                                    setValue(
+                                      `milestones.${index}.completedAt`,
+                                      e.target.checked
+                                        ? new Date().toISOString().split("T")[0]
+                                        : "",
+                                    );
+                                  }}
+                                  className="size-4 rounded border-gray-300"
+                                />
+                                <Label
+                                  htmlFor={`milestone-done-${index}`}
+                                  className="cursor-pointer"
+                                >
+                                  Mark as completed
+                                </Label>
+                                {watch(`milestones.${index}.completedAt`) && (
+                                  <span className="text-xs text-green-600">
+                                    ✓ Done on{" "}
+                                    {watch(`milestones.${index}.completedAt`)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </Card>
                         ))}
@@ -1547,12 +1552,12 @@ export function ProjectCreationWizard({
               >
                 New Project
               </Button>
-{!currentProjectId && (
-  <Button type="button" variant="outline" onClick={saveDraft}>
-    <UploadIcon className="size-4 mr-2" />
-    Save Draft
-  </Button>
-)}
+              {!currentProjectId && (
+                <Button type="button" variant="outline" onClick={saveDraft}>
+                  <UploadIcon className="size-4 mr-2" />
+                  Save Draft
+                </Button>
+              )}
 
               {currentStep === STEPS.length - 1 ? (
                 <Button

@@ -1,7 +1,11 @@
 import { prisma } from "../config/prisma.js";
 import geoip from "geoip-lite";
 
-export const trackProjectView = async (projectId, source = "direct", ip = null) => {
+export const trackProjectView = async (
+  projectId,
+  source = "direct",
+  ip = null,
+) => {
   console.log("[Analytics] IP received:", ip);
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
@@ -113,7 +117,7 @@ export const getProjectAnalytics = async (req, res, next) => {
 
         return acc;
       },
-      { views: 0, bookmarks: 0, interests: 0 }
+      { views: 0, bookmarks: 0, interests: 0 },
     );
 
     const geoTable = Object.entries(geoMap)

@@ -438,32 +438,38 @@ export default function MyApplicationsPage() {
   >("ALL");
 
   useEffect(() => {
-api
-  .get("/programs/my-applications")
-  .then(({ data }) => {
-    const now = new Date();
-    const active = data.filter((app: ProgramApplication) => {
-      return new Date(app.program.endDate) >= now;
-    });
-    setProgramApps(active);
-  })
-  .catch(() => showToast({ type: "error", title: "Failed to load program applications", message: "" }))
-  .finally(() => setLoadingPrograms(false));
+    api
+      .get("/programs/my-applications")
+      .then(({ data }) => {
+        const now = new Date();
+        const active = data.filter((app: ProgramApplication) => {
+          return new Date(app.program.endDate) >= now;
+        });
+        setProgramApps(active);
+      })
+      .catch(() =>
+        showToast({
+          type: "error",
+          title: "Failed to load program applications",
+          message: "",
+        }),
+      )
+      .finally(() => setLoadingPrograms(false));
 
-api
-  .get("/events/user/applications")
-  .then(({ data }) => {
-    const now = new Date();
-    const active = data.filter((app: EventApplication) => {
-      const eventEnd = app.event.endDate 
-        ? new Date(app.event.endDate) 
-        : new Date(app.event.date);
-      return eventEnd >= now;
-    });
-    setEventApps(active);
-  })
-  .catch(() => {})
-  .finally(() => setLoadingEvents(false));
+    api
+      .get("/events/user/applications")
+      .then(({ data }) => {
+        const now = new Date();
+        const active = data.filter((app: EventApplication) => {
+          const eventEnd = app.event.endDate
+            ? new Date(app.event.endDate)
+            : new Date(app.event.date);
+          return eventEnd >= now;
+        });
+        setEventApps(active);
+      })
+      .catch(() => {})
+      .finally(() => setLoadingEvents(false));
   }, [showToast]);
 
   const filteredPrograms =

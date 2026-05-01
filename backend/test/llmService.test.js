@@ -12,8 +12,13 @@ await jest.unstable_mockModule("groq-sdk", () => {
 });
 
 const { default: GroqSDK } = await import("groq-sdk");
-const { callLlm, parseJsonResponse, runMixtureOfExperts, createThesisAlignmentMoE, createPitchAnalysisMoE } = 
-  await import("../services/llmservice.js");
+const {
+  callLlm,
+  parseJsonResponse,
+  runMixtureOfExperts,
+  createThesisAlignmentMoE,
+  createPitchAnalysisMoE,
+} = await import("../services/llmservice.js");
 
 const mockCreate = GroqSDK._create;
 
@@ -68,7 +73,6 @@ const baseInvestorProfile = {
 };
 
 const baseAssessment = { trlScore: 4, irScore: 72 };
-
 
 describe("callLlm — mocking & prompt shape", () => {
   beforeEach(() => {
@@ -242,7 +246,6 @@ describe("parseJsonResponse — JSON parsing edge cases", () => {
   });
 });
 
-
 describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   beforeEach(() => {
     mockCreate.mockReset();
@@ -360,7 +363,6 @@ describe("runMixtureOfExperts — prompt shape & aggregation", () => {
   });
 });
 
-
 describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
   beforeEach(() => {
     mockCreate.mockReset();
@@ -475,7 +477,6 @@ describe("createThesisAlignmentMoE — prompt shape & score blending", () => {
     expect(result.alignmentScore).toBe(24);
   });
 });
-
 
 describe("createPitchAnalysisMoE — prompt shape & output mapping", () => {
   beforeEach(() => {

@@ -250,7 +250,7 @@ export function fuzzifyTechnology(investorTechs, projectTechs, projectDesc) {
     investorTechs.join(" "),
     [...(projectTechs || []), projectDesc || ""].join(" "),
   );
- 
+
   const signal = Math.min(1, Math.max(overlapRatio, nlpSim * 1.5));
   return {
     high: sigmoid(signal, 0.6, 8),
@@ -454,7 +454,6 @@ export function inferThesis(raw, { industryHigh }) {
 }
 
 // STEP 3 — PER-CATEGORY DEFUZZIFICATION
-
 
 const CENTROIDS = { low: 0.15, medium: 0.5, high: 0.95 };
 

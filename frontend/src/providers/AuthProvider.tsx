@@ -18,10 +18,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         const { data } = await api.get("/auth/me");
         setUser(data);
-      } catch {
-        setUser(null);
-        setApiToken(null);
-      } finally {
+} catch (err: unknown) {
+  const error = err as { response?: { status?: number; data?: unknown }; message?: string };
+  console.error("Session restore failed:", error.response?.status, error.response?.data, error.message);
+  setUser(null);
+  setApiToken(null);
+} finally {
         setLoading(false);
       }
     };
