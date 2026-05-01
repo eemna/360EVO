@@ -55,31 +55,30 @@ export const getProjectById = async (req, res, next) => {
       return res.status(404).json({ message: "Project not found" });
     }
 
-if (!req.user || req.user.id !== project.ownerId) {
-  await prisma.project.update({
-    where: { id },
-    data: { viewCount: { increment: 1 } },
-  });
+    if (!req.user || req.user.id !== project.ownerId) {
+      await prisma.project.update({
+        where: { id },
+        data: { viewCount: { increment: 1 } },
+      });
 
-  const source = req.query.source || "direct";
+      const source = req.query.source || "direct";
 
-  const rawIp =
-    req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-    req.socket?.remoteAddress ||
-    null;
+      const rawIp =
+        req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+        req.socket?.remoteAddress ||
+        null;
 
-const isLocalhost =
-  rawIp === "::1" ||
-  rawIp === "127.0.0.1" ||
-  rawIp === "::ffff:127.0.0.1";
+      const isLocalhost =
+        rawIp === "::1" ||
+        rawIp === "127.0.0.1" ||
+        rawIp === "::ffff:127.0.0.1";
 
-const ip =
-  process.env.NODE_ENV !== "production" && isLocalhost
-    ? "41.226.11.1"
-    : rawIp;
-  trackProjectView(id, source, ip);
-}
-
+      const ip =
+        process.env.NODE_ENV !== "production" && isLocalhost
+          ? "41.226.11.1"
+          : rawIp;
+      trackProjectView(id, source, ip);
+    }
 
     res.json(project);
   } catch (error) {

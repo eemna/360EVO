@@ -93,7 +93,9 @@ export default function ProjectAnalyticsDashboard({
     interests: 0,
   });
   const [loading, setLoading] = useState(true);
-const [geoTable, setGeoTable] = useState<{ country: string; views: number }[]>([]);
+  const [geoTable, setGeoTable] = useState<
+    { country: string; views: number }[]
+  >([]);
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -184,7 +186,7 @@ const [geoTable, setGeoTable] = useState<{ country: string; views: number }[]>([
       </div>
     );
   }
-const totalGeoViews = geoTable.reduce((sum, r) => sum + r.views, 0) || 1;
+  const totalGeoViews = geoTable.reduce((sum, r) => sum + r.views, 0) || 1;
   return (
     <div className="space-y-6">
       {/* Header + range picker */}
@@ -310,125 +312,127 @@ const totalGeoViews = geoTable.reduce((sum, r) => sum + r.views, 0) || 1;
           </Card>
 
           {/* Engagement + Sources */}
-<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  {/* Funnel */}
-  <Card className="border border-gray-200">
-    <CardHeader className="pb-2">
-      <CardTitle className="text-sm">Engagement Funnel</CardTitle>
-    </CardHeader>
-    <CardContent className="space-y-3">
-      {funnelItems.map(({ label, value, color, pct }) => (
-        <div key={label}>
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-xs text-gray-500">{label}</span>
-            <span className="text-xs font-semibold text-gray-700">
-              {value.toLocaleString()}{" "}
-              <span className="text-gray-400">({pct}%)</span>
-            </span>
-          </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ${color}`}
-              style={{ width: `${pct}%` }}
-            />
-          </div>
-        </div>
-      ))}
-    </CardContent>
-  </Card>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Funnel */}
+            <Card className="border border-gray-200">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Engagement Funnel</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {funnelItems.map(({ label, value, color, pct }) => (
+                  <div key={label}>
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs text-gray-500">{label}</span>
+                      <span className="text-xs font-semibold text-gray-700">
+                        {value.toLocaleString()}{" "}
+                        <span className="text-gray-400">({pct}%)</span>
+                      </span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-700 ${color}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
 
-  {/* Sources pie */}
-  {pieData.length > 0 ? (
-    <Card className="border border-gray-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm">Traffic Sources</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={160}>
-          <PieChart>
-            <Pie
-              data={pieData}
-              cx="50%"
-              cy="50%"
-              innerRadius={45}
-              outerRadius={65}
-              paddingAngle={3}
-              dataKey="value"
-            >
-              {pieData.map((_, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={PIE_COLORS[index % PIE_COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Legend
-              iconType="circle"
-              iconSize={8}
-              wrapperStyle={{ fontSize: "11px" }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: "white",
-                border: "1px solid #e5e7eb",
-                borderRadius: "8px",
-                fontSize: "11px",
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  ) : (
-    <Card className="border border-gray-200 flex items-center justify-center">
-      <CardContent className="py-8 text-center">
-        <p className="text-xs text-gray-400">No source data available</p>
-      </CardContent>
-    </Card>
-  )}
+            {/* Sources pie */}
+            {pieData.length > 0 ? (
+              <Card className="border border-gray-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm">Traffic Sources</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={65}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {pieData.map((_, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={PIE_COLORS[index % PIE_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Legend
+                        iconType="circle"
+                        iconSize={8}
+                        wrapperStyle={{ fontSize: "11px" }}
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "white",
+                          border: "1px solid #e5e7eb",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border border-gray-200 flex items-center justify-center">
+                <CardContent className="py-8 text-center">
+                  <p className="text-xs text-gray-400">
+                    No source data available
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-  {/* Geo table*/}
-  {geoTable.length > 0 ? (
-    <Card className="border border-gray-200">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <TrendingUp className="size-4 text-indigo-500" />
-          Views by Country
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-2.5">
-          {geoTable.slice(0, 6).map(({ country, views }) => {
-            const pct = Math.round((views / totalGeoViews) * 100);
-            return (
-              <div key={country} className="flex items-center gap-3">
-                <span className="text-xs text-gray-500 w-8 font-mono uppercase">
-                  {country}
-                </span>
-                <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-indigo-400 rounded-full transition-all duration-500"
-                    style={{ width: `${pct}%` }}
-                  />
-                </div>
-                <span className="text-xs font-medium text-gray-700 w-14 text-right">
-                  {views}{" "}
-                  <span className="text-gray-400">({pct}%)</span>
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
-  ) : (
-    <Card className="border border-gray-200 flex items-center justify-center">
-      <CardContent className="py-8 text-center">
-        <p className="text-xs text-gray-400">No geo data available</p>
-      </CardContent>
-    </Card>
-  )}
-</div>
+            {/* Geo table*/}
+            {geoTable.length > 0 ? (
+              <Card className="border border-gray-200">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <TrendingUp className="size-4 text-indigo-500" />
+                    Views by Country
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2.5">
+                    {geoTable.slice(0, 6).map(({ country, views }) => {
+                      const pct = Math.round((views / totalGeoViews) * 100);
+                      return (
+                        <div key={country} className="flex items-center gap-3">
+                          <span className="text-xs text-gray-500 w-8 font-mono uppercase">
+                            {country}
+                          </span>
+                          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-indigo-400 rounded-full transition-all duration-500"
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-xs font-medium text-gray-700 w-14 text-right">
+                            {views}{" "}
+                            <span className="text-gray-400">({pct}%)</span>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="border border-gray-200 flex items-center justify-center">
+                <CardContent className="py-8 text-center">
+                  <p className="text-xs text-gray-400">No geo data available</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </>
       )}
     </div>

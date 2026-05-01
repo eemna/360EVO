@@ -810,18 +810,18 @@ text-white border border-white/30 gap-2"
                     {/* Location */}
                     <div className="space-y-2">
                       <Label>Location </Label>
-                     <LocationAutocompleteInput
-  value={formData.profile?.location ?? ""}
-  onChange={(val) =>
-    setFormData({
-      ...formData,
-      profile: {
-        ...formData.profile!,
-        location: val,
-      },
-    })
-  }
-/>
+                      <LocationAutocompleteInput
+                        value={formData.profile?.location ?? ""}
+                        onChange={(val) =>
+                          setFormData({
+                            ...formData,
+                            profile: {
+                              ...formData.profile!,
+                              location: val,
+                            },
+                          })
+                        }
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>Phone</Label>

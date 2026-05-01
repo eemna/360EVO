@@ -13,29 +13,36 @@ export const getEvents = async (req, res, next) => {
       const where = {
         status: "PUBLISHED",
         ...(type && { type }),
-...(dateFrom && dateTo
-  ? {
-      AND: [
-        {
-          OR: [
-            { date: { gte: new Date(dateFrom), lte: new Date(dateTo) } },
-            { endDate: { gte: new Date(dateFrom), lte: new Date(dateTo) } },
-          ],
-        },
-        {
-          OR: [
-            { endDate: { gte: now } },
-            { endDate: null, date: { gte: now } },
-          ],
-        },
-      ],
-    }
-  : {
-      OR: [
-        { endDate: { gte: now } },
-        { endDate: null, date: { gte: now } },
-      ],
-    }),
+        ...(dateFrom && dateTo
+          ? {
+              AND: [
+                {
+                  OR: [
+                    {
+                      date: { gte: new Date(dateFrom), lte: new Date(dateTo) },
+                    },
+                    {
+                      endDate: {
+                        gte: new Date(dateFrom),
+                        lte: new Date(dateTo),
+                      },
+                    },
+                  ],
+                },
+                {
+                  OR: [
+                    { endDate: { gte: now } },
+                    { endDate: null, date: { gte: now } },
+                  ],
+                },
+              ],
+            }
+          : {
+              OR: [
+                { endDate: { gte: now } },
+                { endDate: null, date: { gte: now } },
+              ],
+            }),
       };
 
       const [events, total] = await Promise.all([
@@ -337,7 +344,7 @@ export const applyToEvent = async (req, res, next) => {
     if (!event) return res.status(404).json({ message: "Event not found" });
     if (event.status !== "PUBLISHED")
       return res.status(400).json({ message: "Event is not open" });
-    
+
     if (new Date() > new Date(event.endDate ?? event.date)) {
       return res.status(400).json({ message: "This event has already ended" });
     }

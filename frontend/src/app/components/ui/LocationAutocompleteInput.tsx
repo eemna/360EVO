@@ -32,7 +32,7 @@ export function LocationAutocompleteInput({ value, onChange }: Props) {
         setLoading(true);
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&featuretype=city`,
-          { headers: { "Accept-Language": "en" } }
+          { headers: { "Accept-Language": "en" } },
         );
         const data = await res.json();
         setSuggestions(data);

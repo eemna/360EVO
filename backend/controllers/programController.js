@@ -21,21 +21,21 @@ export const getPrograms = async (req, res, next) => {
     const take = Number(limit);
 
     if (!search?.toString().trim()) {
-const where = {
-  ...(type && { type }),
-  ...(status === "OPEN" && {
-    status: "OPEN",
-    applicationDeadline: { gte: new Date() },
-  }),
-  ...(status === "CLOSED" && {
-    OR: [
-      { status: "CLOSED" },
-      { status: "OPEN", applicationDeadline: { lt: new Date() } },
-    ],
-  }),
-  ...(status === "COMPLETED" && { status: "COMPLETED" }),
-  ...(status === "DRAFT" && { status: "DRAFT" }),
-};
+      const where = {
+        ...(type && { type }),
+        ...(status === "OPEN" && {
+          status: "OPEN",
+          applicationDeadline: { gte: new Date() },
+        }),
+        ...(status === "CLOSED" && {
+          OR: [
+            { status: "CLOSED" },
+            { status: "OPEN", applicationDeadline: { lt: new Date() } },
+          ],
+        }),
+        ...(status === "COMPLETED" && { status: "COMPLETED" }),
+        ...(status === "DRAFT" && { status: "DRAFT" }),
+      };
 
       const [programs, total] = await prisma.$transaction([
         prisma.program.findMany({

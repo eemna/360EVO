@@ -224,7 +224,9 @@ const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
       });
     }
 
-    console.log(`[CRON] Ensured analytics rows for ${projects.length} projects`);
+    console.log(
+      `[CRON] Ensured analytics rows for ${projects.length} projects`,
+    );
     cronJobRuns.inc({ job: "analytics", status: "success" });
   } catch (err) {
     cronJobRuns.inc({ job: "analytics", status: "failed" });
