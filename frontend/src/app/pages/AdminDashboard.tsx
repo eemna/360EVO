@@ -331,7 +331,7 @@ export default function AdminDashboard() {
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
       if (stats) setStats({ ...stats, projects: stats.projects });
     } catch {
-      /* toast handled globally */
+      /* to */
     } finally {
       setActionLoading(null);
     }

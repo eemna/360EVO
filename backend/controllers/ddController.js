@@ -315,23 +315,31 @@ export const addDocument = async (req, res, next) => {
       },
     });
 
-    if (process.env.USE_RAG === "true" && fileType === "application/pdf") {
-      fetch(process.env.N8N_WEBHOOK_INGEST, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          docId: doc.id,
-          dataRoomId,
-          fileUrl,
-          name,
-          callbackUrl: `${process.env.API_BASE_URL}/data-rooms/${dataRoomId}/documents/${doc.id}/rag-callback`,
-        }),
-      }).catch((err) =>
-        console.warn("[n8n] Ingest webhook failed:", err.message),
-      );
+if (process.env.USE_RAG === "true" && fileType === "application/pdf") {
+  fetch(process.env.N8N_WEBHOOK_INGEST, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      docId: doc.id,
+      dataRoomId,
+      fileUrl,
+      name,
+      callbackUrl: `${process.env.API_BASE_URL}/data-rooms/${dataRoomId}/documents/${doc.id}/rag-callback`,
+    }),
+  })
+  .then(async (res) => {
+    console.log(`[n8n] Response status: ${res.status}`);
+    const text = await res.text();
+    console.log(`[n8n] Response body: ${text}`);
+  })
+  .catch((err) => {
+    console.warn("[n8n] Ingest webhook failed:", err.message);
+    console.warn("[n8n] Full error:", err);
+  });
 
-      console.log(`[RAG] Queued indexing for doc ${doc.id}`);
-    }
+  console.log(`[RAG] Firing webhook to: ${process.env.N8N_WEBHOOK_INGEST}`);
+  console.log(`[RAG] Queued indexing for doc ${doc.id}`);
+}
 
     ddDocumentsUploaded.inc();
     await prisma.dataRoomActivity.create({
