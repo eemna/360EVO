@@ -28,7 +28,7 @@ import paymentRoutes from "./routes/paymentRoute.js";
 import webhookRoutes from "./routes/webhookRoute.js";
 import programRoutes from "./routes/programRoute.js";
 import searchRouter from "./routes/searchroute.js";
-import {prisma} from "./config/prisma.js";
+import { prisma } from "./config/prisma.js";
 
 let job, matchRegenerationJob, narrativeRetryJob, analyticsJob;
 dotenv.config({ override: false });
@@ -120,7 +120,8 @@ if (process.env.NODE_ENV === "e2e") {
       const record = await prisma.emailVerification.findFirst({
         orderBy: { createdAt: "desc" },
       });
-      if (!record) return res.status(404).json({ message: "No verification found" });
+      if (!record)
+        return res.status(404).json({ message: "No verification found" });
 
       await prisma.user.update({
         where: { id: record.userId },

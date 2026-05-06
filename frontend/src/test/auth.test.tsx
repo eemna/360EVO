@@ -443,7 +443,9 @@ describe("RegistrationPage — Step 2: Basic Info Validation", () => {
     );
     fireEvent.change(pwInputs[0], { target: { value: "ValidPass1!" } });
     await waitFor(() => {
-      expect(screen.getByText(/password strength: strong/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/password strength: strong/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -751,7 +753,10 @@ describe("ResetPasswordPage", () => {
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "success", title: "Password Updated 🎉" }),
+        expect.objectContaining({
+          type: "success",
+          title: "Password Updated 🎉",
+        }),
       );
     });
   });
@@ -908,7 +913,10 @@ describe("VerifyEmailPage", () => {
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "success", title: "Email Verified 🎉" }),
+        expect.objectContaining({
+          type: "success",
+          title: "Email Verified 🎉",
+        }),
       );
     });
   });
@@ -951,7 +959,10 @@ describe("VerifyEmailPage", () => {
 
     await waitFor(() => {
       expect(mockShowToast).toHaveBeenCalledWith(
-        expect.objectContaining({ type: "error", title: "Verification Failed" }),
+        expect.objectContaining({
+          type: "error",
+          title: "Verification Failed",
+        }),
       );
     });
   });

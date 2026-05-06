@@ -20,9 +20,9 @@ async function loginAs(
   await clearSession(page);
   await page.goto("/login");
   await page.waitForLoadState("domcontentloaded");
-  await expect(
-    page.getByRole("button", { name: /^sign in$/i }),
-  ).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole("button", { name: /^sign in$/i })).toBeVisible({
+    timeout: 10000,
+  });
   await page.getByLabel(/^email$/i).fill(email);
   await page.getByLabel(/^password$/i).fill(password);
   await page.getByRole("button", { name: /^sign in$/i }).click();
@@ -47,7 +47,7 @@ test("Startup registers → creates project → Admin approves", async ({
     localStorage.setItem("cookieConsent", "true");
   });
 
-  // ─── STEP 1 — Startup registers 
+  // ─── STEP 1 — Startup registers
   await test.step("1 — Startup registers", async () => {
     await page.goto("/register");
     await page.getByRole("button", { name: /^startup/i }).click();
@@ -60,13 +60,15 @@ test("Startup registers → creates project → Admin approves", async ({
     await page.locator('input[type="password"]').nth(1).fill(STARTUP_PASSWORD);
     await page.getByRole("button", { name: /^continue$/i }).click();
 
-    await page.getByText(/company name/i).waitFor({ state: "visible", timeout: 15000 });
+    await page
+      .getByText(/company name/i)
+      .waitFor({ state: "visible", timeout: 15000 });
     await page.getByRole("textbox").first().fill("E2E Test Corp");
     await page.getByRole("button", { name: /complete registration/i }).click();
     await page.waitForURL("**/login**", { timeout: 30000 });
   });
 
-  // ─── STEP 2 — Verify startup email 
+  // ─── STEP 2 — Verify startup email
   await test.step("2 — Verify startup email", async () => {
     const res = await request.get(
       "http://localhost:5001/api/e2e/verify-latest-user",
@@ -90,9 +92,11 @@ test("Startup registers → creates project → Admin approves", async ({
     // Step 1: Basics
     await page.getByLabel(/project title/i).fill(PROJECT_TITLE);
     await page.getByLabel(/tagline/i).fill("An end-to-end test project");
-    await page.getByLabel(/short description/i).fill(
-      "This is a short description for the E2E test project that is meaningful.",
-    );
+    await page
+      .getByLabel(/short description/i)
+      .fill(
+        "This is a short description for the E2E test project that is meaningful.",
+      );
     await page.getByRole("combobox").first().click();
     await page.getByRole("option", { name: "FinTech" }).click();
     await page.getByRole("button", { name: /^mvp$/i }).click();
@@ -146,14 +150,14 @@ test("Startup registers → creates project → Admin approves", async ({
     });
   });
 
-  // ─── STEP 6 — Approved project appears in public gallery 
+  // ─── STEP 6 — Approved project appears in public gallery
   await test.step("6 — Approved project appears in public gallery", async () => {
     await page.goto("/app/projects");
     await page.waitForLoadState("domcontentloaded");
     await expect(page.getByText(PROJECT_TITLE)).toBeVisible({ timeout: 15000 });
   });
 
-  // ─── STEP 7 — Startup sees project as APPROVED 
+  // ─── STEP 7 — Startup sees project as APPROVED
   await test.step("7 — Startup sees project as APPROVED", async () => {
     await loginAs(page, STARTUP_EMAIL, STARTUP_PASSWORD, "**/app/startup**");
     await page.waitForLoadState("domcontentloaded");
