@@ -2,6 +2,10 @@ import ratelimit from "../config/upstash.js";
 import { rateLimitHits, rateLimitRequests } from "./metrics.js";
 
 const rateLimiter = async (req, res, next) => {
+  
+  if (process.env.NODE_ENV === "e2e") {
+    return next();
+  }
   try {
     const identifier = req.ip;
     const { success } = await ratelimit.limit(identifier);

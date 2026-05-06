@@ -285,24 +285,18 @@ export const addDocument = async (req, res, next) => {
 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
-      return res
-        .status(403)
-        .json({ message: "Only the startup can upload documents" });
+      return res.status(403).json({ message: "Only the startup can upload documents" });
 
     let textExtract = null;
     if (fileType === "application/pdf" && fileUrl) {
       try {
         const response = await fetch(fileUrl);
         const buffer = Buffer.from(await response.arrayBuffer());
-        console.log("[DD] Buffer size:", buffer.length);
         const text = await extractTextFromPdf(buffer);
-        console.log("[DD] Raw text length:", text.length);
-        console.log("[DD] Raw text sample:", text.slice(0, 200));
         textExtract = text.slice(0, 50000);
         console.log(`[DD] Extracted ${textExtract.length} chars from ${name}`);
       } catch (err) {
         console.warn(`[DD] PDF extraction failed for ${name}:`, err.message);
-        console.warn(`[DD] Full error:`, err);
       }
     }
 
@@ -315,13 +309,30 @@ export const addDocument = async (req, res, next) => {
         fileType,
         accessLevel: accessLevel || "OPEN",
         textExtract,
+        ragIndexed: false,
       },
     });
+
+    if (process.env.USE_RAG === "true" && fileType === "application/pdf") {
+      fetch(process.env.N8N_WEBHOOK_INGEST, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          docId: doc.id,
+          dataRoomId,
+          fileUrl,
+          name,
+          callbackUrl: `${process.env.API_BASE_URL}/data-rooms/${dataRoomId}/documents/${doc.id}/rag-callback`,
+        }),
+      }).catch((err) => console.warn("[n8n] Ingest webhook failed:", err.message));
+
+      console.log(`[RAG] Queued indexing for doc ${doc.id}`);
+    }
+
     ddDocumentsUploaded.inc();
     await prisma.dataRoomActivity.create({
       data: { dataRoomId, userId, action: "UPLOADED_DOCUMENT", docName: name },
     });
-
     await prisma.dataRoom.update({
       where: { id: dataRoomId },
       data: { aiSummaryGenerated: false },
@@ -624,9 +635,7 @@ export const suggestAnswer = async (req, res, next) => {
 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
-      return res
-        .status(403)
-        .json({ message: "Only the startup can request suggestions" });
+      return res.status(403).json({ message: "Only the startup can request suggestions" });
 
     const thread = await prisma.ddQaThread.findUnique({
       where: { id: threadId, dataRoomId },
@@ -638,10 +647,35 @@ export const suggestAnswer = async (req, res, next) => {
       include: { documents: true },
     });
 
-    const suggestion = await suggestQaAnswer(
-      thread.question,
-      fullRoom.documents,
-    );
+    let suggestion;
+    const hasIndexedDocs = fullRoom.documents.some((d) => d.ragIndexed);
+
+    if (process.env.USE_RAG === "true" && hasIndexedDocs) {
+      try {
+        const n8nRes = await fetch(process.env.N8N_WEBHOOK_QA, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: thread.question, dataRoomId }),
+          signal: AbortSignal.timeout(30000),
+        });
+
+        if (n8nRes.ok) {
+          const { answer } = await n8nRes.json();
+          suggestion = {
+            suggestedAnswer: answer,
+            confidenceLevel: "HIGH",
+            sourceDocs: fullRoom.documents.filter((d) => d.ragIndexed).map((d) => d.name),
+          };
+          console.log(`[RAG] Used n8n agent for thread ${threadId}`);
+        }
+      } catch (ragErr) {
+        console.warn("[RAG] n8n call failed, falling back:", ragErr.message);
+      }
+    }
+
+    if (!suggestion) {
+      suggestion = await suggestQaAnswer(thread.question, fullRoom.documents);
+    }
 
     await prisma.ddQaThread.update({
       where: { id: threadId },
@@ -655,7 +689,22 @@ export const suggestAnswer = async (req, res, next) => {
     next(error);
   }
 };
+export const ragCallback = async (req, res, next) => {
+  try {
+    const { docId } = req.params;
+    const { indexed } = req.body;
 
+    await prisma.dataRoomDocument.update({
+      where: { id: docId },
+      data: { ragIndexed: indexed === true },
+    });
+
+    console.log(`[RAG] Doc ${docId} marked as indexed: ${indexed}`);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+};
 export const generateDealBrief = async (req, res, next) => {
   try {
     const { id: dataRoomId } = req.params;

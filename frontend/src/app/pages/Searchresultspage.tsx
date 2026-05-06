@@ -159,7 +159,6 @@ function ResultCard({ result }: { result: SearchResult }) {
         </div>
       )}
 
-      {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <span
@@ -269,7 +268,6 @@ export default function SearchResultsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* Search bar */}
         <form onSubmit={submitSearch} className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -287,7 +285,6 @@ export default function SearchResultsPage() {
           </p>
         )}
 
-        {/* Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto pb-1">
           {TABS.map(({ key, label, Icon }) => {
             const count =
@@ -317,7 +314,6 @@ export default function SearchResultsPage() {
           })}
         </div>
 
-        {/* Results */}
         <div className="space-y-3">
           {loading ? (
             [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
@@ -340,7 +336,6 @@ export default function SearchResultsPage() {
           )}
         </div>
 
-        {/* Pagination */}
         {totalPages > 1 && !loading && (
           <div className="flex items-center justify-center gap-2 pt-2">
             <button

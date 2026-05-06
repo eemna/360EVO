@@ -118,7 +118,6 @@ export function ProjectGallery() {
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-semibold text-gray-900">
           Project Gallery
@@ -128,7 +127,6 @@ export function ProjectGallery() {
         </p>
       </div>
 
-      {/* Filters */}
       <Card className="bg-white shadow-sm mb-6">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -215,7 +213,6 @@ export function ProjectGallery() {
         </CardContent>
       </Card>
 
-      {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -315,7 +312,6 @@ export function ProjectGallery() {
                   </div>
                 </div>
 
-                {/* ── Footer: owner + views + bookmark + interest ── */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <Users className="size-4" />
@@ -328,10 +324,8 @@ export function ProjectGallery() {
                       <span>{project.viewCount.toLocaleString()}</span>
                     </div>
 
-                    {/* ── BOOKMARK BUTTON ── */}
                     <BookmarkButton projectId={project.id} />
 
-                    {/* ── INTEREST BUTTON ── */}
                     <InterestButton
                       projectId={project.id}
                       projectTitle={project.title}

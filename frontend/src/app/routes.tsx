@@ -43,6 +43,9 @@ import EventPaymentPage from "./pages/EventPaymentPage";
 import CreateProgramPage from "./pages/CreateProgramPage";
 import ProgramPaymentPage from "./pages/ProgramPaymentPage";
 import SearchResultsPage from "./pages/Searchresultspage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import FaqPage from "./pages/FaqPage";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +57,9 @@ export const router = createBrowserRouter([
       { path: "/verify-email", element: <VerifyEmailPage /> },
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
       { path: "/reset-password", element: <ResetPasswordPage /> },
+          { path: "/privacy", element: <PrivacyPage /> },
+    { path: "/terms", element: <TermsPage /> },
+    { path: "/faq", element: <FaqPage /> },
     ],
   },
   {

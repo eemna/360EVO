@@ -112,7 +112,7 @@ function getDateFilter(
   }
   if (value === "week") {
     const start = new Date(now);
-    const day = start.getDay(); // 0=Sun, 1=Mon...
+    const day = start.getDay();
 
     const daysBack = day === 0 ? -6 : -(day - 1);
 
