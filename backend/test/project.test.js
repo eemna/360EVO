@@ -47,7 +47,7 @@ async function createAndLoginUser({
 describe("Project Lifecycle — create → submit → approve → gallery", () => {
   let startupToken, startupUserId, startupEmail;
   let adminToken, adminUserId, adminEmail;
-  let otherToken, otherUserId; 
+  let otherToken, otherUserId;
   let projectId;
 
   const baseProject = {
@@ -90,13 +90,11 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
       { expiresIn: "1d" },
     );
 
-    ({
-      accessToken: otherToken,
-      userId: otherUserId,
-    } = await createAndLoginUser({
-      role: "STARTUP",
-      companyName: "Other Corp",
-    }));
+    ({ accessToken: otherToken, userId: otherUserId } =
+      await createAndLoginUser({
+        role: "STARTUP",
+        companyName: "Other Corp",
+      }));
   }, 30000);
 
   afterAll(async () => {
@@ -106,7 +104,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     }
     await prisma.$disconnect();
   });
-
 
   test("1 — startup can create a project → status DRAFT", async () => {
     const res = await request(app)
@@ -127,7 +124,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     const res = await request(app).post("/api/projects").send(baseProject);
     expect(res.statusCode).toBe(401);
   });
-
 
   test("3 — owner can read their own DRAFT project", async () => {
     const res = await request(app)
@@ -159,7 +155,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(ids).toContain(projectId);
   });
 
-
   test("6 — owner submits the project → status PENDING", async () => {
     const res = await request(app)
       .post(`/api/projects/${projectId}/submit`)
@@ -186,7 +181,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(res.body.message).toMatch(/draft|rejected/i);
   });
 
-
   test("9 — admin can approve the project → status APPROVED", async () => {
     const res = await request(app)
       .patch(`/api/admin/projects/${projectId}/approve`)
@@ -203,7 +197,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
 
     expect([401, 403]).toContain(res.statusCode);
   });
-
 
   test("11 — approved PUBLIC project appears in the public gallery", async () => {
     const res = await request(app).get("/api/projects?page=1&limit=50");
@@ -234,7 +227,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-
   test("15 — owner can post an update on an approved project", async () => {
     const res = await request(app)
       .post(`/api/projects/${projectId}/updates`)
@@ -261,7 +253,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(res.statusCode).toBe(401);
   });
 
-
   test("18 — admin can reject a pending project; owner can then delete it", async () => {
     const createRes = await request(app)
       .post("/api/projects")
@@ -287,7 +278,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(deleteRes.statusCode).toBe(200);
     expect(deleteRes.body.message).toMatch(/deleted/i);
   });
-
 
   test("19 — startup dashboard returns correct shape and counts", async () => {
     const res = await request(app)

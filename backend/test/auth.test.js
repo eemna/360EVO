@@ -28,7 +28,6 @@ async function clearDatabase() {
 
 afterEach(async () => await clearDatabase());
 
-
 afterAll(async () => {
   await clearDatabase();
   await prisma.$disconnect();
@@ -45,9 +44,7 @@ describe("Auth Flow — register → verify → login → reset", () => {
   };
 
   test("1 — registers a new user", async () => {
-    const res = await request(app)
-      .post("/api/auth/register")
-      .send(testUser);
+    const res = await request(app).post("/api/auth/register").send(testUser);
 
     expect(res.statusCode).toBe(201);
     expect(res.body.message).toContain("Registration successful");
@@ -56,9 +53,7 @@ describe("Auth Flow — register → verify → login → reset", () => {
   test("2 — blocks duplicate registration", async () => {
     await request(app).post("/api/auth/register").send(testUser);
 
-    const res = await request(app)
-      .post("/api/auth/register")
-      .send(testUser);
+    const res = await request(app).post("/api/auth/register").send(testUser);
 
     expect(res.statusCode).toBe(400);
     expect(res.body.message).toContain("already exists");

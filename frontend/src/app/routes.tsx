@@ -57,9 +57,9 @@ export const router = createBrowserRouter([
       { path: "/verify-email", element: <VerifyEmailPage /> },
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
       { path: "/reset-password", element: <ResetPasswordPage /> },
-          { path: "/privacy", element: <PrivacyPage /> },
-    { path: "/terms", element: <TermsPage /> },
-    { path: "/faq", element: <FaqPage /> },
+      { path: "/privacy", element: <PrivacyPage /> },
+      { path: "/terms", element: <TermsPage /> },
+      { path: "/faq", element: <FaqPage /> },
     ],
   },
   {

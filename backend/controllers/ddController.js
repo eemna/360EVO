@@ -285,7 +285,9 @@ export const addDocument = async (req, res, next) => {
 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
-      return res.status(403).json({ message: "Only the startup can upload documents" });
+      return res
+        .status(403)
+        .json({ message: "Only the startup can upload documents" });
 
     let textExtract = null;
     if (fileType === "application/pdf" && fileUrl) {
@@ -324,7 +326,9 @@ export const addDocument = async (req, res, next) => {
           name,
           callbackUrl: `${process.env.API_BASE_URL}/data-rooms/${dataRoomId}/documents/${doc.id}/rag-callback`,
         }),
-      }).catch((err) => console.warn("[n8n] Ingest webhook failed:", err.message));
+      }).catch((err) =>
+        console.warn("[n8n] Ingest webhook failed:", err.message),
+      );
 
       console.log(`[RAG] Queued indexing for doc ${doc.id}`);
     }
@@ -635,7 +639,9 @@ export const suggestAnswer = async (req, res, next) => {
 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
-      return res.status(403).json({ message: "Only the startup can request suggestions" });
+      return res
+        .status(403)
+        .json({ message: "Only the startup can request suggestions" });
 
     const thread = await prisma.ddQaThread.findUnique({
       where: { id: threadId, dataRoomId },
@@ -664,7 +670,9 @@ export const suggestAnswer = async (req, res, next) => {
           suggestion = {
             suggestedAnswer: answer,
             confidenceLevel: "HIGH",
-            sourceDocs: fullRoom.documents.filter((d) => d.ragIndexed).map((d) => d.name),
+            sourceDocs: fullRoom.documents
+              .filter((d) => d.ragIndexed)
+              .map((d) => d.name),
           };
           console.log(`[RAG] Used n8n agent for thread ${threadId}`);
         }
