@@ -306,7 +306,6 @@ export default function ProjectDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Back button */}
       <div className="mb-0">
         <Button variant="ghost" className="mb-4 -ml-2" onClick={handleBack}>
           <ArrowLeft className="size-4 mr-2" />
@@ -314,7 +313,6 @@ export default function ProjectDetailsPage() {
         </Button>
       </div>
 
-      {/* Hero Section */}
       <section className="relative bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-30"></div>
@@ -410,12 +408,9 @@ export default function ProjectDetailsPage() {
         </div>
       </section>
 
-      {/* Main Content*/}
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* About */}
             <Card>
               <CardHeader>
                 <CardTitle>About This Project</CardTitle>
@@ -430,7 +425,6 @@ export default function ProjectDetailsPage() {
                 >
                   <div dangerouslySetInnerHTML={{ __html: project.fullDesc }} />
 
-                  {/* Fade overlay when collapsed */}
                   {!showFullDesc && (
                     <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
                   )}
@@ -478,7 +472,6 @@ export default function ProjectDetailsPage() {
                 </button>
               </CardContent>
             </Card>
-            {/* Team */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -514,7 +507,6 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-            {/* Roadmap */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -567,9 +559,7 @@ export default function ProjectDetailsPage() {
             </Card>
           </div>
 
-          {/* Right Column */}
           <div className="space-y-6">
-            {/* Funding */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -590,7 +580,6 @@ export default function ProjectDetailsPage() {
               </CardContent>
             </Card>
 
-            {/* Documents */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -619,7 +608,6 @@ export default function ProjectDetailsPage() {
                 ))}
               </CardContent>
             </Card>
-            {/* Project Info */}
             <Card>
               <CardHeader>
                 <CardTitle>Project Info</CardTitle>
@@ -648,8 +636,6 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* PROJECT UPDATES CARD */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -663,7 +649,6 @@ export default function ProjectDetailsPage() {
                     )}
                   </CardTitle>
 
-                  {/* Post button */}
                   {isOwner && project.status === "APPROVED" && (
                     <Button
                       size="sm"
@@ -688,8 +673,6 @@ export default function ProjectDetailsPage() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {/* Post form — owner only */}
-
                 {isOwner && showPostForm && (
                   <div className="bg-indigo-50 rounded-xl p-4 space-y-3 border border-indigo-100">
                     <textarea
@@ -703,8 +686,6 @@ export default function ProjectDetailsPage() {
                     <p className="text-xs text-gray-400 text-right">
                       {postContent.length}/1000
                     </p>
-
-                    {/* Optional image URL */}
                     <div className="flex items-center gap-2">
                       <ImageIcon className="size-4 text-gray-400 flex-shrink-0" />
                       <input
@@ -715,8 +696,6 @@ export default function ProjectDetailsPage() {
                         className="flex-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
                       />
                     </div>
-
-                    {/* Image preview */}
                     {postImageUrl && (
                       <div className="rounded-lg overflow-hidden h-28 bg-gray-100">
                         <img
@@ -741,7 +720,6 @@ export default function ProjectDetailsPage() {
                   </div>
                 )}
 
-                {/* Updates list */}
                 {updatesLoading ? (
                   <div className="space-y-3">
                     {[...Array(2)].map((_, i) => (
