@@ -44,5 +44,5 @@ router.post("/data-rooms/:id/ai/scan", protect, runAiScan);
 router.post("/data-rooms/:id/ai/suggest-answer", protect, suggestAnswer);
 router.post("/data-rooms/:id/ai/deal-brief", protect, generateDealBrief);
 router.get("/data-rooms/:id/ai/deal-brief", protect, getDealBrief);
-router.patch("/data-rooms/:id/documents/:docId/rag-callback", ragCallback);
+router.post("/data-rooms/:id/documents/:docId/rag-callback", ragCallback);
 export default router;
