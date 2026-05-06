@@ -18,6 +18,14 @@ import {
   ddQaThreadsTotal,
   llmCacheHits,
 } from "../middleware/metrics.js";
+
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 GlobalWorkerOptions.workerSrc = pathToFileURL(
@@ -315,7 +323,7 @@ export const addDocument = async (req, res, next) => {
       },
     });
 
-    if (process.env.USE_RAG === "true" && fileType === "application/pdf") {
+    if (process.env.USE_RAG === "true" && fileType === "application/pdf" && (accessLevel === "OPEN" || !accessLevel)) {
       fetch(process.env.N8N_WEBHOOK_INGEST, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -366,6 +374,21 @@ export const deleteDocument = async (req, res, next) => {
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner) return res.status(403).json({ message: "Forbidden" });
 
+    // Delete from Supabase vector store
+    if (process.env.USE_RAG === "true") {
+      const { error } = await supabase
+        .from("document_chunks")
+        .delete()
+        .eq("metadata->>doc_id", docId);
+
+      if (error) {
+        console.warn("[RAG] Failed to delete chunks:", error.message);
+      } else {
+        console.log(`[RAG] Deleted chunks for doc ${docId}`);
+      }
+    }
+
+    // Delete from Neon
     await prisma.dataRoomDocument.delete({ where: { id: docId } });
 
     await prisma.dataRoomActivity.create({
@@ -379,6 +402,9 @@ export const deleteDocument = async (req, res, next) => {
     next(error);
   }
 };
+
+
+
 export const updateDocumentAccess = async (req, res, next) => {
   try {
     const { id: dataRoomId, docId } = req.params;
@@ -389,15 +415,50 @@ export const updateDocumentAccess = async (req, res, next) => {
     if (!isOwner) return res.status(403).json({ message: "Forbidden" });
 
     if (!["OPEN", "ON_REQUEST"].includes(accessLevel)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid accessLevel. Use OPEN or ON_REQUEST" });
+      return res.status(400).json({ message: "Invalid accessLevel" });
     }
 
     const doc = await prisma.dataRoomDocument.update({
       where: { id: docId },
       data: { accessLevel },
     });
+
+    // If changed to ON_REQUEST -> delete from Supabase
+    if (process.env.USE_RAG === "true" && accessLevel === "ON_REQUEST") {
+      const { error } = await supabase
+        .from("document_chunks")
+        .delete()
+        .eq("metadata->>doc_id", docId);
+
+      if (error) {
+        console.warn("[RAG] Failed to delete chunks:", error.message);
+      } else {
+        console.log(`[RAG] Deleted chunks for restricted doc ${docId}`);
+        await prisma.dataRoomDocument.update({
+          where: { id: docId },
+          data: { ragIndexed: false },
+        });
+      }
+    }
+
+    // If changed back
+    if (process.env.USE_RAG === "true" && 
+        accessLevel === "OPEN" && 
+        doc.fileType === "application/pdf") {
+      fetch(process.env.N8N_WEBHOOK_INGEST, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          docId: doc.id,
+          dataRoomId,
+          fileUrl: doc.fileUrl,
+          name: doc.name,
+          callbackUrl: `${process.env.API_BASE_URL}/data-rooms/${dataRoomId}/documents/${doc.id}/rag-callback`,
+        }),
+      }).catch((err) => console.warn("[n8n] Re-ingest failed:", err.message));
+
+      console.log(`[RAG] Re-indexing doc ${docId} (now OPEN)`);
+    }
 
     await prisma.dataRoomActivity.create({
       data: {
@@ -741,7 +802,9 @@ export const generateDealBrief = async (req, res, next) => {
         project: {
           include: { aiAssessment: true, teamMembers: true, llmInsights: true },
         },
-        documents: true,
+          documents: {
+            where: { accessLevel: "OPEN" }, 
+                     },
       },
     });
 
