@@ -189,7 +189,6 @@ export default function RegistrationPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        {/* Progress */}
         <div className="mb-10 flex justify-center">
           <div className="flex items-center gap-4">
             {[1, 2, 3].map((step) => (
@@ -364,7 +363,6 @@ export default function RegistrationPage() {
 
             {currentStep === 3 && (
               <div className="space-y-4">
-                {/* STARTUP */}
                 {formData.role === "startup" && (
                   <>
                     <h2 className="text-2xl text-center font-semibold">
@@ -402,7 +400,6 @@ export default function RegistrationPage() {
                   </>
                 )}
 
-                {/* EXPERT */}
                 {formData.role === "expert" && (
                   <>
                     <h2 className="text-2xl text-center font-semibold">
@@ -432,7 +429,6 @@ export default function RegistrationPage() {
                   </>
                 )}
 
-                {/* INVESTOR */}
                 {formData.role === "investor" && (
                   <div className="text-center space-y-4 py-4">
                     <div className="flex justify-center">
@@ -463,7 +459,6 @@ export default function RegistrationPage() {
                   </div>
                 )}
 
-                {/* MEMBER */}
                 {formData.role === "member" && (
                   <div className="text-center space-y-4 py-4">
                     <div className="flex justify-center">

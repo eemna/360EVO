@@ -290,7 +290,6 @@ export default function Settings() {
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
           </TabsList>
 
-          {/* PROFILE TAB*/}
           <TabsContent value="profile" className="space-y-8">
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
@@ -384,7 +383,6 @@ export default function Settings() {
             </Button>
           </TabsContent>
 
-          {/* ACCOUNT TAB */}
           <TabsContent value="account" className="space-y-8">
             <div className="space-y-4">
               <Label>Email Address</Label>
@@ -429,7 +427,6 @@ export default function Settings() {
             </div>
           </TabsContent>
 
-          {/* NOTIFICATIONS TAB */}
           <TabsContent value="notifications" className="space-y-6">
             <div>
               <h2 className="text-lg font-semibold">
@@ -488,7 +485,6 @@ export default function Settings() {
             </Button>
           </TabsContent>
 
-          {/* PRIVACY TAB */}
           <TabsContent value="privacy" className="space-y-6">
             <div>
               <h2 className="text-lg font-semibold">Privacy Settings</h2>

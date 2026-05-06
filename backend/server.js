@@ -28,9 +28,10 @@ import paymentRoutes from "./routes/paymentRoute.js";
 import webhookRoutes from "./routes/webhookRoute.js";
 import programRoutes from "./routes/programRoute.js";
 import searchRouter from "./routes/searchroute.js";
+import {prisma} from "./config/prisma.js";
 
 let job, matchRegenerationJob, narrativeRetryJob, analyticsJob;
-dotenv.config();
+dotenv.config({ override: false });
 async function loadCron() {
   if (process.env.NODE_ENV !== "test") {
     try {
@@ -111,6 +112,28 @@ app.use("/api/programs", programRoutes);
 app.use("/api/search", searchRouter);
 
 const PORT = process.env.PORT || 5001;
+
+if (process.env.NODE_ENV === "e2e") {
+  console.log("E2E route registered");
+  app.get("/api/e2e/verify-latest-user", async (req, res) => {
+    try {
+      const record = await prisma.emailVerification.findFirst({
+        orderBy: { createdAt: "desc" },
+      });
+      if (!record) return res.status(404).json({ message: "No verification found" });
+
+      await prisma.user.update({
+        where: { id: record.userId },
+        data: { isVerified: true },
+      });
+      await prisma.emailVerification.delete({ where: { id: record.id } });
+
+      res.json({ message: "User verified" });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+}
 
 app.use(errorHandler);
 

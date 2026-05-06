@@ -474,7 +474,8 @@ model DataRoomDocument {
   fileKey     String
   fileType    String
   accessLevel DocAccess   @default(OPEN)
-  textExtract String?    
+  textExtract String?
+  ragIndexed  Boolean  @default(false)
   uploadedAt  DateTime    @default(now())
   dataRoom    DataRoom    @relation(fields: [dataRoomId], references: [id], onDelete: Cascade)
 }

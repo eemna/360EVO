@@ -17,6 +17,7 @@ import {
   getQaThreads,
   getActivity,
   updateDocumentAccess,
+  ragCallback,
 } from "../controllers/ddController.js";
 
 const router = express.Router();
@@ -43,5 +44,5 @@ router.post("/data-rooms/:id/ai/scan", protect, runAiScan);
 router.post("/data-rooms/:id/ai/suggest-answer", protect, suggestAnswer);
 router.post("/data-rooms/:id/ai/deal-brief", protect, generateDealBrief);
 router.get("/data-rooms/:id/ai/deal-brief", protect, getDealBrief);
-
+router.patch("/:id/documents/:docId/rag-callback", ragCallback);
 export default router;

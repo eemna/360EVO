@@ -86,7 +86,6 @@ export function RichTextEditor({
 
   return (
     <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors">
-      {/* Toolbar */}
       <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -173,7 +172,6 @@ export function RichTextEditor({
         </ToolbarButton>
       </div>
 
-      {/* Editor Content */}
       <div className="p-4 bg-white" style={{ minHeight }}>
         <EditorContent editor={editor} />
       </div>

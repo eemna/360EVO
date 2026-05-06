@@ -5,6 +5,10 @@ jest.unstable_mockModule("../utils/email.js", () => ({
   sendEmail: jest.fn().mockResolvedValue(true),
 }));
 
+jest.unstable_mockModule("../services/assessmentService.js", () => ({
+  runProjectAssessment: jest.fn().mockResolvedValue(true),
+}));
+
 const request = (await import("supertest")).default;
 const { default: app } = await import("../server.js");
 const { prisma } = await import("../config/prisma.js");
@@ -12,7 +16,7 @@ const { prisma } = await import("../config/prisma.js");
 async function createAndLoginUser({
   name = "Test User",
   role = "STARTUP",
-  companyName = "Test Corp",
+  companyName = null,
 } = {}) {
   const email = `user_${Date.now()}_${Math.random().toString(36).slice(2)}@example.com`;
 
@@ -23,13 +27,11 @@ async function createAndLoginUser({
       passwordHash: "hashed-password",
       role,
       isVerified: true,
-      ...(companyName && {
-        profile: {
-          create: {
-            companyName,
-          },
+      profile: {
+        create: {
+          ...(companyName && { companyName }),
         },
-      }),
+      },
     },
   });
 
@@ -44,7 +46,8 @@ async function createAndLoginUser({
 
 describe("Project Lifecycle — create → submit → approve → gallery", () => {
   let startupToken, startupUserId, startupEmail;
-  let adminToken, adminEmail;
+  let adminToken, adminUserId, adminEmail;
+  let otherToken, otherUserId; 
   let projectId;
 
   const baseProject = {
@@ -73,7 +76,9 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     const { userId: memberId, email: mEmail } = await createAndLoginUser({
       role: "MEMBER",
     });
+    adminUserId = memberId;
     adminEmail = mEmail;
+
     await prisma.user.update({
       where: { id: memberId },
       data: { role: "ADMIN" },
@@ -84,17 +89,24 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
       process.env.JWT_SECRET,
       { expiresIn: "1d" },
     );
+
+    ({
+      accessToken: otherToken,
+      userId: otherUserId,
+    } = await createAndLoginUser({
+      role: "STARTUP",
+      companyName: "Other Corp",
+    }));
   }, 30000);
 
   afterAll(async () => {
-    const emails = [startupEmail, adminEmail].filter(Boolean);
-    if (emails.length) {
-      await prisma.user.deleteMany({ where: { email: { in: emails } } });
+    const userIds = [startupUserId, adminUserId, otherUserId].filter(Boolean);
+    if (userIds.length) {
+      await prisma.user.deleteMany({ where: { id: { in: userIds } } });
     }
     await prisma.$disconnect();
   });
 
-  //  CREATE
 
   test("1 — startup can create a project → status DRAFT", async () => {
     const res = await request(app)
@@ -116,7 +128,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(res.statusCode).toBe(401);
   });
 
-  //  READ / UPDATE
 
   test("3 — owner can read their own DRAFT project", async () => {
     const res = await request(app)
@@ -148,7 +159,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(ids).toContain(projectId);
   });
 
-  //SUBMIT
 
   test("6 — owner submits the project → status PENDING", async () => {
     const res = await request(app)
@@ -160,11 +170,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
   });
 
   test("7 — a different user cannot submit someone else's project", async () => {
-    const { accessToken: otherToken } = await createAndLoginUser({
-      role: "STARTUP",
-      companyName: "Other Corp",
-    });
-
     const res = await request(app)
       .post(`/api/projects/${projectId}/submit`)
       .set("Authorization", `Bearer ${otherToken}`);
@@ -172,7 +177,7 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(res.statusCode).toBe(403);
   });
 
-  test("8 — PENDING project cannot be deleted (only DRAFT/REJECTED allowed)", async () => {
+  test("8 — PENDING project cannot be deleted", async () => {
     const res = await request(app)
       .delete(`/api/projects/${projectId}`)
       .set("Authorization", `Bearer ${startupToken}`);
@@ -181,9 +186,8 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(res.body.message).toMatch(/draft|rejected/i);
   });
 
-  // APPROVE
 
-  test("9 — admin can approve the project → status APPROVED, visibility PUBLIC", async () => {
+  test("9 — admin can approve the project → status APPROVED", async () => {
     const res = await request(app)
       .patch(`/api/admin/projects/${projectId}/approve`)
       .set("Authorization", `Bearer ${adminToken}`);
@@ -200,7 +204,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect([401, 403]).toContain(res.statusCode);
   });
 
-  // GALLERY
 
   test("11 — approved PUBLIC project appears in the public gallery", async () => {
     const res = await request(app).get("/api/projects?page=1&limit=50");
@@ -231,7 +234,6 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(Array.isArray(res.body)).toBe(true);
   });
 
-  // PROJECT UPDATES
 
   test("15 — owner can post an update on an approved project", async () => {
     const res = await request(app)
@@ -259,7 +261,7 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(res.statusCode).toBe(401);
   });
 
-  // REJECTION PATH
+
   test("18 — admin can reject a pending project; owner can then delete it", async () => {
     const createRes = await request(app)
       .post("/api/projects")
@@ -286,7 +288,7 @@ describe("Project Lifecycle — create → submit → approve → gallery", () =
     expect(deleteRes.body.message).toMatch(/deleted/i);
   });
 
-  // STARTUP DASHBOARD
+
   test("19 — startup dashboard returns correct shape and counts", async () => {
     const res = await request(app)
       .get("/api/projects/dashboard")

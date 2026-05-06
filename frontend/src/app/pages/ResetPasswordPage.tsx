@@ -82,7 +82,6 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-[#e8eef5] flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-        {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="bg-[#4c6fff] rounded-lg p-3">
             {success ? (
@@ -124,13 +123,11 @@ export default function ResetPasswordPage() {
 
         {!success ? (
           <>
-            {/* Title */}
             <h1 className="text-center mb-2">Reset Password</h1>
             <p className="text-center text-muted-foreground mb-6">
               Enter your new password below.
             </p>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New Password</Label>
@@ -199,7 +196,6 @@ export default function ResetPasswordPage() {
           </div>
         )}
 
-        {/* Back to Login Link */}
         {!success && (
           <div className="text-center mt-6">
             <button

@@ -7,26 +7,29 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "prisma generate && prisma migrate deploy",
-    "test": "cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "migrate:e2e": "npx cross-env DATABASE_URL=\"postgresql://neondb_owner:npg_fz2PYI0UpTXB@ep-fancy-king-aijx6kwc-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require\" DIRECT_URL=\"postgresql://neondb_owner:npg_fz2PYI0UpTXB@ep-fancy-king-aijx6kwc.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require\" npx prisma migrate deploy",
+    "test": "npx dotenv -e .env.test -- npx prisma migrate deploy && npx dotenv -e .env.test -- cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "lint": "eslint . --fix",
     "format": "prettier --write ."
   },
   "jest": {
     "testEnvironment": "node",
+    "testTimeout": 30000,
+    "forceExit": true,
     "testMatch": [
       "**/test/**/*.test.js"
     ],
     "transform": {},
     "setupFiles": [
       "./test/setup.js"
-    ]
+    ],
+    "globalSetup": "./test/globalSetup.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.80.0",
     "@google/genai": "^1.46.0",
     "@prisma/client": "^6.19.2",
     "@sendgrid/mail": "^8.1.6",
@@ -66,6 +69,7 @@
     "@jest/globals": "^30.3.0",
     "babel-jest": "^30.3.0",
     "cross-env": "^10.1.0",
+    "dotenv-cli": "^7.4.4",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.3.0",

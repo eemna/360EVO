@@ -1562,6 +1562,7 @@ export function ProjectCreationWizard({
               {currentStep === STEPS.length - 1 ? (
                 <Button
                   type="button"
+                  data-testid="wizard-submit"
                   onClick={handleSubmit(onSubmit)}
                   disabled={isSubmitting}
                   className="flex items-center gap-2"

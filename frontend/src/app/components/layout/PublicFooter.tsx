@@ -1,4 +1,5 @@
 import { Twitter, Linkedin, Github, Mail, MapPin, Phone } from "lucide-react";
+import { Link } from "react-router";
 
 export default function Footer() {
   return (
@@ -133,15 +134,15 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm">© 2026 360EVO. All rights reserved.</p>
             <div className="flex gap-6 text-sm">
-              <a href="#" className="hover:text-white transition-colors">
+              <Link to="/privacy" className="hover:text-white transition-colors">
                 Privacy Policy
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
+              </Link>
+              <Link to="/terms" className="hover:text-white transition-colors">
                 Terms of Service
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                Cookie Policy
-              </a>
+              </Link>
+              <Link to="/faq" className="hover:text-white transition-colors">
+                FAQ
+              </Link>
             </div>
           </div>
         </div>
