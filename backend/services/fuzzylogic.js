@@ -189,7 +189,8 @@ export function fuzzifyIndustry(investorIndustries, projectIndustry) {
   );
 
   if (bestSim >= 0.85) return { low: 0.0, medium: 0.0, high: 1.0 };
-  if (bestSim >= 0.6) return { low: 0.0, medium: 0.8, high: 0.2 };
+  if (bestSim >= 0.75) return { low: 0.0, medium: 0.8, high: 0.2 };
+
 
   for (const group of INDUSTRY_GROUPS) {
     if (
@@ -202,6 +203,7 @@ export function fuzzifyIndustry(investorIndustries, projectIndustry) {
 }
 
 export function fuzzifyStage(investorStages, projectStage) {
+
   if (!investorStages || investorStages.length === 0)
     return { low: 0.0, medium: 0.5, high: 0.0 };
   const projectIdx = STAGE_ORDER.indexOf(projectStage);
@@ -212,6 +214,8 @@ export function fuzzifyStage(investorStages, projectStage) {
       return i === -1 ? 99 : Math.abs(projectIdx - i);
     }),
   );
+  if (minDist === 0) return { low: 0.0, medium: 0.0, high: 1.0 };
+
   return {
     high: triangular(minDist, -0.5, 0, 0.5),
     medium: triangular(minDist, 0, 1, 2),
@@ -229,11 +233,11 @@ export function fuzzifyFunding(investorProfile, project) {
   const F = Number(project.fundingSought);
   const min = hasMin ? Number(investorProfile.fundingMin) : 0;
   const max = hasMax ? Number(investorProfile.fundingMax) : F * 10;
-  const tol = (max - min) * 0.5 || max * 0.5;
+  const tol = (max - min) * 0.2 || max * 0.2;
   return {
     high: trapezoidal(F, min - tol, min, max, max + tol),
-    medium: trapezoidal(F, min - tol * 2, min - tol, max + tol, max + tol * 2),
-    low: F < min - tol * 2 || F > max + tol * 2 ? 1.0 : 0.0,
+    medium: trapezoidal(F, min - tol * 1.5, min - tol, max + tol, max + tol * 1.5),
+    low: F < min - tol * 1.5 || F > max + tol * 1.5 ? 1.0 : 0.0,
   };
 }
 
@@ -458,6 +462,7 @@ export function inferThesis(raw, { industryHigh }) {
 const CENTROIDS = { low: 0.15, medium: 0.5, high: 0.95 };
 
 export function defuzzifyCategory(output, maxPts) {
+  if (output.high >= 1.0 && !output.medium && !output.low) return maxPts;
   let numerator = 0;
   let denominator = 0;
   for (const set of ["low", "medium", "high"]) {
