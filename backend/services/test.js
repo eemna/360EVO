@@ -1,5 +1,8 @@
 import { calculateMatchScore } from "./matchingEngine.js";
-
+import { createRequire } from "module";
+import { fuzzifyFunding, inferFunding, fuzzifyIndustry, inferIndustry } from "./fuzzylogic.js";
+const require = createRequire(import.meta.url);
+const fuzz = require("fuzzball");
 function displayScores(label, { matchScore, categoryScores }) {
   const maxes = {
     industry: 25,
@@ -80,10 +83,12 @@ const resultB = await calculateMatchScore(investorB, projectB, assessmentB);
 console.log("\nTest 2 - Should score LOW (under 25):");
 console.log("Score:", resultB.matchScore);
 console.log("Categories:", resultB.categoryScores);
-
-import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const fuzz = require("fuzzball");
+const fundingRaw = fuzzifyFunding(investorB, projectB);
+console.log("\nFunding fuzzy raw:", fundingRaw);
+const fundingInferred = inferFunding(fundingRaw, { irScore: 30 });
+console.log("Funding after inference:", fundingInferred);
+const indRaw = fuzzifyIndustry(investorB.industries, projectB.industry);
+console.log("\nIndustry fuzzy raw:", indRaw);
 console.log("\nTest 3 - Fuzzy matching sanity check:");
 console.log(
   "'Fintech' vs 'FinTech':",

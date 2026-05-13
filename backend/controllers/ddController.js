@@ -23,7 +23,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_SERVICE_KEY,
 );
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -323,7 +323,11 @@ export const addDocument = async (req, res, next) => {
       },
     });
 
-    if (process.env.USE_RAG === "true" && fileType === "application/pdf" && (accessLevel === "OPEN" || !accessLevel)) {
+    if (
+      process.env.USE_RAG === "true" &&
+      fileType === "application/pdf" &&
+      (accessLevel === "OPEN" || !accessLevel)
+    ) {
       fetch(process.env.N8N_WEBHOOK_INGEST, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -403,8 +407,6 @@ export const deleteDocument = async (req, res, next) => {
   }
 };
 
-
-
 export const updateDocumentAccess = async (req, res, next) => {
   try {
     const { id: dataRoomId, docId } = req.params;
@@ -442,9 +444,11 @@ export const updateDocumentAccess = async (req, res, next) => {
     }
 
     // If changed back
-    if (process.env.USE_RAG === "true" && 
-        accessLevel === "OPEN" && 
-        doc.fileType === "application/pdf") {
+    if (
+      process.env.USE_RAG === "true" &&
+      accessLevel === "OPEN" &&
+      doc.fileType === "application/pdf"
+    ) {
       fetch(process.env.N8N_WEBHOOK_INGEST, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -802,9 +806,9 @@ export const generateDealBrief = async (req, res, next) => {
         project: {
           include: { aiAssessment: true, teamMembers: true, llmInsights: true },
         },
-          documents: {
-            where: { accessLevel: "OPEN" }, 
-                     },
+        documents: {
+          where: { accessLevel: "OPEN" },
+        },
       },
     });
 

@@ -78,7 +78,7 @@ export const generateMatches = async (req, res, next) => {
     const matchResults = [];
     for (const project of projects) {
       const { matchScore, categoryScores, reasoning } =
-        await calculateMatchScore(
+         calculateMatchScore(
           investorProfile,
           project,
           project.aiAssessment,
