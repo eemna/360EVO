@@ -12,22 +12,19 @@ export default function CookieBanner() {
 
   if (!visible) return null;
 
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-gray-900 text-white px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-      <p className="text-sm text-gray-300">
-        We use cookies for authentication and to improve your experience. By
-        using 360EVO, you agree to our{" "}
-        <a href="/privacy" className="underline text-indigo-400">
-          Privacy Policy
-        </a>
-        .
-      </p>
-      <button
-        onClick={accept}
-        className="shrink-0 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-medium"
-      >
-        Accept
-      </button>
-    </div>
-  );
+<div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1A2A3A] border-t border-white/10 text-white px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+  <p className="text-sm text-white/70">
+    We use cookies for authentication and to improve your experience. By
+    using 360EVO, you agree to our{" "}
+    <a href="/privacy" className="underline text-[#1D9E75] hover:text-[#1D9E75]/80">
+      Privacy Policy
+    </a>.
+  </p>
+  <button
+    onClick={accept}
+    className="shrink-0 px-5 py-2 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] rounded-lg text-sm font-medium transition-colors"
+  >
+    Accept
+  </button>
+</div>
 }

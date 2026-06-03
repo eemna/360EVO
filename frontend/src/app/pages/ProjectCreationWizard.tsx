@@ -322,7 +322,7 @@ export function ProjectCreationWizard({
       setCurrentStep(currentStep - 1);
     }
   };
-
+//transforms frontend form data into the format expected by the backend 
   const mapFormToApi = useCallback(
     (values: ProjectFormData) => {
       const base = {

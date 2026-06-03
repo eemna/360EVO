@@ -64,11 +64,12 @@ export async function runProjectAssessment(projectId) {
       assessedAt: new Date(),
       version: 1,
     },
-  });
+  }); 
 
   runMixtureOfExperts(project, trlScore, irBreakdown)
     .then(async (narrative) => {
       if (!narrative) return;
+      console.log("[Assessment] Experts used:", narrative._expertsUsed);
       await prisma.aiAssessment.update({
         where: { projectId },
         data: {

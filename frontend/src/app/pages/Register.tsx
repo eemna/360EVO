@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { Card } from "../components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 import { useToast } from "../../context/ToastContext";
 
@@ -113,7 +113,39 @@ export default function RegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+  if (formData.role === "startup" && !formData.companyName) {
+    showToast({
+      type: "warning",
+      title: "Missing field",
+      message: "Company name is required for startups.",
+    });
+    setLoading(false);
+    return;
+  }
 
+  if (formData.role === "expert" && !formData.expertise) {
+    showToast({
+      type: "warning",
+      title: "Missing field",
+      message: "Expertise is required for experts.",
+    });
+    setLoading(false);
+    return;
+  }
+
+  if (
+    formData.role === "expert" &&
+    formData.hourlyRate &&
+    isNaN(Number(formData.hourlyRate))
+  ) {
+    showToast({
+      type: "error",
+      title: "Invalid value",
+      message: "Hourly rate must be a valid number.",
+    });
+    setLoading(false);
+    return;
+  }
     try {
       await api.post("/auth/register", {
         name: formData.fullName,
@@ -122,8 +154,11 @@ export default function RegistrationPage() {
         role: formData.role,
         companyName: formData.companyName,
         stage: formData.stage,
-        expertise: formData.expertise,
-        hourlyRate: formData.hourlyRate,
+        expertise: formData.expertise
+                   ?.split(",")
+                   .map((e) => e.trim())
+                  .filter(Boolean),
+        hourlyRate: formData.hourlyRate ? Number(formData.hourlyRate) : undefined,
       });
 
       showToast({
@@ -149,46 +184,37 @@ export default function RegistrationPage() {
     label: string;
     icon: React.ReactNode;
     description: string;
-    color: string;
-    border: string;
   }[] = [
     {
       value: "member",
       label: "Member",
       icon: <User className="w-6 h-6" />,
       description: "Join the community, discover projects and experts.",
-      color: "bg-green-50",
-      border: "border-green-500",
     },
     {
       value: "startup",
       label: "Startup",
       icon: <Briefcase className="w-6 h-6" />,
       description: "List your project and connect with experts and investors.",
-      color: "bg-blue-50",
-      border: "border-blue-500",
     },
     {
       value: "expert",
       label: "Expert",
       icon: <Users className="w-6 h-6" />,
       description: "Offer consulting sessions and share your expertise.",
-      color: "bg-purple-50",
-      border: "border-purple-500",
     },
     {
       value: "investor",
       label: "Investor",
       icon: <TrendingUp className="w-6 h-6" />,
       description: "Discover AI-matched startup projects to invest in.",
-      color: "bg-amber-50",
-      border: "border-amber-500",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+<div className="w-full bg-[#e8eef5] py-8 px-4 flex flex-col items-center">
+  <div className="w-full max-w-2xl">
+        {/* Step indicators */}
         <div className="mb-10 flex justify-center">
           <div className="flex items-center gap-4">
             {[1, 2, 3].map((step) => (
@@ -196,8 +222,8 @@ export default function RegistrationPage() {
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center border-2 font-medium transition-all ${
                     currentStep >= step
-                      ? "bg-blue-600 border-blue-600 text-white"
-                      : "bg-white border-gray-300 text-gray-400"
+                      ? "bg-[#C9A84C] border-[#C9A84C] text-[#0D1B2A]"
+                      : "bg-transparent border-white/20 text-white/40"
                   }`}
                 >
                   {currentStep > step ? (
@@ -209,7 +235,7 @@ export default function RegistrationPage() {
                 {step < 3 && (
                   <div
                     className={`w-16 h-0.5 mx-2 transition-all ${
-                      currentStep > step ? "bg-blue-600" : "bg-gray-300"
+                      currentStep > step ? "bg-[#C9A84C]" : "bg-white/10"
                     }`}
                   />
                 )}
@@ -218,296 +244,343 @@ export default function RegistrationPage() {
           </div>
         </div>
 
-        <Card className="p-8 shadow-md border border-gray-200">
-          <form onSubmit={handleSubmit}>
-            {currentStep === 1 && (
-              <div className="space-y-5">
-                <div className="text-center">
-                  <h2 className="text-2xl font-semibold">Choose Your Role</h2>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Select how you'll use 360EVO
-                  </p>
-                </div>
+        {/* Card */}
+        <Card className="bg-[#1A2A3A] border-white/10 rounded-xl">
+          <CardContent className="p-8">
+            <form onSubmit={handleSubmit}>
+              {/* Step 1 - role selection */}
+              {currentStep === 1 && (
+                <div className="space-y-5">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-semibold text-white">
+                      Choose Your Role
+                    </h2>
+                    <p className="text-sm text-white/50 mt-1">
+                      Select how you'll use 360EVO
+                    </p>
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {roles.map(
-                    ({ value, label, icon, description, color, border }) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {roles.map(({ value, label, icon, description }) => (
                       <button
                         key={value}
                         type="button"
                         onClick={() => updateFormData("role", value)}
                         className={`p-5 border-2 rounded-xl text-left transition-all ${
                           formData.role === value
-                            ? `${border} ${color}`
-                            : "border-gray-200 hover:border-gray-300 bg-white"
+                            ? "border-[#1D9E75] bg-[#1D9E75]/10"
+                            : "border-white/10 hover:border-white/30 bg-white/5"
                         }`}
                       >
                         <div
                           className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${
-                            formData.role === value ? color : "bg-gray-100"
+                            formData.role === value
+                              ? "bg-[#1D9E75]/20"
+                              : "bg-white/10"
                           }`}
                         >
                           <span
                             className={
                               formData.role === value
-                                ? value === "member"
-                                  ? "text-green-600"
-                                  : value === "startup"
-                                    ? "text-blue-600"
-                                    : value === "expert"
-                                      ? "text-purple-600"
-                                      : "text-amber-600"
-                                : "text-gray-500"
+                                ? "text-[#1D9E75]"
+                                : "text-white/50"
                             }
                           >
                             {icon}
                           </span>
                         </div>
-                        <h3 className="font-semibold text-gray-900">{label}</h3>
-                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                        <h3 className="font-semibold text-white">{label}</h3>
+                        <p className="text-xs text-white/50 mt-0.5 leading-relaxed">
                           {description}
                         </p>
                         {formData.role === value && (
                           <div className="mt-2 flex items-center gap-1">
-                            <CheckCircle2
-                              className={`w-4 h-4 ${
-                                value === "member"
-                                  ? "text-green-600"
-                                  : value === "startup"
-                                    ? "text-blue-600"
-                                    : value === "expert"
-                                      ? "text-purple-600"
-                                      : "text-amber-600"
-                              }`}
-                            />
-                            <span className="text-xs font-medium text-gray-600">
+                            <CheckCircle2 className="w-4 h-4 text-[#1D9E75]" />
+                            <span className="text-xs font-medium text-[#1D9E75]">
                               Selected
                             </span>
                           </div>
                         )}
                       </button>
-                    ),
-                  )}
-                </div>
+                    ))}
+                  </div>
 
-                <Button
-                  type="button"
-                  onClick={handleNext}
-                  disabled={!formData.role}
-                  className="w-full"
-                >
-                  Continue
-                </Button>
-              </div>
-            )}
-
-            {currentStep === 2 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl text-center font-semibold">
-                  Basic Information
-                </h2>
-
-                <div>
-                  <Label>Full Name</Label>
-                  <Input
-                    value={formData.fullName}
-                    onChange={(e) => updateFormData("fullName", e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => updateFormData("email", e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <Label>Password</Label>
-                  <Input
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => updateFormData("password", e.target.value)}
-                  />
-                  <PasswordStrengthBar password={formData.password} />
-                </div>
-
-                <div>
-                  <Label>Confirm Password</Label>
-                  <Input
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) =>
-                      updateFormData("confirmPassword", e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="flex gap-3">
                   <Button
                     type="button"
-                    onClick={handleBack}
-                    variant="outline"
-                    className="flex-1"
+                    onClick={handleNext}
+                    disabled={!formData.role}
+                    className="w-full py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg transition-colors disabled:opacity-40"
                   >
-                    Back
-                  </Button>
-                  <Button type="button" onClick={handleNext} className="flex-1">
                     Continue
                   </Button>
                 </div>
-              </div>
-            )}
+              )}
 
-            {currentStep === 3 && (
-              <div className="space-y-4">
-                {formData.role === "startup" && (
-                  <>
-                    <h2 className="text-2xl text-center font-semibold">
-                      Company Details
-                    </h2>
-                    <div>
-                      <Label>Company Name</Label>
-                      <Input
-                        value={formData.companyName || ""}
-                        onChange={(e) =>
-                          updateFormData("companyName", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Startup Stage</Label>
-                      <Select
-                        value={formData.stage}
-                        onValueChange={(value) =>
-                          updateFormData("stage", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select stage" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="IDEA">Idea</SelectItem>
-                          <SelectItem value="PROTOTYPE">Prototype</SelectItem>
-                          <SelectItem value="MVP">MVP</SelectItem>
-                          <SelectItem value="GROWTH">Growth</SelectItem>
-                          <SelectItem value="SCALING">Scaling</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
+              {/* Step 2 - basic info */}
+              {currentStep === 2 && (
+                <div className="space-y-5">
+                  <h2 className="text-2xl text-center font-semibold text-white">
+                    Basic Information
+                  </h2>
 
-                {formData.role === "expert" && (
-                  <>
-                    <h2 className="text-2xl text-center font-semibold">
-                      Expert Details
-                    </h2>
-                    <div>
-                      <Label>Expertise</Label>
-                      <Input
-                        value={formData.expertise || ""}
-                        onChange={(e) =>
-                          updateFormData("expertise", e.target.value)
-                        }
-                        placeholder="e.g. Business Strategy, Marketing"
-                      />
-                    </div>
-                    <div>
-                      <Label>Hourly Rate ($)</Label>
-                      <Input
-                        type="number"
-                        value={formData.hourlyRate || ""}
-                        onChange={(e) =>
-                          updateFormData("hourlyRate", e.target.value)
-                        }
-                        placeholder="e.g. 80"
-                      />
-                    </div>
-                  </>
-                )}
-
-                {formData.role === "investor" && (
-                  <div className="text-center space-y-4 py-4">
-                    <div className="flex justify-center">
-                      <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center">
-                        <TrendingUp className="w-8 h-8 text-amber-600" />
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-semibold">
-                      Ready to Join as an Investor?
-                    </h3>
-                    <p className="text-gray-600 text-sm max-w-sm mx-auto">
-                      After registration you'll be guided through a quick setup
-                      wizard to configure your investment thesis and
-                      preferences. Our AI will then match you with the most
-                      relevant startup projects.
-                    </p>
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left text-sm space-y-2">
-                      <p>
-                        <strong>Name:</strong> {formData.fullName}
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {formData.email}
-                      </p>
-                      <p>
-                        <strong>Role:</strong> Investor
-                      </p>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName" className="text-white/80">
+                      Full Name
+                    </Label>
+                    <Input
+                      id="fullName"
+                      value={formData.fullName}
+                      onChange={(e) =>
+                        updateFormData("fullName", e.target.value)
+                      }
+                      placeholder="Enter your full name"
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                    />
                   </div>
-                )}
 
-                {formData.role === "member" && (
-                  <div className="text-center space-y-4 py-4">
-                    <div className="flex justify-center">
-                      <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                        <User className="w-8 h-8 text-green-600" />
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-semibold">
-                      Ready to Join as a Member?
-                    </h3>
-                    <p className="text-gray-600 text-sm">
-                      No additional details needed. Confirm your registration
-                      below.
-                    </p>
-                    <div className="bg-gray-50 rounded-lg p-4 text-left text-sm space-y-2 border border-gray-200">
-                      <p>
-                        <strong>Name:</strong> {formData.fullName}
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {formData.email}
-                      </p>
-                      <p>
-                        <strong>Role:</strong> Member
-                      </p>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-white/80">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => updateFormData("email", e.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                    />
                   </div>
-                )}
 
-                <div className="flex gap-3 pt-2">
-                  <Button
-                    type="button"
-                    onClick={handleBack}
-                    variant="outline"
-                    className="flex-1"
-                  >
-                    Back
-                  </Button>
-                  <Button type="submit" disabled={loading} className="flex-1">
-                    {loading ? "Creating account..." : "Complete Registration"}
-                  </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-white/80">
+                      Password
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        updateFormData("password", e.target.value)
+                      }
+                      placeholder="Min 8 chars, upper, lower, number"
+                      autoComplete="new-password"
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                    />
+                    <PasswordStrengthBar password={formData.password} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-white/80">
+                      Confirm Password
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        updateFormData("confirmPassword", e.target.value)
+                      }
+                      placeholder="Repeat your password"
+                      autoComplete="new-password"
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+<Button
+  type="button"
+  variant="outline"
+  onClick={handleBack}
+  className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
+>
+  Back
+</Button>
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      className="flex-1 py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg"
+                    >
+                      Continue
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </form>
+              )}
+
+              {/* Step 3 - role details */}
+              {currentStep === 3 && (
+                <div className="space-y-4">
+                  {/* startup fields */}
+                 {formData.role === "startup" && (
+  <>
+    <h2 className="text-2xl text-center font-semibold text-white">
+      Company Details
+    </h2>
+    
+    <div className="space-y-2">
+      <Label htmlFor="companyName" className="text-white/80">
+        Company Name
+      </Label>
+      <Input
+        id="companyName"
+        value={formData.companyName || ""}
+        onChange={(e) => updateFormData("companyName", e.target.value)}
+        placeholder="Your company name"
+        className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+      />
+    </div>
+    
+    <div className="space-y-2">
+      <Label className="text-white/80">Startup Stage</Label>
+      <Select
+        value={formData.stage}
+        onValueChange={(v) => updateFormData("stage", v)}
+      >
+        <SelectTrigger 
+          className="bg-white/5 border-white/20 text-white data-[placeholder]:text-white/50 focus:ring-[#1D9E75] focus:ring-offset-0"
+        >
+          <SelectValue placeholder="Select stage" />
+        </SelectTrigger>
+        <SelectContent 
+          className="bg-[#1A2A3A] border-white/20 text-white"
+          position="popper"
+        >
+          <SelectItem 
+            value="IDEA"
+            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+          >
+            Idea
+          </SelectItem>
+          <SelectItem 
+            value="PROTOTYPE"
+            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+          >
+            Prototype
+          </SelectItem>
+          <SelectItem 
+            value="MVP"
+            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+          >
+            MVP
+          </SelectItem>
+          <SelectItem 
+            value="GROWTH"
+            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+          >
+            Growth
+          </SelectItem>
+          <SelectItem 
+            value="SCALING"
+            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+          >
+            Scaling
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </>
+)}
+
+                  {formData.role === "expert" && (
+                    <>
+                      <h2 className="text-2xl text-center font-semibold text-white">
+                        Expert Details
+                      </h2>
+                      <div className="space-y-2">
+                        <Label htmlFor="expertise" className="text-white/80">
+                          Expertise
+                        </Label>
+                        <Input
+                          id="expertise"
+                          value={formData.expertise || ""}
+                          onChange={(e) =>
+                            updateFormData("expertise", e.target.value)
+                          }
+                          placeholder="e.g. Business Strategy, Marketing"
+                          className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="hourlyRate" className="text-white/80">
+                          Hourly Rate ($)
+                        </Label>
+                        <Input
+                          id="hourlyRate"
+                          type="number"
+                          value={formData.hourlyRate || ""}
+                          onChange={(e) =>
+                            updateFormData("hourlyRate", e.target.value)
+                          }
+                          placeholder="e.g. 80"
+                          className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {(formData.role === "investor" ||
+                    formData.role === "member") && (
+                    <div className="text-center space-y-4 py-4">
+                      <div className="flex justify-center">
+                        <div className="w-16 h-16 rounded-full bg-[#1D9E75]/20 flex items-center justify-center">
+                          {formData.role === "investor" ? (
+                            <TrendingUp className="w-8 h-8 text-[#1D9E75]" />
+                          ) : (
+                            <User className="w-8 h-8 text-[#1D9E75]" />
+                          )}
+                        </div>
+                      </div>
+                      <h3 className="text-xl font-semibold text-white">
+                        Ready to Join as{" "}
+                        {formData.role === "investor"
+                          ? "an Investor"
+                          : "a Member"}
+                        ?
+                      </h3>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-4 text-left text-sm space-y-2">
+                        <p className="text-white/70">
+                          <strong className="text-white">Name:</strong>{" "}
+                          {formData.fullName}
+                        </p>
+                        <p className="text-white/70">
+                          <strong className="text-white">Email:</strong>{" "}
+                          {formData.email}
+                        </p>
+                        <p className="text-white/70">
+                          <strong className="text-white">Role:</strong>{" "}
+                          {formData.role}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+<Button
+  type="button"
+  variant="outline"
+  onClick={handleBack}
+  className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
+>
+  Back
+</Button>
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg disabled:opacity-50"
+                    >
+                      {loading ? "Creating account..." : "Complete Registration"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </form>
+          </CardContent>
         </Card>
 
-        <p className="text-center mt-6 text-sm">
+        <p className="text-center mt-6 text-sm text-black/50">
           Already have an account?{" "}
-          <Link to="/login" className="text-blue-600 hover:underline">
+          <Link to="/login" className="text-[#1D9E75] hover:underline">
             Sign in
           </Link>
         </p>

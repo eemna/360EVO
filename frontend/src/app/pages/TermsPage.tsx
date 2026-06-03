@@ -1,13 +1,13 @@
 export default function TermsPage() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16 text-gray-700">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+    <div className="max-w-3xl mx-auto px-6 py-16 text-white/70">
+      <h1 className="text-3xl font-bold text-white mb-8">
         Terms of Service
       </h1>
 
       <section className="space-y-6 text-sm leading-relaxed">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             1. Acceptance
           </h2>
           <p>
@@ -16,7 +16,7 @@ export default function TermsPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             2. User Responsibilities
           </h2>
           <p>
@@ -25,7 +25,7 @@ export default function TermsPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             3. Prohibited Use
           </h2>
           <p>
@@ -34,7 +34,7 @@ export default function TermsPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             4. Termination
           </h2>
           <p>

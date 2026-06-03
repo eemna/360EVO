@@ -37,7 +37,7 @@ interface Project {
 
 interface Match {
   id: string;
-  matchScore: number;
+  matchScore: number; 
   status: "SUGGESTED" | "VIEWED" | "CONTACTED" | "DISMISSED";
   thesisAlignmentSummary?: string | null;
   categoryScores: Record<string, number>;
@@ -429,6 +429,7 @@ export default function MatchFeedPage() {
   useEffect(() => {
     fetchMatches();
   }, [fetchMatches]);
+  
   const handleGenerate = async () => {
     try {
       setGenerating(true);

@@ -94,6 +94,7 @@ export const sendMessage = async (req, res, next) => {
     const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
     const mentionedUserIds = new Set();
     let match;
+    //exec() is a method of a regular expression that searches for a match and returns detailed information about it
     while ((match = mentionRegex.exec(content)) !== null) {
       const mentionedId = match[2];
       if (mentionedId && mentionedId !== senderId) {
@@ -198,7 +199,7 @@ export const getMessages = async (req, res, next) => {
     next(error);
   }
 };
-6;
+
 export const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;

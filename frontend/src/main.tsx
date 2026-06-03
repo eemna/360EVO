@@ -4,10 +4,13 @@ import "./styles/index.css";
 import "./styles/tailwind.css";
 import { ToastProvider } from "./context/ToastContext";
 import { AuthProvider } from "./providers/AuthProvider";
+import { SocketProvider } from "./providers/SocketProvider.tsx";
 createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <ToastProvider>
-      <App />
+      <SocketProvider>
+        <App />
+      </SocketProvider>
     </ToastProvider>
   </AuthProvider>,
 );

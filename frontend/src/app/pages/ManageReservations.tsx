@@ -127,6 +127,7 @@ export function ManageReservations() {
   const [processingAction, setProcessingAction] = useState<
     "accept" | "reject" | "cancel" | "complete" | null
   >(null);
+  //Fetch consultations from the backend when the user is available
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;

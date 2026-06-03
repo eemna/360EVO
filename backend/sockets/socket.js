@@ -28,7 +28,6 @@ export const initializeSocket = (io) => {
       next(new Error("Authentication error"));
     }
   });
-
   io.on("connection", (socket) => {
     const userId = socket.user.id;
 

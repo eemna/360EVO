@@ -629,9 +629,9 @@ export default function DataRoomPage() {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf"
                     onChange={handleFileUpload}
-                    aria-label="Upload document"
+                    aria-label="Upload PDF"
                     className="hidden"
                   />
                   <Button
@@ -650,7 +650,7 @@ export default function DataRoomPage() {
                       : "Upload Document"}
                   </Button>
                   <p className="text-xs text-gray-400 mt-1">
-                    PDF text is automatically extracted for AI analysis
+                    PDF only — text is automatically extracted for AI analysis
                   </p>
                 </div>
               )}

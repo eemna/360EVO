@@ -2,7 +2,6 @@ import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { createNotification } from "../utils/createNotification.js";
 import Stripe from "stripe";
-import { bookingsTotal, paymentsTotal } from "../middleware/metrics.js";
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -25,7 +24,7 @@ const getNotifSettings = async (userId) => {
 };
 
 export const createBooking = async (req, res, next) => {
-  console.log("[CB START] body:", JSON.stringify(req.body));
+  
   try {
     const memberId = req.user.id;
     const {
@@ -153,7 +152,6 @@ export const createBooking = async (req, res, next) => {
         status: "PENDING",
       },
     });
-    bookingsTotal.inc({ status: "pending" });
     const settings = await getNotifSettings(expertId);
     if (settings.emailOnBooking) {
       await createNotification({
@@ -197,7 +195,6 @@ export const createConsultationPaymentIntent = async (req, res, next) => {
         referenceType: "CONSULTATION",
       },
     });
-    paymentsTotal.inc({ type: "CONSULTATION", status: "initiated" });
     res.json({
       clientSecret: paymentIntent.client_secret,
       amount: Number(booking.price),
@@ -272,7 +269,6 @@ export const acceptBooking = async (req, res, next) => {
       data: { status: "PENDING_PAYMENT" },
       include: { member: true },
     });
-    bookingsTotal.inc({ status: "accepted" });
 
     await createNotification({
       userId: booking.memberId,
@@ -310,7 +306,6 @@ export const rejectBooking = async (req, res, next) => {
         rejectionReason: reason || null,
       },
     });
-    bookingsTotal.inc({ status: "declined" });
     const settings = await getNotifSettings(booking.memberId);
     if (settings.emailOnBooking) {
       await createNotification({
@@ -355,7 +350,6 @@ export const cancelBooking = async (req, res, next) => {
         rejectionReason: reason || null,
       },
     });
-    bookingsTotal.inc({ status: "cancelled" });
     const notifyUserId =
       req.user.id === booking.expertId ? booking.memberId : booking.expertId;
 
@@ -556,7 +550,7 @@ export const getEarningsOverview = async (req, res, next) => {
     console.log("[EARNINGS DEBUG] sample payment:", allPayments[0]);
     console.log("[EARNINGS DEBUG] sample booking id:", expertBookings[0]?.id);
 
-    const usePaymentTable = allPayments.length > 0;
+    const usePaymentTable = allPayments.length > 0; //succeeded
 
     let totalEarned = 0;
     let completedSessions = 0;

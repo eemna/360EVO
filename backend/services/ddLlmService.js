@@ -1,18 +1,9 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
-import {
-  llmCallsTotal,
-  llmCallDuration,
-  ddAiScansTotal,
-  ddDealBriefsTotal,
-} from "../middleware/metrics.js";
+
 
 export async function createDocumentRiskScan(documents) {
-  const docsWithText = documents.filter((d) => d.textExtract);
-  const end = llmCallDuration.startTimer({ service: "createDocumentRiskScan" });
-  ddAiScansTotal.inc({ cached: "false" });
+  const docsWithText = documents.filter((d) => d.textExtract); //creates a new array containing only the document
   if (docsWithText.length === 0) {
-    end();
-    llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
     return {
       riskFlags: ["No extractable text found in uploaded documents"],
       highlights: [],
@@ -27,16 +18,16 @@ export async function createDocumentRiskScan(documents) {
 
   const unique = (arr) => [...new Set(arr)];
   //reduce input size, add chunking, and avoid LLM token limit errors
-  const MAX_TOKENS = 4000;
+  const MAX_TOKENS = 4000; 
   const CHUNK_SIZE = 10000;
 
-  const estimatedTokens = combinedText.length / 4;
+  const estimatedTokens = combinedText.length / 4; //1 token ~ 4 caract
 
   if (estimatedTokens > MAX_TOKENS) {
     const chunks = [];
     for (let i = 0; i < combinedText.length; i += CHUNK_SIZE) {
       let chunk = combinedText.slice(i, i + CHUNK_SIZE);
-      const lastBreak = chunk.lastIndexOf("\n");
+      const lastBreak = chunk.lastIndexOf("\n"); //searches for the last newline character
       if (lastBreak > 0) chunk = chunk.slice(0, lastBreak);
       chunks.push(chunk);
     }
@@ -52,7 +43,7 @@ export async function createDocumentRiskScan(documents) {
           .catch(() => ({ riskFlags: [], highlights: [] })),
       ),
     );
-
+//extracts all riskFlags arrays and flattens them into one array and keeps only the first 8 risk flags
     const merged = {
       riskFlags: unique(chunkResults.flatMap((r) => r.riskFlags || [])).slice(
         0,
@@ -65,8 +56,6 @@ export async function createDocumentRiskScan(documents) {
     };
 
     if (merged.riskFlags.length === 0 && merged.highlights.length === 0) {
-      end();
-      llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
       return {
         riskFlags: ["No significant insights extracted"],
         highlights: [],
@@ -100,8 +89,6 @@ Now produce a final assessment. Respond ONLY with valid JSON:
         summary: `Analysis completed across ${docsWithText.length} document(s).`,
       };
     }
-    end();
-    llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
     return {
       riskFlags: merged.riskFlags,
       highlights: merged.highlights,
@@ -127,21 +114,16 @@ Respond ONLY with valid JSON in exactly this format:
   );
 
   const result = parseJsonResponse(raw);
-  end();
-  llmCallsTotal.inc({ service: "createDocumentRiskScan", success: "true" });
   return result;
 }
 
 export async function suggestQaAnswer(question, documents) {
-  const end = llmCallDuration.startTimer({ service: "suggestQaAnswer" });
   const context = documents
     .filter((d) => d.textExtract)
     .map((d) => `[${d.name}]\n${d.textExtract?.slice(0, 2000)}`)
     .join("\n\n---\n\n");
 
   if (!context) {
-    end();
-    llmCallsTotal.inc({ service: "suggestQaAnswer", success: "true" });
     return {
       suggestedAnswer: "No document content available to answer this question.",
       confidenceLevel: "LOW",
@@ -171,8 +153,6 @@ Respond ONLY with valid JSON:
     300,
   );
   const result = parseJsonResponse(raw);
-  end();
-  llmCallsTotal.inc({ service: "suggestQaAnswer", success: "true" });
   return result;
 }
 
@@ -183,11 +163,12 @@ export async function createDealBrief(
   investorProfile,
   riskScanContent,
 ) {
-  const end = llmCallDuration.startTimer({ service: "createDealBrief" });
-  ddDealBriefsTotal.inc();
   const raw = await callLlm(
     `Generate a structured investor deal brief for this startup.
 Use only the provided information. Do not invent facts.
+IMPORTANT: The due diligence findings below come from uploaded documents.
+Only use findings that are relevant to this specific startup (${project.title}, industry: ${project.industry}, technologies: ${project.technologies?.join(", ")}).
+Ignore any findings that appear to be from unrelated documents.
 
 PROJECT INFO:
 Title: ${project.title}
@@ -231,7 +212,5 @@ Respond ONLY with valid JSON in exactly this format:
   );
 
   const result = parseJsonResponse(raw);
-  end();
-  llmCallsTotal.inc({ service: "createDealBrief", success: "true" });
   return result;
 }

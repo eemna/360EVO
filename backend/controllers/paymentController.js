@@ -1,7 +1,6 @@
 import Stripe from "stripe";
 import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
-import { paymentsTotal } from "../middleware/metrics.js";
 import { sendEmail } from "../utils/email.js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -47,7 +46,6 @@ export const createPaymentIntent = async (req, res, next) => {
       metadata: { userId, eventId, referenceType: "EVENT" },
     });
 
-    paymentsTotal.inc({ type: "EVENT", status: "initiated" });
     const amount = event.price.toNumber();
 
     res.json({
@@ -112,7 +110,6 @@ export const stripeWebhook = async (req, res) => {
               create: { eventId, userId },
             }),
           ]);
-          paymentsTotal.inc({ type: "EVENT", status: "succeeded" });
           const dbEvent = await prisma.event.findUnique({
             where: { id: eventId },
           });
@@ -237,7 +234,6 @@ export const stripeWebhook = async (req, res) => {
               },
             }),
           ]);
-          paymentsTotal.inc({ type: "CONSULTATION", status: "succeeded" });
           await createNotification({
             userId: booking.expertId,
             type: "BOOKING",
@@ -256,7 +252,6 @@ export const stripeWebhook = async (req, res) => {
           where: { stripePaymentIntentId: pi.id },
           data: { status: "FAILED" },
         });
-        paymentsTotal.inc({ type: "UNKNOWN", status: "failed" });
         console.log(`[Webhook] Payment failed: ${pi.id}`);
         break;
       }
@@ -277,7 +272,7 @@ export const getMyPayments = async (req, res, next) => {
     const payments = await prisma.payment.findMany({
       where: { userId: req.user.id },
       orderBy: { createdAt: "desc" },
-    });
+    }); 
 
     res.json(payments);
   } catch (error) {

@@ -11,13 +11,7 @@ import {
 } from "pdfjs-dist/legacy/build/pdf.mjs";
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
-import {
-  ddRequestsTotal,
-  activeDataRooms,
-  ddDocumentsUploaded,
-  ddQaThreadsTotal,
-  llmCacheHits,
-} from "../middleware/metrics.js";
+
 
 import { createClient } from "@supabase/supabase-js";
 
@@ -72,12 +66,11 @@ export const requestDueDiligence = async (req, res, next) => {
       return res
         .status(404)
         .json({ message: "Project not found or not approved" });
-    }
+    } 
 
     const ddRequest = await prisma.ddRequest.create({
       data: { projectId, investorId, message, nda: nda || false },
     });
-    ddRequestsTotal.inc({ status: "pending" });
     await prisma.notification.create({
       data: {
         userId: project.ownerId,
@@ -177,8 +170,6 @@ export const approveDdRequest = async (req, res, next) => {
 
       return { updated, dataRoom };
     });
-    ddRequestsTotal.inc({ status: "approved" });
-    activeDataRooms.inc();
     res.json(result);
   } catch (error) {
     next(error);
@@ -204,7 +195,6 @@ export const declineDdRequest = async (req, res, next) => {
       where: { id },
       data: { status: "DECLINED", reviewedAt: new Date() },
     });
-    ddRequestsTotal.inc({ status: "declined" });
     await prisma.notification.create({
       data: {
         userId: ddRequest.investorId,
@@ -353,7 +343,6 @@ export const addDocument = async (req, res, next) => {
       console.log(`[RAG] Queued indexing for doc ${doc.id}`);
     }
 
-    ddDocumentsUploaded.inc();
     await prisma.dataRoomActivity.create({
       data: { dataRoomId, userId, action: "UPLOADED_DOCUMENT", docName: name },
     });
@@ -392,7 +381,7 @@ export const deleteDocument = async (req, res, next) => {
       }
     }
 
-    // Delete from Neon
+    
     await prisma.dataRoomDocument.delete({ where: { id: docId } });
 
     await prisma.dataRoomActivity.create({
@@ -504,7 +493,6 @@ export const createQaThread = async (req, res, next) => {
         responses: true,
       },
     });
-    ddQaThreadsTotal.inc();
     await prisma.notification.create({
       data: {
         userId: dataRoom.project.ownerId,
@@ -666,7 +654,6 @@ export const runAiScan = async (req, res, next) => {
         },
       });
       if (cached && cached.inputHash === inputHash) {
-        llmCacheHits.inc({ type: "DD_SUMMARY" });
         return res.json({ cached: true, data: cached.content });
       }
     }

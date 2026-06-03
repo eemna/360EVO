@@ -37,7 +37,7 @@ export const getInvestorProfile = async (req, res) => {
   try {
     const profile = await prisma.investorProfile.findUnique({
       where: { userId: req.user.id },
-    });
+    }); 
 
     if (!profile) {
       return res.status(404).json({
@@ -145,6 +145,11 @@ export const updateInvestorProfile = async (req, res) => {
       where: { userId: req.user.id },
       data: patch,
     });
+
+await prisma.match.deleteMany({
+  where: { investorId: req.user.id },
+});
+
     await prisma.llmInsight.deleteMany({
       where: {
         investorId: req.user.id,
@@ -152,10 +157,7 @@ export const updateInvestorProfile = async (req, res) => {
       },
     });
 
-    await prisma.match.updateMany({
-      where: { investorId: req.user.id },
-      data: { thesisAlignmentSummary: null },
-    });
+  
     res.status(200).json(updated);
   } catch (error) {
     console.error("PUT /api/investor-profile error:", error);

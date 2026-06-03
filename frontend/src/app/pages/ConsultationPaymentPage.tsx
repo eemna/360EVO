@@ -71,7 +71,7 @@ function PaymentForm({
       }
 
       if (paymentIntent?.status === "succeeded") {
-        await api.post("/payments/consultation/confirm", {
+        await api.post("/payments/consultation/confirm", { 
           paymentIntentId: paymentIntent.id,
         });
         showToast({

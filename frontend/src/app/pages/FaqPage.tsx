@@ -23,12 +23,12 @@ const faqs = [
 
 export default function FaqPage() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16 text-gray-700">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">FAQ</h1>
+    <div className="max-w-3xl mx-auto px-6 py-16 text-white/70">
+    <h1 className="text-3xl font-bold text-white mb-8">FAQ</h1>
       <div className="space-y-6">
         {faqs.map((faq, i) => (
-          <div key={i} className="border-b border-gray-200 pb-6">
-            <h2 className="text-base font-semibold text-gray-900 mb-2">
+          <div key={i} className="border-b border-white/10 pb-6">
+            <h2 className="text-base font-semibold text-white mb-2">
               {faq.q}
             </h2>
             <p className="text-sm leading-relaxed">{faq.a}</p>

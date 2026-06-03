@@ -1,153 +1,109 @@
-import { Twitter, Linkedin, Github, Mail, MapPin, Phone } from "lucide-react";
-import { Link } from "react-router";
+import { Link } from 'react-router';
+import { Linkedin, Twitter } from 'lucide-react';
 
-export default function Footer() {
+export function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-blue-900 to-indigo-900 text-gray-200">
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+    <footer className="bg-[#0D1B2A] border-t border-white/10 pt-16 pb-8">
+      <div className="max-w-[1280px] mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Column 1 - Logo & Social */}
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="size-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-semibold text-sm">360</span>
-              </div>
-              <span className="font-semibold text-lg text-white">360EVO</span>
-            </div>
-            <p className="text-sm mb-4">
-              Empowering startups and experts to collaborate, innovate, and grow
-              together.
+            <div className="text-white font-bold text-xl mb-3">360EVO</div>
+            <p className="text-white/70 text-sm mb-4">
+              Connecting deep-tech innovation to capital
             </p>
             <div className="flex gap-3">
               <a
-                href="#"
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                href="https://linkedin.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-[#1D9E75] transition-colors"
               >
-                <Twitter className="size-4" />
+                <Linkedin size={20} />
               </a>
               <a
-                href="#"
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-[#1D9E75] transition-colors"
               >
-                <Linkedin className="size-4" />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <Github className="size-4" />
-              </a>
-              <a
-                href="#"
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <Mail className="size-4" />
+                <Twitter size={20} />
               </a>
             </div>
           </div>
 
+          {/* Column 2 - Platform */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Product</h3>
-            <ul className="space-y-2 text-sm">
+            <h4 className="text-white font-medium mb-4">Platform</h4>
+            <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/features" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
                   Features
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Projects
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Expert Network
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/pricing" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Success Stories
-                </a>
+                <Link to="/how-it-works" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                  How It Works
+                </Link>
               </li>
             </ul>
           </div>
 
+          {/* Column 3 - Company */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Company</h3>
-            <ul className="space-y-2 text-sm">
+            <h4 className="text-white font-medium mb-4">Company</h4>
+            <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <Link to="/about" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Careers
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Press Kit
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Contact Us
-                </a>
+                <Link to="/contact" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                  Contact
+                </Link>
               </li>
             </ul>
           </div>
 
+          {/* Column 4 - Legal */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contact</h3>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <MapPin className="size-4 mt-0.5 shrink-0" />
-                <span>
-                  123 Innovation Street
-                  <br />
-                  San Francisco, CA 94107
-                </span>
+            <h4 className="text-white font-medium mb-4">Legal</h4>
+            <ul className="space-y-2">
+              <li>
+                <a href="/privacy" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                  Privacy Policy
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <Phone className="size-4 shrink-0" />
-                <span>+1 (555) 123-4567</span>
+              <li>
+                <a href="/terms" className="text-white/70 hover:text-[#e8eef5]transition-colors text-sm">
+                  Terms of Service
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <Mail className="size-4 shrink-0" />
-                <span>hello@360evo.com</span>
+              <li>
+                <a href="/cookies" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                  Cookie Policy
+                </a>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-800">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm">© 2026 360EVO. All rights reserved.</p>
-            <div className="flex gap-6 text-sm">
-              <Link
-                to="/privacy"
-                className="hover:text-white transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link to="/terms" className="hover:text-white transition-colors">
-                Terms of Service
-              </Link>
-              <Link to="/faq" className="hover:text-white transition-colors">
-                FAQ
-              </Link>
-            </div>
-          </div>
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-white/10">
+          <p className="text-white/60 text-sm text-center">
+            © 2025 360EVO / 360DMMC. All rights reserved. Chicago, Illinois.
+          </p>
         </div>
       </div>
     </footer>
