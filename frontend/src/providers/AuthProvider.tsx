@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error.response?.status,
           error.response?.data,
           error.message,
-        );
+        ); 
         setUser(null);
         setApiToken(null);
       } finally {

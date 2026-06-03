@@ -1,6 +1,11 @@
 import { calculateMatchScore } from "./matchingEngine.js";
 import { createRequire } from "module";
-import { fuzzifyFunding, inferFunding, fuzzifyIndustry, inferIndustry } from "./fuzzylogic.js";
+import {
+  fuzzifyFunding,
+  inferFunding,
+  fuzzifyIndustry,fuzzyMatch
+  //inferIndustry,
+} from "./fuzzylogic.js";
 const require = createRequire(import.meta.url);
 const fuzz = require("fuzzball");
 function displayScores(label, { matchScore, categoryScores }) {
@@ -97,11 +102,9 @@ console.log(
 );
 console.log(
   "'AI' vs 'Artificial Intelligence':",
-  fuzz.token_sort_ratio("ai", "artificial intelligence"),
-  "/ 100",
+  fuzzyMatch("AI", "Artificial Intelligence")
 );
 console.log(
   "'USA' vs 'United States':",
-  fuzz.token_sort_ratio("usa", "united states"),
-  "/ 100",
+  fuzzyMatch("USA", "United States")
 );

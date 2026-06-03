@@ -48,7 +48,7 @@ export default function LeftSidebar({
   isOpen,
   onClose,
 }: ResponsiveSidebarProps) {
-  const location = useLocation();
+  const location = useLocation(); //current location
   const { user } = useAuth();
 
   return (

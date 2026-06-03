@@ -14,7 +14,7 @@ import {
 
 const router = express.Router();
 
-router.get("/", getPrograms);
+router.get("/", protect, getPrograms);
 router.get("/my-applications", protect, getMyApplications);
 router.post("/", protect, requireAdmin, createProgram);
 router.put("/:id", protect, requireAdmin, updateProgram);
@@ -26,6 +26,6 @@ router.put(
   requireAdmin,
   updateApplicationStatus,
 );
-router.get("/:id", getProgramById);
+router.get("/:id",protect, getProgramById);
 
 export default router;

@@ -62,6 +62,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
   useEffect(() => {
     pathnameRef.current = location.pathname;
   }, [location.pathname]);
+  
   useEffect(() => {
     userIdRef.current = user?.id;
   }, [user?.id]);

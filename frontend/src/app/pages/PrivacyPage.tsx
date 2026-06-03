@@ -1,11 +1,11 @@
 export default function PrivacyPage() {
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16 text-gray-700">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
+    <div className="max-w-3xl mx-auto px-6 py-16 text-white/70">
+      <h1 className="text-3xl font-bold text-white mb-8">Privacy Policy</h1>
 
       <section className="space-y-6 text-sm leading-relaxed">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             1. Data We Collect
           </h2>
           <p>
@@ -15,7 +15,7 @@ export default function PrivacyPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             2. How We Use Your Data
           </h2>
           <p>
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             3. Cookies
           </h2>
           <p>
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-white mb-2">
             4. Contact
           </h2>
           <p>For privacy concerns, contact us at privacy@360evo.com</p>

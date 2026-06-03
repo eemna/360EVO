@@ -8,7 +8,6 @@ import {
   cronJobRuns,
   cronJobDuration,
   cronMatchesUpdated,
-  cronNarrativesRetried,
 } from "../middleware/metrics.js";
 const job = new cron.CronJob("*/10 * * * *", function () {
   https
@@ -192,7 +191,6 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
         );
       }
     }
-    cronNarrativesRetried.inc();
 
     cronJobRuns.inc({ job: "narrative_retry", status: "success" });
   } catch (error) {

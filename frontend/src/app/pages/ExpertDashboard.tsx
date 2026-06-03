@@ -88,13 +88,15 @@ export function ExpertDashboard() {
   }, []);
 
   const totalEventRegistrations = myEvents.reduce(
-    (sum, e) => sum + e._count.registrations,
+ (sum, e) => sum + e._count.registrations,
     0,
   );
+
   const totalEventRevenue = myEvents.reduce((sum, e) => {
     const price = Math.round(Number(e.price) * 100) / 100;
     return sum + price * e._count.registrations;
   }, 0);
+  
   const publishedEvents = myEvents.filter(
     (e) => e.status === "PUBLISHED",
   ).length;

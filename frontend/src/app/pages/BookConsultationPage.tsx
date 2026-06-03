@@ -71,6 +71,8 @@ export function BookConsultationPage() {
   const price = expert?.profile?.hourlyRate
     ? (Number(expert.profile.hourlyRate) * duration) / 60
     : 0;
+  
+  // Load public expert profile data Includes: - expert basic info - profile - weekly availability - latest reviews - computed availability status
   useEffect(() => {
     const fetchExpert = async () => {
       try {
@@ -93,7 +95,7 @@ export function BookConsultationPage() {
       .get("/consultations")
       .then(({ data }) => {
         if (!cancelled) {
-          setBookings(data.filter((b: Booking) => b.expertId === expertId));
+          setBookings(data.filter((b: Booking) => b.expertId === expertId)); //true
         }
       })
       .catch(console.error);
@@ -102,6 +104,7 @@ export function BookConsultationPage() {
       cancelled = true;
     };
   }, [expertId]);
+
   const isDateAvailable = (date: Date) => {
     if (!expert?.profile?.weeklyAvailability) return false;
 
@@ -137,14 +140,15 @@ export function BookConsultationPage() {
     end.setHours(endHour, endMinute, 0, 0);
 
     const current = new Date(start);
-
+//keep generating slots while current time is before end time
     while (current < end) {
       const slotStart = new Date(current);
       const slotEnd = new Date(current);
       slotEnd.setMinutes(slotEnd.getMinutes() + duration);
 
       if (slotEnd > end) break;
-
+//skips past times
+//continues generating next slots every 30 min
       if (slotStart <= new Date()) {
         current.setMinutes(current.getMinutes() + 30);
         continue;
@@ -161,21 +165,28 @@ export function BookConsultationPage() {
         slots.push(slotStart.toTimeString().slice(0, 5));
       }
 
-      current.setMinutes(current.getMinutes() + 30);
+      current.setMinutes(current.getMinutes() + 30); //moves to the next slot
     }
 
     return slots;
   };
+
   const isDateFullyBooked = (date: Date) => {
     if (!isDateAvailable(date)) return true;
 
     const slots = generateTimeSlots(date);
-    return slots.length === 0;
+    return slots.length === 0; 
   };
+
+//
+//
+//
+
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  
   const handleConfirmBooking = async () => {
     if (!selectedDate || !selectedSlot || !expert) return;
 
@@ -193,19 +204,11 @@ export function BookConsultationPage() {
       const [hour, minute] = selectedSlot.split(":").map(Number);
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(hour, minute, 0, 0);
-      const tzOffset = startDateTime.getTimezoneOffset();
-      console.log("Booking payload:", {
-        expertId: expert.id,
-        date: selectedDate.toISOString(),
-        timeSlot: selectedSlot,
-        startDateTimeISO: startDateTime.toISOString(),
-        duration,
-        dayOfWeek: startDateTime.getDay(),
-        startDateTime_local: startDateTime.toString(),
-      });
+      const tzOffset = startDateTime.getTimezoneOffset(); //how far the user's local time is from UTC
+  
       await api.post("/consultations/request", {
         expertId: expert.id,
-        date: selectedDate.toISOString(),
+        date: selectedDate.toISOString(), //converts the date into a standard international string format
         timeSlot: selectedSlot,
         startDateTimeISO: startDateTime.toISOString(),
         duration,
@@ -439,7 +442,7 @@ export function BookConsultationPage() {
             <CardContent>
               <div className="flex justify-center">
                 <Calendar
-                  mode="single"
+                  mode="single" //select one day
                   selected={selectedDate}
                   onSelect={(date) => {
                     if (!date) return;
@@ -454,13 +457,14 @@ export function BookConsultationPage() {
                     !isDateAvailable(date) ||
                     isDateFullyBooked(date)
                   }
-                  className="rounded-lg border border-gray-300 shadow-sm p-4"
+                  className="rounded-lg border border-gray-300 shadow-sm p-4" //styles to whole calendar
                   modifiers={{
                     available: (date) =>
                       date >= today &&
                       isDateAvailable(date) &&
                       !isDateFullyBooked(date),
                   }}
+                  //ustom style to dates marked available
                   modifiersClassNames={{
                     available: "bg-indigo-50 font-semibold",
                   }}

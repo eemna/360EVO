@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Button } from "../components/ui/button";
 import api from "../../services/axios";
-//import { AxiosError } from "axios";
-import { InputField } from "../components/ui/inputField";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useAuth } from "../../hooks/useAuth";
@@ -11,27 +8,20 @@ import { useAuth } from "../../hooks/useAuth";
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-
   const { showToast } = useToast();
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     setError("");
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/login", {
-        email,
-        password,
-      });
-
+      const response = await api.post("/auth/login", { email, password });
       login(response.data.user, response.data.accessToken);
 
       showToast({
@@ -51,8 +41,7 @@ export default function LoginPage() {
         showToast({
           type: "warning",
           title: "Email Not Verified",
-          message:
-            "Please verify your email first. Check your inbox or spam folder.",
+          message: "Please verify your email first. Check your inbox or spam folder.",
         });
         navigate("/verify-email", { state: { pendingEmail: email } });
         return;
@@ -67,19 +56,10 @@ export default function LoginPage() {
         return;
       }
 
-      if (status) {
-        showToast({
-          type: "error",
-          title: "Login Failed",
-          message: message || "Something went wrong",
-        });
-        return;
-      }
-
       showToast({
         type: "error",
-        title: "Unexpected Error",
-        message: "Something went wrong",
+        title: status ? "Login Failed" : "Unexpected Error",
+        message: message || "Something went wrong",
       });
     } finally {
       setLoading(false);
@@ -87,51 +67,61 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e8eef5] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+<div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
+  <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
-            <span className="font-bold text-white">360</span>
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
+            <span className="font-bold text-[#0D1B2A] text-lg">360</span>
           </div>
         </div>
 
-        {/* Title */}
-        <h1 className="text-center mb-2">Welcome back to 360EVO</h1>
-        <p className="text-center text-muted-foreground mb-6">
+        <h1 className="text-center text-white text-xl font-semibold mb-2">
+          Welcome back to 360EVO
+        </h1>
+        <p className="text-center text-white/60 text-sm mb-6">
           Sign in to continue your journey
         </p>
+
         {error && (
-          <p className="text-red-500 text-sm text-center mb-4">{error}</p>
+          <p className="text-red-400 text-sm text-center mb-4">{error}</p>
         )}
-        {/* Form */}
+
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email Field - Fixed white text */}
           <div className="space-y-2">
-            <InputField
+            <label htmlFor="email" className="text-white/80 text-sm font-medium">
+              Email
+            </label>
+            <input
               id="email"
-              label="Email"
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEmail(e.target.value)
-              }
-              error={error}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg 
+                         text-white placeholder-white/40 
+                         focus:outline-none focus:border-[#1D9E75] focus:ring-1 focus:ring-[#1D9E75]/50
+                         transition-colors"
               required
             />
           </div>
 
+          {/* Password Field - Fixed white text */}
           <div className="space-y-2">
-            <InputField
+            <label htmlFor="password" className="text-white/80 text-sm font-medium">
+              Password
+            </label>
+            <input
               id="password"
-              label="Password"
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPassword(e.target.value)
-              }
-              error={error}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg 
+                         text-white placeholder-white/40 
+                         focus:outline-none focus:border-[#1D9E75] focus:ring-1 focus:ring-[#1D9E75]/50
+                         transition-colors"
               required
             />
           </div>
@@ -141,18 +131,17 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => navigate("/forgot-password")}
-              className="text-primary hover:underline"
+              className="text-[#1D9E75] hover:text-[#1D9E75]/80 text-sm hover:underline transition-colors"
             >
               Forgot Password?
             </button>
           </div>
 
-          <Button
+          {/* Submit Button */}
+          <button
             type="submit"
-            variant="primary"
-            size="md"
             disabled={loading}
-            className="w-full"
+            className="w-full py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -162,15 +151,15 @@ export default function LoginPage() {
             ) : (
               "Sign In"
             )}
-          </Button>
+          </button>
         </form>
 
-        {/* Sign Up */}
-        <p className="text-center mt-6 text-muted-foreground">
+        {/* Sign Up Link */}
+        <p className="text-center mt-6 text-white/60 text-sm">
           Don't have an account?{" "}
           <button
             onClick={() => navigate("/register")}
-            className="text-primary hover:underline"
+            className="text-[#1D9E75] hover:underline transition-colors"
           >
             Sign up
           </button>
@@ -178,9 +167,12 @@ export default function LoginPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-4">
-          <Button onClick={() => navigate("/")} variant="link" size="sm">
+          <button
+            onClick={() => navigate("/")}
+            className="text-white/40 hover:text-white/70 text-sm transition-colors"
+          >
             ← Back to home
-          </Button>
+          </button>
         </div>
       </div>
     </div>

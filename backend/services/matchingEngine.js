@@ -21,6 +21,7 @@ function irBonusCrisp(assessment) {
 
 export function calculateMatchScore(investorProfile, project, assessment) {
   const irScore = assessment?.irScore || 0;
+  const trlScore = assessment?.trlScore || 1;
 
   const thesisFuzzy = fuzzifyThesis(
     investorProfile.investmentThesis,
@@ -52,7 +53,7 @@ export function calculateMatchScore(investorProfile, project, assessment) {
   // STAGE — 20 pts
 
   const stageFuzzy = fuzzifyStage(investorProfile.stages, project.stage);
-  const stageOutput = inferStage(stageFuzzy, { irScore });
+  const stageOutput = inferStage(stageFuzzy, { trlScore });
   const stageScore = defuzzifyCategory(stageOutput, 20);
 
   // TECHNOLOGY — 20 pts
@@ -87,14 +88,18 @@ export function calculateMatchScore(investorProfile, project, assessment) {
   // ── Hard penalties
   const mustHaves = investorProfile.mustHaves || {};
   const exclusions = investorProfile.exclusions || {};
-  if (mustHaves.minTRL && assessment?.trlScore < mustHaves.minTRL)
-    rawScore -= 20;
+  if (
+  mustHaves.minTRL !== undefined &&
+  assessment?.trlScore < mustHaves.minTRL
+) {
+  rawScore -= 20;
+}
   if (exclusions.industries?.includes(project.industry)) {
     rawScore -= 50;
   }
   const matchScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
-  const categoryScores = {
+  const categoryScores = { 
     industry: Math.round(industryScore),
     stage: Math.round(stageScore),
     technology: Math.round(technologyScore),

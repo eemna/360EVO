@@ -1,9 +1,4 @@
 import Groq from "groq-sdk";
-import {
-  llmCallsTotal,
-  llmCallDuration,
-  llmRetries,
-} from "../middleware/metrics.js";
 
 export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
   const groq = new Groq({
@@ -11,7 +6,6 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
   });
   const MAX_RETRIES = 3;
   let attempt = 0;
-  const end = llmCallDuration.startTimer({ service: "callLlm" });
   while (attempt < MAX_RETRIES) {
     const start = Date.now();
 
@@ -28,19 +22,14 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
 
       const latency = Date.now() - start;
       console.log(`[LLM] Success in ${latency}ms (attempt ${attempt + 1})`);
-      end();
-      llmCallsTotal.inc({ service: "callLlm", success: "true" });
       return response.choices[0].message.content.trim();
     } catch (error) {
       const isRateLimit = error?.status === 429 || error?.status === 529;
       if (isRateLimit && attempt < MAX_RETRIES - 1) {
-        llmRetries.inc({ attempt: String(attempt + 1) });
         const delay = Math.pow(2, attempt) * 1000;
         await new Promise((resolve) => setTimeout(resolve, delay));
         attempt++;
       } else {
-        end();
-        llmCallsTotal.inc({ service: "callLlm", success: "false" });
         throw error;
       }
     }
@@ -79,7 +68,6 @@ const EXPERTS = {
 // ── MoE 1: Project Assessment (4 experts)
 export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
   console.log("[MoE] Running 4 experts in parallel for project:", project.id);
-  const end = llmCallDuration.startTimer({ service: "runMixtureOfExperts" });
   const [trlResult, marketResult, teamResult, tractionResult] =
     await Promise.all([
       // Expert 1 — TRL
@@ -99,9 +87,9 @@ export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
       // Expert 2 — Market
       callLlm(
         `Project: ${project.title} | Industry: ${project.industry}
-Description: ${project.fullDesc?.slice(0, 400)}
-Market IR score: ${irBreakdown?.market || 0}/100
-Respond ONLY with: {"marketNarrative":"<2 sentences on market opportunity>","marketRisk":"<1 sentence on market risk>"}`,
+        Description: ${project.fullDesc?.slice(0, 400)}
+        Market IR score: ${irBreakdown?.market || 0}/100
+        Respond ONLY with: {"marketNarrative":"<2 sentences on market opportunity>","marketRisk":"<1 sentence on market risk>"}`,
         EXPERTS.market,
         300,
       )
@@ -111,10 +99,10 @@ Respond ONLY with: {"marketNarrative":"<2 sentences on market opportunity>","mar
       // Expert 3 — Team
       callLlm(
         `Project: ${project.title}
-Team size: ${project.teamMembers?.length || 0}
-Members: ${project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none"}
-Team IR score: ${irBreakdown?.team || 0}/100
-Respond ONLY with: {"teamNarrative":"<2 sentences on team quality>","teamRisk":"<1 sentence on team gap>"}`,
+         Team size: ${project.teamMembers?.length || 0}
+         Members: ${project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none"}
+         Team IR score: ${irBreakdown?.team || 0}/100
+         Respond ONLY with: {"teamNarrative":"<2 sentences on team quality>","teamRisk":"<1 sentence on team gap>"}`,
         EXPERTS.team,
         300,
       )
@@ -124,20 +112,18 @@ Respond ONLY with: {"teamNarrative":"<2 sentences on team quality>","teamRisk":"
       // Expert 4 — Traction
       callLlm(
         `Project: ${project.title}
-Milestones planned: ${project.milestones?.length || 0}
-Milestones completed: ${project.milestones?.filter((m) => m.completedAt)?.length || 0}
-Updates posted: ${project.updates?.length || 0}
-Pilot users: ${project.pilotUsers ?? 0} 
-Traction IR score: ${irBreakdown?.traction || 0}/100
-Respond ONLY with: {"tractionNarrative":"<2 sentences on traction>","tractionRisk":"<1 sentence on traction gap>"}`,
+         Milestones planned: ${project.milestones?.length || 0}
+         Milestones completed: ${project.milestones?.filter((m) => m.completedAt)?.length || 0}
+         Updates posted: ${project.updates?.length || 0}
+         Pilot users: ${project.pilotUsers ?? 0} 
+         Traction IR score: ${irBreakdown?.traction || 0}/100
+         Respond ONLY with: {"tractionNarrative":"<2 sentences on traction>","tractionRisk":"<1 sentence on traction gap>"}`,
         EXPERTS.traction,
         300,
       )
         .then((raw) => parseJsonResponse(raw))
         .catch(() => null),
     ]);
-  end();
-  llmCallsTotal.inc({ service: "runMixtureOfExperts", success: "true" });
   console.log("[MoE] Experts completed:", {
     trl: !!trlResult,
     market: !!marketResult,
@@ -145,30 +131,69 @@ Respond ONLY with: {"tractionNarrative":"<2 sentences on traction>","tractionRis
     traction: !!tractionResult,
   });
 
-  // Aggregator
-  return {
-    executiveSummary: [trlResult?.trlNarrative, marketResult?.marketNarrative]
-      .filter(Boolean)
-      .join(" "),
-    strengthsNarrative: [trlResult?.trlNarrative, teamResult?.teamNarrative]
-      .filter(Boolean)
-      .join(" "),
-    risksNarrative: [
-      trlResult?.trlRisk,
-      marketResult?.marketRisk,
-      teamResult?.teamRisk,
-      tractionResult?.tractionRisk,
-    ]
-      .filter(Boolean)
-      .join(" "),
+
+const aggregatorRaw = await callLlm(
+  `You are a senior investment analyst synthesizing 4 expert opinions.
+
+TRL EXPERT:
+- Assessment: ${trlResult?.trlNarrative || "unavailable"}
+- Risk: ${trlResult?.trlRisk || "unavailable"}
+
+MARKET EXPERT:
+- Assessment: ${marketResult?.marketNarrative || "unavailable"}
+- Risk: ${marketResult?.marketRisk || "unavailable"}
+
+TEAM EXPERT:
+- Assessment: ${teamResult?.teamNarrative || "unavailable"}
+- Risk: ${teamResult?.teamRisk || "unavailable"}
+
+TRACTION EXPERT:
+- Assessment: ${tractionResult?.tractionNarrative || "unavailable"}
+- Risk: ${tractionResult?.tractionRisk || "unavailable"}
+
+Rule-based context:
+- TRL Score: ${trlScore}/9
+- IR Scores: financial=${irBreakdown?.financial}, market=${irBreakdown?.market}, team=${irBreakdown?.team}, traction=${irBreakdown?.traction}
+
+Instructions:
+- Do NOT list experts separately
+- Synthesize into coherent paragraphs
+- Prioritize the most critical risks
+- Connect TRL findings with market opportunity
+
+Respond ONLY with valid JSON:
+{
+  "executiveSummary": "2-3 sentences combining TRL and market outlook",
+  "strengthsNarrative": "2-3 sentences combining technical and team strengths",
+  "risksNarrative": "2-3 sentences prioritizing the top risks across all dimensions",
+  "marketOpportunityNarrative": "2 sentences on market opportunity"
+}`,
+  "You are a senior VC investment committee member. Synthesize expert opinions into one coherent assessment. Respond ONLY in JSON, no markdown.",
+  600,
+);
+
+// Fallback if aggregator fails
+let aggregated;
+try {
+  aggregated = parseJsonResponse(aggregatorRaw);
+} catch {
+  aggregated = {
+    executiveSummary: [trlResult?.trlNarrative, marketResult?.marketNarrative].filter(Boolean).join(" "),
+    strengthsNarrative: [trlResult?.trlNarrative, teamResult?.teamNarrative].filter(Boolean).join(" "),
+    risksNarrative: [trlResult?.trlRisk, marketResult?.marketRisk, teamResult?.teamRisk, tractionResult?.tractionRisk].filter(Boolean).join(" "),
     marketOpportunityNarrative: marketResult?.marketNarrative || "",
-    _expertsUsed: {
-      trl: !!trlResult,
-      market: !!marketResult,
-      team: !!teamResult,
-      traction: !!tractionResult,
-    },
   };
+}
+
+return {
+  ...aggregated,
+  _expertsUsed: {
+    trl: !!trlResult,
+    market: !!marketResult,
+    team: !!teamResult,
+    traction: !!tractionResult,
+  },
+};
 }
 
 // ── MoE 2: Thesis Alignment (2 experts)
@@ -181,12 +206,9 @@ export async function createThesisAlignmentMoE(
     "[MoE] Running thesis alignment experts for project:",
     project.id,
   );
-  const end = llmCallDuration.startTimer({
-    service: "createThesisAlignmentMoE",
-  });
 
   const [financialExpert, strategicExpert] = await Promise.all([
-    // Expert 1 — Financial fit
+    // Expert 1 — Financial and stage fit
 
     callLlm(
       `You are evaluating financial and stage fit between an investor and a project.
@@ -256,23 +278,12 @@ Respond ONLY with valid JSON, no markdown:
       }),
   ]);
 
-  end();
-  llmCallsTotal.inc({ service: "createThesisAlignmentMoE", success: "true" });
 
-  const exclusions = investorProfile.exclusions || {};
-  const industryExcluded = exclusions.industries?.includes(project.industry);
-  const techExcluded = project.technologies?.some((t) =>
-    exclusions.technologies?.includes(t),
-  );
-  const isExcluded = industryExcluded || techExcluded;
+const alignmentScore = Math.round(
+  (financialExpert?.financialScore || 0) * 0.4 +
+  (strategicExpert?.strategicScore || 0) * 0.6,
+);
 
-  const rawAlignmentScore = Math.round(
-    (financialExpert?.financialScore || 0) * 0.4 +
-      (strategicExpert?.strategicScore || 0) * 0.6,
-  );
-  const alignmentScore = isExcluded
-    ? Math.max(0, rawAlignmentScore - 40)
-    : rawAlignmentScore;
 
   return {
     alignmentScore,
@@ -289,7 +300,6 @@ Respond ONLY with valid JSON, no markdown:
 // ── MoE 3: Pitch Analysis (2 experts)
 export async function createPitchAnalysisMoE(project, assessment) {
   console.log("[MoE] Running pitch analysis experts for project:", project.id);
-  const end = llmCallDuration.startTimer({ service: "createPitchAnalysisMoE" });
 
   const [clarityExpert, appealExpert] = await Promise.all([
     // Expert 1 — Clarity & completeness
@@ -366,9 +376,6 @@ Respond ONLY with valid JSON, no markdown:
         return null;
       }),
   ]);
-
-  end();
-  llmCallsTotal.inc({ service: "createPitchAnalysisMoE", success: "true" });
 
   return {
     pitchStrengths: appealExpert?.pitchStrengths || [],

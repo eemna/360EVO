@@ -1,6 +1,7 @@
-import { prisma } from "../config/prisma.js";
+ import { prisma } from "../config/prisma.js";
 import geoip from "geoip-lite";
 
+// Track daily project views and increment analytics for views, traffic sources, and visitor geo location
 export const trackProjectView = async (
   projectId,
   source = "direct",
@@ -108,7 +109,7 @@ export const getProjectAnalytics = async (req, res, next) => {
         acc.views += row.views;
         acc.bookmarks += row.bookmarks;
         acc.interests += row.interests;
-
+        //accumulates totals for each country
         if (row.geo) {
           Object.entries(row.geo).forEach(([country, count]) => {
             geoMap[country] = (geoMap[country] || 0) + count;
@@ -121,7 +122,7 @@ export const getProjectAnalytics = async (req, res, next) => {
     );
 
     const geoTable = Object.entries(geoMap)
-      .map(([country, views]) => ({ country, views }))
+      .map(([country, views]) => ({ country, views })) //Transforms each array entry into an object.
       .sort((a, b) => b.views - a.views);
 
     res.json({

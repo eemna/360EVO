@@ -31,7 +31,7 @@ function DropdownMenuTrigger({
 
 function DropdownMenuContent({
   className,
-  sideOffset = 4,
+  sideOffset = 4, //4 gap between trigger and menu
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (

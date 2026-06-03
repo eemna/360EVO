@@ -34,7 +34,7 @@ function Calendar({
         weekday: "w-8 text-center text-muted-foreground text-[0.8rem]",
 
         row: "flex w-full justify-between mt-2",
-        cell: "w-8 h-8 text-center",
+        cell: "w-8 h-8 text-center", //Each date box size
 
         day: cn(
           buttonVariants({ variant: "ghost" }),

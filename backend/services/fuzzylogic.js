@@ -20,7 +20,7 @@ function normalize(str) {
   return ABBREV_MAP[lower] || lower;
 }
 
-function fuzzyMatch(a, b) {
+export function fuzzyMatch(a, b) {
   if (!a || !b) return 0;
   const normA = normalize(a);
   const normB = normalize(b);
@@ -171,12 +171,25 @@ export function textSimilarity(textA, textB) {
 }
 
 const INDUSTRY_GROUPS = [
-  ["FinTech", "Blockchain & Crypto", "E-Commerce"],
-  ["HealthTech", "AI & Machine Learning", "IoT"],
-  ["EdTech", "SaaS", "AI & Machine Learning"],
-  ["CleanTech", "AgriTech", "IoT"],
-  ["PropTech", "SaaS", "E-Commerce"],
-  ["Cybersecurity", "AI & Machine Learning", "SaaS"],
+  ["FinTech", "Blockchain & Crypto"],
+  
+  ["HealthTech", "MedTech", "Biotech"],
+
+  ["EdTech", "E-Learning"],
+
+  ["CleanTech", "AgriTech", "Sustainability"],
+
+  ["PropTech", "Real Estate Tech"],
+
+  ["Cybersecurity", "Network Security"],
+
+  ["AI & Machine Learning", "Data Science"],
+
+  ["IoT", "Embedded Systems", "Smart Devices"],
+
+  ["SaaS", "Cloud Computing", "Enterprise Software"],
+
+  ["E-Commerce", "Marketplace", "RetailTech"],
 ];
 
 const STAGE_ORDER = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
@@ -191,10 +204,9 @@ export function fuzzifyIndustry(investorIndustries, projectIndustry) {
   if (bestSim >= 0.85) return { low: 0.0, medium: 0.0, high: 1.0 };
   if (bestSim >= 0.75) return { low: 0.0, medium: 0.8, high: 0.2 };
 
-
   for (const group of INDUSTRY_GROUPS) {
     if (
-      group.includes(projectIndustry) &&
+      group.some(g => fuzzyMatch(g, projectIndustry) > 0.8) &&
       investorIndustries.some((i) => group.includes(i))
     )
       return { low: 0.0, medium: 1.0, high: 0.0 };
@@ -203,7 +215,6 @@ export function fuzzifyIndustry(investorIndustries, projectIndustry) {
 }
 
 export function fuzzifyStage(investorStages, projectStage) {
-
   if (!investorStages || investorStages.length === 0)
     return { low: 0.0, medium: 0.5, high: 0.0 };
   const projectIdx = STAGE_ORDER.indexOf(projectStage);
@@ -236,7 +247,13 @@ export function fuzzifyFunding(investorProfile, project) {
   const tol = (max - min) * 0.2 || max * 0.2;
   return {
     high: trapezoidal(F, min - tol, min, max, max + tol),
-    medium: trapezoidal(F, min - tol * 1.5, min - tol, max + tol, max + tol * 1.5),
+    medium: trapezoidal(
+      F,
+      min - tol * 1.5,
+      min - tol,
+      max + tol,
+      max + tol * 1.5,
+    ),
     low: F < min - tol * 1.5 || F > max + tol * 1.5 ? 1.0 : 0.0,
   };
 }
@@ -245,10 +262,18 @@ export function fuzzifyTechnology(investorTechs, projectTechs, projectDesc) {
   if (!investorTechs || investorTechs.length === 0)
     return { low: 0.0, medium: 0.5, high: 0.0, _overlapRatio: 0, _nlpSim: 0 };
 
-  const overlap =
-    projectTechs?.filter((pt) =>
-      investorTechs.some((it) => fuzzyMatch(it, pt) >= 0.82),
-    ).length || 0;
+ const matched = new Set();
+
+for (const pt of projectTechs || []) {
+  for (const it of investorTechs) {
+    if (fuzzyMatch(it, pt) >= 0.82) {
+      matched.add(it);
+      break;
+    }
+  }
+}
+
+  const overlap = matched.size;
   const overlapRatio = overlap / investorTechs.length;
   const nlpSim = textSimilarity(
     investorTechs.join(" "),
@@ -324,43 +349,45 @@ export function inferIndustry(raw, { thesisSim }) {
 
 /**
  * Stage inference
-
- * Rules:
- *   R1: IF raw=high                             output.high = raw.high
- *   R2: IF raw=medium AND irScore=high          output.high  = min(medium, irHigh)
- *   R3: IF raw=medium AND irScore=low           output.low  += min(medium, irLow) * 0.5
- *   R4: IF raw=low                              output.low  = raw.low
  */
-export function inferStage(raw, { irScore }) {
-  const irNorm = irScore / 100;
-  const irHigh = sigmoid(irNorm, 0.7, 10);
-  const irLow = 1 - sigmoid(irNorm, 0.4, 10);
+export function inferStage(raw, { trlScore }) {
+  const trlNorm = (trlScore - 1) / 8;
+
+  const trlHigh = sigmoid(trlNorm, 0.7, 10);
+  const trlLow = 1 - sigmoid(trlNorm, 0.3, 10);
 
   let outHigh = raw.high;
   let outMedium = raw.medium;
   let outLow = raw.low;
 
-  const r2 = Math.min(raw.medium, irHigh);
+  // R2:
+  // IF stageMatch IS medium
+  // AND trl IS high
+  // THEN output IS high
+
+  const r2 = Math.min(raw.medium, trlHigh) * 0.5;
+
   outHigh = Math.max(outHigh, r2);
   outMedium = Math.max(0, outMedium - r2);
 
-  const r3 = Math.min(raw.medium, irLow) * 0.5;
+  // R3:
+  // IF stageMatch IS medium
+  // AND trl IS low
+  // THEN output IS low
+
+  const r3 = Math.min(raw.medium, trlLow) * 0.5;
+
   outLow = Math.max(outLow, r3);
 
-  return { low: outLow, medium: outMedium, high: outHigh };
+  return {
+    low: outLow,
+    medium: outMedium,
+    high: outHigh,
+  };
 }
 
-/**
- * Technology inference
 
- * Rules:
- *   R1: IF overlapRatio=high                     output.high (exact match is strong)
- *   R2: IF overlapRatio=low AND nlpSim=high     output.medium
- *       (semantic match without exact tag — partial credit, not full)
- *   R3: IF overlapRatio=high AND nlpSim=high    output.high boosted
- *       (both signals agree → more confident)
- *   R4: IF overlapRatio=low AND nlpSim=low      output.low
- */
+
 export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const exactHigh = sigmoid(overlapRatio, 0.5, 10);
   const exactLow = 1 - sigmoid(overlapRatio, 0.2, 10);
@@ -380,17 +407,6 @@ export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   return { low: outLow, medium: outMedium, high: outHigh };
 }
 
-/**
- * Funding inference
-
- * Rules:
- *   R1: IF raw=high                             output.high = raw.high
- *   R2: IF raw=medium AND irScore=high           output.high  = min(medium, irHigh) * 0.6
- *       (close to range + strong project  partial promotion, not full)
- *   R3: IF raw=low AND irScore=high             output.medium = min(low, irHigh) * 0.3
- *       (outside range but exceptional project    tiny rescue)
- *   R4: IF raw=low AND irScore=low               output.low reinforced
- */
 export function inferFunding(raw, { irScore }) {
   const irNorm = irScore / 100;
   const irHigh = sigmoid(irNorm, 0.7, 10);
@@ -406,17 +422,13 @@ export function inferFunding(raw, { irScore }) {
   outMedium = Math.max(outMedium, r3);
   outLow = Math.max(0, outLow - r3);
 
+  if (outHigh >= 0.95) {
+    outMedium = 0;
+    outLow = 0;
+  }
   return { low: outLow, medium: outMedium, high: outHigh };
 }
 
-/**
- * Geography inference
-
- * Rules:
- *   R1: IF raw=high                              output.high = raw.high
- *   R2: IF raw=medium AND projectIsGlobal        output.high = medium * 0.7
- *   R3: IF raw=low                               output.low  = raw.low
- */
 export function inferGeography(raw, { projectLocation }) {
   const isGlobal = projectLocation?.toLowerCase().includes("global");
 

@@ -309,7 +309,7 @@ export default function ProjectDetailsPage() {
       <div className="mb-0">
         <Button variant="ghost" className="mb-4 -ml-2" onClick={handleBack}>
           <ArrowLeft className="size-4 mr-2" />
-          Back to Projects
+          Back 
         </Button>
       </div>
 

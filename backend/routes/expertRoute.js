@@ -9,5 +9,5 @@ import { protect } from "../middleware/auth.js";
 const router = express.Router();
 router.post("/apply", protect, applyExpert);
 router.get("/", protect, getExperts);
-router.get("/:id", getPublicExpertProfile);
+router.get("/:id", protect, getPublicExpertProfile);
 export default router;

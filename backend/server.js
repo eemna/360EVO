@@ -31,7 +31,9 @@ import searchRouter from "./routes/searchroute.js";
 import { prisma } from "./config/prisma.js";
 
 let job, matchRegenerationJob, narrativeRetryJob, analyticsJob;
+
 dotenv.config({ override: false });
+
 async function loadCron() {
   if (process.env.NODE_ENV !== "test") {
     try {

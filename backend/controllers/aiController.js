@@ -5,11 +5,7 @@ import {
   createThesisAlignmentMoE,
   createPitchAnalysisMoE,
 } from "../services/llmservice.js";
-import {
-  matchesGenerated,
-  matchScoreHistogram,
-  llmCacheHits,
-} from "../middleware/metrics.js";
+
 import { runProjectAssessment } from "../services/assessmentService.js";
 
 export const assessProject = async (req, res, next) => {
@@ -77,12 +73,11 @@ export const generateMatches = async (req, res, next) => {
 
     const matchResults = [];
     for (const project of projects) {
-      const { matchScore, categoryScores, reasoning } =
-         calculateMatchScore(
-          investorProfile,
-          project,
-          project.aiAssessment,
-        );
+      const { matchScore, categoryScores, reasoning } = calculateMatchScore(
+        investorProfile,
+        project,
+        project.aiAssessment,
+      );
       matchResults.push({
         investorId,
         projectId: project.id,
@@ -91,8 +86,6 @@ export const generateMatches = async (req, res, next) => {
         reasoning,
         project,
       });
-      matchesGenerated.inc();
-      matchScoreHistogram.observe(matchScore);
     }
 
     await prisma.$transaction(
@@ -157,9 +150,8 @@ export const generateMatches = async (req, res, next) => {
             },
           });
           if (cached && cached.inputHash === inputHash) {
-            llmCacheHits.inc({ type: "THESIS_ALIGNMENT" });
             console.log(`[Matches] Cached for ${match.projectId}, skipping`);
-            continue;
+            continue; // Skip the rest of the current iteration and move to the next match
           }
 
           const alignment = await createThesisAlignmentMoE(
@@ -330,7 +322,6 @@ export const getThesisAlignment = async (req, res, next) => {
       },
     });
     if (cached && cached.inputHash === inputHash) {
-      llmCacheHits.inc({ type: "THESIS_ALIGNMENT" });
       return res.json({ cached: true, data: cached.content });
     }
 
@@ -406,7 +397,7 @@ export const getPitchAnalysis = async (req, res, next) => {
     const inputHash = crypto
       .createHash("sha256")
       .update(
-        JSON.stringify({
+        JSON.stringify({ 
           title: project.title,
           desc: project.fullDesc,
           milestones: project.milestones,
@@ -427,7 +418,6 @@ export const getPitchAnalysis = async (req, res, next) => {
     });
 
     if (cached && cached.inputHash === inputHash) {
-      llmCacheHits.inc({ type: "PITCH_ANALYSIS" });
       return res.json({ cached: true, data: cached.content });
     }
 

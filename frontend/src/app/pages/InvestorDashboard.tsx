@@ -261,7 +261,7 @@ function SetupChecklist({ profile }: { profile: InvestorProfile | null }) {
   );
 }
 
-export default function InvestorDashboard() {
+export default function InvestorDashboard() { 
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -273,6 +273,7 @@ export default function InvestorDashboard() {
   const [generating, setGenerating] = useState(false);
   const [ddRequests, setDdRequests] = useState<DdRequestSent[]>([]);
   const [loadingDd, setLoadingDd] = useState(true);
+  
   useEffect(() => {
     api
       .get("/dd-requests/sent")
@@ -280,6 +281,7 @@ export default function InvestorDashboard() {
       .catch(() => setDdRequests([]))
       .finally(() => setLoadingDd(false));
   }, []);
+
   useEffect(() => {
     const fetch = async () => {
       try {
@@ -359,13 +361,6 @@ export default function InvestorDashboard() {
         )
       : 0;
 
-  {
-    /*const profileComplete =
-    profile &&
-    (profile.industries?.length ?? 0) > 0 &&
-    (profile.stages?.length ?? 0) > 0 &&
-    (profile.investmentThesis?.length ?? 0) > 50; */
-  }
 
   const loading = loadingProfile || loadingMatches;
 
@@ -374,7 +369,7 @@ export default function InvestorDashboard() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">
+          <h1 className="text-3xl font-semibold text-gray-900 ">
             Welcome back, {user?.name?.split(" ")[0]}
           </h1>
           <p className="text-gray-500 text-sm mt-1">

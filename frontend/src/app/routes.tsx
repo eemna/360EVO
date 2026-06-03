@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import AppLayout from "../app/components/layout/AppLayout";
 import PublicLayout from "../app/components/layout/PublicLayout";
-import Landing from "./pages/Landing";
+//import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import VerifyEmailPage from "./pages/VerifyEmailPage";
@@ -46,12 +46,24 @@ import SearchResultsPage from "./pages/Searchresultspage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import FaqPage from "./pages/FaqPage";
-
+import CookiePage from "./pages/CookiePage";
+import { Home } from './pages/Home';
+import { About } from './pages/About';
+import { Features } from './pages/Features';
+import { Pricing } from './pages/Pricing';
+import { HowItWorks } from './pages/HowItWorks';
+import { Contact } from './pages/Contact';
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-      { path: "/", element: <Landing /> },
+           { path:"/", element:<Home /> },
+            {path:"/about", element:<About />},
+            {path:"/features", element:<Features /> },
+             {path:"/pricing" ,element:<Pricing />},
+            { path:"/how-it-works", element:<HowItWorks /> },
+            {path:"/contact" ,element:<Contact /> },
+     // { path: "/", element: <Landing /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
       { path: "/verify-email", element: <VerifyEmailPage /> },
@@ -60,6 +72,7 @@ export const router = createBrowserRouter([
       { path: "/privacy", element: <PrivacyPage /> },
       { path: "/terms", element: <TermsPage /> },
       { path: "/faq", element: <FaqPage /> },
+      { path: "/cookies", element: <CookiePage /> },
     ],
   },
   {
