@@ -168,8 +168,6 @@ export function textSimilarity(textA, textB) {
   return cosine(tfVector(tokenize(normA)), tfVector(tokenize(normB)));
 }
 
-
-
 const STAGE_ORDER = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 
 export function fuzzifyIndustry(investorIndustries, projectIndustry) {
@@ -182,7 +180,6 @@ export function fuzzifyIndustry(investorIndustries, projectIndustry) {
   if (bestSim >= 0.85) return { low: 0.0, medium: 0.0, high: 1.0 };
   if (bestSim >= 0.75) return { low: 0.0, medium: 0.8, high: 0.2 };
 
- 
   return { low: 1.0, medium: 0.0, high: 0.0 };
 }
 
@@ -219,7 +216,7 @@ export function fuzzifyFunding(investorProfile, project) {
   const F = Number(project.fundingSought);
   const min = hasMin ? Number(investorProfile.fundingMin) : 0;
   const max = hasMax ? Number(investorProfile.fundingMax) : F * 10;
-  
+
   const tol = (max - min) * 0.2 || max * 0.2;
   return {
     high: trapezoidal(F, min - tol, min, max, max + tol),
@@ -288,15 +285,12 @@ export function fuzzifyGeography(investorProfile, project) {
   const prefs = investorProfile.geographicPrefs;
   const loc = project.location?.toLowerCase() || "";
 
-  if (!prefs || prefs.length === 0) 
-    return { low: 0.0, medium: 0.5, high: 0.0 };
+  if (!prefs || prefs.length === 0) return { low: 0.0, medium: 0.5, high: 0.0 };
 
   if (prefs.some((p) => p.toLowerCase() === "global"))
     return { low: 0.0, medium: 0.0, high: 1.0 };
 
-  if (loc.includes("global"))
-    return { low: 0.0, medium: 0.0, high: 1.0 };
-
+  if (loc.includes("global")) return { low: 0.0, medium: 0.0, high: 1.0 };
 
   const exactMatch = prefs.some((p) => fuzzyMatch(p, loc) >= 0.8);
   const nlpSim = textSimilarity(prefs.join(" "), loc);
@@ -320,7 +314,7 @@ export function inferIndustry(raw, { thesisSim }) {
 
   const r2 = Math.min(raw.medium, thesisHigh);
   outHigh = Math.max(outHigh, r2);
-  
+
   outMedium = Math.max(0, outMedium - r2);
 
   const r3 = Math.min(raw.medium, thesisLow);
@@ -351,7 +345,7 @@ export function inferStage(raw, { trlScore }) {
 
   outHigh = Math.max(outHigh, r2);
   outMedium = Math.max(0, outMedium - r2);
-  
+
   const r3 = Math.min(raw.medium, trlLow) * 0.3;
 
   outLow = Math.max(outLow, r3);
@@ -405,7 +399,7 @@ export function inferFunding(raw, { irScore }) {
 }
 
 export function inferGeography(raw) {
-  return raw; 
+  return raw;
 }
 
 /**

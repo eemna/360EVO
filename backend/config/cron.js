@@ -41,7 +41,7 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
         aiAssessment: true,
       },
     });
-console.log("[CRON] approved projects:", projects.length);
+    console.log("[CRON] approved projects:", projects.length);
     if (projects.length === 0) {
       console.log("[CRON] No approved projects found, skipping.");
       return;
@@ -203,7 +203,7 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
 });
 
 const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
- // const end = cronJobDuration.startTimer({ job: "analytics" });
+  // const end = cronJobDuration.startTimer({ job: "analytics" });
   console.log("[CRON] Midnight analytics: ensuring today's rows exist");
 
   try {
@@ -226,12 +226,12 @@ const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
     console.log(
       `[CRON] Ensured analytics rows for ${projects.length} projects`,
     );
-   // cronJobRuns.inc({ job: "analytics", status: "success" });
+    // cronJobRuns.inc({ job: "analytics", status: "success" });
   } catch (err) {
-   // cronJobRuns.inc({ job: "analytics", status: "failed" });
+    // cronJobRuns.inc({ job: "analytics", status: "failed" });
     console.error("[CRON] Analytics job failed:", err.message);
   } finally {
-   // end();
+    // end();
   }
 });
 export { job, matchRegenerationJob, narrativeRetryJob, analyticsJob };

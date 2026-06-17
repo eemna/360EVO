@@ -19,7 +19,7 @@ import { protect } from "../middleware/auth.js";
 const router = express.Router();
 
 router.get("/", protect, getPublicProjects);
- 
+
 router.get("/featured", protect, getFeaturedProjects);
 router.get("/dashboard", protect, getStartupDashboard);
 router.get("/mine", protect, getMyProjects);
@@ -37,4 +37,3 @@ router.put(
 router.post("/:id/updates", protect, createProjectUpdate);
 router.get("/:id/updates", protect, getProjectUpdates);
 export default router;
- 

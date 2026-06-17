@@ -13,16 +13,16 @@ export const uploadImage = async (req, res, next) => {
       .toBuffer();
 
     const stream = cloudinary.uploader.upload_stream(
-      { 
+      {
         folder: "360EVO",
         resource_type: "image",
       },
       (error, result) => {
-        if (error) return next(error); 
+        if (error) return next(error);
 
         res.status(201).json({
           url: result.secure_url,
-          publicId: result.public_id,//used for delete
+          publicId: result.public_id, //used for delete
         });
       },
     );
@@ -83,25 +83,7 @@ export const deleteFileController = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}; 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+};
 
 export const downloadDocumentController = async (req, res, next) => {
   try {
@@ -110,7 +92,7 @@ export const downloadDocumentController = async (req, res, next) => {
     if (!url || !originalName) {
       return res.status(400).json({ message: "Missing parameters" });
     }
-//download not display
+    //download not display
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${originalName}"`,

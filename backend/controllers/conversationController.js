@@ -38,7 +38,7 @@ export const createConversation = async (req, res, next) => {
         include: { participants: true },
       });
     });
- 
+
     res.json(conversation);
   } catch (error) {
     next(error);
@@ -91,9 +91,9 @@ export const sendMessage = async (req, res, next) => {
 
     global.io.to(id).emit("new_message", message);
 
-   // const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-   // const mentionedUserIds = new Set();
-   // let match;
+    // const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+    // const mentionedUserIds = new Set();
+    // let match;
     //exec() is a method of a regular expression that searches for a match and returns detailed information about it
     //while ((match = mentionRegex.exec(content)) !== null) {
     //  const mentionedId = match[2];
@@ -104,25 +104,25 @@ export const sendMessage = async (req, res, next) => {
 
     //for (const mentionedUserId of mentionedUserIds) {
     //  const mentionedUser = await prisma.user.findUnique({
-     //   where: { id: mentionedUserId },
-     //   select: { id: true },
+    //   where: { id: mentionedUserId },
+    //   select: { id: true },
     //  });
     //  if (!mentionedUser) continue;
 
     //  await createNotification({
-     //   userId: mentionedUserId,
-     //   type: "MESSAGE",
-     //   title: "You were mentioned 💬",
-     //   body: `${req.user.name || "Someone"} mentioned you in a message`,
-     //   link: "/app/conversation",
-     // });
+    //   userId: mentionedUserId,
+    //   type: "MESSAGE",
+    //   title: "You were mentioned 💬",
+    //   body: `${req.user.name || "Someone"} mentioned you in a message`,
+    //   link: "/app/conversation",
+    // });
 
-     // global.io.to(mentionedUserId).emit("notification", {
-      //  type: "MENTION",
-     //   from: req.user.name,
-     //   conversationId: id,
-   //   });
-   // }
+    // global.io.to(mentionedUserId).emit("notification", {
+    //  type: "MENTION",
+    //   from: req.user.name,
+    //   conversationId: id,
+    //   });
+    // }
 
     const otherParticipant = await prisma.conversationParticipant.findFirst({
       where: { conversationId: id, userId: { not: senderId } },
@@ -161,7 +161,7 @@ export const getMessages = async (req, res, next) => {
 
     const participant = await prisma.conversationParticipant.findFirst({
       where: { conversationId: id, userId },
-    }); 
+    });
 
     if (!participant) {
       return next({ statusCode: 403, message: "Not allowed" });
@@ -189,7 +189,8 @@ export const getMessages = async (req, res, next) => {
     next(error);
   }
 };
-{/*
+{
+  /*
 export const getMessages = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -234,7 +235,8 @@ export const getMessages = async (req, res, next) => {
     next(error);
   }
 };
- */}
+ */
+}
 export const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;

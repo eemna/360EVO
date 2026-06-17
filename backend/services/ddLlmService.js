@@ -121,7 +121,7 @@ export async function suggestQaAnswer(question, documents) {
     .filter((d) => d.textExtract)
     .map((d) => `[${d.name}]\n${d.textExtract?.slice(0, 2000)}`)
     .join("\n\n---\n\n");
- 
+
   if (!context) {
     return {
       suggestedAnswer: "No document content available to answer this question.",
