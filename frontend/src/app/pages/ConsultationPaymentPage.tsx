@@ -55,7 +55,7 @@ function PaymentForm({
 
     const cardElement = elements.getElement(CardElement);
     if (!cardElement) return;
- 
+
     try {
       setPaying(true);
       setCardError("");

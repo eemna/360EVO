@@ -44,7 +44,7 @@ interface DocumentUploadProps {
   label?: string;
   description?: string;
   initialFiles?: UploadedDocument[];
-} 
+}
 
 export function DocumentUpload({
   onFilesChange,
@@ -55,8 +55,7 @@ export function DocumentUpload({
   label = "Upload Documents",
   description = "Drag and drop your files here or click to browse",
 }: DocumentUploadProps) {
-
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(() => { 
+  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(() => {
     if (!initialFiles || initialFiles.length === 0) return [];
 
     return initialFiles.map((file) => ({
@@ -84,13 +83,13 @@ export function DocumentUpload({
         link.href = blobUrl;
         link.download = filename;
         document.body.appendChild(link);
-        link.click();//Trigger download
-        document.body.removeChild(link);//Removes temporary URL from memory
+        link.click(); //Trigger download
+        document.body.removeChild(link); //Removes temporary URL from memory
         window.URL.revokeObjectURL(blobUrl);
       });
   };
-  
-//useEffect listens for changes in uploadedFiles. When uploads succeed, it extracts the Cloudinary information and sends the uploaded document list to the parent component
+
+  //useEffect listens for changes in uploadedFiles. When uploads succeed, it extracts the Cloudinary information and sends the uploaded document list to the parent component
   useEffect(() => {
     if (!onFilesChange) return;
 
@@ -203,7 +202,7 @@ export function DocumentUpload({
       );
     }
   };
-//It is executed when the user selects files or drops files into the drag-and-drop area
+  //It is executed when the user selects files or drops files into the drag-and-drop area
   const handleFiles = (files: FileList) => {
     const filesArray = Array.from(files);
     setGlobalError("");

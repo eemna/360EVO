@@ -80,7 +80,7 @@ export function ThesisAlignmentPanel({ projectId }: ThesisAlignmentPanelProps) {
   const [alignment, setAlignment] = useState<ThesisAlignment | null>(null);
   const [cached, setCached] = useState(false);
   const [openQ, setOpenQ] = useState<number | null>(null);
-  const { showToast } = useToast(); 
+  const { showToast } = useToast();
 
   const handleGenerate = async () => {
     try {

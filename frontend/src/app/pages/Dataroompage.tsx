@@ -47,7 +47,7 @@ import {
   RefreshCw,
   FileBarChart,
   Eye,
-//  Download,
+  //  Download,
 } from "lucide-react";
 
 interface DataRoomDocument {
@@ -77,7 +77,7 @@ interface QaThread {
   asker: { name: string; role: string };
   responses: QaResponse[];
 }
- 
+
 interface ActivityItem {
   id: string;
   action: string;
@@ -280,7 +280,7 @@ export default function DataRoomPage() {
 
     try {
       setUploadingDoc(true);
- 
+
       // Step 1: upload to Cloudinary via existing endpoint
       const formData = new FormData();
       formData.append("file", file);
@@ -732,7 +732,6 @@ export default function DataRoomPage() {
                           </Button>
                         </a>
 
-                       
                         {isOwner && (
                           <Button
                             size="icon"

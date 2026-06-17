@@ -123,7 +123,7 @@ export default function AIAssessmentSection({
   const handleTriggerAssessment = async () => {
     try {
       setTriggering(true);
-      const { data } = await api.post(`/ai/assess/${projectId}`); 
+      const { data } = await api.post(`/ai/assess/${projectId}`);
       setAssessment(data);
 
       if (data.llmModel !== "groq/moe-4experts") {
@@ -294,7 +294,8 @@ export default function AIAssessmentSection({
         <Card className="border border-gray-200">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Lightbulb className="w-4 h-4 text-amber-500" /> Improvement Recommendations
+              <Lightbulb className="w-4 h-4 text-amber-500" /> Improvement
+              Recommendations
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -349,8 +350,6 @@ export default function AIAssessmentSection({
           </Card>
         </div>
       )}
-
-   
     </div>
   );
 }

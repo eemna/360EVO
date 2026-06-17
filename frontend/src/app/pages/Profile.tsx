@@ -139,7 +139,6 @@ export default function Profile() {
     if (user) fetchProfile();
   }, [id, user]);
 
-
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData || !formData.profile) return;
@@ -372,7 +371,7 @@ export default function Profile() {
                     if (!file || !profileUser?.profile || !isOwnProfile) return;
 
                     try {
-                      setUploading(true); 
+                      setUploading(true);
                       const { data } = await api.put("/auth/update-profile", {
                         name: profileUser.name,
                         bio: profileUser.profile.bio,
@@ -616,8 +615,7 @@ text-white border border-white/30 gap-2"
               </Card>
             )}
 
-            
-            {/*  Expert profile  */}
+          {/*  Expert profile  */}
           {profileUser.role === "EXPERT" && (
             <ExpertProfile profileUser={profileUser} />
           )}

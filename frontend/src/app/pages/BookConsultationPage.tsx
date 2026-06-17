@@ -17,7 +17,7 @@ import { AxiosError } from "axios";
 import {
   Calendar as CalendarIcon,
   Clock,
-  ArrowLeft, 
+  ArrowLeft,
   Video,
   MapPin,
   CheckCircle2,
@@ -173,7 +173,6 @@ export function BookConsultationPage() {
   };
 
   const isDateFullyBooked = (date: Date) => {
-
     if (!isDateAvailable(date)) return true;
 
     const slots = generateTimeSlots(date);
@@ -461,7 +460,8 @@ export function BookConsultationPage() {
                     isDateFullyBooked(date)
                   }
                   className="rounded-lg border border-gray-300 shadow-sm p-4" //styles to whole calendar
-                  modifiers={{ // to check available days
+                  modifiers={{
+                    // to check available days
                     available: (date) =>
                       date >= today &&
                       isDateAvailable(date) &&
@@ -644,7 +644,6 @@ export function BookConsultationPage() {
                     className="resize-none"
                   />
                 </div>
-                
 
                 <Button
                   className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"

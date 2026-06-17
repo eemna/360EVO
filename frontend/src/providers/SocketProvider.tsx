@@ -11,7 +11,7 @@ export const SocketProvider = ({ children }: { children: React.ReactNode }) => {
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!user) return; 
+    if (!user) return;
 
     const token = getApiToken();
 

@@ -31,26 +31,28 @@ export default function ExpertsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-useEffect(() => {
-  let cancelled = false;
+  useEffect(() => {
+    let cancelled = false;
 
-  api
-    .get(`/experts`)
-    .then(({ data }) => {
-      if (!cancelled) {
-        setExperts(data.experts);
-        setLoading(false);
-      }
-    })
-    .catch((err) => {
-      if (!cancelled) {
-        console.error(err);
-        setLoading(false);
-      }
-    });
+    api
+      .get(`/experts`)
+      .then(({ data }) => {
+        if (!cancelled) {
+          setExperts(data.experts);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error(err);
+          setLoading(false);
+        }
+      });
 
-  return () => { cancelled = true; };
-}, []);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = experts.filter(
     (e) =>
@@ -160,7 +162,11 @@ function ExpertCard({
         <div className="flex gap-3 items-start">
           <div className="size-14 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
             {profile.avatar ? (
-              <img src={profile.avatar} alt={expert.name} className="size-full object-cover" />
+              <img
+                src={profile.avatar}
+                alt={expert.name}
+                className="size-full object-cover"
+              />
             ) : (
               <span className="text-xl font-bold text-indigo-600">
                 {expert.name.charAt(0).toUpperCase()}
@@ -177,19 +183,27 @@ function ExpertCard({
               <span className="text-sm font-medium text-gray-700">
                 {profile.avgRating?.toFixed(1) ?? "0.0"}
               </span>
-              <span className="text-xs text-gray-400">({profile.reviewCount} reviews)</span>
+              <span className="text-xs text-gray-400">
+                ({profile.reviewCount} reviews)
+              </span>
             </div>
             <div className="flex items-center gap-2 mt-1">
-              <Badge className={`text-xs px-2 py-0 ${statusColor}`}>{statusLabel}</Badge>
+              <Badge className={`text-xs px-2 py-0 ${statusColor}`}>
+                {statusLabel}
+              </Badge>
               {profile.yearsOfExperience && (
-                <span className="text-xs text-gray-500">{profile.yearsOfExperience} yrs exp</span>
+                <span className="text-xs text-gray-500">
+                  {profile.yearsOfExperience} yrs exp
+                </span>
               )}
             </div>
           </div>
 
           {profile.hourlyRate && (
             <div className="text-right flex-shrink-0">
-              <p className="font-bold text-indigo-600">${Number(profile.hourlyRate)}</p>
+              <p className="font-bold text-indigo-600">
+                ${Number(profile.hourlyRate)}
+              </p>
               <p className="text-xs text-gray-400">/hour</p>
             </div>
           )}
@@ -202,7 +216,12 @@ function ExpertCard({
         {(profile.expertise?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {profile.expertise?.slice(0, 3).map((tag) => (
-              <Badge key={tag} className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0">{tag}</Badge>
+              <Badge
+                key={tag}
+                className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0"
+              >
+                {tag}
+              </Badge>
             ))}
             {(profile.expertise?.length ?? 0) > 3 && (
               <Badge className="bg-gray-100 text-gray-500 text-xs px-2 py-0">
@@ -215,7 +234,9 @@ function ExpertCard({
         {(profile.industries?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {profile.industries?.slice(0, 2).map((ind) => (
-              <Badge key={ind} variant="outline" className="text-xs px-2 py-0">{ind}</Badge>
+              <Badge key={ind} variant="outline" className="text-xs px-2 py-0">
+                {ind}
+              </Badge>
             ))}
           </div>
         )}
@@ -223,9 +244,14 @@ function ExpertCard({
         <Button
           className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
           disabled={profile.availabilityStatus !== "AVAILABLE"}
-          onClick={(e) => { e.stopPropagation(); onBook(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onBook();
+          }}
         >
-          {profile.availabilityStatus === "AVAILABLE" ? "Book Consultation" : "View Profile"}
+          {profile.availabilityStatus === "AVAILABLE"
+            ? "Book Consultation"
+            : "View Profile"}
         </Button>
       </CardContent>
     </Card>

@@ -8,7 +8,7 @@ import {
   ArrowRight,
   Pencil,
   Trash2,
- // BookOpen,
+  // BookOpen,
 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { Button } from "../components/ui/button";
@@ -144,7 +144,7 @@ export default function StartupDashboard() {
 
   const fetchDashboard = useCallback(async () => {
     try {
-      setLoading(true); 
+      setLoading(true);
       const [dashRes, ddRes] = await Promise.all([
         api.get("/projects/dashboard"),
         api.get("/dd-requests/received").catch(() => ({ data: [] })),
@@ -227,7 +227,7 @@ export default function StartupDashboard() {
           onProjectSaved={fetchDashboard}
         />
         <div className="flex items-center gap-2">
-         {/* <Button
+          {/* <Button
             variant="outline"
             onClick={() => navigate("/app/events/my")}
             className="gap-2"
@@ -248,7 +248,7 @@ export default function StartupDashboard() {
               </span>
             )}
           </Button>
-        {/*  <Button
+          {/*  <Button
             variant="outline"
             onClick={() => navigate("/app/programs/my-applications")}
             className="gap-2"

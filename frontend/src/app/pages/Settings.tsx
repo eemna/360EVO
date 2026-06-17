@@ -23,7 +23,7 @@ export default function Settings() {
   const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
- 
+
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [bio, setBio] = useState("");
@@ -201,26 +201,41 @@ export default function Settings() {
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Location</Label>
-                <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+                <Input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                />
               </div>
               <div className="space-y-2">
                 <Label>LinkedIn</Label>
-                <Input value={linkedIn} onChange={(e) => setLinkedIn(e.target.value)} />
+                <Input
+                  value={linkedIn}
+                  onChange={(e) => setLinkedIn(e.target.value)}
+                />
               </div>
 
               {user?.role === "STARTUP" && (
                 <>
                   <div className="space-y-2">
                     <Label>Company Name</Label>
-                    <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} />
+                    <Input
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label>Stage</Label>
-                    <Input value={stage} onChange={(e) => setStage(e.target.value)} />
+                    <Input
+                      value={stage}
+                      onChange={(e) => setStage(e.target.value)}
+                    />
                   </div>
                 </>
               )}
