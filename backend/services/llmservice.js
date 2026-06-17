@@ -35,6 +35,9 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
     }
   }
 }
+// /m start at any line 
+
+
 
 export function parseJsonResponse(raw) {
   const cleaned = raw
@@ -61,13 +64,13 @@ const EXPERTS = {
     "You are a strategic investment partner. Only evaluate thesis alignment and strategic fit. Respond ONLY in JSON, no markdown.",
   clarity:
     "You are a pitch deck coach. Only evaluate pitch clarity and completeness. Respond ONLY in JSON, no markdown.",
-  appeal:
+  appeal: 
     "You are an investment committee member. Only evaluate investor appeal and return potential. Respond ONLY in JSON, no markdown.",
 };
 
 // ── MoE 1: Project Assessment (4 experts)
 export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
-  console.log("[MoE] Running 4 experts in parallel for project:", project.id);
+
   const [trlResult, marketResult, teamResult, tractionResult] =
     await Promise.all([
       // Expert 1 — TRL
@@ -131,9 +134,8 @@ export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
     traction: !!tractionResult,
   });
 
-
-const aggregatorRaw = await callLlm(
-  `You are a senior investment analyst synthesizing 4 expert opinions.
+  const aggregatorRaw = await callLlm(
+    `You are a senior investment analyst synthesizing 4 expert opinions.
 
 TRL EXPERT:
 - Assessment: ${trlResult?.trlNarrative || "unavailable"}
@@ -168,32 +170,43 @@ Respond ONLY with valid JSON:
   "risksNarrative": "2-3 sentences prioritizing the top risks across all dimensions",
   "marketOpportunityNarrative": "2 sentences on market opportunity"
 }`,
-  "You are a senior VC investment committee member. Synthesize expert opinions into one coherent assessment. Respond ONLY in JSON, no markdown.",
-  600,
-);
+    "You are a senior VC investment committee member. Synthesize expert opinions into one coherent assessment. Respond ONLY in JSON, no markdown.",
+    600,
+  );
 
-// Fallback if aggregator fails
-let aggregated;
-try {
-  aggregated = parseJsonResponse(aggregatorRaw);
-} catch {
-  aggregated = {
-    executiveSummary: [trlResult?.trlNarrative, marketResult?.marketNarrative].filter(Boolean).join(" "),
-    strengthsNarrative: [trlResult?.trlNarrative, teamResult?.teamNarrative].filter(Boolean).join(" "),
-    risksNarrative: [trlResult?.trlRisk, marketResult?.marketRisk, teamResult?.teamRisk, tractionResult?.tractionRisk].filter(Boolean).join(" "),
-    marketOpportunityNarrative: marketResult?.marketNarrative || "",
+  // Fallback if aggregator fails
+  let aggregated;
+  try {
+    aggregated = parseJsonResponse(aggregatorRaw);
+  } catch {
+    aggregated = {
+      executiveSummary: [trlResult?.trlNarrative, marketResult?.marketNarrative]
+        .filter(Boolean)
+        .join(" "),
+      strengthsNarrative: [trlResult?.trlNarrative, teamResult?.teamNarrative]
+        .filter(Boolean)
+        .join(" "),
+      risksNarrative: [
+        trlResult?.trlRisk,
+        marketResult?.marketRisk,
+        teamResult?.teamRisk,
+        tractionResult?.tractionRisk,
+      ]
+        .filter(Boolean)
+        .join(" "),
+      marketOpportunityNarrative: marketResult?.marketNarrative || "",
+    };
+  }
+
+  return {
+    ...aggregated,
+    _expertsUsed: {
+      trl: !!trlResult,
+      market: !!marketResult,
+      team: !!teamResult,
+      traction: !!tractionResult,
+    },
   };
-}
-
-return {
-  ...aggregated,
-  _expertsUsed: {
-    trl: !!trlResult,
-    market: !!marketResult,
-    team: !!teamResult,
-    traction: !!tractionResult,
-  },
-};
 }
 
 // ── MoE 2: Thesis Alignment (2 experts)
@@ -208,7 +221,7 @@ export async function createThesisAlignmentMoE(
   );
 
   const [financialExpert, strategicExpert] = await Promise.all([
-    // Expert 1 — Financial and stage fit
+    // Expert 1 — Financial and stage fit 
 
     callLlm(
       `You are evaluating financial and stage fit between an investor and a project.
@@ -278,12 +291,10 @@ Respond ONLY with valid JSON, no markdown:
       }),
   ]);
 
-
-const alignmentScore = Math.round(
-  (financialExpert?.financialScore || 0) * 0.4 +
-  (strategicExpert?.strategicScore || 0) * 0.6,
-);
-
+  const alignmentScore = Math.round(
+    (financialExpert?.financialScore || 0) * 0.4 +
+      (strategicExpert?.strategicScore || 0) * 0.6,
+  );
 
   return {
     alignmentScore,

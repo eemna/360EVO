@@ -27,7 +27,7 @@ export const getUserById = async (req, res, next) => {
         computedStatus = "AVAILABLE";
 
         const today = new Date();
-        const todayDay = today.getDay();
+        const todayDay = today.getDay();//0 1 
 
         const todayAvailability = user.profile.weeklyAvailability?.find(
           (slot) => slot.day === todayDay && slot.enabled,

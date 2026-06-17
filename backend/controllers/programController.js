@@ -358,7 +358,7 @@ export const getProgramApplications = async (req, res, next) => {
     });
     res.json(applications);
   } catch (error) {
-    next(error);
+    next(error); 
   }
 };
 
@@ -376,7 +376,7 @@ export const getAdminStats = async (req, res, next) => {
           _sum: { amount: true },
         }),
       ]);
-//Transforms array into object
+    //Transforms array into object
     const revenueByType = {};
     revenueData.forEach((r) => {
       revenueByType[r.referenceType] = Number(r._sum.amount || 0);

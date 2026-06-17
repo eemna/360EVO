@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const restoreSession = async () => {
       try {
         const res = await api.post("/auth/refresh-token");
-        const newToken = res.data.accessToken;
+        const newToken = res.data.accessToken; 
 
         setApiToken(newToken);
 
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           error.response?.status,
           error.response?.data,
           error.message,
-        ); 
+        );
         setUser(null);
         setApiToken(null);
       } finally {

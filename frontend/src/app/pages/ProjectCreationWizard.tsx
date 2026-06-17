@@ -197,6 +197,7 @@ export function ProjectCreationWizard({
 }: ProjectCreationWizardProps) {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const isApproved = projectStatus === "APPROVED";
+
   useEffect(() => {
     if (isOpen && isApproved) {
       setCurrentStep(2);
@@ -204,12 +205,15 @@ export function ProjectCreationWizard({
       setCurrentStep(0);
     }
   }, [isOpen, isApproved, externalProjectId]);
+
   const isEditMode = !!externalProjectId;
+
   useEffect(() => {
     if (isOpen) {
       setCurrentProjectId(externalProjectId ?? null);
     }
   }, [isOpen, externalProjectId]);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [saveStatus, setSaveStatus] = useState<
     "idle" | "saving" | "saved" | "error"
@@ -226,15 +230,15 @@ export function ProjectCreationWizard({
 
   const { showToast } = useToast();
   const {
-    register,
-    control,
-    handleSubmit,
-    watch,
-    getValues,
-    setValue,
-    reset,
+    register, //connect inputs to form
+    control, //manage complex field 
+    handleSubmit, // Processes submission
+    watch, // Monitor field changes
+    getValues, // Get all current values
+    setValue, // Update field values
+    reset, // Clear entire form
     formState: { errors },
-    trigger,
+    trigger,  // Manually trigger validation
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
 
@@ -322,7 +326,7 @@ export function ProjectCreationWizard({
       setCurrentStep(currentStep - 1);
     }
   };
-//transforms frontend form data into the format expected by the backend 
+  //transforms frontend form data into the format expected by the backend
   const mapFormToApi = useCallback(
     (values: ProjectFormData) => {
       const base = {
@@ -614,7 +618,7 @@ export function ProjectCreationWizard({
   useEffect(() => {
     if (!isOpen) return;
     if (isSubmitting) return;
-
+// This runs EVERY TIME any form field changes
     const subscription = watch(() => {
       if (!currentProjectId) return;
 
@@ -1083,7 +1087,7 @@ export function ProjectCreationWizard({
                                 )}
                               </div>
                             </div>
-
+ 
                             <div className="space-y-2">
                               <Label>Photo (Optional)</Label>
                               <FileUpload

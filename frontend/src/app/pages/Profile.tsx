@@ -138,6 +138,8 @@ export default function Profile() {
 
     if (user) fetchProfile();
   }, [id, user]);
+
+
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData || !formData.profile) return;
@@ -370,7 +372,7 @@ export default function Profile() {
                     if (!file || !profileUser?.profile || !isOwnProfile) return;
 
                     try {
-                      setUploading(true);
+                      setUploading(true); 
                       const { data } = await api.put("/auth/update-profile", {
                         name: profileUser.name,
                         bio: profileUser.profile.bio,
@@ -417,7 +419,7 @@ export default function Profile() {
                 setFormData(JSON.parse(JSON.stringify(profileUser)));
                 setEditModalOpen(true);
               }}
-              className="bg-white/20 backdrop-blur-md hover:bg-white/30 
+              className="bg-white/20 hover:bg-white/30 
 text-white border border-white/30 gap-2"
             >
               <Edit3 className="size-4" />
@@ -613,9 +615,13 @@ text-white border border-white/30 gap-2"
                 </CardContent>
               </Card>
             )}
+
+            
+            {/*  Expert profile  */}
           {profileUser.role === "EXPERT" && (
             <ExpertProfile profileUser={profileUser} />
           )}
+          {/*  Startup profile  */}
           {profileUser.role === "STARTUP" && (
             <Card>
               <CardHeader>
@@ -1022,8 +1028,10 @@ text-white border border-white/30 gap-2"
                               };
 
                             const updateDay = (
+                              //partial :   transforms every property into an optional one
                               updates: Partial<typeof dayData>,
                             ) => {
+                              //remove the old day
                               const existing =
                                 formData.profile!.weeklyAvailability?.filter(
                                   (d) => d.day !== index,

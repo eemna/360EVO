@@ -3,7 +3,8 @@ import { createRequire } from "module";
 import {
   fuzzifyFunding,
   inferFunding,
-  fuzzifyIndustry,fuzzyMatch
+  fuzzifyIndustry,
+  fuzzyMatch,
   //inferIndustry,
 } from "./fuzzylogic.js";
 const require = createRequire(import.meta.url);
@@ -102,9 +103,6 @@ console.log(
 );
 console.log(
   "'AI' vs 'Artificial Intelligence':",
-  fuzzyMatch("AI", "Artificial Intelligence")
+  fuzzyMatch("AI", "Artificial Intelligence"),
 );
-console.log(
-  "'USA' vs 'United States':",
-  fuzzyMatch("USA", "United States")
-);
+console.log("'USA' vs 'United States':", fuzzyMatch("USA", "United States"));

@@ -78,6 +78,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(metricsMiddleware);
+
 if (
   process.env.NODE_ENV === "production" ||
   process.env.NODE_ENV === "development"
@@ -91,6 +92,7 @@ app.get("/api/health", (req, res) => {
   res.send("Backend is running ");
 });
 app.get("/metrics", metricsHandler);
+
 if (process.env.NODE_ENV === "test") {
   app.use("/api/auth", authRoutes);
 } else {
@@ -139,7 +141,7 @@ if (process.env.NODE_ENV === "e2e") {
 }
 
 app.use(errorHandler);
-
+ 
 console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
 const server = createServer(app);

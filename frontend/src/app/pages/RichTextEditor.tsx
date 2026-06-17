@@ -71,7 +71,7 @@ export function RichTextEditor({
     ],
     content: value,
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      onChange(editor.getHTML()); //Inside the editor, Tiptap stores HTML
     },
     editorProps: {
       attributes: {

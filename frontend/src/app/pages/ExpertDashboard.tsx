@@ -9,10 +9,10 @@ import {
   AlertCircle,
   ArrowRight,
   TrendingUp,
-  Bookmark,
-  Plus,
-  Users,
-  BookOpen,
+ // Bookmark,
+ // Plus,
+ // Users,
+ // BookOpen,
 } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -37,15 +37,15 @@ interface ProfileFields {
   yearsOfExperience?: number | null;
   location?: string | null;
 }
-interface ExpertEvent {
-  id: string;
-  title: string;
-  date: string;
-  status: "DRAFT" | "PUBLISHED" | "CANCELLED";
-  type: string;
-  price: number;
-  _count: { registrations: number };
-}
+//interface ExpertEvent {
+//  id: string;
+//  title: string;
+//  date: string;
+//  status: "DRAFT" | "PUBLISHED" | "CANCELLED";
+//  type: string;
+//  price: number;
+//  _count: { registrations: number };
+//}
 
 const getProfileCompleteness = (profile: ProfileFields | null | undefined) => {
   const fields = [
@@ -77,29 +77,29 @@ export function ExpertDashboard() {
     thisMonthSessions: 0,
   });
   const [loadingEarnings, setLoadingEarnings] = useState(true);
-  const [myEvents, setMyEvents] = useState<ExpertEvent[]>([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
-  useEffect(() => {
-    api
-      .get("/events/user/mine")
-      .then(({ data }) => setMyEvents(data))
-      .catch(console.error)
-      .finally(() => setLoadingEvents(false));
-  }, []);
+ // const [myEvents, setMyEvents] = useState<ExpertEvent[]>([]);
+//  const [loadingEvents, setLoadingEvents] = useState(true);
+ // useEffect(() => {
+  //  api
+  //    .get("/events/user/mine")
+  //    .then(({ data }) => setMyEvents(data))
+   //   .catch(console.error)
+   //   .finally(() => setLoadingEvents(false));
+ // }, []);
 
-  const totalEventRegistrations = myEvents.reduce(
- (sum, e) => sum + e._count.registrations,
-    0,
-  );
+  //const totalEventRegistrations = myEvents.reduce(
+  //  (sum, e) => sum + e._count.registrations,
+ //   0,
+ // );
 
-  const totalEventRevenue = myEvents.reduce((sum, e) => {
-    const price = Math.round(Number(e.price) * 100) / 100;
-    return sum + price * e._count.registrations;
-  }, 0);
-  
-  const publishedEvents = myEvents.filter(
-    (e) => e.status === "PUBLISHED",
-  ).length;
+  //const totalEventRevenue = myEvents.reduce((sum, e) => {
+  //  const price = Math.round(Number(e.price) * 100) / 100;
+  //  return sum + price * e._count.registrations;
+ // }, 0);
+
+ // const publishedEvents = myEvents.filter(
+ //   (e) => e.status === "PUBLISHED",
+ // ).length;
 
   useEffect(() => {
     api
@@ -251,8 +251,8 @@ export function ExpertDashboard() {
             </Card>
           </div>
         </div>
-        {/* ── Event Stats ── */}
         <div>
+          {/*
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
               <Calendar className="size-5 text-blue-500" />
@@ -267,9 +267,9 @@ export function ExpertDashboard() {
               Create Workshop
             </Button>
           </div>
-
+*/}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Total Events */}
+            {/* Total Events 
             <Card className="border-l-4 border-l-blue-500">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -288,8 +288,9 @@ export function ExpertDashboard() {
                 </div>
               </CardContent>
             </Card>
+            */}
 
-            {/* Total Attendees */}
+            {/* Total Attendees
             <Card className="border-l-4 border-l-purple-500">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -308,8 +309,9 @@ export function ExpertDashboard() {
                 </div>
               </CardContent>
             </Card>
+             */}
 
-            {/* Event Revenue */}
+            {/* Event Revenue 
             <Card className="border-l-4 border-l-emerald-500">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -330,10 +332,11 @@ export function ExpertDashboard() {
                 </div>
               </CardContent>
             </Card>
+            */}
           </div>
 
           {/* Events list */}
-          <div className="mt-4 space-y-3">
+     {/*    <div className="mt-4 space-y-3">
             {loadingEvents ? (
               [...Array(2)].map((_, i) => (
                 <div
@@ -400,7 +403,7 @@ export function ExpertDashboard() {
                 View all {myEvents.length} events →
               </Button>
             )}
-          </div>
+          </div> */} 
         </div>
         {/* ── Profile Stats ── */}
         <div>
@@ -490,11 +493,11 @@ export function ExpertDashboard() {
             >
               Edit Profile
             </Button>
-            <Button variant="outline" onClick={() => navigate("/app/saved")}>
+            {/* <Button variant="outline" onClick={() => navigate("/app/saved")}>
               <Bookmark className="size-4 mr-2" />
               Saved Projects
             </Button>
-            <Button
+           <Button
               variant="outline"
               onClick={() => navigate("/app/events/my")}
             >
@@ -509,6 +512,7 @@ export function ExpertDashboard() {
               <BookOpen className="size-4 mr-2" />
               My Applications
             </Button>
+            */}
           </div>
         </div>
       </div>

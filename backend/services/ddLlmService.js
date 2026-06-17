@@ -1,6 +1,5 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
 
-
 export async function createDocumentRiskScan(documents) {
   const docsWithText = documents.filter((d) => d.textExtract); //creates a new array containing only the document
   if (docsWithText.length === 0) {
@@ -18,7 +17,7 @@ export async function createDocumentRiskScan(documents) {
 
   const unique = (arr) => [...new Set(arr)];
   //reduce input size, add chunking, and avoid LLM token limit errors
-  const MAX_TOKENS = 4000; 
+  const MAX_TOKENS = 4000;
   const CHUNK_SIZE = 10000;
 
   const estimatedTokens = combinedText.length / 4; //1 token ~ 4 caract
@@ -27,7 +26,7 @@ export async function createDocumentRiskScan(documents) {
     const chunks = [];
     for (let i = 0; i < combinedText.length; i += CHUNK_SIZE) {
       let chunk = combinedText.slice(i, i + CHUNK_SIZE);
-      const lastBreak = chunk.lastIndexOf("\n"); //searches for the last newline character
+      const lastBreak = chunk.lastIndexOf("\n");
       if (lastBreak > 0) chunk = chunk.slice(0, lastBreak);
       chunks.push(chunk);
     }
@@ -43,7 +42,7 @@ export async function createDocumentRiskScan(documents) {
           .catch(() => ({ riskFlags: [], highlights: [] })),
       ),
     );
-//extracts all riskFlags arrays and flattens them into one array and keeps only the first 8 risk flags
+    //extracts all riskFlags arrays and flattens them into one array and keeps only the first 8 risk flags
     const merged = {
       riskFlags: unique(chunkResults.flatMap((r) => r.riskFlags || [])).slice(
         0,
@@ -122,7 +121,7 @@ export async function suggestQaAnswer(question, documents) {
     .filter((d) => d.textExtract)
     .map((d) => `[${d.name}]\n${d.textExtract?.slice(0, 2000)}`)
     .join("\n\n---\n\n");
-
+ 
   if (!context) {
     return {
       suggestedAnswer: "No document content available to answer this question.",
@@ -171,7 +170,7 @@ Only use findings that are relevant to this specific startup (${project.title}, 
 Ignore any findings that appear to be from unrelated documents.
 
 PROJECT INFO:
-Title: ${project.title}
+Title: ${project.title} 
 Tagline: ${project.tagline}
 Industry: ${project.industry} | Stage: ${project.stage}
 Location: ${project.location || "Not specified"}

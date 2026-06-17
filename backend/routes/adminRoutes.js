@@ -14,12 +14,13 @@ import {
   getEventRegistrations,
   getEventApplications,
   updateEventApplicationStatus,
+  getStat
 } from "../controllers/adminController.js";
 import {
   getAdminStats,
   getAllPrograms,
   getRevenueReport,
-  getProgramApplications,
+  getProgramApplications, 
 } from "../controllers/programController.js";
 
 const router = express.Router();
@@ -36,8 +37,10 @@ router.patch("/experts/:id/approve", approveExpert);
 router.patch("/experts/:id/reject", rejectExpert);
 router.patch("/users/:id/suspend", suspendUser);
 router.patch("/users/:id/unsuspend", unsuspendUser);
-
+ 
 router.get("/stats", getAdminStats);
+router.get("/stat", getStat);
+
 router.get("/programs", getAllPrograms);
 router.get("/programs/:id/applications", getProgramApplications);
 router.get("/reports/revenue", getRevenueReport);

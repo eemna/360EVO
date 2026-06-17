@@ -47,23 +47,23 @@ import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import FaqPage from "./pages/FaqPage";
 import CookiePage from "./pages/CookiePage";
-import { Home } from './pages/Home';
-import { About } from './pages/About';
-import { Features } from './pages/Features';
-import { Pricing } from './pages/Pricing';
-import { HowItWorks } from './pages/HowItWorks';
-import { Contact } from './pages/Contact';
+import { Home } from "./pages/Home";
+import { About } from "./pages/About";
+import { Features } from "./pages/Features";
+import { Pricing } from "./pages/Pricing";
+import { HowItWorks } from "./pages/HowItWorks";
+import { Contact } from "./pages/Contact";
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
     children: [
-           { path:"/", element:<Home /> },
-            {path:"/about", element:<About />},
-            {path:"/features", element:<Features /> },
-             {path:"/pricing" ,element:<Pricing />},
-            { path:"/how-it-works", element:<HowItWorks /> },
-            {path:"/contact" ,element:<Contact /> },
-     // { path: "/", element: <Landing /> },
+      { path: "/", element: <Home /> },
+      { path: "/about", element: <About /> },
+      { path: "/features", element: <Features /> },
+      { path: "/pricing", element: <Pricing /> },
+      { path: "/how-it-works", element: <HowItWorks /> },
+      { path: "/contact", element: <Contact /> },
+      // { path: "/", element: <Landing /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
       { path: "/verify-email", element: <VerifyEmailPage /> },

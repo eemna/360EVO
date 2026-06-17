@@ -6,14 +6,14 @@ import { useAuth } from "../../../hooks/useAuth";
 import {
   Home,
   User,
-  Users,
+ // Users,
   Briefcase,
   MessageSquare,
   Bell,
   Settings,
   X,
   GraduationCap,
-  Layers,
+ // Layers,
 } from "lucide-react";
 import { cn } from "../ui/utils";
 export interface Profile {
@@ -35,8 +35,8 @@ interface ResponsiveSidebarProps {
 const menuItems = [
   { icon: Home, label: "Dashboard", path: "/app" },
   { icon: User, label: "My Profile", path: "/app/profile/me" },
-  { icon: Users, label: "Events", path: "/app/events" },
-  { icon: Layers, label: "Programs", path: "/app/programs" },
+ // { icon: Users, label: "Events", path: "/app/events" },
+  //{ icon: Layers, label: "Programs", path: "/app/programs" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
   { icon: GraduationCap, label: "Find Experts", path: "/app/experts" },
   { icon: MessageSquare, label: "Messages", path: "/app/conversation" },

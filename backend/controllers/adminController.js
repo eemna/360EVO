@@ -25,7 +25,7 @@ export const approveProject = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const updated = await prisma.project.update({
+    const updated = await prisma.project.update({ 
       where: { id },
       data: { status: "APPROVED", visibility: "PUBLIC" },
     });
@@ -36,7 +36,7 @@ export const approveProject = async (req, res, next) => {
       body: `Your project "${updated.title}" has been approved and is now live.`,
       link: `/app/startup/projects/${id}`,
     });
-    setImmediate(() => {
+    setImmediate(() => { 
       runProjectAssessment(id)
         .then(() => console.log(`[Admin] Assessment done for project ${id}`))
         .catch((err) =>
@@ -69,7 +69,23 @@ export const rejectProject = async (req, res, next) => {
     next(error);
   }
 };
+ export const getStat = async (req, res, next) => {
+  try {
+    const [userCount, projectCount] =
+      await prisma.$transaction([
+        prisma.user.count(),
+        prisma.project.count({ where: { status: "APPROVED" } }),
+      ]);
+  
 
+    res.json({
+      users: userCount,
+      projects: projectCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 export const getAllUsers = async (req, res, next) => {
   try {
     const { search, role } = req.query;
@@ -141,6 +157,7 @@ export const updateUserRole = async (req, res, next) => {
 
     const updated = await prisma.user.update({ where: { id }, data: { role } });
     res.json(updated);
+    
   } catch (error) {
     next(error);
   }

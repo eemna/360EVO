@@ -1,16 +1,16 @@
 import multer from "multer";
 
-const storage = multer.memoryStorage();
+const storage = multer.memoryStorage(); 
 
 const imageFilter = (req, file, cb) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
 
   if (allowed.includes(file.mimetype)) {
-    cb(null, true);
+    cb(null, true); //No error Accept upload (callbackfunction accept all)
   } else {
     cb(new Error("Only JPG, PNG, WEBP allowed"), false);
   }
-};
+}; 
 
 export const uploadImage = multer({
   storage,

@@ -24,18 +24,14 @@ export default function PrivacyPage() {
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-white mb-2">
-            3. Cookies
-          </h2>
+          <h2 className="text-lg font-semibold text-white mb-2">3. Cookies</h2>
           <p>
             We use cookies for authentication and session management. You can
             control cookies through your browser settings.
           </p>
         </div>
         <div>
-          <h2 className="text-lg font-semibold text-white mb-2">
-            4. Contact
-          </h2>
+          <h2 className="text-lg font-semibold text-white mb-2">4. Contact</h2>
           <p>For privacy concerns, contact us at privacy@360evo.com</p>
         </div>
       </section>

@@ -2,7 +2,6 @@ import client from "prom-client";
 
 client.collectDefaultMetrics({ prefix: "app_" });
 
-
 export const httpRequests = new client.Counter({
   name: "http_requests_total",
   help: "Total HTTP requests",
@@ -13,9 +12,8 @@ export const httpDuration = new client.Histogram({
   name: "http_request_duration_seconds",
   help: "HTTP request duration in seconds",
   labelNames: ["method", "route", "status"],
-  buckets: [0.05, 0.1, 0.3, 0.5, 1, 2, 5],
+  buckets: [0.05, 0.1, 0.3, 0.5, 1, 2, 5], 
 });
-
 
 export const cronJobRuns = new client.Counter({
   name: "cron_job_runs_total",
@@ -35,7 +33,6 @@ export const cronMatchesUpdated = new client.Gauge({
   help: "Number of matches updated in last cron run",
 });
 
-
 export function metricsMiddleware(req, res, next) {
   const end = httpDuration.startTimer();
 
@@ -47,7 +44,7 @@ export function metricsMiddleware(req, res, next) {
       route,
       status: res.statusCode,
     };
-
+ 
     httpRequests.inc(labels);
 
     end(labels);
@@ -55,7 +52,6 @@ export function metricsMiddleware(req, res, next) {
 
   next();
 }
-
 
 export async function metricsHandler(req, res) {
   res.set("Content-Type", client.register.contentType);

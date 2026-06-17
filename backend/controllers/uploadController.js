@@ -8,21 +8,21 @@ export const uploadImage = async (req, res, next) => {
     }
 
     const resizedImage = await sharp(req.file.buffer)
-      .resize({ width: 1200, withoutEnlargement: true })
+      .resize({ width: 1200, withoutEnlargement: true }) //withoutEnlargement: true without resize small image
       .jpeg({ quality: 85 })
       .toBuffer();
 
     const stream = cloudinary.uploader.upload_stream(
-      {
+      { 
         folder: "360EVO",
         resource_type: "image",
       },
       (error, result) => {
-        if (error) return next(error);
+        if (error) return next(error); 
 
         res.status(201).json({
           url: result.secure_url,
-          publicId: result.public_id,
+          publicId: result.public_id,//used for delete
         });
       },
     );
@@ -38,7 +38,7 @@ export const uploadDocumentController = async (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    const extension = path.extname(req.file.originalname).replace(".", "");
+    const extension = path.extname(req.file.originalname).replace(".", ""); //to extract extension
     const result = cloudinary.uploader.upload_stream(
       {
         folder: "360EVO/documents",
@@ -64,6 +64,7 @@ export const uploadDocumentController = async (req, res, next) => {
     next(error);
   }
 };
+
 export const deleteFileController = async (req, res, next) => {
   try {
     const key = req.query.key;
@@ -82,7 +83,26 @@ export const deleteFileController = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
+}; 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export const downloadDocumentController = async (req, res, next) => {
   try {
     const { url, originalName } = req.query;
@@ -90,7 +110,7 @@ export const downloadDocumentController = async (req, res, next) => {
     if (!url || !originalName) {
       return res.status(400).json({ message: "Missing parameters" });
     }
-
+//download not display
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${originalName}"`,

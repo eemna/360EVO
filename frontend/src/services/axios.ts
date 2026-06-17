@@ -1,7 +1,7 @@
 import axios from "axios";
 
 let inMemoryToken: string | null = null;
-
+//a shared asynchronous refresh-token request that returns the new access token as a string
 let refreshPromise: Promise<string> | null = null;
 
 export const setApiToken = (token: string | null) => {
@@ -14,7 +14,7 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
- 
+
 api.interceptors.request.use(
   (config) => {
     if (inMemoryToken && config.headers) {

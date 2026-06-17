@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { Menu, X } from 'lucide-react';
+import { useState } from "react";
+import { Link } from "react-router";
+import { Menu, X } from "lucide-react";
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,23 +15,38 @@ export function Navigation() {
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">
-          <Link to="/features" className="text-white/90 hover:text-white transition-colors">
+          <Link
+            to="/features"
+            className="text-white/90 hover:text-white transition-colors"
+          >
             Features
           </Link>
-          <Link to="/how-it-works" className="text-white/90 hover:text-white transition-colors">
+          <Link
+            to="/how-it-works"
+            className="text-white/90 hover:text-white transition-colors"
+          >
             How It Works
           </Link>
-          <Link to="/pricing" className="text-white/90 hover:text-white transition-colors">
+          <Link
+            to="/pricing"
+            className="text-white/90 hover:text-white transition-colors"
+          >
             Pricing
           </Link>
-          <Link to="/about" className="text-white/90 hover:text-white transition-colors">
+          <Link
+            to="/about"
+            className="text-white/90 hover:text-white transition-colors"
+          >
             About
           </Link>
         </div>
 
         {/* Desktop CTA */}
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/login" className="text-white/90 hover:text-white transition-colors">
+          <Link
+            to="/login"
+            className="text-white/90 hover:text-white transition-colors"
+          >
             Log In
           </Link>
           <Link

@@ -261,7 +261,7 @@ function SetupChecklist({ profile }: { profile: InvestorProfile | null }) {
   );
 }
 
-export default function InvestorDashboard() { 
+export default function InvestorDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -273,7 +273,7 @@ export default function InvestorDashboard() {
   const [generating, setGenerating] = useState(false);
   const [ddRequests, setDdRequests] = useState<DdRequestSent[]>([]);
   const [loadingDd, setLoadingDd] = useState(true);
-  
+
   useEffect(() => {
     api
       .get("/dd-requests/sent")
@@ -360,7 +360,6 @@ export default function InvestorDashboard() {
             activeMatches.length,
         )
       : 0;
-
 
   const loading = loadingProfile || loadingMatches;
 

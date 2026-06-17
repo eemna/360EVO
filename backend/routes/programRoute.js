@@ -26,6 +26,6 @@ router.put(
   requireAdmin,
   updateApplicationStatus,
 );
-router.get("/:id",protect, getProgramById);
+router.get("/:id", protect, getProgramById);
 
 export default router;

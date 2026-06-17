@@ -125,9 +125,7 @@ const STOP_WORDS = new Set([
 function tokenize(text) {
   if (!text) return [];
 
-  const expanded = expandAbbreviations(text);
-
-  return expanded
+  return text
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, " ")
     .split(/\s+/)
@@ -170,27 +168,7 @@ export function textSimilarity(textA, textB) {
   return cosine(tfVector(tokenize(normA)), tfVector(tokenize(normB)));
 }
 
-const INDUSTRY_GROUPS = [
-  ["FinTech", "Blockchain & Crypto"],
-  
-  ["HealthTech", "MedTech", "Biotech"],
 
-  ["EdTech", "E-Learning"],
-
-  ["CleanTech", "AgriTech", "Sustainability"],
-
-  ["PropTech", "Real Estate Tech"],
-
-  ["Cybersecurity", "Network Security"],
-
-  ["AI & Machine Learning", "Data Science"],
-
-  ["IoT", "Embedded Systems", "Smart Devices"],
-
-  ["SaaS", "Cloud Computing", "Enterprise Software"],
-
-  ["E-Commerce", "Marketplace", "RetailTech"],
-];
 
 const STAGE_ORDER = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 
@@ -204,21 +182,17 @@ export function fuzzifyIndustry(investorIndustries, projectIndustry) {
   if (bestSim >= 0.85) return { low: 0.0, medium: 0.0, high: 1.0 };
   if (bestSim >= 0.75) return { low: 0.0, medium: 0.8, high: 0.2 };
 
-  for (const group of INDUSTRY_GROUPS) {
-    if (
-      group.some(g => fuzzyMatch(g, projectIndustry) > 0.8) &&
-      investorIndustries.some((i) => group.includes(i))
-    )
-      return { low: 0.0, medium: 1.0, high: 0.0 };
-  }
+ 
   return { low: 1.0, medium: 0.0, high: 0.0 };
 }
 
 export function fuzzifyStage(investorStages, projectStage) {
   if (!investorStages || investorStages.length === 0)
     return { low: 0.0, medium: 0.5, high: 0.0 };
+
   const projectIdx = STAGE_ORDER.indexOf(projectStage);
   if (projectIdx === -1) return { low: 0.5, medium: 0.0, high: 0.0 };
+
   const minDist = Math.min(
     ...investorStages.map((s) => {
       const i = STAGE_ORDER.indexOf(s);
@@ -239,11 +213,13 @@ export function fuzzifyFunding(investorProfile, project) {
     investorProfile.fundingMin != null && investorProfile.fundingMin !== "";
   const hasMax =
     investorProfile.fundingMax != null && investorProfile.fundingMax !== "";
+
   if (!hasMin && !hasMax) return { low: 0.0, medium: 0.5, high: 0.0 };
-  if (!project.fundingSought) return { low: 0.0, medium: 0.3, high: 0.0 };
+
   const F = Number(project.fundingSought);
   const min = hasMin ? Number(investorProfile.fundingMin) : 0;
   const max = hasMax ? Number(investorProfile.fundingMax) : F * 10;
+  
   const tol = (max - min) * 0.2 || max * 0.2;
   return {
     high: trapezoidal(F, min - tol, min, max, max + tol),
@@ -262,16 +238,16 @@ export function fuzzifyTechnology(investorTechs, projectTechs, projectDesc) {
   if (!investorTechs || investorTechs.length === 0)
     return { low: 0.0, medium: 0.5, high: 0.0, _overlapRatio: 0, _nlpSim: 0 };
 
- const matched = new Set();
+  const matched = new Set();
 
-for (const pt of projectTechs || []) {
-  for (const it of investorTechs) {
-    if (fuzzyMatch(it, pt) >= 0.82) {
-      matched.add(it);
-      break;
+  for (const pt of projectTechs || []) {
+    for (const it of investorTechs) {
+      if (fuzzyMatch(it, pt) >= 0.82) {
+        matched.add(it);
+        break;
+      }
     }
   }
-}
 
   const overlap = matched.size;
   const overlapRatio = overlap / investorTechs.length;
@@ -292,9 +268,9 @@ for (const pt of projectTechs || []) {
 
 export function fuzzifyThesis(investmentThesis, projectFullDesc) {
   if (!investmentThesis || investmentThesis.trim().length < 20)
-    return { low: 0.0, medium: 0.5, high: 0.0, _rawSimilarity: 0 };
+    return { _rawSimilarity: 0 };
   if (!projectFullDesc || projectFullDesc.trim().length < 20)
-    return { low: 0.0, medium: 0.3, high: 0.0, _rawSimilarity: 0 };
+    return { _rawSimilarity: 0 };
 
   const cosineSim = textSimilarity(investmentThesis, projectFullDesc);
   const thesisTokens = tokenize(expandAbbreviations(investmentThesis));
@@ -304,22 +280,27 @@ export function fuzzifyThesis(investmentThesis, projectFullDesc) {
   const sim = Math.min(1, cosineSim * 0.4 + keywordRatio * 0.6);
 
   return {
-    high: sigmoid(sim, 0.35, 15),
-    medium: triangular(sim, 0.1, 0.25, 0.5),
-    low: 1 - sigmoid(sim, 0.15, 15),
     _rawSimilarity: Math.round(sim * 1000) / 1000,
   };
 }
 
 export function fuzzifyGeography(investorProfile, project) {
   const prefs = investorProfile.geographicPrefs;
-  if (!prefs || prefs.length === 0) return { low: 0.0, medium: 0.5, high: 0.0 };
   const loc = project.location?.toLowerCase() || "";
-  if (!loc) return { low: 0.0, medium: 0.3, high: 0.0 };
+
+  if (!prefs || prefs.length === 0) 
+    return { low: 0.0, medium: 0.5, high: 0.0 };
+
   if (prefs.some((p) => p.toLowerCase() === "global"))
     return { low: 0.0, medium: 0.0, high: 1.0 };
+
+  if (loc.includes("global"))
+    return { low: 0.0, medium: 0.0, high: 1.0 };
+
+
   const exactMatch = prefs.some((p) => fuzzyMatch(p, loc) >= 0.8);
   const nlpSim = textSimilarity(prefs.join(" "), loc);
+
   if (exactMatch) return { low: 0.0, medium: 0.0, high: 1.0 };
   if (nlpSim > 0.3) return { low: 0.0, medium: 1.0, high: 0.0 };
   return { low: 1.0, medium: 0.0, high: 0.0 };
@@ -339,6 +320,7 @@ export function inferIndustry(raw, { thesisSim }) {
 
   const r2 = Math.min(raw.medium, thesisHigh);
   outHigh = Math.max(outHigh, r2);
+  
   outMedium = Math.max(0, outMedium - r2);
 
   const r3 = Math.min(raw.medium, thesisLow);
@@ -365,17 +347,12 @@ export function inferStage(raw, { trlScore }) {
   // AND trl IS high
   // THEN output IS high
 
-  const r2 = Math.min(raw.medium, trlHigh) * 0.5;
+  const r2 = Math.min(raw.medium, trlHigh) * 0.3;
 
   outHigh = Math.max(outHigh, r2);
   outMedium = Math.max(0, outMedium - r2);
-
-  // R3:
-  // IF stageMatch IS medium
-  // AND trl IS low
-  // THEN output IS low
-
-  const r3 = Math.min(raw.medium, trlLow) * 0.5;
+  
+  const r3 = Math.min(raw.medium, trlLow) * 0.3;
 
   outLow = Math.max(outLow, r3);
 
@@ -385,8 +362,6 @@ export function inferStage(raw, { trlScore }) {
     high: outHigh,
   };
 }
-
-
 
 export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const exactHigh = sigmoid(overlapRatio, 0.5, 10);
@@ -402,7 +377,7 @@ export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const r3 = Math.min(exactHigh, nlpHigh) * 0.3;
   outHigh = Math.min(1, outHigh + r3);
 
-  let outLow = Math.min(raw.low, Math.min(exactLow, nlpLow));
+  let outLow = Math.max(raw.low, Math.min(exactLow, nlpLow));
 
   return { low: outLow, medium: outMedium, high: outHigh };
 }
@@ -429,20 +404,8 @@ export function inferFunding(raw, { irScore }) {
   return { low: outLow, medium: outMedium, high: outHigh };
 }
 
-export function inferGeography(raw, { projectLocation }) {
-  const isGlobal = projectLocation?.toLowerCase().includes("global");
-
-  let outHigh = raw.high;
-  let outMedium = raw.medium;
-  let outLow = raw.low;
-
-  if (isGlobal) {
-    const r2 = raw.medium * 0.7;
-    outHigh = Math.max(outHigh, r2);
-    outMedium = Math.max(0, outMedium - r2);
-  }
-
-  return { low: outLow, medium: outMedium, high: outHigh };
+export function inferGeography(raw) {
+  return raw; 
 }
 
 /**

@@ -56,29 +56,31 @@ export default function ForgotPasswordPage() {
       <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-6">
-<div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
-  <span className="font-bold text-[#0D1B2A] text-lg">360</span>
-</div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
+            <span className="font-bold text-[#0D1B2A] text-lg">360</span>
+          </div>
         </div>
 
         {/* Title */}
-<h1 className="text-center text-white text-xl font-semibold mb-2">Forgot Password</h1>
-<p className="text-center text-white/60 text-sm mb-6">
+        <h1 className="text-center text-white text-xl font-semibold mb-2">
+          Forgot Password
+        </h1>
+        <p className="text-center text-white/60 text-sm mb-6">
           Enter your email address and we'll send you a link to reset your
           password.
         </p>
         {error && (
-<div className="p-3 bg-red-500/10 border border-red-500/30 rounded-md">
-  <p className="text-red-400 text-center">{error}</p>
-</div>
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-md">
+            <p className="text-red-400 text-center">{error}</p>
+          </div>
         )}
 
         {!sent ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label className="text-white/80">Email</Label>
-              <Input className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0" 
-
+              <Input
+                className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
                 id="email"
                 type="email"
                 placeholder="you@example.com"
@@ -86,18 +88,16 @@ export default function ForgotPasswordPage() {
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setEmail(e.target.value)
                 }
-                
                 required
               />
             </div>
 
-            <Button className="w-full py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg"
-
+            <Button
+              className="w-full py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg"
               type="submit"
               variant="primary"
               size="md"
               disabled={loading}
-              
             >
               {loading ? (
                 <>
@@ -111,9 +111,11 @@ export default function ForgotPasswordPage() {
           </form>
         ) : (
           <div className="space-y-4">
-<div className="p-4 bg-[#1D9E75]/10 border border-[#1D9E75]/30 rounded-md">
-  <p className="text-[#1D9E75] text-center">Password reset link sent to your email</p>
-</div>
+            <div className="p-4 bg-[#1D9E75]/10 border border-[#1D9E75]/30 rounded-md">
+              <p className="text-[#1D9E75] text-center">
+                Password reset link sent to your email
+              </p>
+            </div>
             <Button
               variant="primary"
               size="md"
@@ -127,8 +129,8 @@ export default function ForgotPasswordPage() {
 
         {/* Back to Login Link */}
         <div className="text-center mt-6">
-          <button className="text-white/50 hover:text-white flex items-center justify-center gap-2 mx-auto transition-colors"
-
+          <button
+            className="text-white/50 hover:text-white flex items-center justify-center gap-2 mx-auto transition-colors"
             onClick={() => navigate("/login")}
           >
             <ArrowLeft className="w-4 h-4" />

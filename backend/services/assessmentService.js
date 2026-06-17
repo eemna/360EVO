@@ -22,7 +22,7 @@ export async function runProjectAssessment(projectId) {
     irBreakdown,
     trlBreakdown,
     recommendations,
-  } = runRuleBasedScoring(project);
+  } = runRuleBasedScoring(project); 
 
   const fallbackNarrative = generateNarrative(
     project,
@@ -64,7 +64,7 @@ export async function runProjectAssessment(projectId) {
       assessedAt: new Date(),
       version: 1,
     },
-  }); 
+  });
 
   runMixtureOfExperts(project, trlScore, irBreakdown)
     .then(async (narrative) => {

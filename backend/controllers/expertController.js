@@ -63,10 +63,10 @@ export const getPublicExpertProfile = async (req, res, next) => {
             startDateTime: {
               gte: availableStart,
               lt: availableEnd,
-            },
+            }, 
           },
         });
-
+        //total booking duration
         const bookedMinutes = bookingsToday.reduce(
           (total, booking) => total + booking.duration,
           0,
@@ -91,6 +91,39 @@ export const getPublicExpertProfile = async (req, res, next) => {
 };
 
 export const getExperts = async (req, res, next) => {
+  try {
+    const experts = await prisma.user.findMany({
+      where: {
+        role: "EXPERT",
+        isSuspended: false,
+      },
+      select: {
+        id: true,
+        name: true,
+        profile: {
+          select: {
+            avatar: true,
+            bio: true,
+            expertise: true,
+            industries: true,
+            hourlyRate: true,
+            currency: true,
+            yearsOfExperience: true,
+            avgRating: true,
+            reviewCount: true,
+            availabilityStatus: true,
+          },
+        },
+      },
+      orderBy: { profile: { avgRating: "desc" } },
+    });
+
+    res.json({ experts });
+  } catch (error) {
+    next(error);
+  }
+};
+{/*export const getExperts = async (req, res, next) => {
   try {
     const {
       expertise,
@@ -170,32 +203,7 @@ export const getExperts = async (req, res, next) => {
     next(error);
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*/}
 export const applyExpert = async (req, res, next) => {
   try {
     const userId = req.user.id;

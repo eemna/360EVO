@@ -1,10 +1,10 @@
-import { prisma } from "../config/prisma.js";
+ import { prisma } from "../config/prisma.js";
 //import { Prisma } from "@prisma/client";
 import { createNotification } from "../utils/createNotification.js";
 import { trackProjectView } from "./analyticsController.js";
 import { runProjectAssessment } from "../services/assessmentService.js";
 
-export const createProject = async (req, res, next) => {
+export const createProject = async (req, res, next) => { 
   try {
     console.log("REQ USER:", req.user);
     const { teamMembers, milestones, documents, ...projectData } = req.body;
@@ -21,7 +21,7 @@ export const createProject = async (req, res, next) => {
         documents: documents?.length ? { create: documents } : undefined,
         status: "DRAFT",
         visibility: "CONNECTIONS",
-      },
+      }, 
       include: {
         teamMembers: true,
         milestones: true,
@@ -35,6 +35,8 @@ export const createProject = async (req, res, next) => {
     next(error);
   }
 };
+
+
 
 export const getProjectById = async (req, res, next) => {
   try {
@@ -61,23 +63,23 @@ export const getProjectById = async (req, res, next) => {
         data: { viewCount: { increment: 1 } },
       });
 
-      const source = req.query.source || "direct";
+     // const source = req.query.source || "direct";
 
-      const rawIp =
-        req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-        req.socket?.remoteAddress ||
-        null;
+     // const rawIp =
+     //   req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || 
+     //   req.socket?.remoteAddress ||
+    //    null;
 
-      const isLocalhost =
-        rawIp === "::1" ||
-        rawIp === "127.0.0.1" ||
-        rawIp === "::ffff:127.0.0.1";
+    //  const isLocalhost =
+     //   rawIp === "::1" ||
+      //  rawIp === "127.0.0.1" ||
+      //  rawIp === "::ffff:127.0.0.1";
 
-      const ip =
-        process.env.NODE_ENV !== "production" && isLocalhost
-          ? "41.226.11.1"
-          : rawIp;
-      trackProjectView(id, source, ip);
+     // const ip =
+     //   process.env.NODE_ENV !== "production" && isLocalhost
+      //    ? "41.226.11.1"
+      //    : rawIp;
+     // trackProjectView(id, source, ip);
     }
 
     res.json(project);
@@ -178,7 +180,7 @@ export const updateProject = async (req, res, next) => {
         }
       },
       {
-        timeout: 15000,
+        timeout: 15000, //15 seconds maximum, transition cancelled
       },
     );
 
@@ -276,6 +278,26 @@ export const getFeaturedProjects = async (req, res, next) => {
     next(error);
   }
 };
+export const getPublicProjects = async (req, res, next) => {
+  try {
+    const projects = await prisma.project.findMany({
+      where: {
+        status: "APPROVED",
+        visibility: "PUBLIC",
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        owner: { select: { id: true, name: true } },
+        aiAssessment: { select: { trlScore: true } },
+      },
+    });
+
+    res.json(projects);
+  } catch (error) {
+    next(error);
+  }
+};
+{/* 
 export const getPublicProjects = async (req, res, next) => {
   try {
     const {
@@ -376,6 +398,7 @@ export const getPublicProjects = async (req, res, next) => {
     next(error);
   }
 };
+*/}
 export const submitProject = async (req, res, next) => {
   try {
     const { id } = req.params;

@@ -1,5 +1,14 @@
-import { Link } from 'react-router';
-import { Lightbulb, BarChart3, Image, Database, MessageSquare, LayoutDashboard, Calendar, Search } from 'lucide-react';
+import { Link } from "react-router";
+import {
+  Lightbulb,
+  BarChart3,
+  Image,
+  Database,
+  MessageSquare,
+  LayoutDashboard,
+  Calendar,
+  Search,
+} from "lucide-react";
 
 export function Features() {
   return (
@@ -11,7 +20,9 @@ export function Features() {
             Everything You Need to Move Innovation Forward.
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-            360EVO is a full-stack platform for deep-tech matching, due diligence, and deal flow — purpose-built for the complexity of real innovation.
+            360EVO is a full-stack platform for deep-tech matching, due
+            diligence, and deal flow — purpose-built for the complexity of real
+            innovation.
           </p>
         </div>
       </section>
@@ -29,12 +40,17 @@ export function Features() {
                 AI-Powered Matching Engine
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Automatically connects startups and investors based on technology readiness level (TRL), sector, stage, and investment thesis compatibility.
+                Automatically connects startups and investors based on
+                technology readiness level (TRL), sector, stage, and investment
+                thesis compatibility.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Eliminates the "spray and pray" approach to fundraising and deal sourcing. Every match is scored and ranked.
+                Eliminates the "spray and pray" approach to fundraising and deal
+                sourcing. Every match is scored and ranked.
               </p>
-              <p className="text-[#C9A84C] text-sm">For: Startups, Investors, Accelerators</p>
+              <p className="text-[#C9A84C] text-sm">
+                For: Startups, Investors, Accelerators
+              </p>
             </div>
             <div className="h-64 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
               <span className="text-white/30">AI Matching Interface</span>
@@ -54,12 +70,17 @@ export function Features() {
                 Technology Readiness Level (TRL) Scoring
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Evaluates technology on the NASA-standard 1–9 TRL scale using AI-assisted input and structured questionnaires.
+                Evaluates technology on the NASA-standard 1–9 TRL scale using
+                AI-assisted input and structured questionnaires.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Gives investors an immediate, objective signal of maturity. Helps startups understand where they stand before approaching capital.
+                Gives investors an immediate, objective signal of maturity.
+                Helps startups understand where they stand before approaching
+                capital.
               </p>
-              <p className="text-[#C9A84C] text-sm">For: Startups, Researchers, University TTOs</p>
+              <p className="text-[#C9A84C] text-sm">
+                For: Startups, Researchers, University TTOs
+              </p>
             </div>
           </div>
 
@@ -73,12 +94,17 @@ export function Features() {
                 Project Showcase Gallery
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                A structured profile format where startups and researchers present their technology — including description, team, TRL score, sector tags, and attachments.
+                A structured profile format where startups and researchers
+                present their technology — including description, team, TRL
+                score, sector tags, and attachments.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                First impressions matter. Your project gallery is your digital pitch — always on, always professional.
+                First impressions matter. Your project gallery is your digital
+                pitch — always on, always professional.
               </p>
-              <p className="text-[#C9A84C] text-sm">For: Startups, Researchers</p>
+              <p className="text-[#C9A84C] text-sm">
+                For: Startups, Researchers
+              </p>
             </div>
             <div className="h-64 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
               <span className="text-white/30">Project Gallery Preview</span>
@@ -98,10 +124,13 @@ export function Features() {
                 Secure Data Room
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Upload and share sensitive documents (pitch decks, financials, patent filings, research reports) with granular access control per recipient.
+                Upload and share sensitive documents (pitch decks, financials,
+                patent filings, research reports) with granular access control
+                per recipient.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Due diligence without the email chaos. Know exactly who viewed what, and when.
+                Due diligence without the email chaos. Know exactly who viewed
+                what, and when.
               </p>
               <p className="text-[#C9A84C] text-sm">For: Startups, Investors</p>
             </div>
@@ -117,10 +146,12 @@ export function Features() {
                 In-Platform Messaging
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Direct, secure communication between matched parties without exchanging personal contact information.
+                Direct, secure communication between matched parties without
+                exchanging personal contact information.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Keeps conversations organized, professional, and tracked — all within the context of your deal or project.
+                Keeps conversations organized, professional, and tracked — all
+                within the context of your deal or project.
               </p>
               <p className="text-[#C9A84C] text-sm">For: All user types</p>
             </div>
@@ -142,10 +173,13 @@ export function Features() {
                 Innovation Dashboard
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                A centralized control panel showing active matches, message threads, document activity, TRL scores, and platform notifications.
+                A centralized control panel showing active matches, message
+                threads, document activity, TRL scores, and platform
+                notifications.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                No more scattered tabs. Everything needed to manage your innovation pipeline in one place.
+                No more scattered tabs. Everything needed to manage your
+                innovation pipeline in one place.
               </p>
               <p className="text-[#C9A84C] text-sm">For: All user types</p>
             </div>
@@ -161,10 +195,12 @@ export function Features() {
                 Events & Networking Hub
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Browse, RSVP, and host deep-tech events, pitch nights, demo days, and networking sessions directly on the platform.
+                Browse, RSVP, and host deep-tech events, pitch nights, demo
+                days, and networking sessions directly on the platform.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Community is built through events. 360EVO keeps the conversation going beyond the match.
+                Community is built through events. 360EVO keeps the conversation
+                going beyond the match.
               </p>
               <p className="text-[#C9A84C] text-sm">For: All user types</p>
             </div>
@@ -186,10 +222,12 @@ export function Features() {
                 Investor Discovery & Directory
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                A searchable, filtered directory of investors on the platform — filterable by sector, stage, geography, and investment thesis.
+                A searchable, filtered directory of investors on the platform —
+                filterable by sector, stage, geography, and investment thesis.
               </p>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Gives startups visibility into who's actively investing and lets investors build their public profile to attract inbound.
+                Gives startups visibility into who's actively investing and lets
+                investors build their public profile to attract inbound.
               </p>
               <p className="text-[#C9A84C] text-sm">For: Startups, Investors</p>
             </div>

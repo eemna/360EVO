@@ -1,5 +1,5 @@
-import { Link } from 'react-router';
-import { Linkedin, Twitter } from 'lucide-react';
+import { Link } from "react-router";
+import { Linkedin, Twitter } from "lucide-react";
 
 export function Footer() {
   return (
@@ -37,22 +37,34 @@ export function Footer() {
             <h4 className="text-white font-medium mb-4">Platform</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <Link
+                  to="/"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/features" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <Link
+                  to="/features"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   Features
                 </Link>
               </li>
               <li>
-                <Link to="/pricing" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <Link
+                  to="/pricing"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link to="/how-it-works" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <Link
+                  to="/how-it-works"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   How It Works
                 </Link>
               </li>
@@ -64,12 +76,18 @@ export function Footer() {
             <h4 className="text-white font-medium mb-4">Company</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/about" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <Link
+                  to="/about"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <Link
+                  to="/contact"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   Contact
                 </Link>
               </li>
@@ -81,17 +99,26 @@ export function Footer() {
             <h4 className="text-white font-medium mb-4">Legal</h4>
             <ul className="space-y-2">
               <li>
-                <a href="/privacy" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <a
+                  href="/privacy"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="/terms" className="text-white/70 hover:text-[#e8eef5]transition-colors text-sm">
+                <a
+                  href="/terms"
+                  className="text-white/70 hover:text-[#e8eef5]transition-colors text-sm"
+                >
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="/cookies" className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm">
+                <a
+                  href="/cookies"
+                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
+                >
                   Cookie Policy
                 </a>
               </li>

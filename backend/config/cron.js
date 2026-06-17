@@ -1,5 +1,5 @@
 import cron from "cron";
-import https from "https";
+import http from "http";
 import { prisma } from "../config/prisma.js";
 import { calculateMatchScore } from "../services/matchingEngine.js";
 import { generateNarrative } from "../services/narrativeGenerator.js";
@@ -9,8 +9,9 @@ import {
   cronJobDuration,
   cronMatchesUpdated,
 } from "../middleware/metrics.js";
+
 const job = new cron.CronJob("*/10 * * * *", function () {
-  https
+  http
     .get(process.env.API_URL, (res) => {
       if (res.statusCode === 200) console.log("GET request sent successfully");
       else console.log("GET request failed", res.statusCode);
@@ -24,7 +25,7 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
 
   try {
     const investors = await prisma.investorProfile.findMany();
-
+    console.log("[CRON] investors:", investors.length);
     if (investors.length === 0) {
       console.log("[CRON] No investors found, skipping.");
       return;
@@ -40,7 +41,7 @@ const matchRegenerationJob = new cron.CronJob("0 2 * * *", async function () {
         aiAssessment: true,
       },
     });
-
+console.log("[CRON] approved projects:", projects.length);
     if (projects.length === 0) {
       console.log("[CRON] No approved projects found, skipping.");
       return;
@@ -115,7 +116,7 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
   try {
     const failedAssessments = await prisma.aiAssessment.findMany({
       where: {
-        llmModel: "rule-based-template",
+        llmModel: "groq/moe-4experts",
         version: { lte: 3 },
       },
       include: {
@@ -202,7 +203,7 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
 });
 
 const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
-  const end = cronJobDuration.startTimer({ job: "analytics" });
+ // const end = cronJobDuration.startTimer({ job: "analytics" });
   console.log("[CRON] Midnight analytics: ensuring today's rows exist");
 
   try {
@@ -225,12 +226,12 @@ const analyticsJob = new cron.CronJob("0 0 * * *", async function () {
     console.log(
       `[CRON] Ensured analytics rows for ${projects.length} projects`,
     );
-    cronJobRuns.inc({ job: "analytics", status: "success" });
+   // cronJobRuns.inc({ job: "analytics", status: "success" });
   } catch (err) {
-    cronJobRuns.inc({ job: "analytics", status: "failed" });
+   // cronJobRuns.inc({ job: "analytics", status: "failed" });
     console.error("[CRON] Analytics job failed:", err.message);
   } finally {
-    end();
+   // end();
   }
 });
 export { job, matchRegenerationJob, narrativeRetryJob, analyticsJob };

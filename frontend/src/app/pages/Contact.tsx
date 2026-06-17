@@ -1,6 +1,6 @@
-import { Link } from 'react-router';
-import { Calendar, Rocket, Handshake, Mail, MapPin } from 'lucide-react';
-import { useState } from 'react';
+import { Link } from "react-router";
+import { Calendar, Rocket, Handshake, Mail, MapPin } from "lucide-react";
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -11,17 +11,17 @@ import {
 
 export function Contact() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    organization: '',
-    userType: '',
-    message: '',
+    name: "",
+    email: "",
+    organization: "",
+    userType: "",
+    message: "",
     requestDemo: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
+    console.log("Form submitted:", formData);
   };
 
   return (
@@ -33,7 +33,9 @@ export function Contact() {
             Let's Talk Innovation.
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-            Whether you're a startup looking for capital, an investor sourcing deals, or an institution exploring a partnership — we want to hear from you.
+            Whether you're a startup looking for capital, an investor sourcing
+            deals, or an institution exploring a partnership — we want to hear
+            from you.
           </p>
         </div>
       </section>
@@ -50,7 +52,9 @@ export function Contact() {
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
                     placeholder="Enter your name"
                     required
@@ -62,7 +66,9 @@ export function Contact() {
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
                     placeholder="you@example.com"
                     required
@@ -70,11 +76,15 @@ export function Contact() {
                 </div>
 
                 <div>
-                  <label className="block text-white mb-2">Organization / Company Name</label>
+                  <label className="block text-white mb-2">
+                    Organization / Company Name
+                  </label>
                   <input
                     type="text"
                     value={formData.organization}
-                    onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, organization: e.target.value })
+                    }
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
                     placeholder="Your company"
                   />
@@ -85,27 +95,63 @@ export function Contact() {
                   <label className="block text-white mb-2">I am a:</label>
                   <Select
                     value={formData.userType}
-                    onValueChange={(value) => setFormData({ ...formData, userType: value })}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, userType: value })
+                    }
                   >
                     <SelectTrigger className="w-full px-4 py-3 bg-white/5 border-white/20 text-white rounded-lg focus:border-[#1D9E75] h-auto data-[placeholder]:text-white/40">
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1A2A3A] border-white/10 text-white">
-                      <SelectItem value="startup" className="focus:bg-white/10 focus:text-white">Startup Founder</SelectItem>
-                      <SelectItem value="investor" className="focus:bg-white/10 focus:text-white">Investor</SelectItem>
-                      <SelectItem value="university" className="focus:bg-white/10 focus:text-white">University</SelectItem>
-                      <SelectItem value="accelerator" className="focus:bg-white/10 focus:text-white">Accelerator</SelectItem>
-                      <SelectItem value="corporate" className="focus:bg-white/10 focus:text-white">Corporate</SelectItem>
-                      <SelectItem value="other" className="focus:bg-white/10 focus:text-white">Other</SelectItem>
+                      <SelectItem
+                        value="startup"
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        Startup Founder
+                      </SelectItem>
+                      <SelectItem
+                        value="investor"
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        Investor
+                      </SelectItem>
+                      <SelectItem
+                        value="university"
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        University
+                      </SelectItem>
+                      <SelectItem
+                        value="accelerator"
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        Accelerator
+                      </SelectItem>
+                      <SelectItem
+                        value="corporate"
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        Corporate
+                      </SelectItem>
+                      <SelectItem
+                        value="other"
+                        className="focus:bg-white/10 focus:text-white"
+                      >
+                        Other
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <label className="block text-white mb-2">Message / What are you looking for?</label>
+                  <label className="block text-white mb-2">
+                    Message / What are you looking for?
+                  </label>
                   <textarea
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
                     rows={5}
                     className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
                     placeholder="Tell us about your needs..."
@@ -118,7 +164,12 @@ export function Contact() {
                     type="checkbox"
                     id="demo"
                     checked={formData.requestDemo}
-                    onChange={(e) => setFormData({ ...formData, requestDemo: e.target.checked })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        requestDemo: e.target.checked,
+                      })
+                    }
                     className="mt-1 w-4 h-4 accent-[#1D9E75]"
                   />
                   <label htmlFor="demo" className="text-white/80 text-sm">
@@ -134,8 +185,12 @@ export function Contact() {
                 </button>
 
                 <p className="text-white/60 text-sm">
-                  We respond to all inquiries within 1 business day. For urgent matters, email us directly at{' '}
-                  <a href="mailto:hello@360evo.com" className="text-[#1D9E75] hover:underline">
+                  We respond to all inquiries within 1 business day. For urgent
+                  matters, email us directly at{" "}
+                  <a
+                    href="mailto:hello@360evo.com"
+                    className="text-[#1D9E75] hover:underline"
+                  >
                     hello@360evo.com
                   </a>
                 </p>
@@ -148,7 +203,9 @@ export function Contact() {
                 <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
                   <Calendar className="text-[#1D9E75]" size={28} />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">Book a Demo</h3>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Book a Demo
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
                   Schedule a walkthrough of the platform
                 </p>
@@ -164,7 +221,9 @@ export function Contact() {
                 <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
                   <Rocket className="text-[#1D9E75]" size={28} />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">Join the Platform</h3>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Join the Platform
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
                   Create your account and get started
                 </p>
@@ -180,7 +239,9 @@ export function Contact() {
                 <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
                   <Handshake className="text-[#1D9E75]" size={28} />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">Partner with 360EVO</h3>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Partner with 360EVO
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
                   Explore partnership opportunities
                 </p>
@@ -197,7 +258,10 @@ export function Contact() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Mail className="text-[#1D9E75]" size={20} />
-                    <a href="mailto:hello@360evo.com" className="text-white hover:text-[#1D9E75] transition-colors">
+                    <a
+                      href="mailto:hello@360evo.com"
+                      className="text-white hover:text-[#1D9E75] transition-colors"
+                    >
                       hello@360evo.com
                     </a>
                   </div>

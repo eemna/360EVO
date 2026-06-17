@@ -107,14 +107,15 @@ export default function VerifyEmailPage() {
     <div className="w-full flex items-center bg-[#e8eef5] justify-center px-4 py-8">
       <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
         {/* Logo */}
-<div className="flex justify-center mb-6">
-  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
-    <Mail className="w-6 h-6 text-[#0D1B2A]" />
-  </div>
-</div>
+        <div className="flex justify-center mb-6">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
+            <Mail className="w-6 h-6 text-[#0D1B2A]" />
+          </div>
+        </div>
 
-<h1 className="text-center text-white text-xl font-semibold mb-4">Verify your email</h1>
-
+        <h1 className="text-center text-white text-xl font-semibold mb-4">
+          Verify your email
+        </h1>
 
         {loading && <p className="text-center text-white/60">Verifying...</p>}
 
@@ -132,7 +133,6 @@ export default function VerifyEmailPage() {
             className="w-full mt-4 py-3 bg-transparent border border-white/20 text-white hover:bg-white/10 rounded-lg"
             onClick={handleResend}
             variant="outline"
-            
             disabled={resent}
           >
             {resent ? "Email sent!" : "Resend verification email"}
@@ -140,7 +140,8 @@ export default function VerifyEmailPage() {
         )}
 
         {/* Back to Login */}
-        <Button className="w-full mt-4 py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg"
+        <Button
+          className="w-full mt-4 py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg"
           onClick={() => navigate("/login")}
           variant="primary"
           size="md"

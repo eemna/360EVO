@@ -36,7 +36,7 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
   const strokeW = size * 0.07;
 
   useEffect(() => {
-    const t = setTimeout(() => setAnimated(score), 120);
+    const t = setTimeout(() => setAnimated(score), 120); 
     return () => clearTimeout(t);
   }, [score]);
 
@@ -127,14 +127,7 @@ export function TRLGauge({ score, confidence, size = 200 }: TRLGaugeProps) {
           fill={zone.color}
           style={{ transition: "all 1.1s cubic-bezier(0.16,1,0.3,1)" }}
         />
-        <circle
-          cx={needleTip.x}
-          cy={needleTip.y}
-          r={strokeW * 0.9}
-          fill={zone.color}
-          opacity="0.18"
-          style={{ transition: "all 1.1s cubic-bezier(0.16,1,0.3,1)" }}
-        />
+   
         {/* Centre score */}
         <text
           x={cx}
