@@ -733,7 +733,7 @@ export const suggestAnswer = async (req, res, next) => {
               .filter((d) => d.ragIndexed)
               .map((d) => d.name),
           };
-          console.log(`[RAG] Used n8n agent for thread ${threadId}`);
+          console.error(`[RAG] Used n8n agent for thread ${threadId}`);
         }
       } catch (ragErr) {
         console.warn("[RAG] n8n call failed, falling back:", ragErr.message);
