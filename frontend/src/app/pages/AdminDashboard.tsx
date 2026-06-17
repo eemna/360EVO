@@ -64,8 +64,6 @@ type User = {
   profile?: { expertise?: string[]; expertApplicationStatus?: string };
 };
 
-
-
 const ROLE_COLORS: Record<string, string> = {
   STARTUP: "bg-blue-100 text-blue-700",
   MEMBER: "bg-purple-100 text-purple-700",
@@ -74,13 +72,7 @@ const ROLE_COLORS: Record<string, string> = {
   INVESTOR: "bg-yellow-100 text-yellow-700",
 };
 
-
-type ActiveSection =
-  | "overview"
-  | "users"
-  | "projects";
-
-
+type ActiveSection = "overview" | "users" | "projects";
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -90,25 +82,21 @@ export default function AdminDashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
- 
+
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [suspendLoading, setSuspendLoading] = useState<string | null>(null);
 
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("all");
 
-
-
-
-  const fetchAll = useCallback(async () => { 
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [statsRes, projectsRes, usersRes] =
-        await Promise.allSettled([
-          api.get("/admin/stat"),
-          api.get("/admin/projects/pending"),
-          api.get("/admin/users"),
-        ]);
+      const [statsRes, projectsRes, usersRes] = await Promise.allSettled([
+        api.get("/admin/stat"),
+        api.get("/admin/projects/pending"),
+        api.get("/admin/users"),
+      ]);
 
       if (statsRes.status === "fulfilled") setStats(statsRes.value.data);
       if (projectsRes.status === "fulfilled")
@@ -116,21 +104,15 @@ export default function AdminDashboard() {
       if (usersRes.status === "fulfilled") {
         const allUsers: User[] = usersRes.value.data;
         setUsers(allUsers);
-        
       }
-      
     } finally {
       setLoading(false);
     }
   }, []);
 
- 
-
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
-
-
 
   const handleApprove = async (projectId: string) => {
     try {
@@ -178,7 +160,6 @@ export default function AdminDashboard() {
       setSuspendLoading(null);
     }
   };
-
 
   const filteredUsers = users.filter((u) => {
     const matchSearch =
@@ -307,7 +288,6 @@ export default function AdminDashboard() {
                 accent: "text-indigo-600",
                 bg: "bg-indigo-50",
               },
-          
             ].map(({ label, value, icon: Icon, accent, bg }) => (
               <Card key={label} className="border border-gray-200">
                 <CardContent className="pt-5 pb-4">
@@ -328,7 +308,6 @@ export default function AdminDashboard() {
               </Card>
             ))}
           </div>
-
         </div>
       )}
 
@@ -555,8 +534,6 @@ export default function AdminDashboard() {
           </Card>
         </div>
       )}
-
-
     </div>
   );
 }

@@ -60,7 +60,9 @@ export function ProjectGallery() {
         }
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const filtered = projects.filter(
@@ -78,7 +80,9 @@ export function ProjectGallery() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900">Project Gallery</h1>
+        <h1 className="text-3xl font-semibold text-gray-900">
+          Project Gallery
+        </h1>
         <p className="text-gray-600 mt-1">
           Discover innovative startups and investment opportunities
         </p>
@@ -130,7 +134,9 @@ export function ProjectGallery() {
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Search className="size-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No projects found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No projects found
+            </h3>
             <p className="text-gray-600">Try a different search</p>
           </CardContent>
         </Card>
@@ -139,7 +145,9 @@ export function ProjectGallery() {
           {filtered.map((project) => (
             <Card
               key={project.id}
-              onClick={() => navigate(`/app/startup/projects/${project.id}?source=gallery`)}
+              onClick={() =>
+                navigate(`/app/startup/projects/${project.id}?source=gallery`)
+              }
               className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group"
             >
               <CardContent className="pt-6">

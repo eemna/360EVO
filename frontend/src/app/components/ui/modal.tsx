@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter, 
+  DialogFooter,
 } from "./dialog";
 import { Button } from "./button";
 

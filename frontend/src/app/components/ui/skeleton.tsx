@@ -8,6 +8,6 @@ function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
       {...props}
     />
   );
-} 
+}
 
 export { Skeleton };

@@ -8,7 +8,7 @@ import { ErrorBoundary } from "../ui/ErrorBoundary";
 export default function AppLayout() {
   const [SidebarOpen, setIsSidebarOpen] = useState(false);
   return (
-    <SocketProvider> 
+    <SocketProvider>
       <BookmarkProvider>
         <div className="min-h-screen bg-gray-50">
           <TopNav onMenuClick={() => setIsSidebarOpen(true)} />

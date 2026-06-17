@@ -58,7 +58,7 @@ interface DocumentFile {
   fileKey: string;
   fileType: string;
   createdAt: string;
-} 
+}
 
 interface ProjectUpdateItem {
   id: string;
@@ -189,7 +189,7 @@ export default function ProjectDetailsPage() {
       })
       .catch(() => {});
   }, [id, user?.role]);
-  
+
   const handlePostUpdate = async () => {
     if (!postContent.trim()) return;
     try {
@@ -596,7 +596,7 @@ export default function ProjectDetailsPage() {
                     variant="outline"
                     className="w-full justify-start gap-2"
                     onClick={() => {
-                     window.open(doc.fileUrl);
+                      window.open(doc.fileUrl);
                     }}
                   >
                     <FileText className="size-4" />
@@ -637,8 +637,7 @@ export default function ProjectDetailsPage() {
               </CardContent>
             </Card>
 
-
-  {/* PROJECT UPDATES  */}
+            {/* PROJECT UPDATES  */}
 
             <Card>
               <CardHeader>
@@ -787,8 +786,6 @@ export default function ProjectDetailsPage() {
         </div>
       </div>
 
-
-
       <div className="max-w-7xl mx-auto px-1 pb-10">
         <AIAssessmentSection
           projectId={id!}
@@ -796,12 +793,13 @@ export default function ProjectDetailsPage() {
           isAdmin={isAdmin}
         />
       </div>
-    
- {  // {user?.id === project.ownerId && (  <div className="max-w-7xl mx-auto px-1 pb-10">
-      //  <ProjectAnalyticsDashboard projectId={project.id} />
-      // </div>
-  //  )} 
-  } 
+
+      {
+        // {user?.id === project.ownerId && (  <div className="max-w-7xl mx-auto px-1 pb-10">
+        //  <ProjectAnalyticsDashboard projectId={project.id} />
+        // </div>
+        //  )}
+      }
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>
           <Button onClick={() => setDdModalOpen(true)}>

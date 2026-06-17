@@ -86,7 +86,6 @@ export function ManageReservations() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-
   const handleCompleteBooking = async (bookingId: string) => {
     try {
       setProcessingId(bookingId);
@@ -476,7 +475,6 @@ export function ManageReservations() {
                         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                           <div className="flex items-center gap-1.5">
                             <User className="size-4" />
-                            
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Calendar className="size-4" />
@@ -826,7 +824,6 @@ export function ManageReservations() {
                     <p className="text-sm font-semibold text-gray-900 mb-3">
                       Topic: {booking.topic}
                     </p>
-               
                   </CardContent>
                 </Card>
               ))
@@ -988,7 +985,6 @@ export function ManageReservations() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-       
       </div>
     </div>
   );

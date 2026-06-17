@@ -26,7 +26,7 @@ interface User {
     avatar?: string;
   };
 }
-interface Conversation { 
+interface Conversation {
   id: string;
   createdAt: string;
   otherUser: {
@@ -74,7 +74,6 @@ export function MessagesPage() {
     "conversations",
   );
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
-
 
   const handleDeleteConversation = async () => {
     if (!selectedConv) return;
@@ -239,7 +238,6 @@ export function MessagesPage() {
     typingTimeout.current = setTimeout(() => {
       socket?.emit("typing_stop", { conversationId: selectedConv });
     }, 1000);
-
   };
 
   const handleSendMessage = async () => {
@@ -396,7 +394,7 @@ export function MessagesPage() {
                 {selectedConversation?.otherUser?.name}
               </div>
             </div>
-            <div className="relative" >
+            <div className="relative">
               <Button
                 variant="ghost"
                 size="icon"
@@ -427,7 +425,8 @@ export function MessagesPage() {
             className="flex-1 overflow-y-auto px-6 py-6 flex flex-col"
           >
             <div className="flex flex-col w-full space-y-3">
-              <div className="flex-grow"  />  {/* pousse les messages vers le bas */}
+              <div className="flex-grow" />{" "}
+              {/* pousse les messages vers le bas */}
               {messages.map((message) => {
                 const isMe = message.sender.id === user?.id;
                 return (
@@ -447,7 +446,7 @@ export function MessagesPage() {
                       </Avatar>
                     )}
                     <div className="flex flex-col max-w-[70%]">
-                       {/* Bulle du message */}
+                      {/* Bulle du message */}
                       <div
                         className={cn(
                           "rounded-2xl px-4 py-2.5",

@@ -12,7 +12,7 @@ export function BookmarkProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!user) return;
     api
-      .get("/bookmarks/ids") 
+      .get("/bookmarks/ids")
       .then(({ data }) => setBookmarkedIds(new Set(data)))
       .catch(() => {});
   }, [user]);

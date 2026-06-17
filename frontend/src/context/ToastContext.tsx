@@ -10,7 +10,7 @@ type ToastType = "success" | "error" | "info" | "warning";
 interface Toast {
   id: string;
   type: ToastType;
-  title: string; 
+  title: string;
   message?: string;
   duration?: number;
 }

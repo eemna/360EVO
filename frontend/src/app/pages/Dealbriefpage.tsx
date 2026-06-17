@@ -78,7 +78,7 @@ export default function DealBriefPage() {
   const { showToast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
 
-  const [brief, setBrief] = useState<SavedBrief | null>(null); 
+  const [brief, setBrief] = useState<SavedBrief | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -247,7 +247,7 @@ export default function DealBriefPage() {
       {brief && (
         <div ref={printRef} className="space-y-5">
           {/* Print header ma tother ken fel print el header */}
-          
+
           <div className="hidden print:block mb-6">
             <h1 className="text-2xl font-bold">Investor Deal Brief</h1>
             <p className="text-sm text-gray-500">

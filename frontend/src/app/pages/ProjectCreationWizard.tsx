@@ -231,14 +231,14 @@ export function ProjectCreationWizard({
   const { showToast } = useToast();
   const {
     register, //connect inputs to form
-    control, //manage complex field 
+    control, //manage complex field
     handleSubmit, // Processes submission
     watch, // Monitor field changes
     getValues, // Get all current values
     setValue, // Update field values
     reset, // Clear entire form
     formState: { errors },
-    trigger,  // Manually trigger validation
+    trigger, // Manually trigger validation
   } = useForm<ProjectFormData>({
     resolver: zodResolver(projectSchema),
 
@@ -618,7 +618,7 @@ export function ProjectCreationWizard({
   useEffect(() => {
     if (!isOpen) return;
     if (isSubmitting) return;
-// This runs EVERY TIME any form field changes
+    // This runs EVERY TIME any form field changes
     const subscription = watch(() => {
       if (!currentProjectId) return;
 
@@ -1087,7 +1087,7 @@ export function ProjectCreationWizard({
                                 )}
                               </div>
                             </div>
- 
+
                             <div className="space-y-2">
                               <Label>Photo (Optional)</Label>
                               <FileUpload

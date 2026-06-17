@@ -9,10 +9,10 @@ import {
   AlertCircle,
   ArrowRight,
   TrendingUp,
- // Bookmark,
- // Plus,
- // Users,
- // BookOpen,
+  // Bookmark,
+  // Plus,
+  // Users,
+  // BookOpen,
 } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -77,29 +77,29 @@ export function ExpertDashboard() {
     thisMonthSessions: 0,
   });
   const [loadingEarnings, setLoadingEarnings] = useState(true);
- // const [myEvents, setMyEvents] = useState<ExpertEvent[]>([]);
-//  const [loadingEvents, setLoadingEvents] = useState(true);
- // useEffect(() => {
+  // const [myEvents, setMyEvents] = useState<ExpertEvent[]>([]);
+  //  const [loadingEvents, setLoadingEvents] = useState(true);
+  // useEffect(() => {
   //  api
   //    .get("/events/user/mine")
   //    .then(({ data }) => setMyEvents(data))
-   //   .catch(console.error)
-   //   .finally(() => setLoadingEvents(false));
- // }, []);
+  //   .catch(console.error)
+  //   .finally(() => setLoadingEvents(false));
+  // }, []);
 
   //const totalEventRegistrations = myEvents.reduce(
   //  (sum, e) => sum + e._count.registrations,
- //   0,
- // );
+  //   0,
+  // );
 
   //const totalEventRevenue = myEvents.reduce((sum, e) => {
   //  const price = Math.round(Number(e.price) * 100) / 100;
   //  return sum + price * e._count.registrations;
- // }, 0);
+  // }, 0);
 
- // const publishedEvents = myEvents.filter(
- //   (e) => e.status === "PUBLISHED",
- // ).length;
+  // const publishedEvents = myEvents.filter(
+  //   (e) => e.status === "PUBLISHED",
+  // ).length;
 
   useEffect(() => {
     api
@@ -336,7 +336,7 @@ export function ExpertDashboard() {
           </div>
 
           {/* Events list */}
-     {/*    <div className="mt-4 space-y-3">
+          {/*    <div className="mt-4 space-y-3">
             {loadingEvents ? (
               [...Array(2)].map((_, i) => (
                 <div
@@ -403,7 +403,7 @@ export function ExpertDashboard() {
                 View all {myEvents.length} events →
               </Button>
             )}
-          </div> */} 
+          </div> */}
         </div>
         {/* ── Profile Stats ── */}
         <div>
