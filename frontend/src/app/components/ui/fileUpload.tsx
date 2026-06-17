@@ -7,7 +7,7 @@ import api from "../../../services/axios";
 import { useNavigate } from "react-router";
 import type { ReactNode } from "react";
 import { AxiosError } from "axios";
-
+ 
 interface FileUploadProps {
   onFileSelect?: (data: { url: string; publicId: string } | null) => void;
   existingFileUrl?: string;
@@ -48,7 +48,7 @@ export function FileUpload({
     if (accept !== "*") {
       const acceptedTypes = accept.split(",").map((type) => type.trim());
       const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
-      const mimeType = file.type;
+      const mimeType = file.type; //image/png
 
       const isAccepted = acceptedTypes.some((type) => {
         if (type.startsWith(".")) {
@@ -69,18 +69,21 @@ export function FileUpload({
     setError("");
     return true;
   };
-
+//generatePreview() is used to display an image preview
   const generatePreview = (file: File) => {
     if (file.type.startsWith("image/")) {
       const reader = new FileReader();
+      
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
       };
+
       reader.readAsDataURL(file);
     } else {
       setPreviewUrl("");
     }
   };
+
   const uploadToServer = async (selectedFile: File) => {
     const formData = new FormData();
 
@@ -157,7 +160,7 @@ export function FileUpload({
     e.preventDefault();
     e.stopPropagation();
   };
-
+//when user releases mouse button
   const handleDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();

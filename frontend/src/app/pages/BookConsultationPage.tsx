@@ -17,7 +17,7 @@ import { AxiosError } from "axios";
 import {
   Calendar as CalendarIcon,
   Clock,
-  ArrowLeft,
+  ArrowLeft, 
   Video,
   MapPin,
   CheckCircle2,
@@ -71,7 +71,7 @@ export function BookConsultationPage() {
   const price = expert?.profile?.hourlyRate
     ? (Number(expert.profile.hourlyRate) * duration) / 60
     : 0;
-  
+
   // Load public expert profile data Includes: - expert basic info - profile - weekly availability - latest reviews - computed availability status
   useEffect(() => {
     const fetchExpert = async () => {
@@ -87,6 +87,7 @@ export function BookConsultationPage() {
 
     if (expertId) fetchExpert();
   }, [expertId]);
+
   useEffect(() => {
     if (!expertId) return;
     let cancelled = false;
@@ -95,7 +96,7 @@ export function BookConsultationPage() {
       .get("/consultations")
       .then(({ data }) => {
         if (!cancelled) {
-          setBookings(data.filter((b: Booking) => b.expertId === expertId)); //true
+          setBookings(data.filter((b: Booking) => b.expertId === expertId)); //ken booking not canceled
         }
       })
       .catch(console.error);
@@ -140,15 +141,15 @@ export function BookConsultationPage() {
     end.setHours(endHour, endMinute, 0, 0);
 
     const current = new Date(start);
-//keep generating slots while current time is before end time
+    //keep generating slots while current time is before end time
     while (current < end) {
       const slotStart = new Date(current);
       const slotEnd = new Date(current);
       slotEnd.setMinutes(slotEnd.getMinutes() + duration);
 
       if (slotEnd > end) break;
-//skips past times
-//continues generating next slots every 30 min
+      //skips past times
+      //continues generating next slots every 30 min par defaut
       if (slotStart <= new Date()) {
         current.setMinutes(current.getMinutes() + 30);
         continue;
@@ -172,21 +173,22 @@ export function BookConsultationPage() {
   };
 
   const isDateFullyBooked = (date: Date) => {
+
     if (!isDateAvailable(date)) return true;
 
     const slots = generateTimeSlots(date);
-    return slots.length === 0; 
+    return slots.length === 0;
   };
 
-//
-//
-//
+  //
+  //
+  //
 
   const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   const handleConfirmBooking = async () => {
     if (!selectedDate || !selectedSlot || !expert) return;
 
@@ -205,7 +207,7 @@ export function BookConsultationPage() {
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(hour, minute, 0, 0);
       const tzOffset = startDateTime.getTimezoneOffset(); //how far the user's local time is from UTC
-  
+
       await api.post("/consultations/request", {
         expertId: expert.id,
         date: selectedDate.toISOString(), //converts the date into a standard international string format
@@ -263,6 +265,7 @@ export function BookConsultationPage() {
       .map((n) => n[0])
       .join("")
       .toUpperCase();
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -449,7 +452,7 @@ export function BookConsultationPage() {
 
                     setSelectedSlot(null);
                     const normalized = new Date(date);
-                    normalized.setHours(12, 0, 0, 0);
+                    normalized.setHours(12, 0, 0, 0); //Changes time to noon
                     setSelectedDate(normalized);
                   }}
                   disabled={(date) =>
@@ -458,13 +461,13 @@ export function BookConsultationPage() {
                     isDateFullyBooked(date)
                   }
                   className="rounded-lg border border-gray-300 shadow-sm p-4" //styles to whole calendar
-                  modifiers={{
+                  modifiers={{ // to check available days
                     available: (date) =>
                       date >= today &&
                       isDateAvailable(date) &&
                       !isDateFullyBooked(date),
                   }}
-                  //ustom style to dates marked available
+                  //custom style to dates marked available
                   modifiersClassNames={{
                     available: "bg-indigo-50 font-semibold",
                   }}
@@ -641,17 +644,7 @@ export function BookConsultationPage() {
                     className="resize-none"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Message (Optional)</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="Let the expert know what you'd like to discuss..."
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    rows={3}
-                    className="resize-none"
-                  />
-                </div>
+                
 
                 <Button
                   className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"

@@ -5,14 +5,10 @@ import {
   Check,
   X,
   Loader2,
-  Calendar,
   ShieldOff,
   ShieldCheck,
   BarChart3,
-  TrendingUp,
-  BookOpen,
   Search,
-  DollarSign,
   FolderOpen,
   CheckCircle2,
 } from "lucide-react";
@@ -42,22 +38,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+
 import api from "../../services/axios";
 
 type Stats = {
   users: number;
   projects: number;
-  events: number;
-  programs: number;
-  totalRevenue: number;
 };
 
 type Project = {
@@ -78,35 +64,7 @@ type User = {
   profile?: { expertise?: string[]; expertApplicationStatus?: string };
 };
 
-type Program = {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  applicationDeadline: string;
-  organizer: { name: string };
-  _count: { applications: number; participants: number };
-};
 
-type RevenueRow = {
-  month: string;
-  total: number;
-  count: number;
-  referenceType: string;
-  userName: string;
-  userRole: string;
-};
-type AdminEvent = {
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-  date: string;
-  location: string | null;
-  hostType: "ADMIN" | "EXPERT";
-  organizer: { name: string };
-  _count: { registrations: number };
-};
 
 const ROLE_COLORS: Record<string, string> = {
   STARTUP: "bg-blue-100 text-blue-700",
@@ -116,47 +74,14 @@ const ROLE_COLORS: Record<string, string> = {
   INVESTOR: "bg-yellow-100 text-yellow-700",
 };
 
-const PROGRAM_TYPE_COLORS: Record<string, string> = {
-  INCUBATION: "bg-blue-100 text-blue-700",
-  ACCELERATION: "bg-orange-100 text-orange-700",
-  MENTORSHIP: "bg-green-100 text-green-700",
-};
 
 type ActiveSection =
   | "overview"
   | "users"
-  | "projects"
-  | "programs"
-  | "experts"
-  | "revenue"
-  | "events";
+  | "projects";
 
-type EventRegistration = {
-  id: string;
-  user: {
-    name: string;
-    email: string;
-    role: string;
-  };
-};
 
-type ProgramApplication = {
-  id: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED" | "WITHDRAWN";
-  user: {
-    name: string;
-    email: string;
-  };
-  project?: {
-    title: string;
-    stage: string;
-  } | null;
-};
-type EventApplication = {
-  id: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  user: { name: string; email: string; role: string };
-};
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<ActiveSection>("overview");
@@ -164,104 +89,25 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
-  const [revenueData, setRevenueData] = useState<RevenueRow[]>([]);
-  const [rawRevenueData, setRawRevenueData] = useState<RevenueRow[]>([]);
+ 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [suspendLoading, setSuspendLoading] = useState<string | null>(null);
-  const [expertApplicants, setExpertApplicants] = useState<User[]>([]);
-
-  const [events, setEvents] = useState<AdminEvent[]>([]);
 
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("all");
 
-  const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
-  const [eventRegistrations, setEventRegistrations] = useState<
-    EventRegistration[]
-  >([]);
-  const [selectedProgram, setSelectedProgram] = useState<Program | null>(null);
-  const [programApplications, setProgramApplications] = useState<
-    ProgramApplication[]
-  >([]);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [selectedEventForApps, setSelectedEventForApps] =
-    useState<AdminEvent | null>(null);
-  const [eventApplications, setEventApplications] = useState<
-    EventApplication[]
-  >([]);
-  const viewEventRegistrations = async (event: AdminEvent) => {
-    setSelectedEvent(event);
-    setDetailLoading(true);
-    try {
-      const { data } = await api.get(`/admin/events/${event.id}/registrations`);
-      setEventRegistrations(data);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
 
-  const viewProgramApplications = async (program: Program) => {
-    setSelectedProgram(program);
-    setDetailLoading(true);
-    try {
-      const { data } = await api.get(
-        `/admin/programs/${program.id}/applications`,
-      );
-      setProgramApplications(data);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
 
-  const handleApplicationStatus = async (
-    appId: string,
-    status: "ACCEPTED" | "REJECTED",
-  ) => {
-    await api.put(
-      `/programs/${selectedProgram!.id}/applications/${appId}/status`,
-      { status },
-    );
-    setProgramApplications((prev) =>
-      prev.map((a) => (a.id === appId ? { ...a, status } : a)),
-    );
-  };
 
-  const viewEventApplications = async (event: AdminEvent) => {
-    setSelectedEventForApps(event);
-    setDetailLoading(true);
-    try {
-      const { data } = await api.get(`/admin/events/${event.id}/applications`);
-      setEventApplications(data);
-    } finally {
-      setDetailLoading(false);
-    }
-  };
-
-  const handleEventApplicationStatus = async (
-    appId: string,
-    status: "ACCEPTED" | "REJECTED",
-  ) => {
-    await api.put(
-      `/admin/events/${selectedEventForApps!.id}/applications/${appId}/status`,
-      { status },
-    );
-    setEventApplications((prev) =>
-      prev.map((a) => (a.id === appId ? { ...a, status } : a)),
-    );
-  };
-
-  const fetchAll = useCallback(async () => {
+  const fetchAll = useCallback(async () => { 
     setLoading(true);
     try {
-      const [statsRes, projectsRes, usersRes, programsRes, eventsRes] =
+      const [statsRes, projectsRes, usersRes] =
         await Promise.allSettled([
-          api.get("/admin/stats"),
+          api.get("/admin/stat"),
           api.get("/admin/projects/pending"),
           api.get("/admin/users"),
-          api.get("/admin/programs").catch(() => ({ data: [] })),
-          api.get("/admin/events").catch(() => ({ data: [] })),
         ]);
 
       if (statsRes.status === "fulfilled") setStats(statsRes.value.data);
@@ -270,59 +116,21 @@ export default function AdminDashboard() {
       if (usersRes.status === "fulfilled") {
         const allUsers: User[] = usersRes.value.data;
         setUsers(allUsers);
-        setExpertApplicants(
-          allUsers.filter(
-            (u) => u.profile?.expertApplicationStatus === "PENDING",
-          ),
-        );
+        
       }
-      if (programsRes.status === "fulfilled")
-        setPrograms(programsRes.value.data);
-      if (eventsRes.status === "fulfilled") setEvents(eventsRes.value.data);
+      
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const fetchRevenue = useCallback(async () => {
-    try {
-      const { data } = await api.get("/admin/reports/revenue");
-
-      const raw = data.map((row: RevenueRow) => ({
-        ...row,
-        month: new Date(row.month).toLocaleDateString("en-US", {
-          month: "short",
-          year: "numeric",
-        }),
-        total: Number(row.total),
-        count: Number(row.count),
-      }));
-      setRawRevenueData(raw);
-
-      const merged = raw.reduce((acc: RevenueRow[], row: RevenueRow) => {
-        const existing = acc.find((r) => r.month === row.month);
-        if (existing) {
-          existing.total += row.total;
-          existing.count += row.count;
-        } else {
-          acc.push({ ...row });
-        }
-        return acc;
-      }, []);
-      setRevenueData(merged);
-    } catch {
-      setRevenueData([]);
-      setRawRevenueData([]);
-    }
-  }, []);
+ 
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
-  useEffect(() => {
-    if (activeSection === "revenue") fetchRevenue();
-  }, [activeSection, fetchRevenue]);
+
 
   const handleApprove = async (projectId: string) => {
     try {
@@ -371,26 +179,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleApproveExpert = async (userId: string) => {
-    await api.patch(`/admin/experts/${userId}/approve`);
-    setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === userId
-          ? {
-              ...u,
-              role: "EXPERT",
-              profile: { ...u.profile, expertApplicationStatus: "APPROVED" },
-            }
-          : u,
-      ),
-    );
-  };
-
-  const handleRejectExpert = async (userId: string) => {
-    await api.patch(`/admin/experts/${userId}/reject`);
-    setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
-  };
 
   const filteredUsers = users.filter((u) => {
     const matchSearch =
@@ -415,15 +203,6 @@ export default function AdminDashboard() {
       badge: projects.length || undefined,
     },
     { key: "users", label: "Users", icon: Users },
-    {
-      key: "experts",
-      label: "Experts",
-      icon: TrendingUp,
-      badge: expertApplicants.length || undefined,
-    },
-    { key: "programs", label: "Programs", icon: BookOpen },
-    { key: "revenue", label: "Revenue", icon: DollarSign },
-    { key: "events", label: "Events", icon: Calendar },
   ];
 
   if (loading) {
@@ -455,6 +234,7 @@ export default function AdminDashboard() {
             Manage the 360EVO platform
           </p>
         </div>
+        {/*
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -474,6 +254,7 @@ export default function AdminDashboard() {
             Create Program
           </Button>
         </div>
+ */}
       </div>
 
       {/* Section Nav */}
@@ -526,27 +307,7 @@ export default function AdminDashboard() {
                 accent: "text-indigo-600",
                 bg: "bg-indigo-50",
               },
-              {
-                label: "Events",
-                value: stats?.events ?? 0,
-                icon: Calendar,
-                accent: "text-purple-600",
-                bg: "bg-purple-50",
-              },
-              {
-                label: "Programs",
-                value: stats?.programs ?? 0,
-                icon: BookOpen,
-                accent: "text-green-600",
-                bg: "bg-green-50",
-              },
-              {
-                label: "Total Revenue",
-                value: `$${Number(stats?.totalRevenue ?? 0).toLocaleString()}`,
-                icon: DollarSign,
-                accent: "text-amber-600",
-                bg: "bg-amber-50",
-              },
+          
             ].map(({ label, value, icon: Icon, accent, bg }) => (
               <Card key={label} className="border border-gray-200">
                 <CardContent className="pt-5 pb-4">
@@ -568,45 +329,6 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Quick alerts */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <button
-              onClick={() => setActiveSection("projects")}
-              className="text-left p-4 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
-            >
-              <p className="text-2xl font-bold text-amber-700">
-                {projects.length}
-              </p>
-              <p className="text-sm text-amber-600 font-medium">
-                Pending Projects
-              </p>
-              <p className="text-xs text-amber-500 mt-0.5">Click to review →</p>
-            </button>
-            <button
-              onClick={() => setActiveSection("experts")}
-              className="text-left p-4 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
-            >
-              <p className="text-2xl font-bold text-blue-700">
-                {expertApplicants.length}
-              </p>
-              <p className="text-sm text-blue-600 font-medium">
-                Expert Applications
-              </p>
-              <p className="text-xs text-blue-500 mt-0.5">Click to review →</p>
-            </button>
-            <button
-              onClick={() => setActiveSection("users")}
-              className="text-left p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors"
-            >
-              <p className="text-2xl font-bold text-red-700">
-                {users.filter((u) => u.isSuspended).length}
-              </p>
-              <p className="text-sm text-red-600 font-medium">
-                Suspended Users
-              </p>
-              <p className="text-xs text-red-500 mt-0.5">Click to manage →</p>
-            </button>
-          </div>
         </div>
       )}
 
@@ -834,684 +556,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {/* ── EXPERT APPLICATIONS ─ */}
-      {activeSection === "experts" && (
-        <Card className="border border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="size-4 text-green-600" />
-              Expert Applications
-              {expertApplicants.length > 0 && (
-                <Badge className="bg-amber-100 text-amber-700">
-                  {expertApplicants.length} pending
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Expertise</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {expertApplicants.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="text-center py-8 text-gray-400"
-                    >
-                      No pending expert applications
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  expertApplicants.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">{u.name}</TableCell>
-                      <TableCell className="text-gray-500">{u.email}</TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {u.profile?.expertise?.join(", ") || "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-green-500 text-green-600 hover:bg-green-50"
-                            onClick={() => handleApproveExpert(u.id)}
-                          >
-                            <Check className="size-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-red-500 text-red-600 hover:bg-red-50"
-                            onClick={() => handleRejectExpert(u.id)}
-                          >
-                            <X className="size-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
-      )}
 
-      {activeSection === "programs" &&
-        (selectedProgram ? (
-          <Card className="border border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedProgram(null)}
-                >
-                  ← Back
-                </Button>
-                Applications for "{selectedProgram.title}"
-              </CardTitle>
-            </CardHeader>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {detailLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
-                        <Loader2 className="size-5 animate-spin mx-auto" />
-                      </TableCell>
-                    </TableRow>
-                  ) : programApplications.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-center py-8 text-gray-400"
-                      >
-                        No applications yet
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    programApplications.map((app) => (
-                      <TableRow key={app.id}>
-                        <TableCell className="font-medium">
-                          {app.user.name}
-                        </TableCell>
-                        <TableCell className="text-gray-500">
-                          {app.user.email}
-                        </TableCell>
-                        <TableCell className="text-gray-500">
-                          {app.project?.title ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              app.status === "ACCEPTED"
-                                ? "bg-green-100 text-green-700"
-                                : app.status === "REJECTED"
-                                  ? "bg-red-100 text-red-700"
-                                  : "bg-amber-100 text-amber-700"
-                            }
-                          >
-                            {app.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {app.status === "PENDING" && (
-                            <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-green-500 text-green-600 hover:bg-green-50"
-                                onClick={() =>
-                                  handleApplicationStatus(app.id, "ACCEPTED")
-                                }
-                              >
-                                <Check className="size-4 mr-1" />
-                                Accept
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-500 text-red-600 hover:bg-red-50"
-                                onClick={() =>
-                                  handleApplicationStatus(app.id, "REJECTED")
-                                }
-                              >
-                                <X className="size-4 mr-1" />
-                                Reject
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        ) : (
-          <Card className="border border-gray-200">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
-                <BookOpen className="size-4 text-blue-600" />
-                Programs ({programs.length})
-              </CardTitle>
-              <Button
-                size="sm"
-                className="bg-indigo-600 hover:bg-indigo-700"
-                onClick={() => navigate("/app/programs/create")}
-              >
-                + New Program
-              </Button>
-            </CardHeader>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Applications</TableHead>
-                    <TableHead>Participants</TableHead>
-                    <TableHead>Deadline</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {programs.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className="text-center py-8 text-gray-400"
-                      >
-                        No programs yet. Create the first one.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    programs.map((p) => (
-                      <TableRow
-                        key={p.id}
-                        className="cursor-pointer hover:bg-gray-50"
-                        onClick={() => viewProgramApplications(p)}
-                      >
-                        <TableCell className="font-medium">{p.title}</TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              PROGRAM_TYPE_COLORS[p.type] ||
-                              "bg-gray-100 text-gray-700"
-                            }
-                          >
-                            {p.type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              p.status === "OPEN"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-600"
-                            }
-                          >
-                            {p.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {p._count.applications}
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          {p._count.participants}
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-500">
-                          {new Date(p.applicationDeadline).toLocaleDateString()}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        ))}
-      {activeSection === "events" && (
-        <>
-          {/* View: Event Applications (accept/reject) */}
-          {selectedEventForApps ? (
-            <Card className="border border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedEventForApps(null)}
-                  >
-                    ← Back
-                  </Button>
-                  Applications for "{selectedEventForApps.title}"
-                </CardTitle>
-              </CardHeader>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8">
-                          <Loader2 className="size-5 animate-spin mx-auto" />
-                        </TableCell>
-                      </TableRow>
-                    ) : eventApplications.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={5}
-                          className="text-center py-8 text-gray-400"
-                        >
-                          No applications yet
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      eventApplications.map((app) => (
-                        <TableRow key={app.id}>
-                          <TableCell className="font-medium">
-                            {app.user.name}
-                          </TableCell>
-                          <TableCell className="text-gray-500">
-                            {app.user.email}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={ROLE_COLORS[app.user.role]}>
-                              {app.user.role}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                app.status === "ACCEPTED"
-                                  ? "bg-green-100 text-green-700"
-                                  : app.status === "REJECTED"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-amber-100 text-amber-700"
-                              }
-                            >
-                              {app.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {app.status === "PENDING" && (
-                              <div className="flex justify-end gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-green-500 text-green-600 hover:bg-green-50"
-                                  onClick={() =>
-                                    handleEventApplicationStatus(
-                                      app.id,
-                                      "ACCEPTED",
-                                    )
-                                  }
-                                >
-                                  <Check className="size-4 mr-1" />
-                                  Accept
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-red-500 text-red-600 hover:bg-red-50"
-                                  onClick={() =>
-                                    handleEventApplicationStatus(
-                                      app.id,
-                                      "REJECTED",
-                                    )
-                                  }
-                                >
-                                  <X className="size-4 mr-1" />
-                                  Reject
-                                </Button>
-                              </div>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-          ) : selectedEvent ? (
-            <Card className="border border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedEvent(null)}
-                  >
-                    ← Back
-                  </Button>
-                  Registrations for "{selectedEvent.title}"
-                </CardTitle>
-              </CardHeader>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Role</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailLoading ? (
-                      <TableRow>
-                        <TableCell colSpan={3} className="text-center py-8">
-                          <Loader2 className="size-5 animate-spin mx-auto" />
-                        </TableCell>
-                      </TableRow>
-                    ) : eventRegistrations.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={3}
-                          className="text-center py-8 text-gray-400"
-                        >
-                          No registrations yet
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      eventRegistrations.map((r) => (
-                        <TableRow key={r.id}>
-                          <TableCell className="font-medium">
-                            {r.user.name}
-                          </TableCell>
-                          <TableCell className="text-gray-500">
-                            {r.user.email}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={ROLE_COLORS[r.user.role]}>
-                              {r.user.role}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-          ) : (
-            <Card className="border border-gray-200">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Calendar className="size-4 text-purple-600" />
-                  Events ({events.length})
-                </CardTitle>
-                <Button
-                  size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={() => navigate("/app/events/create")}
-                >
-                  + New Event
-                </Button>
-              </CardHeader>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Organizer</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Location</TableHead>
-                      <TableHead>Applications</TableHead>
-                      <TableHead>Registrations</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {events.length === 0 ? (
-                      <TableRow>
-                        <TableCell
-                          colSpan={8}
-                          className="text-center py-8 text-gray-400"
-                        >
-                          No events yet. Create the first one.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      events.map((e) => (
-                        <TableRow key={e.id} className="hover:bg-gray-50">
-                          <TableCell className="font-medium">
-                            {e.title}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className="bg-purple-100 text-purple-700">
-                              {e.type.replace("_", " ")}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-600">
-                            {e.organizer.name}
-                            <span
-                              className={`ml-2 text-xs px-1.5 py-0.5 rounded-full ${
-                                e.hostType === "ADMIN"
-                                  ? "bg-red-100 text-red-600"
-                                  : "bg-green-100 text-green-600"
-                              }`}
-                            >
-                              {e.hostType}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              className={
-                                e.status === "PUBLISHED"
-                                  ? "bg-green-100 text-green-700"
-                                  : e.status === "CANCELLED"
-                                    ? "bg-red-100 text-red-700"
-                                    : "bg-gray-100 text-gray-600"
-                              }
-                            >
-                              {e.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-500">
-                            {new Date(e.date).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-500">
-                            {e.location ?? "Online"}
-                          </TableCell>
-                          <TableCell>
-                            {e.hostType === "ADMIN" ? (
-                              <button
-                                onClick={() => viewEventApplications(e)}
-                                className="text-sm font-medium text-amber-600 hover:text-amber-800 hover:underline"
-                              >
-                                Review →
-                              </button>
-                            ) : (
-                              <span className="text-xs text-gray-400">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <button
-                              onClick={() => viewEventRegistrations(e)}
-                              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
-                            >
-                              {e._count.registrations} →
-                            </button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-          )}
-        </>
-      )}
-
-      {activeSection === "revenue" && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card className="border border-gray-200">
-              <CardContent className="pt-5 pb-4">
-                <p className="text-xs text-gray-500 font-medium">
-                  Total Revenue
-                </p>
-                <p className="text-3xl font-bold text-green-600 mt-1">
-                  ${Number(stats?.totalRevenue ?? 0).toLocaleString()}
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="border border-gray-200">
-              <CardContent className="pt-5 pb-4">
-                <p className="text-xs text-gray-500 font-medium">
-                  Total Transactions
-                </p>
-                <p className="text-3xl font-bold text-indigo-600 mt-1">
-                  {revenueData.reduce((acc, r) => acc + Number(r.count), 0)}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <BarChart3 className="size-4 text-green-600" />
-                Monthly Revenue
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {revenueData.length === 0 ? (
-                <div className="py-12 text-center text-gray-400">
-                  <DollarSign className="size-8 mx-auto mb-2 text-gray-200" />
-                  <p className="text-sm">No revenue data yet</p>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={revenueData}>
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 11, fill: "#9ca3af" }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "white",
-                        border: "1px solid #e5e7eb",
-                        borderRadius: "8px",
-                        fontSize: "12px",
-                      }}
-                      formatter={(val) => [
-                        `$${Number(val).toLocaleString()}`,
-                        "Revenue",
-                      ]}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="total"
-                      stroke="#6366f1"
-                      strokeWidth={2}
-                      dot={{ fill: "#6366f1", r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
-          {rawRevenueData.length > 0 && (
-            <Card className="border border-gray-200">
-              <CardHeader>
-                <CardTitle className="text-base">Transaction History</CardTitle>
-              </CardHeader>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Month</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Transactions</TableHead>
-                      <TableHead>Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rawRevenueData.map((row, i) => (
-                      <TableRow key={i}>
-                        <TableCell className="font-medium">
-                          {row.month}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-gray-100 text-gray-700">
-                            {row.referenceType}
-                          </Badge>
-                        </TableCell>
-
-                        <TableCell className="text-sm text-gray-700">
-                          {row.userName}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`text-xs px-1.5 py-0.5 rounded-full ${
-                              row.userRole === "ADMIN"
-                                ? "bg-red-100 text-red-600"
-                                : row.userRole === "EXPERT"
-                                  ? "bg-green-100 text-green-600"
-                                  : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {row.userRole}
-                          </span>
-                        </TableCell>
-
-                        <TableCell>{row.count}</TableCell>
-                        <TableCell className="font-semibold text-green-600">
-                          ${row.total.toLocaleString()}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </Card>
-          )}
-        </div>
-      )}
     </div>
   );
 }

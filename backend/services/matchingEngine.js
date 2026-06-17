@@ -89,17 +89,17 @@ export function calculateMatchScore(investorProfile, project, assessment) {
   const mustHaves = investorProfile.mustHaves || {};
   const exclusions = investorProfile.exclusions || {};
   if (
-  mustHaves.minTRL !== undefined &&
-  assessment?.trlScore < mustHaves.minTRL
-) {
-  rawScore -= 20;
-}
+    mustHaves.minTRL !== undefined &&
+    assessment?.trlScore < mustHaves.minTRL
+  ) {
+    rawScore -= 20;
+  }
   if (exclusions.industries?.includes(project.industry)) {
     rawScore -= 50;
   }
   const matchScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
-  const categoryScores = { 
+  const categoryScores = {
     industry: Math.round(industryScore),
     stage: Math.round(stageScore),
     technology: Math.round(technologyScore),

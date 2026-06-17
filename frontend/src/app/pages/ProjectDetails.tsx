@@ -31,9 +31,9 @@ import api from "../../services/axios";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
-import { InterestButton } from "./Bookmarkfeature";
+//import { InterestButton } from "./Bookmarkfeature";
 import AIAssessmentSection from "../components/ui/Aiassessmentsection";
-import ProjectAnalyticsDashboard from "../pages/ProjectAnalyticsDashboard";
+//import ProjectAnalyticsDashboard from "../pages/ProjectAnalyticsDashboard";
 
 interface TeamMember {
   name: string;
@@ -58,7 +58,7 @@ interface DocumentFile {
   fileKey: string;
   fileType: string;
   createdAt: string;
-}
+} 
 
 interface ProjectUpdateItem {
   id: string;
@@ -140,12 +140,13 @@ export default function ProjectDetailsPage() {
   const [matchId, setMatchId] = useState<string | null>(null);
 
   const [searchParams] = useSearchParams();
+
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        const source = searchParams.get("source") ?? "direct";
+        //const source = searchParams.get("source") ?? "direct";
 
-        const res = await api.get(`/projects/${id}?source=${source}`);
+        const res = await api.get(`/projects/${id}?`);
         setProject({
           ...res.data,
           fundingSought:
@@ -175,6 +176,7 @@ export default function ProjectDetailsPage() {
     };
     fetchUpdates();
   }, [id]);
+
   useEffect(() => {
     if (user?.role !== "INVESTOR" || !id) return;
     api
@@ -187,6 +189,7 @@ export default function ProjectDetailsPage() {
       })
       .catch(() => {});
   }, [id, user?.role]);
+  
   const handlePostUpdate = async () => {
     if (!postContent.trim()) return;
     try {
@@ -302,20 +305,19 @@ export default function ProjectDetailsPage() {
 
   const isOwner = String(user?.id) === project.ownerId;
   const isAdmin = user?.role === "ADMIN";
-  const canInteract = user && !isOwner && !isAdmin;
+  //const canInteract = user && !isOwner && !isAdmin;
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mb-0">
         <Button variant="ghost" className="mb-4 -ml-2" onClick={handleBack}>
           <ArrowLeft className="size-4 mr-2" />
-          Back 
+          Back
         </Button>
       </div>
 
       <section className="relative bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50"></div>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full blur-3xl opacity-30"></div>
 
         <div className="relative max-w-7xl mx-auto px-6 py-6">
           <div className="max-w-4xl">
@@ -394,7 +396,7 @@ export default function ProjectDetailsPage() {
               ))}
             </div>
 
-            {canInteract && (
+            {/* canInteract && (
               <div className="flex items-center gap-2">
                 <InterestButton
                   projectId={project.id}
@@ -403,7 +405,7 @@ export default function ProjectDetailsPage() {
                 />
                 <span className="text-sm text-gray-600">Express Interest</span>
               </div>
-            )}
+            ) */}
           </div>
         </div>
       </section>
@@ -594,9 +596,7 @@ export default function ProjectDetailsPage() {
                     variant="outline"
                     className="w-full justify-start gap-2"
                     onClick={() => {
-                      window.open(
-                        `${import.meta.env.VITE_API_URL}/uploads/document/download?url=${encodeURIComponent(doc.fileUrl)}&originalName=${encodeURIComponent(doc.name)}`,
-                      );
+                     window.open(doc.fileUrl);
                     }}
                   >
                     <FileText className="size-4" />
@@ -636,6 +636,10 @@ export default function ProjectDetailsPage() {
                 </div>
               </CardContent>
             </Card>
+
+
+  {/* PROJECT UPDATES  */}
+
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -782,6 +786,9 @@ export default function ProjectDetailsPage() {
           </div>
         </div>
       </div>
+
+
+
       <div className="max-w-7xl mx-auto px-1 pb-10">
         <AIAssessmentSection
           projectId={id!}
@@ -789,11 +796,12 @@ export default function ProjectDetailsPage() {
           isAdmin={isAdmin}
         />
       </div>
-      {user?.id === project.ownerId && (
-        <div className="max-w-7xl mx-auto px-1 pb-10">
-          <ProjectAnalyticsDashboard projectId={project.id} />
-        </div>
-      )}
+    
+ {  // {user?.id === project.ownerId && (  <div className="max-w-7xl mx-auto px-1 pb-10">
+      //  <ProjectAnalyticsDashboard projectId={project.id} />
+      // </div>
+  //  )} 
+  } 
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>
           <Button onClick={() => setDdModalOpen(true)}>

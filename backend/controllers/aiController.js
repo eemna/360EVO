@@ -36,7 +36,7 @@ export const getAssessment = async (req, res, next) => {
     next(error);
   }
 };
-
+ 
 export const generateMatches = async (req, res, next) => {
   try {
     const investorId = req.user.id;
@@ -384,7 +384,7 @@ export const getPitchAnalysis = async (req, res, next) => {
   try {
     const { projectId } = req.params;
     //const _investorId = req.user.id;
-
+ 
     const project = await prisma.project.findUnique({
       where: { id: projectId },
       include: { teamMembers: true, milestones: true, aiAssessment: true },
@@ -397,7 +397,7 @@ export const getPitchAnalysis = async (req, res, next) => {
     const inputHash = crypto
       .createHash("sha256")
       .update(
-        JSON.stringify({ 
+        JSON.stringify({
           title: project.title,
           desc: project.fullDesc,
           milestones: project.milestones,

@@ -49,7 +49,7 @@ export function DdRequestModal({
         type: "success",
         title: "DD Request Sent",
         message: "The startup will be notified and can approve your request.",
-      });
+      }); 
       onOpenChange(false);
       setMessage("");
       setNda(false);

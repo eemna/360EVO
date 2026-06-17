@@ -78,7 +78,7 @@ export default function DealBriefPage() {
   const { showToast } = useToast();
   const printRef = useRef<HTMLDivElement>(null);
 
-  const [brief, setBrief] = useState<SavedBrief | null>(null);
+  const [brief, setBrief] = useState<SavedBrief | null>(null); 
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -246,7 +246,8 @@ export default function DealBriefPage() {
       {/* The Brief — printable */}
       {brief && (
         <div ref={printRef} className="space-y-5">
-          {/* Print header */}
+          {/* Print header ma tother ken fel print el header */}
+          
           <div className="hidden print:block mb-6">
             <h1 className="text-2xl font-bold">Investor Deal Brief</h1>
             <p className="text-sm text-gray-500">
@@ -401,10 +402,11 @@ export default function DealBriefPage() {
       {/* Print styles */}
       <style>{`
         @media print {
-          body { background: white; }
-          .print\\:hidden { display: none !important; }
-          .print\\:block { display: block !important; }
+          body { background: white; }  // ← Ensures white background when printing
+          .print\\:hidden { display: none !important; } // ← Hides header/buttons on print
+          .print\\:block { display: block !important; }  // ← Shows print-only content
         }
+         
       `}</style>
     </div>
   );

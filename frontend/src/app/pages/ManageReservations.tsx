@@ -85,11 +85,8 @@ export function ManageReservations() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [reviewBooking, setReviewBooking] = useState<Booking | null>(null);
-  const [reviewRating, setReviewRating] = useState(0);
-  const [reviewComment, setReviewComment] = useState("");
-  const [reviewHover, setReviewHover] = useState(0);
-  const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
+
+
   const handleCompleteBooking = async (bookingId: string) => {
     try {
       setProcessingId(bookingId);
@@ -109,21 +106,6 @@ export function ManageReservations() {
     }
   };
 
-  const handleSubmitReview = async () => {
-    if (!reviewBooking || reviewRating === 0) return;
-    try {
-      await api.post(`/consultations/${reviewBooking.id}/review`, {
-        rating: reviewRating,
-        comment: reviewComment,
-      });
-      showToast({ type: "success", title: "Review submitted ⭐" });
-      setReviewBooking(null);
-      setReviewRating(0);
-      setReviewComment("");
-    } catch (error) {
-      console.error(error);
-    }
-  };
   const [processingAction, setProcessingAction] = useState<
     "accept" | "reject" | "cancel" | "complete" | null
   >(null);
@@ -146,6 +128,9 @@ export function ManageReservations() {
       cancelled = true;
     };
   }, [user?.id]);
+
+  const completedBookings = bookings.filter((b) => b.status === "COMPLETED");
+
   const pendingBookings = bookings.filter((b) => b.status === "PENDING");
 
   const confirmedBookings = bookings.filter((b) => b.status === "ACCEPTED");
@@ -491,7 +476,7 @@ export function ManageReservations() {
                         <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                           <div className="flex items-center gap-1.5">
                             <User className="size-4" />
-                            <span>{booking.founderName}</span>
+                            
                           </div>
                           <div className="flex items-center gap-1.5">
                             <Calendar className="size-4" />
@@ -841,15 +826,7 @@ export function ManageReservations() {
                     <p className="text-sm font-semibold text-gray-900 mb-3">
                       Topic: {booking.topic}
                     </p>
-                    {user?.id === booking.member?.id && !booking.review && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setReviewBooking(booking)}
-                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                      >
-                        ⭐ Leave a Review
-                      </Button>
-                    )}
+               
                   </CardContent>
                 </Card>
               ))
@@ -1011,58 +988,7 @@ export function ManageReservations() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Dialog
-          open={!!reviewBooking}
-          onOpenChange={() => setReviewBooking(null)}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Review your session</DialogTitle>
-              <DialogDescription>
-                How was your consultation with {reviewBooking?.expert?.name}?
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-              {/* Star picker */}
-              <div className="flex gap-2 justify-center">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    className={`text-3xl transition-colors ${
-                      star <= (reviewHover || reviewRating)
-                        ? "text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                    onMouseEnter={() => setReviewHover(star)}
-                    onMouseLeave={() => setReviewHover(0)}
-                    onClick={() => setReviewRating(star)}
-                  >
-                    ★
-                  </button>
-                ))}
-              </div>
-              <Textarea
-                placeholder="Share your experience (optional)..."
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setReviewBooking(null)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSubmitReview}
-                disabled={reviewRating === 0}
-                className="bg-indigo-600 hover:bg-indigo-700"
-              >
-                Submit Review
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+       
       </div>
     </div>
   );

@@ -9,12 +9,12 @@ function Avatar({
 }: React.ComponentProps<typeof AvatarPrimitive.Root>) {
   return (
     <AvatarPrimitive.Root
-      data-slot="avatar"
+      data-slot="avatar" 
       className={cn(
         "relative flex size-10 shrink-0 overflow-hidden rounded-full",
         className,
       )}
-      {...props} //Passes all received props to Radix 
+      {...props} //Passes all received props to Radix
     />
   );
 }

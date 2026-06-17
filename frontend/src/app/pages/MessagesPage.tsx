@@ -2,13 +2,7 @@ import { Card } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import {
-  Search,
-  Send,
-  MoreVertical,
-  Paperclip,
-  ArrowLeft,
-} from "lucide-react";
+import { Search, Send, MoreVertical, Paperclip, ArrowLeft } from "lucide-react";
 import { cn } from "../components/ui/utils";
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import api from "../../services/axios";
@@ -32,7 +26,7 @@ interface User {
     avatar?: string;
   };
 }
-interface Conversation {
+interface Conversation { 
   id: string;
   createdAt: string;
   otherUser: {
@@ -75,22 +69,12 @@ export function MessagesPage() {
   const [lastReadAt, setLastReadAt] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const menuRef = useRef<HTMLDivElement | null>(null);
   const [userSearch, setUserSearch] = useState("");
   const [mobileView, setMobileView] = useState<"conversations" | "chat">(
     "conversations",
   );
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleDeleteConversation = async () => {
     if (!selectedConv) return;
@@ -108,10 +92,12 @@ export function MessagesPage() {
 
   useEffect(() => {
     if (!showNewConversation) return;
+
     if (userSearch.trim().length < 1) {
       const timeout = setTimeout(() => setUsers([]), 0);
       return () => clearTimeout(timeout);
     }
+
     const timeout = setTimeout(async () => {
       try {
         const { data } = await api.get<User[]>(
@@ -215,17 +201,18 @@ export function MessagesPage() {
     };
 
     socket.on("new_message", handleNewMessage);
+
     socket.on("typing_start", ({ userId }) => {
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.otherUser.id === userId ? { ...conv, typing: true } : conv,
+          conv.otherUser?.id === userId ? { ...conv, typing: true } : conv,
         ),
       );
     });
     socket.on("typing_stop", ({ userId }) => {
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.otherUser.id === userId ? { ...conv, typing: false } : conv,
+          conv.otherUser?.id === userId ? { ...conv, typing: false } : conv,
         ),
       );
     });
@@ -244,11 +231,15 @@ export function MessagesPage() {
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessageInput(e.target.value);
+
     socket?.emit("typing_start", { conversationId: selectedConv });
+
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
+
     typingTimeout.current = setTimeout(() => {
       socket?.emit("typing_stop", { conversationId: selectedConv });
     }, 1000);
+
   };
 
   const handleSendMessage = async () => {
@@ -319,7 +310,7 @@ export function MessagesPage() {
                       {conv.otherUser?.name?.substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  {onlineUsers.has(conv.otherUser.id) && (
+                  {onlineUsers.has(conv.otherUser?.id) && (
                     <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
                   )}
                 </div>
@@ -331,7 +322,7 @@ export function MessagesPage() {
                         conv.unread > 0 && "text-gray-900",
                       )}
                     >
-                      {conv.otherUser.name}
+                      {conv.otherUser?.name}
                     </span>
                     <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {conv.timestamp}
@@ -397,7 +388,7 @@ export function MessagesPage() {
                   </AvatarFallback>
                 </Avatar>
                 {selectedConversation &&
-                  onlineUsers.has(selectedConversation.otherUser.id) && (
+                  onlineUsers.has(selectedConversation.otherUser?.id) && (
                     <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
                   )}
               </div>
@@ -405,11 +396,12 @@ export function MessagesPage() {
                 {selectedConversation?.otherUser?.name}
               </div>
             </div>
-            <div className="relative" ref={menuRef}>
+            <div className="relative" >
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowMenu((prev) => !prev)}
+                onBlur={() => setTimeout(() => setShowMenu(false), 150)}
               >
                 <MoreVertical className="h-5 w-5" />
               </Button>
@@ -435,7 +427,7 @@ export function MessagesPage() {
             className="flex-1 overflow-y-auto px-6 py-6 flex flex-col"
           >
             <div className="flex flex-col w-full space-y-3">
-              <div className="flex-grow" />
+              <div className="flex-grow"  />  {/* pousse les messages vers le bas */}
               {messages.map((message) => {
                 const isMe = message.sender.id === user?.id;
                 return (
@@ -455,6 +447,7 @@ export function MessagesPage() {
                       </Avatar>
                     )}
                     <div className="flex flex-col max-w-[70%]">
+                       {/* Bulle du message */}
                       <div
                         className={cn(
                           "rounded-2xl px-4 py-2.5",
@@ -467,8 +460,7 @@ export function MessagesPage() {
                       </div>
                       {isMe &&
                         lastReadAt &&
-                        new Date(message.createdAt) <=
-                          new Date(lastReadAt) && (
+                        new Date(message.createdAt) <= new Date(lastReadAt) && (
                           <div className="text-[10px] text-gray-400 mt-1 text-right">
                             Seen
                           </div>

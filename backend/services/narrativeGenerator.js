@@ -45,7 +45,7 @@ export function generateNarrative(project, trlScore, irScore, irBreakdown) {
   const riskMessages = {
     financial:
       "Financial documentation is incomplete which may reduce investor confidence.",
-    market: "The market opportunity description needs further development.",
+    market: "The market opportunity description needs further development.", 
     team: "The team profile is not fully complete — a key concern for investors.",
     traction: "Limited traction evidence is available at this stage.",
     competitive:

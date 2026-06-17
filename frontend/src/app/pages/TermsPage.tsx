@@ -1,9 +1,7 @@
 export default function TermsPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16 text-white/70">
-      <h1 className="text-3xl font-bold text-white mb-8">
-        Terms of Service
-      </h1>
+      <h1 className="text-3xl font-bold text-white mb-8">Terms of Service</h1>
 
       <section className="space-y-6 text-sm leading-relaxed">
         <div>

@@ -132,7 +132,7 @@ export default function InvestorSetupWizard() {
   const [hasExisting, setHasExisting] = useState(false);
 
   useEffect(() => {
-    const fetch = async () => { 
+    const fetch = async () => {
       try {
         const { data: profile } = await api.get("/investor-profile");
         setData({
@@ -174,7 +174,6 @@ export default function InvestorSetupWizard() {
       };
       if (hasExisting) {
         await api.put("/investor-profile", payload);
-        
       } else {
         await api.post("/investor-profile", payload);
         setHasExisting(true);

@@ -41,7 +41,8 @@ export default function LoginPage() {
         showToast({
           type: "warning",
           title: "Email Not Verified",
-          message: "Please verify your email first. Check your inbox or spam folder.",
+          message:
+            "Please verify your email first. Check your inbox or spam folder.",
         });
         navigate("/verify-email", { state: { pendingEmail: email } });
         return;
@@ -67,8 +68,8 @@ export default function LoginPage() {
   };
 
   return (
-<div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
-  <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
+    <div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
+      <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
@@ -90,7 +91,10 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Email Field - Fixed white text */}
           <div className="space-y-2">
-            <label htmlFor="email" className="text-white/80 text-sm font-medium">
+            <label
+              htmlFor="email"
+              className="text-white/80 text-sm font-medium"
+            >
               Email
             </label>
             <input
@@ -109,7 +113,10 @@ export default function LoginPage() {
 
           {/* Password Field - Fixed white text */}
           <div className="space-y-2">
-            <label htmlFor="password" className="text-white/80 text-sm font-medium">
+            <label
+              htmlFor="password"
+              className="text-white/80 text-sm font-medium"
+            >
               Password
             </label>
             <input

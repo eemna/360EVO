@@ -22,7 +22,7 @@ import {
 
 const router = express.Router();
 
-// DD Requests
+// DD Requests 
 router.post("/dd-requests", protect, requestDueDiligence);
 router.get("/dd-requests/:type", protect, getDdRequests); // :type = received|sent
 router.put("/dd-requests/:id/approve", protect, approveDdRequest);

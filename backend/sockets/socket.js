@@ -11,7 +11,7 @@ export const initializeSocket = (io) => {
       console.log("JWT_SECRET exists:", !!process.env.JWT_SECRET);
 
       const token = socket.handshake.auth.token;
-      console.log("Received token:", token);
+      console.log("Received token:", token); 
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log("Decoded:", decoded);

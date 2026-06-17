@@ -19,14 +19,14 @@ import {
   Bell,
   MessageSquare,
   Home,
-  Users,
+ // Users,
   Briefcase,
   GraduationCap,
-  Layers,
+ // Layers,
   Search,
 } from "lucide-react";
 import { useLocation } from "react-router";
-import GlobalSearchBar from "../ui/GlobalSearchBar";
+//import GlobalSearchBar from "../ui/GlobalSearchBar";
 
 interface TopNavProps {
   onMenuClick: () => void;
@@ -51,7 +51,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+ // const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const notifRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -62,14 +62,14 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
   useEffect(() => {
     pathnameRef.current = location.pathname;
   }, [location.pathname]);
-  
+
   useEffect(() => {
     userIdRef.current = user?.id;
   }, [user?.id]);
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login"); 
   };
 
   const handleMarkAllRead = useCallback(async () => {
@@ -183,6 +183,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
 
   return (
     <nav className="fixed top-0 z-50 w-full bg-white shadow-md">
+     {/*
       {mobileSearchOpen && (
         <div className="lg:hidden absolute inset-x-0 top-0 z-10 flex items-center h-16 bg-white px-4 gap-3 shadow-md">
           <div className="flex-1">
@@ -198,7 +199,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
           </button>
         </div>
       )}
-
+*/}
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex h-16 items-center gap-3">
           <Button
@@ -220,16 +221,16 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               360EVO
             </span>
           </Link>
-
+{/* 
           <div className="hidden lg:flex flex-1 max-w-sm xl:max-w-md mx-2">
             <GlobalSearchBar />
           </div>
-
+*/}
           <div className="ml-auto flex items-center gap-0.5 sm:gap-1">
             <button
               type="button"
               aria-label="Open search"
-              onClick={() => setMobileSearchOpen(true)}
+             // onClick={() => setMobileSearchOpen(true)}
               className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
             >
               <Search className="h-5 w-5" />
@@ -238,16 +239,16 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
             <div className="hidden sm:flex items-center gap-0.5">
               <Link
                 to="/app"
-                onClick={() => setMobileSearchOpen(false)}
+               // onClick={() => setMobileSearchOpen(false)}
                 aria-label="Home"
               >
                 <Button variant="ghost" size="icon">
                   <Home className="h-5 w-5" />
                 </Button>
               </Link>
-              <Link
+        {/*      <Link
                 to="/app/events"
-                onClick={() => setMobileSearchOpen(false)}
+               // onClick={() => setMobileSearchOpen(false)}
                 aria-label="Events"
               >
                 <Button variant="ghost" size="icon">
@@ -256,16 +257,17 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               </Link>
               <Link
                 to="/app/programs"
-                onClick={() => setMobileSearchOpen(false)}
+              //  onClick={() => setMobileSearchOpen(false)}
                 aria-label="Programs"
               >
                 <Button variant="ghost" size="icon">
                   <Layers className="h-5 w-5" />
                 </Button>
               </Link>
+              */} 
               <Link
                 to="/app/projects"
-                onClick={() => setMobileSearchOpen(false)}
+               // onClick={() => setMobileSearchOpen(false)}
                 aria-label="Projects"
               >
                 <Button variant="ghost" size="icon">
@@ -274,7 +276,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               </Link>
               <Link
                 to="/app/experts"
-                onClick={() => setMobileSearchOpen(false)}
+              //  onClick={() => setMobileSearchOpen(false)}
                 aria-label="Experts"
               >
                 <Button variant="ghost" size="icon">

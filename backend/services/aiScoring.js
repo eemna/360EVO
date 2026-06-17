@@ -17,18 +17,22 @@ export function calculateTRLScore(project) {
 
   let score;
   if (stage === "IDEA") {
+
     if (hasTeam && hasMilestones && project.fullDesc?.length > 200) score = 3;
     else if (project.shortDesc?.length > 50) score = 2;
     else score = 1;
-
     if (hasIpProtection && score < 3) score = 3;
-} else if (stage === "PROTOTYPE") {
-  const bonuses = [hasDocuments, hasCompletedMilestone, hasIpProtection]
-    .filter(Boolean).length;
 
-  if (bonuses >= 2) score = 5;
-  else score = 4;
-}else if (stage === "MVP") {
+  } else if (stage === "PROTOTYPE") {
+    const bonuses = [
+      hasDocuments,
+      hasCompletedMilestone,
+      hasIpProtection,
+    ].filter(Boolean).length;
+
+    if (bonuses >= 2) score = 5;
+    else score = 4;
+  } else if (stage === "MVP") {
     if (hasUpdates && hasCompletedMilestone && hasTeam && hasPilots) score = 7;
     else score = 6;
 
@@ -190,8 +194,7 @@ export function irCompositeScore(project) {
 }
 
 export function runRuleBasedScoring(project) {
-  const { score: trlScore, breakdown: trlBreakdown } =
-    calculateTRLScore(project);
+  const { score: trlScore, breakdown: trlBreakdown } = calculateTRLScore(project);
   const trlConfidence = calculateTRLConfidence(project);
   const {
     composite: irScore,

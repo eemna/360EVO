@@ -18,8 +18,8 @@ export function LoadingSpinner({
       className={`
         animate-spin 
         rounded-full 
-        border-current
-        border-t-transparent 
+        border-current //Uses the current text color for the border
+        border-t-transparent  //Makes the top border invisible
         ${sizeClasses[size]} 
         ${className}
       `}

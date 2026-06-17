@@ -12,7 +12,6 @@ import {
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, join } from "path";
 
-
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -25,12 +24,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 GlobalWorkerOptions.workerSrc = pathToFileURL(
   join(__dirname, "../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"),
 ).href;
+
 async function extractTextFromPdf(buffer) {
   const uint8 = new Uint8Array(buffer);
   const pdf = await getDocument({
     data: uint8,
     useWorkerFetch: false,
-    isEvalSupported: false,
+    isEvalSupported: false, //eval() executes strings as code
     useSystemFonts: true,
   }).promise;
 
@@ -53,7 +53,7 @@ export const requestDueDiligence = async (req, res, next) => {
     const investorId = req.user.id;
     const { projectId, message, nda } = req.body;
 
-    if (!projectId) {
+    if (!projectId) { 
       return res.status(400).json({ message: "projectId is required" });
     }
 
@@ -280,7 +280,7 @@ export const addDocument = async (req, res, next) => {
     const { id: dataRoomId } = req.params;
     const userId = req.user.id;
     const { name, fileUrl, fileKey, fileType, accessLevel } = req.body;
-
+ 
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
       return res
@@ -310,7 +310,7 @@ export const addDocument = async (req, res, next) => {
         accessLevel: accessLevel || "OPEN",
         textExtract,
         ragIndexed: false,
-      },
+      }, 
     });
 
     if (
@@ -381,7 +381,6 @@ export const deleteDocument = async (req, res, next) => {
       }
     }
 
-    
     await prisma.dataRoomDocument.delete({ where: { id: docId } });
 
     await prisma.dataRoomActivity.create({
@@ -651,7 +650,7 @@ export const runAiScan = async (req, res, next) => {
             projectId: dataRoom.projectId,
             type: "DD_SUMMARY",
           },
-        },
+        }, 
       });
       if (cached && cached.inputHash === inputHash) {
         return res.json({ cached: true, data: cached.content });

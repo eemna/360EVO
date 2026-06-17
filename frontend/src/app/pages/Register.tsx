@@ -113,39 +113,39 @@ export default function RegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-  if (formData.role === "startup" && !formData.companyName) {
-    showToast({
-      type: "warning",
-      title: "Missing field",
-      message: "Company name is required for startups.",
-    });
-    setLoading(false);
-    return;
-  }
+    if (formData.role === "startup" && !formData.companyName) {
+      showToast({
+        type: "warning",
+        title: "Missing field",
+        message: "Company name is required for startups.",
+      });
+      setLoading(false);
+      return;
+    }
 
-  if (formData.role === "expert" && !formData.expertise) {
-    showToast({
-      type: "warning",
-      title: "Missing field",
-      message: "Expertise is required for experts.",
-    });
-    setLoading(false);
-    return;
-  }
+    if (formData.role === "expert" && !formData.expertise) {
+      showToast({
+        type: "warning",
+        title: "Missing field",
+        message: "Expertise is required for experts.",
+      });
+      setLoading(false);
+      return;
+    }
 
-  if (
-    formData.role === "expert" &&
-    formData.hourlyRate &&
-    isNaN(Number(formData.hourlyRate))
-  ) {
-    showToast({
-      type: "error",
-      title: "Invalid value",
-      message: "Hourly rate must be a valid number.",
-    });
-    setLoading(false);
-    return;
-  }
+    if (
+      formData.role === "expert" &&
+      formData.hourlyRate &&
+      isNaN(Number(formData.hourlyRate))
+    ) {
+      showToast({
+        type: "error",
+        title: "Invalid value",
+        message: "Hourly rate must be a valid number.",
+      });
+      setLoading(false);
+      return;
+    }
     try {
       await api.post("/auth/register", {
         name: formData.fullName,
@@ -155,10 +155,12 @@ export default function RegistrationPage() {
         companyName: formData.companyName,
         stage: formData.stage,
         expertise: formData.expertise
-                   ?.split(",")
-                   .map((e) => e.trim())
-                  .filter(Boolean),
-        hourlyRate: formData.hourlyRate ? Number(formData.hourlyRate) : undefined,
+          ?.split(",")
+          .map((e) => e.trim())
+          .filter(Boolean),
+        hourlyRate: formData.hourlyRate
+          ? Number(formData.hourlyRate)
+          : undefined,
       });
 
       showToast({
@@ -212,8 +214,8 @@ export default function RegistrationPage() {
   ];
 
   return (
-<div className="w-full bg-[#e8eef5] py-8 px-4 flex flex-col items-center">
-  <div className="w-full max-w-2xl">
+    <div className="w-full bg-[#e8eef5] py-8 px-4 flex flex-col items-center">
+      <div className="w-full max-w-2xl">
         {/* Step indicators */}
         <div className="mb-10 flex justify-center">
           <div className="flex items-center gap-4">
@@ -389,14 +391,14 @@ export default function RegistrationPage() {
                   </div>
 
                   <div className="flex gap-3">
-<Button
-  type="button"
-  variant="outline"
-  onClick={handleBack}
-  className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
->
-  Back
-</Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleBack}
+                      className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
+                    >
+                      Back
+                    </Button>
                     <Button
                       type="button"
                       onClick={handleNext}
@@ -412,75 +414,75 @@ export default function RegistrationPage() {
               {currentStep === 3 && (
                 <div className="space-y-4">
                   {/* startup fields */}
-                 {formData.role === "startup" && (
-  <>
-    <h2 className="text-2xl text-center font-semibold text-white">
-      Company Details
-    </h2>
-    
-    <div className="space-y-2">
-      <Label htmlFor="companyName" className="text-white/80">
-        Company Name
-      </Label>
-      <Input
-        id="companyName"
-        value={formData.companyName || ""}
-        onChange={(e) => updateFormData("companyName", e.target.value)}
-        placeholder="Your company name"
-        className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
-      />
-    </div>
-    
-    <div className="space-y-2">
-      <Label className="text-white/80">Startup Stage</Label>
-      <Select
-        value={formData.stage}
-        onValueChange={(v) => updateFormData("stage", v)}
-      >
-        <SelectTrigger 
-          className="bg-white/5 border-white/20 text-white data-[placeholder]:text-white/50 focus:ring-[#1D9E75] focus:ring-offset-0"
-        >
-          <SelectValue placeholder="Select stage" />
-        </SelectTrigger>
-        <SelectContent 
-          className="bg-[#1A2A3A] border-white/20 text-white"
-          position="popper"
-        >
-          <SelectItem 
-            value="IDEA"
-            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
-          >
-            Idea
-          </SelectItem>
-          <SelectItem 
-            value="PROTOTYPE"
-            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
-          >
-            Prototype
-          </SelectItem>
-          <SelectItem 
-            value="MVP"
-            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
-          >
-            MVP
-          </SelectItem>
-          <SelectItem 
-            value="GROWTH"
-            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
-          >
-            Growth
-          </SelectItem>
-          <SelectItem 
-            value="SCALING"
-            className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
-          >
-            Scaling
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
-  </>
-)}
+                  {formData.role === "startup" && (
+                    <>
+                      <h2 className="text-2xl text-center font-semibold text-white">
+                        Company Details
+                      </h2>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="companyName" className="text-white/80">
+                          Company Name
+                        </Label>
+                        <Input
+                          id="companyName"
+                          value={formData.companyName || ""}
+                          onChange={(e) =>
+                            updateFormData("companyName", e.target.value)
+                          }
+                          placeholder="Your company name"
+                          className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-white/80">Startup Stage</Label>
+                        <Select
+                          value={formData.stage}
+                          onValueChange={(v) => updateFormData("stage", v)}
+                        >
+                          <SelectTrigger className="bg-white/5 border-white/20 text-white data-[placeholder]:text-white/50 focus:ring-[#1D9E75] focus:ring-offset-0">
+                            <SelectValue placeholder="Select stage" />
+                          </SelectTrigger>
+                          <SelectContent
+                            className="bg-[#1A2A3A] border-white/20 text-white"
+                            position="popper"
+                          >
+                            <SelectItem
+                              value="IDEA"
+                              className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+                            >
+                              Idea
+                            </SelectItem>
+                            <SelectItem
+                              value="PROTOTYPE"
+                              className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+                            >
+                              Prototype
+                            </SelectItem>
+                            <SelectItem
+                              value="MVP"
+                              className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+                            >
+                              MVP
+                            </SelectItem>
+                            <SelectItem
+                              value="GROWTH"
+                              className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+                            >
+                              Growth
+                            </SelectItem>
+                            <SelectItem
+                              value="SCALING"
+                              className="text-white focus:bg-[#1D9E75]/20 focus:text-white"
+                            >
+                              Scaling
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </>
+                  )}
 
                   {formData.role === "expert" && (
                     <>
@@ -556,20 +558,22 @@ export default function RegistrationPage() {
                   )}
 
                   <div className="flex gap-3 pt-2">
-<Button
-  type="button"
-  variant="outline"
-  onClick={handleBack}
-  className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
->
-  Back
-</Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleBack}
+                      className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
+                    >
+                      Back
+                    </Button>
                     <Button
                       type="submit"
                       disabled={loading}
                       className="flex-1 py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg disabled:opacity-50"
                     >
-                      {loading ? "Creating account..." : "Complete Registration"}
+                      {loading
+                        ? "Creating account..."
+                        : "Complete Registration"}
                     </Button>
                   </div>
                 </div>

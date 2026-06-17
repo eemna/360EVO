@@ -41,7 +41,7 @@ export function BookmarkButton({
 
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
+    e.stopPropagation(); 
     if (!user) {
       navigate("/login");
       return;

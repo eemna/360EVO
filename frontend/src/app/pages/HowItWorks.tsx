@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from "react-router";
 
 export function HowItWorks() {
   return (
@@ -10,7 +10,8 @@ export function HowItWorks() {
             From Sign-Up to Funded — Here's How 360EVO Works.
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-            No complicated setup. No learning curve. Just a clear process from first profile to first connection.
+            No complicated setup. No learning curve. Just a clear process from
+            first profile to first connection.
           </p>
         </div>
       </section>
@@ -18,7 +19,9 @@ export function HowItWorks() {
       {/* Startup Journey */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-[#0D1B2A] mb-12 text-center">For Startups & Researchers</h2>
+          <h2 className="text-3xl font-bold text-[#0D1B2A] mb-12 text-center">
+            For Startups & Researchers
+          </h2>
 
           <div className="space-y-16">
             {/* Step 1 */}
@@ -29,13 +32,20 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">Create Your Profile</h3>
+                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                  Create Your Profile
+                </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  Sign up, describe your technology, team, sector, and stage. Upload any available materials.
+                  Sign up, describe your technology, team, sector, and stage.
+                  Upload any available materials.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">Profile Builder</span>
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">Project Showcase</span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    Profile Builder
+                  </span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    Project Showcase
+                  </span>
                 </div>
               </div>
             </div>
@@ -50,13 +60,20 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">Get AI-Scored</h3>
+                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                  Get AI-Scored
+                </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  The system evaluates your technology readiness (TRL) and investment compatibility score.
+                  The system evaluates your technology readiness (TRL) and
+                  investment compatibility score.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">TRL Scoring Engine</span>
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">AI Analysis</span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    TRL Scoring Engine
+                  </span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    AI Analysis
+                  </span>
                 </div>
               </div>
             </div>
@@ -71,12 +88,17 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">Receive Matches</h3>
+                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                  Receive Matches
+                </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  You're matched with investors whose thesis, sector focus, and stage preference align with your profile.
+                  You're matched with investors whose thesis, sector focus, and
+                  stage preference align with your profile.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">AI Matching Engine</span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    AI Matching Engine
+                  </span>
                 </div>
               </div>
             </div>
@@ -91,13 +113,20 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">Start the Conversation</h3>
+                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                  Start the Conversation
+                </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  Reach out (or accept inbound) via secure in-platform messaging. Share documents from your data room.
+                  Reach out (or accept inbound) via secure in-platform
+                  messaging. Share documents from your data room.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">Messaging</span>
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">Data Room</span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    Messaging
+                  </span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    Data Room
+                  </span>
                 </div>
               </div>
             </div>
@@ -112,12 +141,17 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">Track & Close</h3>
+                <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
+                  Track & Close
+                </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  Monitor your pipeline, manage follow-ups, and track deal progress from your dashboard.
+                  Monitor your pipeline, manage follow-ups, and track deal
+                  progress from your dashboard.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">Innovation Dashboard</span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    Innovation Dashboard
+                  </span>
                 </div>
               </div>
             </div>
@@ -128,7 +162,9 @@ export function HowItWorks() {
       {/* Investor Journey */}
       <section className="py-24 px-6 bg-[#0D1B2A]">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-white mb-12 text-center">For Investors</h2>
+          <h2 className="text-3xl font-bold text-white mb-12 text-center">
+            For Investors
+          </h2>
 
           <div className="space-y-16">
             {/* Step 1 */}
@@ -139,12 +175,17 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-white mb-3">Build Your Profile</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Build Your Profile
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Define your investment thesis, sector focus, preferred stage, and check size range.
+                  Define your investment thesis, sector focus, preferred stage,
+                  and check size range.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">Investor Profile Builder</span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    Investor Profile Builder
+                  </span>
                 </div>
               </div>
             </div>
@@ -159,13 +200,20 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-white mb-3">Browse & Receive</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Browse & Receive
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Get AI-curated deal flow. Browse the project gallery or let matches come to you.
+                  Get AI-curated deal flow. Browse the project gallery or let
+                  matches come to you.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">AI Matching</span>
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">Gallery</span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    AI Matching
+                  </span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    Gallery
+                  </span>
                 </div>
               </div>
             </div>
@@ -180,13 +228,20 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-white mb-3">Evaluate Opportunities</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Evaluate Opportunities
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Review TRL scores, team backgrounds, and project details. Request data room access instantly.
+                  Review TRL scores, team backgrounds, and project details.
+                  Request data room access instantly.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">TRL Scores</span>
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">Data Room</span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    TRL Scores
+                  </span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    Data Room
+                  </span>
                 </div>
               </div>
             </div>
@@ -201,12 +256,17 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-white mb-3">Connect Directly</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Connect Directly
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Reach out via secure messaging. No middlemen, no intro emails — just direct access.
+                  Reach out via secure messaging. No middlemen, no intro emails
+                  — just direct access.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">In-Platform Messaging</span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    In-Platform Messaging
+                  </span>
                 </div>
               </div>
             </div>
@@ -221,12 +281,17 @@ export function HowItWorks() {
                 </div>
               </div>
               <div className="flex-1 pt-2">
-                <h3 className="text-2xl font-bold text-white mb-3">Track Your Pipeline</h3>
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  Track Your Pipeline
+                </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Manage all your active conversations and deal stages in one dashboard.
+                  Manage all your active conversations and deal stages in one
+                  dashboard.
                 </p>
                 <div className="flex gap-2 flex-wrap">
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">Investor Dashboard</span>
+                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
+                    Investor Dashboard
+                  </span>
                 </div>
               </div>
             </div>

@@ -5,14 +5,14 @@ import {
   acceptBooking,
   rejectBooking,
   cancelBooking,
-  completeBooking,
+  completeBooking, 
   createReview,
   getEarningsOverview,
   cancelUnpaidBooking,
   createConsultationPaymentIntent,
 } from "../controllers/consultationController.js";
 import { protect } from "../middleware/auth.js";
-
+ 
 const router = express.Router();
 
 router.post("/request", protect, createBooking);

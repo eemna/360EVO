@@ -47,7 +47,7 @@ import {
   RefreshCw,
   FileBarChart,
   Eye,
-  Download,
+//  Download,
 } from "lucide-react";
 
 interface DataRoomDocument {
@@ -77,7 +77,7 @@ interface QaThread {
   asker: { name: string; role: string };
   responses: QaResponse[];
 }
-
+ 
 interface ActivityItem {
   id: string;
   action: string;
@@ -220,6 +220,7 @@ export default function DataRoomPage() {
   // Socket.io real-time Q&A
   useEffect(() => {
     if (!socket || !id) return;
+
     socket.emit("join_dataroom", id);
 
     socket.on("new_qa_thread", (thread: QaThread) => {
@@ -238,7 +239,6 @@ export default function DataRoomPage() {
         );
       },
     );
-
     return () => {
       socket.emit("leave_dataroom", id);
       socket.off("new_qa_thread");
@@ -247,6 +247,7 @@ export default function DataRoomPage() {
   }, [socket, id]);
 
   // Auto-trigger AI scan when investor opens for first time
+
   useEffect(() => {
     if (!dataRoom || !dataRoom.isInvestor) return;
     if (dataRoom.documents.length === 0) return;
@@ -279,7 +280,7 @@ export default function DataRoomPage() {
 
     try {
       setUploadingDoc(true);
-
+ 
       // Step 1: upload to Cloudinary via existing endpoint
       const formData = new FormData();
       formData.append("file", file);
@@ -731,16 +732,7 @@ export default function DataRoomPage() {
                           </Button>
                         </a>
 
-                        <a href={doc.fileUrl} download={doc.name}>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="size-7"
-                          >
-                            <Download className="size-3.5 text-gray-500" />
-                          </Button>
-                        </a>
-
+                       
                         {isOwner && (
                           <Button
                             size="icon"
@@ -858,12 +850,12 @@ export default function DataRoomPage() {
                             >
                               <div
                                 className={`size-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                                  resp.isAiGenerated
+                                  hasSuggestion
                                     ? "bg-purple-100 text-purple-700"
                                     : "bg-green-100 text-green-700"
                                 }`}
                               >
-                                {resp.isAiGenerated ? (
+                                {hasSuggestion ? (
                                   <Bot className="size-3" />
                                 ) : (
                                   "A"

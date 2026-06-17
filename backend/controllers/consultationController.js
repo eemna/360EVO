@@ -23,8 +23,7 @@ const getNotifSettings = async (userId) => {
   }
 };
 
-export const createBooking = async (req, res, next) => {
-  
+export const createBooking = async (req, res, next) => { 
   try {
     const memberId = req.user.id;
     const {
@@ -75,7 +74,7 @@ export const createBooking = async (req, res, next) => {
     endDateTime.setMinutes(endDateTime.getMinutes() + Number(duration));
 
     const day = dayOfWeek;
-
+//nchofo date
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
     );
@@ -88,11 +87,12 @@ export const createBooking = async (req, res, next) => {
       .split(":")
       .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-
+//nchofo slot
     const [localHour, localMinute] = timeSlot.split(":").map(Number);
-
+//slot
     const bookingStartMins = localHour * 60 + localMinute;
     const bookingEndMins = bookingStartMins + Number(duration);
+    //expert
     const windowStartMins = startHour * 60 + startMinute;
     const windowEndMins = endHour * 60 + endMinute;
 
@@ -153,6 +153,7 @@ export const createBooking = async (req, res, next) => {
       },
     });
     const settings = await getNotifSettings(expertId);
+
     if (settings.emailOnBooking) {
       await createNotification({
         userId: expertId,
@@ -169,6 +170,7 @@ export const createBooking = async (req, res, next) => {
     next(error);
   }
 };
+
 export const createConsultationPaymentIntent = async (req, res, next) => {
   try {
     const { bookingId } = req.body;

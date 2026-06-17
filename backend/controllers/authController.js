@@ -1,4 +1,3 @@
-
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { prisma } from "../config/prisma.js";
@@ -59,32 +58,22 @@ export const register = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const verificationToken = crypto.randomBytes(32).toString("hex");
-if (
-  normalizedRole === "EXPERT" &&
-  hourlyRate !== undefined &&
-  isNaN(Number(hourlyRate))
-) {
-  return res.status(400).json({
-    message: "Invalid hourly rate",
-  });
-}
-const validStages = [
-  "IDEA",
-  "PROTOTYPE",
-  "MVP",
-  "GROWTH",
-  "SCALING",
-];
+    if (
+      normalizedRole === "EXPERT" &&
+      hourlyRate !== undefined &&
+      isNaN(Number(hourlyRate))
+    ) {
+      return res.status(400).json({
+        message: "Invalid hourly rate",
+      });
+    }
+    const validStages = ["IDEA", "PROTOTYPE", "MVP", "GROWTH", "SCALING"];
 
-if (
-  normalizedRole === "STARTUP" &&
-  stage &&
-  !validStages.includes(stage)
-) {
-  return res.status(400).json({
-    message: "Invalid startup stage",
-  });
-}
+    if (normalizedRole === "STARTUP" && stage && !validStages.includes(stage)) {
+      return res.status(400).json({
+        message: "Invalid startup stage",
+      });
+    }
     await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {

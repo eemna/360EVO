@@ -53,7 +53,7 @@ interface Booking {
   review?: { id: string } | null;
 }
 
-interface ExpertProfileProps {
+interface ExpertProfileProps { 
   profileUser: User;
 }
 
@@ -93,8 +93,6 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
 
   if (!profileUser.profile) return null;
 
-  const profile = profileUser.profile;
-  const computedStatus = profileUser.computedStatus ?? "AVAILABLE";
 
   const dayNames = [
     "Sunday",
@@ -105,6 +103,9 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
     "Friday",
     "Saturday",
   ];
+
+  const profile = profileUser.profile;
+  const computedStatus = profileUser.computedStatus ?? "AVAILABLE";
 
   const reviews = profileUser.expertReviews ?? [];
 
@@ -208,6 +209,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
             Weekly Availability
           </CardTitle>
         </CardHeader>
+        
         <CardContent>
           <div className="rounded-lg border border-gray-200 overflow-hidden">
             <Table>

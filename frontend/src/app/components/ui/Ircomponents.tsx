@@ -10,7 +10,7 @@ function irColor(score: number) {
   if (score >= 40) return "#d97706";
   return "#dc2626";
 }
-
+ 
 export function IRProgressRing({ score, size = 160 }: IRProgressRingProps) {
   const [animated, setAnimated] = useState(0);
   const cx = size / 2;
