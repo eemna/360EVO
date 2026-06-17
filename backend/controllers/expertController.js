@@ -63,7 +63,7 @@ export const getPublicExpertProfile = async (req, res, next) => {
             startDateTime: {
               gte: availableStart,
               lt: availableEnd,
-            }, 
+            },
           },
         });
         //total booking duration
@@ -123,7 +123,8 @@ export const getExperts = async (req, res, next) => {
     next(error);
   }
 };
-{/*export const getExperts = async (req, res, next) => {
+{
+  /*export const getExperts = async (req, res, next) => {
   try {
     const {
       expertise,
@@ -203,7 +204,8 @@ export const getExperts = async (req, res, next) => {
     next(error);
   }
 };
-*/}
+*/
+}
 export const applyExpert = async (req, res, next) => {
   try {
     const userId = req.user.id;

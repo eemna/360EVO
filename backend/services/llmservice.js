@@ -35,9 +35,7 @@ export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
     }
   }
 }
-// /m start at any line 
-
-
+// /m start at any line
 
 export function parseJsonResponse(raw) {
   const cleaned = raw
@@ -64,13 +62,12 @@ const EXPERTS = {
     "You are a strategic investment partner. Only evaluate thesis alignment and strategic fit. Respond ONLY in JSON, no markdown.",
   clarity:
     "You are a pitch deck coach. Only evaluate pitch clarity and completeness. Respond ONLY in JSON, no markdown.",
-  appeal: 
+  appeal:
     "You are an investment committee member. Only evaluate investor appeal and return potential. Respond ONLY in JSON, no markdown.",
 };
 
 // ── MoE 1: Project Assessment (4 experts)
 export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
-
   const [trlResult, marketResult, teamResult, tractionResult] =
     await Promise.all([
       // Expert 1 — TRL
@@ -221,7 +218,7 @@ export async function createThesisAlignmentMoE(
   );
 
   const [financialExpert, strategicExpert] = await Promise.all([
-    // Expert 1 — Financial and stage fit 
+    // Expert 1 — Financial and stage fit
 
     callLlm(
       `You are evaluating financial and stage fit between an investor and a project.

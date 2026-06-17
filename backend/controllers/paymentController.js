@@ -57,7 +57,7 @@ export const createPaymentIntent = async (req, res, next) => {
     next(error);
   }
 };
- 
+
 export const stripeWebhook = async (req, res) => {
   // Step 1: Get signature from header
   const sig = req.headers["stripe-signature"];
@@ -75,13 +75,13 @@ export const stripeWebhook = async (req, res) => {
     console.error("Webhook signature verification failed:", err.message);
     return res.status(400).json({ message: `Webhook error: ${err.message}` });
   }
-// Step 3: Event is verified as real Stripe
+  // Step 3: Event is verified as real Stripe
   try {
     switch (event.type) {
       case "payment_intent.succeeded": {
         const pi = event.data.object; // Payment details
         const { userId, eventId, bookingId, referenceType } = pi.metadata;
-// Check if duplicate (payment already processed)
+        // Check if duplicate (payment already processed)
         const existing = await prisma.payment.findUnique({
           where: { stripePaymentIntentId: pi.id },
         });

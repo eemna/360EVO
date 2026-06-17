@@ -23,7 +23,7 @@ const getNotifSettings = async (userId) => {
   }
 };
 
-export const createBooking = async (req, res, next) => { 
+export const createBooking = async (req, res, next) => {
   try {
     const memberId = req.user.id;
     const {
@@ -74,7 +74,7 @@ export const createBooking = async (req, res, next) => {
     endDateTime.setMinutes(endDateTime.getMinutes() + Number(duration));
 
     const day = dayOfWeek;
-//nchofo date
+    //nchofo date
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
     );
@@ -87,9 +87,9 @@ export const createBooking = async (req, res, next) => {
       .split(":")
       .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-//nchofo slot
+    //nchofo slot
     const [localHour, localMinute] = timeSlot.split(":").map(Number);
-//slot
+    //slot
     const bookingStartMins = localHour * 60 + localMinute;
     const bookingEndMins = bookingStartMins + Number(duration);
     //expert

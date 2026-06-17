@@ -1,6 +1,6 @@
 import multer from "multer";
 
-const storage = multer.memoryStorage(); 
+const storage = multer.memoryStorage();
 
 const imageFilter = (req, file, cb) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
@@ -10,7 +10,7 @@ const imageFilter = (req, file, cb) => {
   } else {
     cb(new Error("Only JPG, PNG, WEBP allowed"), false);
   }
-}; 
+};
 
 export const uploadImage = multer({
   storage,

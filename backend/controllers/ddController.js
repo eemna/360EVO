@@ -53,7 +53,7 @@ export const requestDueDiligence = async (req, res, next) => {
     const investorId = req.user.id;
     const { projectId, message, nda } = req.body;
 
-    if (!projectId) { 
+    if (!projectId) {
       return res.status(400).json({ message: "projectId is required" });
     }
 
@@ -66,7 +66,7 @@ export const requestDueDiligence = async (req, res, next) => {
       return res
         .status(404)
         .json({ message: "Project not found or not approved" });
-    } 
+    }
 
     const ddRequest = await prisma.ddRequest.create({
       data: { projectId, investorId, message, nda: nda || false },
@@ -280,7 +280,7 @@ export const addDocument = async (req, res, next) => {
     const { id: dataRoomId } = req.params;
     const userId = req.user.id;
     const { name, fileUrl, fileKey, fileType, accessLevel } = req.body;
- 
+
     const { isOwner } = await getAccessibleDataRoom(dataRoomId, userId);
     if (!isOwner)
       return res
@@ -310,7 +310,7 @@ export const addDocument = async (req, res, next) => {
         accessLevel: accessLevel || "OPEN",
         textExtract,
         ragIndexed: false,
-      }, 
+      },
     });
 
     if (
@@ -650,7 +650,7 @@ export const runAiScan = async (req, res, next) => {
             projectId: dataRoom.projectId,
             type: "DD_SUMMARY",
           },
-        }, 
+        },
       });
       if (cached && cached.inputHash === inputHash) {
         return res.json({ cached: true, data: cached.content });

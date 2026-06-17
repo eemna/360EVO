@@ -22,7 +22,7 @@ export async function runProjectAssessment(projectId) {
     irBreakdown,
     trlBreakdown,
     recommendations,
-  } = runRuleBasedScoring(project); 
+  } = runRuleBasedScoring(project);
 
   const fallbackNarrative = generateNarrative(
     project,

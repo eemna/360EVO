@@ -358,7 +358,7 @@ export const getProgramApplications = async (req, res, next) => {
     });
     res.json(applications);
   } catch (error) {
-    next(error); 
+    next(error);
   }
 };
 

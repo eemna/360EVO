@@ -1,4 +1,4 @@
- import { prisma } from "../config/prisma.js";
+import { prisma } from "../config/prisma.js";
 import geoip from "geoip-lite";
 
 // Track daily project views and increment analytics for views, traffic sources, and visitor geo location
@@ -9,7 +9,7 @@ export const trackProjectView = async (
 ) => {
   console.log("[Analytics] IP received:", ip);
   const today = new Date();
-  today.setUTCHours(0, 0, 0, 0); 
+  today.setUTCHours(0, 0, 0, 0);
 
   let country = "Unknown";
   if (ip) {
@@ -55,7 +55,7 @@ export const trackProjectView = async (
   }
 };
 
-  export const trackBookmark = async (projectId) => {
+export const trackBookmark = async (projectId) => {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   try {
@@ -153,4 +153,4 @@ export const trackBookmarkRemove = async (projectId) => {
   } catch (err) {
     console.error("[Analytics] Failed to track bookmark remove:", err.message);
   }
-}; 
+};
