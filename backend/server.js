@@ -95,7 +95,10 @@ app.post("/api/test-rag", async (req, res) => {
   try {
     console.error("[RAG-TEST] Starting RAG test...");
     console.error("[RAG-TEST] USE_RAG =", process.env.USE_RAG);
-    console.error("[RAG-TEST] N8N_WEBHOOK_INGEST =", process.env.N8N_WEBHOOK_INGEST);
+    console.error(
+      "[RAG-TEST] N8N_WEBHOOK_INGEST =",
+      process.env.N8N_WEBHOOK_INGEST,
+    );
 
     if (process.env.USE_RAG !== "true") {
       return res.status(400).json({ error: "USE_RAG not set to true" });
@@ -103,7 +106,9 @@ app.post("/api/test-rag", async (req, res) => {
 
     const webhookUrl = process.env.N8N_WEBHOOK_INGEST;
     if (!webhookUrl) {
-      return res.status(400).json({ error: "N8N_WEBHOOK_INGEST not configured" });
+      return res
+        .status(400)
+        .json({ error: "N8N_WEBHOOK_INGEST not configured" });
     }
 
     console.error("[RAG-TEST] Sending test webhook to:", webhookUrl);
@@ -135,9 +140,9 @@ app.post("/api/test-rag", async (req, res) => {
     });
   } catch (error) {
     console.error("[RAG-TEST] ERROR:", error.message, error.stack);
-    res.status(500).json({ 
+    res.status(500).json({
       error: error.message,
-      stack: error.stack 
+      stack: error.stack,
     });
   }
 });
