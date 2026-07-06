@@ -32,7 +32,7 @@ export const approveProject = async (req, res, next) => {
     await createNotification({
       userId: updated.ownerId,
       type: "PROJECT_UPDATE",
-      title: "🎉 Project approved!",
+      title: "Project approved!",
       body: `Your project "${updated.title}" has been approved and is now live.`,
       link: `/app/startup/projects/${id}`,
     });

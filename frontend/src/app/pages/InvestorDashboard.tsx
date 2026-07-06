@@ -608,6 +608,7 @@ export default function InvestorDashboard() {
               </div>
               <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-green-400 transition-colors" />
             </button>
+
             <button
               onClick={() => navigate("/app/events/my")}
               className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"

@@ -61,23 +61,23 @@ export const getProjectById = async (req, res, next) => {
         data: { viewCount: { increment: 1 } },
       });
 
-      // const source = req.query.source || "direct";
+      const source = req.query.source || "direct";
 
-      // const rawIp =
-      //   req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
-      //   req.socket?.remoteAddress ||
-      //    null;
+      const rawIp =
+        req.headers["x-forwarded-for"]?.split(",")[0]?.trim() ||
+        req.socket?.remoteAddress ||
+        null;
 
-      //  const isLocalhost =
-      //   rawIp === "::1" ||
-      //  rawIp === "127.0.0.1" ||
-      //  rawIp === "::ffff:127.0.0.1";
+      const isLocalhost =
+        rawIp === "::1" ||
+        rawIp === "127.0.0.1" ||
+        rawIp === "::ffff:127.0.0.1";
 
-      // const ip =
-      //   process.env.NODE_ENV !== "production" && isLocalhost
-      //    ? "41.226.11.1"
-      //    : rawIp;
-      // trackProjectView(id, source, ip);
+      const ip =
+        process.env.NODE_ENV !== "production" && isLocalhost
+          ? "41.226.11.1"
+          : rawIp;
+      trackProjectView(id, source, ip);
     }
 
     res.json(project);
@@ -276,7 +276,8 @@ export const getFeaturedProjects = async (req, res, next) => {
     next(error);
   }
 };
-export const getPublicProjects = async (req, res, next) => {
+{
+  /*export const getPublicProjects = async (req, res, next) => {
   try {
     const projects = await prisma.project.findMany({
       where: {
@@ -294,9 +295,9 @@ export const getPublicProjects = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-{
-  /* 
+}; */
+}
+
 export const getPublicProjects = async (req, res, next) => {
   try {
     const {
@@ -309,64 +310,8 @@ export const getPublicProjects = async (req, res, next) => {
       limit = 12,
     } = req.query;
 
-    const skip = (Number(page) - 1) * Number(limit);
-
-    if (q) {
-      try {
-        const limitNum = Number(limit);
-        const offsetNum = Number(skip);
-
-        const projects = await prisma.$queryRaw`
-  SELECT
-    p.id,
-    p."ownerId",
-    p.title,
-    p.tagline,
-    p."shortDesc",
-    p."fullDesc",
-    p.stage,
-    p.industry,
-    p.technologies,
-    p."fundingSought",
-    p.currency,
-    p.location,
-    p.status,
-    p.visibility,
-    p."viewCount",
-    p."createdAt",
-    p."updatedAt",
-    p.featured,
-    ts_rank(p.search_vector, plainto_tsquery('english', ${q})) AS rank,
-    u.name AS "ownerName",
-    a."trlScore" AS "trlScore"
-  FROM "Project" p
-  LEFT JOIN "User" u ON u.id = p."ownerId"
-  LEFT JOIN "AiAssessment" a ON a."projectId" = p.id
-  WHERE
-    p.status = 'APPROVED'
-    AND p.visibility = 'PUBLIC'
-    AND p.search_vector @@ plainto_tsquery('english', ${q})
-  ORDER BY rank DESC
-  LIMIT ${limitNum}::integer
-  OFFSET ${offsetNum}::integer
-`;
-
-        const shaped = projects.map((p) => ({
-          ...p,
-          owner: { id: p.ownerId, name: p.ownerName },
-          fundingSought: p.fundingSought ? p.fundingSought.toString() : null,
-          viewCount: Number(p.viewCount),
-          rank: Number(p.rank),
-          aiAssessment:
-            p.trlScore != null ? { trlScore: Number(p.trlScore) } : null,
-        }));
-
-        return res.json(shaped);
-      } catch (searchError) {
-        console.error("SEARCH ERROR:", searchError);
-        return next(searchError);
-      }
-    }
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
 
     const where = {
       status: "APPROVED",
@@ -375,30 +320,43 @@ export const getPublicProjects = async (req, res, next) => {
       ...(stage && { stage }),
       ...(minFunding && { fundingSought: { gte: Number(minFunding) } }),
       ...(maxFunding && { fundingSought: { lte: Number(maxFunding) } }),
+      ...(q && {
+        OR: [
+          { title: { contains: q, mode: "insensitive" } },
+          { tagline: { contains: q, mode: "insensitive" } },
+          { shortDesc: { contains: q, mode: "insensitive" } },
+        ],
+      }),
     };
 
-    const projects = await prisma.project.findMany({
-      where,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: Number(limit),
-      include: {
-        owner: {
-          select: { id: true, name: true },
+    const [projects, total] = await Promise.all([
+      prisma.project.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+        include: {
+          owner: { select: { id: true, name: true } },
+          aiAssessment: { select: { trlScore: true } },
         },
-        aiAssessment: {
-          select: { trlScore: true },
-        },
+      }),
+      prisma.project.count({ where }),
+    ]);
+
+    res.json({
+      projects,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
       },
     });
-
-    res.json(projects);
   } catch (error) {
     next(error);
   }
 };
-*/
-}
+
 export const submitProject = async (req, res, next) => {
   try {
     const { id } = req.params;

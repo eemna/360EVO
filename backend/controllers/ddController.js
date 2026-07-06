@@ -724,27 +724,29 @@ export const suggestAnswer = async (req, res, next) => {
           signal: AbortSignal.timeout(30000),
         });
 
-if (n8nRes.ok) {
-  const responseText = await n8nRes.text();
-  console.error(`[RAG-QA] Raw n8n response: ${responseText}`);
-  
-  try {
-    const jsonResponse = JSON.parse(responseText);
-    const { answer } = jsonResponse;
-    console.error(`[RAG-QA] Parsed answer: ${answer.substring(0, 100)}...`);
-    
-    suggestion = {
-      suggestedAnswer: answer,
-      confidenceLevel: "HIGH",
-      sourceDocs: fullRoom.documents
-        .filter((d) => d.ragIndexed)
-        .map((d) => d.name),
-    };
-    console.error(`[RAG-QA] Used n8n agent for thread ${threadId}`);
-  } catch (parseErr) {
-    console.error(`[RAG-QA] JSON parse failed:`, parseErr.message);
-  }
-}
+        if (n8nRes.ok) {
+          const responseText = await n8nRes.text();
+          console.error(`[RAG-QA] Raw n8n response: ${responseText}`);
+
+          try {
+            const jsonResponse = JSON.parse(responseText);
+            const { answer } = jsonResponse;
+            console.error(
+              `[RAG-QA] Parsed answer: ${answer.substring(0, 100)}...`,
+            );
+
+            suggestion = {
+              suggestedAnswer: answer,
+              confidenceLevel: "HIGH",
+              sourceDocs: fullRoom.documents
+                .filter((d) => d.ragIndexed)
+                .map((d) => d.name),
+            };
+            console.error(`[RAG-QA] Used n8n agent for thread ${threadId}`);
+          } catch (parseErr) {
+            console.error(`[RAG-QA] JSON parse failed:`, parseErr.message);
+          }
+        }
       } catch (ragErr) {
         console.warn("[RAG] n8n call failed, falling back:", ragErr.message);
       }

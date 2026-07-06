@@ -2,8 +2,12 @@ import { prisma } from "../config/prisma.js";
 
 export const getUserById = async (req, res, next) => {
   try {
+    const requestedId = req.params.id;
+    const requesterId = req.user?.id;
+    const requesterRole = req.user?.role;
+
     const user = await prisma.user.findUnique({
-      where: { id: req.params.id },
+      where: { id: requestedId },
       include: {
         profile: {
           include: {
@@ -18,6 +22,14 @@ export const getUserById = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    const isOwner = requesterId === user.id;
+    const isAdmin = requesterRole === "ADMIN";
+    const privacy = user.profile?.settings?.privacy ?? {};
+
+    if (privacy.profileVisible === false && !isOwner && !isAdmin) {
+      return res.status(403).json({ message: "This profile is private" });
+    }
+
     let computedStatus = null;
 
     if (user.role === "EXPERT" && user.profile) {
@@ -27,7 +39,7 @@ export const getUserById = async (req, res, next) => {
         computedStatus = "AVAILABLE";
 
         const today = new Date();
-        const todayDay = today.getDay(); //0 1
+        const todayDay = today.getDay();
 
         const todayAvailability = user.profile.weeklyAvailability?.find(
           (slot) => slot.day === todayDay && slot.enabled,
@@ -80,8 +92,23 @@ export const getUserById = async (req, res, next) => {
       }
     }
 
+    const { password, ...safeUser } = user;
+    const sanitizedUser = { ...safeUser };
+
+    if (!isOwner && !isAdmin) {
+      if (privacy.showEmail === false) {
+        delete sanitizedUser.email;
+      }
+      if (privacy.showPhone === false && sanitizedUser.profile) {
+        sanitizedUser.profile = {
+          ...sanitizedUser.profile,
+          phone: null,
+        };
+      }
+    }
+
     res.json({
-      ...user,
+      ...sanitizedUser,
       computedStatus,
     });
   } catch (error) {

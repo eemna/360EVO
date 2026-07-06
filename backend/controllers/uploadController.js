@@ -9,7 +9,7 @@ export const uploadImage = async (req, res, next) => {
 
     const resizedImage = await sharp(req.file.buffer)
       .resize({ width: 1200, withoutEnlargement: true }) //withoutEnlargement: true without resize small image
-      .jpeg({ quality: 85 })
+      .jpeg({ quality: 85 }) // convertit en JPEG, qualité 85% (~60% moins lourd)
       .toBuffer();
 
     const stream = cloudinary.uploader.upload_stream(
@@ -38,7 +38,7 @@ export const uploadDocumentController = async (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    const extension = path.extname(req.file.originalname).replace(".", ""); //to extract extension
+    const extension = path.extname(req.file.originalname).replace(".", "");
     const result = cloudinary.uploader.upload_stream(
       {
         folder: "360EVO/documents",

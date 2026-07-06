@@ -176,6 +176,7 @@ export const login = async (req, res, next) => {
       .createHash("sha256")
       .update(refreshToken)
       .digest("hex");
+
     await prisma.refreshToken.deleteMany({
       where: { userId: userData.id },
     });

@@ -1,14 +1,21 @@
 import { useState, useEffect } from "react";
+//import { Link } from "react-router";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Skeleton } from "../components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { Search, MapPin, Target, Eye, Users, Sparkles } from "lucide-react";
 import api from "../../services/axios";
-//import { BookmarkButton, InterestButton } from "./Bookmarkfeature";
+import { BookmarkButton, InterestButton } from "./Bookmarkfeature";
 import { useNavigate } from "react-router";
 import { TRLBadge } from "../components/ui/Aiassessmentsection";
-
 type Project = {
   id: string;
   title: string;
@@ -36,46 +43,84 @@ const stageColors = {
   SCALING: "bg-green-100 text-green-700",
 };
 
+const ITEMS_PER_PAGE = 6;
+
 export function ProjectGallery() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [industryFilter, setIndustryFilter] = useState("all");
+  const [stageFilter, setStageFilter] = useState("all");
+  const [fundingRangeFilter, setFundingRangeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    totalPages: 1,
+  });
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    let cancelled = false;
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        let minFunding: number | undefined;
+        let maxFunding: number | undefined;
 
-    api
-      .get("/projects/")
-      .then((response) => {
-        if (!cancelled) {
-          setProjects(response.data);
-          setLoading(false);
+        if (fundingRangeFilter === "0-500k") {
+          minFunding = 0;
+          maxFunding = 500000;
+        } else if (fundingRangeFilter === "500k-1m") {
+          minFunding = 500000;
+          maxFunding = 1000000;
+        } else if (fundingRangeFilter === "1m-5m") {
+          minFunding = 1000000;
+          maxFunding = 5000000;
+        } else if (fundingRangeFilter === "5m+") {
+          minFunding = 5000000;
         }
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          console.error("Error fetching projects", error);
-          setLoading(false);
-        }
-      });
 
-    return () => {
-      cancelled = true;
+        const response = await api.get("/projects/", {
+          params: {
+            q: searchQuery || undefined,
+            industry: industryFilter !== "all" ? industryFilter : undefined,
+            stage: stageFilter !== "all" ? stageFilter : undefined,
+            minFunding,
+            maxFunding,
+            page: currentPage,
+            limit: ITEMS_PER_PAGE,
+          },
+        });
+
+        setProjects(response.data.projects);
+        setPagination(response.data.pagination);
+      } catch (error) {
+        console.error("Error fetching projects", error);
+      } finally {
+        setLoading(false);
+      }
     };
-  }, []);
 
-  const filtered = projects.filter(
-    (p) =>
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.tagline.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+    fetchProjects();
+  }, [
+    searchQuery,
+    industryFilter,
+    stageFilter,
+    fundingRangeFilter,
+    currentPage,
+  ]);
+
+  const industries = Array.from(
+    new Set(projects.map((p) => p.industry)),
+  ).filter(Boolean);
 
   const formatCurrency = (amount: number) => {
     if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
     if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
     return `$${amount}`;
   };
+
+  const handleFilterChange = () => setCurrentPage(1);
 
   return (
     <div>
@@ -88,23 +133,92 @@ export function ProjectGallery() {
         </p>
       </div>
 
-      {/* SEARCH BAR */}
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
-        <Input
-          placeholder="Search projects by title or tagline..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      <Card className="bg-white shadow-sm mb-6">
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="lg:col-span-2">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+                <Input
+                  placeholder="Search projects by title or tagline or description..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    handleFilterChange();
+                  }}
+                  className="pl-10"
+                />
+              </div>
+            </div>
 
-      {/* RESULTS COUNT */}
-      <p className="text-sm text-gray-500 mb-4">
-        {loading ? "Loading..." : `${filtered.length} projects found`}
-      </p>
+            <div>
+              <Select
+                value={industryFilter}
+                onValueChange={(v) => {
+                  setIndustryFilter(v);
+                  handleFilterChange();
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Industries" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Industries</SelectItem>
+                  {industries.map((ind) => (
+                    <SelectItem key={ind} value={ind}>
+                      {ind}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* GRID */}
+            <div>
+              <Select
+                value={stageFilter}
+                onValueChange={(v) => {
+                  setStageFilter(v);
+                  handleFilterChange();
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All Stages" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Stages</SelectItem>
+                  <SelectItem value="IDEA">Idea</SelectItem>
+                  <SelectItem value="PROTOTYPE">Prototype</SelectItem>
+                  <SelectItem value="MVP">MVP</SelectItem>
+                  <SelectItem value="GROWTH">Growth</SelectItem>
+                  <SelectItem value="SCALING">Scaling</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Select
+              value={fundingRangeFilter}
+              onValueChange={(v) => {
+                setFundingRangeFilter(v);
+                handleFilterChange();
+              }}
+            >
+              <SelectTrigger className="w-full md:w-64">
+                <SelectValue placeholder="All Funding Ranges" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Funding Ranges</SelectItem>
+                <SelectItem value="0-500k">$0 - $500K</SelectItem>
+                <SelectItem value="500k-1m">$500K - $1M</SelectItem>
+                <SelectItem value="1m-5m">$1M - $5M</SelectItem>
+                <SelectItem value="5m+">$5M+</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -128,7 +242,7 @@ export function ProjectGallery() {
             </Card>
           ))}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : projects.length === 0 ? (
         <Card className="bg-white shadow-sm">
           <CardContent className="py-16 text-center">
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
@@ -137,17 +251,19 @@ export function ProjectGallery() {
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No projects found
             </h3>
-            <p className="text-gray-600">Try a different search</p>
+            <p className="text-gray-600">
+              Try adjusting your search or filter criteria
+            </p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {filtered.map((project) => (
+          {projects.map((project) => (
             <Card
               key={project.id}
-              onClick={() =>
-                navigate(`/app/startup/projects/${project.id}?source=gallery`)
-              }
+              onClick={() => {
+                navigate(`/app/startup/projects/${project.id}?source=gallery`);
+              }}
               className="bg-white shadow-sm hover:shadow-lg transition-all duration-200 h-full cursor-pointer group"
             >
               <CardContent className="pt-6">
@@ -176,7 +292,6 @@ export function ProjectGallery() {
                     <TRLBadge score={project.aiAssessment.trlScore} />
                   )}
                 </div>
-
                 <div className="flex flex-wrap gap-2 mb-4">
                   {project.technologies?.slice(0, 3).map((tech) => (
                     <Badge
@@ -208,23 +323,57 @@ export function ProjectGallery() {
                     <Users className="size-4" />
                     <span>{project.owner.name}</span>
                   </div>
+
                   <div className="flex items-center gap-1">
                     <div className="flex items-center gap-1 text-sm text-gray-500 mr-1">
                       <Eye className="size-4" />
                       <span>{project.viewCount.toLocaleString()}</span>
                     </div>
-                    {/*
+
                     <BookmarkButton projectId={project.id} />
+
                     <InterestButton
                       projectId={project.id}
                       projectTitle={project.title}
                       ownerId={project.owner.id}
-                    />  */}
+                    />
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {!loading && pagination.totalPages > 1 && (
+        <div className="flex justify-center gap-2 pb-8">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => p - 1)}
+            className="px-4 py-2 rounded-md border text-sm font-medium disabled:opacity-40"
+          >
+            Previous
+          </button>
+          {[...Array(pagination.totalPages)].map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`size-9 rounded-md text-sm font-medium ${
+                currentPage === i + 1
+                  ? "bg-indigo-600 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            disabled={currentPage === pagination.totalPages}
+            onClick={() => setCurrentPage((p) => p + 1)}
+            className="px-4 py-2 rounded-md border text-sm font-medium disabled:opacity-40"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

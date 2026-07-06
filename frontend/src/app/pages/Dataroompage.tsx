@@ -602,6 +602,7 @@ export default function DataRoomPage() {
                 label: `Q&A (${qaThreads.length})`,
                 icon: MessageSquare,
               },
+
               ...(isOwner
                 ? [{ key: "activity", label: "Activity", icon: Activity }]
                 : []),
