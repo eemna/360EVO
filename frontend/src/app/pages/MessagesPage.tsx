@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Search, Send, MoreVertical, Paperclip, ArrowLeft } from "lucide-react";
 import { cn } from "../components/ui/utils";
 import { useEffect, useState, useRef, useLayoutEffect } from "react";
+import { useNavigate } from "react-router";
 import api from "../../services/axios";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../hooks/useSocket";
@@ -69,11 +70,27 @@ export function MessagesPage() {
   const [lastReadAt, setLastReadAt] = useState<string | null>(null);
   const [showMenu, setShowMenu] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [userSearch, setUserSearch] = useState("");
   const [mobileView, setMobileView] = useState<"conversations" | "chat">(
     "conversations",
   );
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionResults, setMentionResults] = useState<User[]>([]);
+  const [mentionStart, setMentionStart] = useState<number | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const navigate = useNavigate();
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleDeleteConversation = async () => {
     if (!selectedConv) return;
@@ -91,12 +108,10 @@ export function MessagesPage() {
 
   useEffect(() => {
     if (!showNewConversation) return;
-
     if (userSearch.trim().length < 1) {
       const timeout = setTimeout(() => setUsers([]), 0);
       return () => clearTimeout(timeout);
     }
-
     const timeout = setTimeout(async () => {
       try {
         const { data } = await api.get<User[]>(
@@ -200,18 +215,17 @@ export function MessagesPage() {
     };
 
     socket.on("new_message", handleNewMessage);
-
     socket.on("typing_start", ({ userId }) => {
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.otherUser?.id === userId ? { ...conv, typing: true } : conv,
+          conv.otherUser.id === userId ? { ...conv, typing: true } : conv,
         ),
       );
     });
     socket.on("typing_stop", ({ userId }) => {
       setConversations((prev) =>
         prev.map((conv) =>
-          conv.otherUser?.id === userId ? { ...conv, typing: false } : conv,
+          conv.otherUser.id === userId ? { ...conv, typing: false } : conv,
         ),
       );
     });
@@ -229,15 +243,91 @@ export function MessagesPage() {
   }, [socket, selectedConv, user?.id]);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessageInput(e.target.value);
+    const value = e.target.value;
+    const cursorPos = e.target.selectionStart;
+    setMessageInput(value);
 
     socket?.emit("typing_start", { conversationId: selectedConv });
-
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
-
     typingTimeout.current = setTimeout(() => {
       socket?.emit("typing_stop", { conversationId: selectedConv });
     }, 1000);
+
+    const textBeforeCursor = value.slice(0, cursorPos);
+    const match = textBeforeCursor.match(/(?:^|\s)@(\w*)$/);
+
+    if (match) {
+      const query = match[1];
+      setMentionQuery(query);
+      setMentionStart(cursorPos - query.length - 1);
+
+      if (query.length > 0) {
+        api
+          .get<User[]>(`/conversations/search?q=${query}`)
+          .then(({ data }) => setMentionResults(data))
+          .catch(() => setMentionResults([]));
+      } else {
+        setMentionResults([]);
+      }
+    } else {
+      setMentionQuery(null);
+      setMentionResults([]);
+      setMentionStart(null);
+    }
+  };
+
+  const insertMention = (u: User) => {
+    if (mentionStart === null) return;
+    const before = messageInput.slice(0, mentionStart);
+    const cursorPos =
+      textareaRef.current?.selectionStart ?? messageInput.length;
+    const after = messageInput.slice(cursorPos);
+    const mentionText = `@[${u.name}](${u.id}) `;
+    setMessageInput(before + mentionText + after);
+    setMentionQuery(null);
+    setMentionResults([]);
+    setMentionStart(null);
+    textareaRef.current?.focus();
+  };
+  const stripMentions = (content: string) =>
+    content.replace(/@\[([^\]]+)\]\([^)]+\)/g, "@$1");
+
+  const renderMessageContent = (content: string, isMe: boolean) => {
+    const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+
+    while ((match = mentionRegex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+      const displayName = match[1];
+      const userId = match[2];
+      parts.push(
+        <button
+          key={`mention-${key++}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/app/profile/${userId}`);
+          }}
+          className={cn(
+            "font-semibold underline",
+            isMe ? "text-white" : "text-indigo-600",
+          )}
+        >
+          @{displayName}
+        </button>,
+      );
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+
+    return parts;
   };
 
   const handleSendMessage = async () => {
@@ -308,7 +398,7 @@ export function MessagesPage() {
                       {conv.otherUser?.name?.substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  {onlineUsers.has(conv.otherUser?.id) && (
+                  {onlineUsers.has(conv.otherUser.id) && (
                     <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
                   )}
                 </div>
@@ -320,7 +410,7 @@ export function MessagesPage() {
                         conv.unread > 0 && "text-gray-900",
                       )}
                     >
-                      {conv.otherUser?.name}
+                      {conv.otherUser.name}
                     </span>
                     <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {conv.timestamp}
@@ -340,7 +430,7 @@ export function MessagesPage() {
                           typing...
                         </span>
                       ) : conv.lastMessage ? (
-                        conv.lastMessage.content
+                        stripMentions(conv.lastMessage.content)
                       ) : (
                         "No messages yet"
                       )}
@@ -386,7 +476,7 @@ export function MessagesPage() {
                   </AvatarFallback>
                 </Avatar>
                 {selectedConversation &&
-                  onlineUsers.has(selectedConversation.otherUser?.id) && (
+                  onlineUsers.has(selectedConversation.otherUser.id) && (
                     <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
                   )}
               </div>
@@ -394,12 +484,11 @@ export function MessagesPage() {
                 {selectedConversation?.otherUser?.name}
               </div>
             </div>
-            <div className="relative">
+            <div className="relative" ref={menuRef}>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowMenu((prev) => !prev)}
-                onBlur={() => setTimeout(() => setShowMenu(false), 150)}
               >
                 <MoreVertical className="h-5 w-5" />
               </Button>
@@ -425,8 +514,7 @@ export function MessagesPage() {
             className="flex-1 overflow-y-auto px-6 py-6 flex flex-col"
           >
             <div className="flex flex-col w-full space-y-3">
-              <div className="flex-grow" />{" "}
-              {/* pousse les messages vers le bas */}
+              <div className="flex-grow" />
               {messages.map((message) => {
                 const isMe = message.sender.id === user?.id;
                 return (
@@ -446,7 +534,6 @@ export function MessagesPage() {
                       </Avatar>
                     )}
                     <div className="flex flex-col max-w-[70%]">
-                      {/* Bulle du message */}
                       <div
                         className={cn(
                           "rounded-2xl px-4 py-2.5",
@@ -455,7 +542,7 @@ export function MessagesPage() {
                             : "bg-white border border-gray-200",
                         )}
                       >
-                        {message.content}
+                        {renderMessageContent(message.content, isMe)}
                       </div>
                       {isMe &&
                         lastReadAt &&
@@ -481,19 +568,41 @@ export function MessagesPage() {
               >
                 <Paperclip className="h-5 w-5" />
               </Button>
-              <textarea
-                value={messageInput}
-                onChange={handleInput}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }
-                }}
-                placeholder="Type your message..."
-                rows={1}
-                className="flex-1 min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-indigo-300 focus:bg-white text-sm resize-none placeholder:text-gray-400"
-              />
+              <div className="relative flex-1">
+                {mentionQuery !== null && mentionResults.length > 0 && (
+                  <div className="absolute bottom-full mb-2 left-0 w-64 bg-white border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                    {mentionResults.map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => insertMention(u)}
+                        className="flex items-center gap-2 w-full p-2 hover:bg-gray-100 text-left"
+                      >
+                        <Avatar className="h-6 w-6">
+                          <AvatarImage src={u.profile?.avatar} />
+                          <AvatarFallback>
+                            {u.name?.substring(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm">{u.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <textarea
+                  ref={textareaRef}
+                  value={messageInput}
+                  onChange={handleInput}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Type your message..."
+                  rows={1}
+                  className="w-full min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-indigo-300 focus:bg-white text-sm resize-none placeholder:text-gray-400"
+                />
+              </div>
               <Button
                 onClick={handleSendMessage}
                 className="gap-2 bg-indigo-600 hover:bg-indigo-700"

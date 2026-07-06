@@ -90,7 +90,8 @@ export const getPublicExpertProfile = async (req, res, next) => {
   }
 };
 
-export const getExperts = async (req, res, next) => {
+{
+  /*export const getExperts = async (req, res, next) => {
   try {
     const experts = await prisma.user.findMany({
       where: {
@@ -122,11 +123,12 @@ export const getExperts = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-{
-  /*export const getExperts = async (req, res, next) => {
+};*/
+}
+export const getExperts = async (req, res, next) => {
   try {
     const {
+      search,
       expertise,
       industry,
       maxRate,
@@ -139,7 +141,7 @@ export const getExperts = async (req, res, next) => {
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
 
-    const profileWhere = {
+    const profileFilters = {
       ...(expertise && { expertise: { has: expertise } }),
       ...(industry && { industries: { has: industry } }),
       ...(maxRate && { hourlyRate: { lte: Number(maxRate) } }),
@@ -149,8 +151,16 @@ export const getExperts = async (req, res, next) => {
     const where = {
       role: "EXPERT",
       isSuspended: false,
-      ...(Object.keys(profileWhere).length > 0 && {
-        profile: { is: profileWhere },
+      ...(Object.keys(profileFilters).length > 0 && {
+        profile: { is: profileFilters },
+      }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          {
+            profile: { is: { bio: { contains: search, mode: "insensitive" } } },
+          },
+        ],
       }),
     };
 
@@ -204,8 +214,7 @@ export const getExperts = async (req, res, next) => {
     next(error);
   }
 };
-*/
-}
+
 export const applyExpert = async (req, res, next) => {
   try {
     const userId = req.user.id;

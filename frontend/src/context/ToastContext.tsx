@@ -35,6 +35,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
   }, []);
+
   const showToast = useCallback(
     (toast: Omit<Toast, "id">) => {
       const id = Math.random().toString(36).substring(2, 9);

@@ -74,7 +74,6 @@ export const createBooking = async (req, res, next) => {
     endDateTime.setMinutes(endDateTime.getMinutes() + Number(duration));
 
     const day = dayOfWeek;
-    //nchofo date
     const availability = expert.profile.weeklyAvailability.find(
       (slot) => slot.day === day && slot.enabled,
     );
@@ -87,12 +86,11 @@ export const createBooking = async (req, res, next) => {
       .split(":")
       .map(Number);
     const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-    //nchofo slot
     const [localHour, localMinute] = timeSlot.split(":").map(Number);
-    //slot
+
     const bookingStartMins = localHour * 60 + localMinute;
     const bookingEndMins = bookingStartMins + Number(duration);
-    //expert
+
     const windowStartMins = startHour * 60 + startMinute;
     const windowEndMins = endHour * 60 + endMinute;
 
@@ -479,7 +477,7 @@ export const createReview = async (req, res, next) => {
         data: {
           conversationId: conversation.id,
           senderId: booking.memberId,
-          content: `⭐ Left a ${rating}-star review: "${comment || "No comment"}"`,
+          content: `Left a ${rating}-star review: "${comment || "No comment"}"`,
         },
         include: {
           sender: {
@@ -501,7 +499,7 @@ export const createReview = async (req, res, next) => {
       await createNotification({
         userId: booking.expertId,
         type: "BOOKING",
-        title: "New Review ⭐",
+        title: "New Review",
         body: `You received a ${rating}-star review.`,
         link: `/app/profile/${booking.expertId}`,
       });
@@ -552,7 +550,7 @@ export const getEarningsOverview = async (req, res, next) => {
     console.log("[EARNINGS DEBUG] sample payment:", allPayments[0]);
     console.log("[EARNINGS DEBUG] sample booking id:", expertBookings[0]?.id);
 
-    const usePaymentTable = allPayments.length > 0; //succeeded
+    const usePaymentTable = allPayments.length > 0;
 
     let totalEarned = 0;
     let completedSessions = 0;

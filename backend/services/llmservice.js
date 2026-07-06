@@ -393,3 +393,7 @@ Respond ONLY with valid JSON, no markdown:
     investorAppeal: appealExpert?.investorAppeal || 0,
   };
 }
+
+{
+  /*input token : 128000 tokens, output token :  8192 tokens  / 4 chars ≈ 1 tokens///    6,000 requests/day*/
+}

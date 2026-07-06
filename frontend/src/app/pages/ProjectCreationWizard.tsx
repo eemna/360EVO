@@ -259,6 +259,7 @@ export function ProjectCreationWizard({
       pilotUsers: "0",
     },
   });
+
   const title = watch("title");
   const tagline = watch("tagline");
   const shortDescription = watch("shortDescription");
@@ -432,6 +433,7 @@ export function ProjectCreationWizard({
       setIsSubmitting(false);
     }
   };
+
   const handleNewProject = () => {
     setCurrentProjectId(null);
     setCurrentStep(0);

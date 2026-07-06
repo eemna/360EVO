@@ -6,7 +6,7 @@ const imageFilter = (req, file, cb) => {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
 
   if (allowed.includes(file.mimetype)) {
-    cb(null, true); //No error Accept upload (callbackfunction accept all)
+    cb(null, true);
   } else {
     cb(new Error("Only JPG, PNG, WEBP allowed"), false);
   }

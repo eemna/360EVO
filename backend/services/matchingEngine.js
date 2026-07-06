@@ -30,11 +30,6 @@ export function calculateMatchScore(investorProfile, project, assessment) {
 
   const thesisSim = thesisFuzzy._rawSimilarity || 0;
 
-  const industryFuzzy = fuzzifyIndustry(
-    investorProfile.industries,
-    project.industry,
-  );
-
   //const industryHigh = industryFuzzy.high;
 
   const techFuzzy = fuzzifyTechnology(
@@ -46,7 +41,10 @@ export function calculateMatchScore(investorProfile, project, assessment) {
   const nlpSim = techFuzzy._nlpSim;
 
   // INDUSTRY — 25 pts
-
+  const industryFuzzy = fuzzifyIndustry(
+    investorProfile.industries,
+    project.industry,
+  );
   const industryOutput = inferIndustry(industryFuzzy, { thesisSim });
   const industryScore = defuzzifyCategory(industryOutput, 25);
 

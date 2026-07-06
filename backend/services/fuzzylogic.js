@@ -357,25 +357,6 @@ export function inferStage(raw, { trlScore }) {
   };
 }
 
-export function inferTechnology(raw, { overlapRatio, nlpSim }) {
-  const exactHigh = sigmoid(overlapRatio, 0.5, 10);
-  const exactLow = 1 - sigmoid(overlapRatio, 0.2, 10);
-  const nlpHigh = sigmoid(nlpSim, 0.25, 12);
-  const nlpLow = 1 - sigmoid(nlpSim, 0.1, 12);
-
-  let outHigh = exactHigh;
-
-  const r2 = Math.min(exactLow, nlpHigh);
-  let outMedium = Math.max(raw.medium, r2);
-
-  const r3 = Math.min(exactHigh, nlpHigh) * 0.3;
-  outHigh = Math.min(1, outHigh + r3);
-
-  let outLow = Math.max(raw.low, Math.min(exactLow, nlpLow));
-
-  return { low: outLow, medium: outMedium, high: outHigh };
-}
-
 export function inferFunding(raw, { irScore }) {
   const irNorm = irScore / 100;
   const irHigh = sigmoid(irNorm, 0.7, 10);
@@ -398,32 +379,27 @@ export function inferFunding(raw, { irScore }) {
   return { low: outLow, medium: outMedium, high: outHigh };
 }
 
-export function inferGeography(raw) {
-  return raw;
-}
+export function inferTechnology(raw, { overlapRatio, nlpSim }) {
+  const exactHigh = sigmoid(overlapRatio, 0.5, 10);
+  const exactLow = 1 - sigmoid(overlapRatio, 0.2, 10);
+  const nlpHigh = sigmoid(nlpSim, 0.25, 12);
+  const nlpLow = 1 - sigmoid(nlpSim, 0.1, 12);
 
-/**
- * Thesis inference
+  let outHigh = exactHigh;
 
- * Rules:
- *   R1: IF raw=high                              output.high = raw.high
- *   R2: IF raw=high AND industryMatch=exact      output.high boosted * 1.1 
- *   R3: IF raw=medium AND industryMatch=none     output.medium reduced * 0.7
- *       (thesis says yes but industry says no     less trustworthy signal)
- *   R4: IF raw=low                               output.low = raw.low
- */
-export function inferThesis(raw, { industryHigh }) {
-  let outHigh = raw.high;
-  let outMedium = raw.medium;
-  let outLow = raw.low;
+  const r2 = Math.min(exactLow, nlpHigh);
+  let outMedium = Math.max(raw.medium, r2);
 
-  const r2 = Math.min(raw.high, industryHigh) * 0.1;
-  outHigh = Math.min(1, outHigh + r2);
+  const r3 = Math.min(exactHigh, nlpHigh) * 0.3;
+  outHigh = Math.min(1, outHigh + r3);
 
-  const industryLow = 1 - industryHigh;
-  outMedium = outMedium * (1 - industryLow * 0.3);
+  let outLow = Math.max(raw.low, Math.min(exactLow, nlpLow));
 
   return { low: outLow, medium: outMedium, high: outHigh };
+}
+
+export function inferGeography(raw) {
+  return raw;
 }
 
 // STEP 3 — PER-CATEGORY DEFUZZIFICATION

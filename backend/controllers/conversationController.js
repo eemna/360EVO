@@ -91,38 +91,37 @@ export const sendMessage = async (req, res, next) => {
 
     global.io.to(id).emit("new_message", message);
 
-    // const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-    // const mentionedUserIds = new Set();
-    // let match;
-    //exec() is a method of a regular expression that searches for a match and returns detailed information about it
-    //while ((match = mentionRegex.exec(content)) !== null) {
-    //  const mentionedId = match[2];
-    //  if (mentionedId && mentionedId !== senderId) {
-    //    mentionedUserIds.add(mentionedId);
-    //  }
-    //}
+    const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+    const mentionedUserIds = new Set();
+    let match;
+    while ((match = mentionRegex.exec(content)) !== null) {
+      const mentionedId = match[2];
+      if (mentionedId && mentionedId !== senderId) {
+        mentionedUserIds.add(mentionedId);
+      }
+    }
 
-    //for (const mentionedUserId of mentionedUserIds) {
-    //  const mentionedUser = await prisma.user.findUnique({
-    //   where: { id: mentionedUserId },
-    //   select: { id: true },
-    //  });
-    //  if (!mentionedUser) continue;
+    for (const mentionedUserId of mentionedUserIds) {
+      const mentionedUser = await prisma.user.findUnique({
+        where: { id: mentionedUserId },
+        select: { id: true },
+      });
+      if (!mentionedUser) continue;
 
-    //  await createNotification({
-    //   userId: mentionedUserId,
-    //   type: "MESSAGE",
-    //   title: "You were mentioned 💬",
-    //   body: `${req.user.name || "Someone"} mentioned you in a message`,
-    //   link: "/app/conversation",
-    // });
+      await createNotification({
+        userId: mentionedUserId,
+        type: "MESSAGE",
+        title: "You were mentioned 💬",
+        body: `${req.user.name || "Someone"} mentioned you in a message`,
+        link: "/app/conversation",
+      });
 
-    // global.io.to(mentionedUserId).emit("notification", {
-    //  type: "MENTION",
-    //   from: req.user.name,
-    //   conversationId: id,
-    //   });
-    // }
+      global.io.to(mentionedUserId).emit("notification", {
+        type: "MENTION",
+        from: req.user.name,
+        conversationId: id,
+      });
+    }
 
     const otherParticipant = await prisma.conversationParticipant.findFirst({
       where: { conversationId: id, userId: { not: senderId } },
@@ -154,7 +153,8 @@ export const sendMessage = async (req, res, next) => {
     next(error);
   }
 };
-export const getMessages = async (req, res, next) => {
+{
+  /* export const getMessages = async (req, res, next) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
@@ -188,13 +188,13 @@ export const getMessages = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-};
-{
-  /*
+}; */
+}
+
 export const getMessages = async (req, res, next) => {
   try {
     const { id } = req.params;
-    //const { cursor } = req.query;
+    const { cursor } = req.query;
     const userId = req.user.id;
 
     const participant = await prisma.conversationParticipant.findFirst({
@@ -235,8 +235,7 @@ export const getMessages = async (req, res, next) => {
     next(error);
   }
 };
- */
-}
+
 export const getConversations = async (req, res, next) => {
   try {
     const userId = req.user.id;

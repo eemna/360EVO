@@ -1,7 +1,7 @@
 import { callLlm, parseJsonResponse } from "./llmservice.js";
 
 export async function createDocumentRiskScan(documents) {
-  const docsWithText = documents.filter((d) => d.textExtract); //creates a new array containing only the document
+  const docsWithText = documents.filter((d) => d.textExtract);
   if (docsWithText.length === 0) {
     return {
       riskFlags: ["No extractable text found in uploaded documents"],

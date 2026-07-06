@@ -35,7 +35,7 @@ function Calendar({
 
         row: "flex w-full justify-between mt-2",
         cell: "w-8 h-8 text-center", //Each date box size
-
+        //day each click day
         day: cn(
           buttonVariants({ variant: "ghost" }),
           "size-8 p-0 font-normal aria-selected:opacity-100",

@@ -31,9 +31,9 @@ import api from "../../services/axios";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../context/ToastContext";
-//import { InterestButton } from "./Bookmarkfeature";
+import { InterestButton } from "./Bookmarkfeature";
 import AIAssessmentSection from "../components/ui/Aiassessmentsection";
-//import ProjectAnalyticsDashboard from "../pages/ProjectAnalyticsDashboard";
+import ProjectAnalyticsDashboard from "../pages/ProjectAnalyticsDashboard";
 
 interface TeamMember {
   name: string;
@@ -144,9 +144,9 @@ export default function ProjectDetailsPage() {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        //const source = searchParams.get("source") ?? "direct";
+        const source = searchParams.get("source") ?? "direct";
 
-        const res = await api.get(`/projects/${id}?`);
+        const res = await api.get(`/projects/${id}`, { params: { source } });
         setProject({
           ...res.data,
           fundingSought:
@@ -305,7 +305,7 @@ export default function ProjectDetailsPage() {
 
   const isOwner = String(user?.id) === project.ownerId;
   const isAdmin = user?.role === "ADMIN";
-  //const canInteract = user && !isOwner && !isAdmin;
+  const canInteract = user && !isOwner && !isAdmin;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -396,7 +396,7 @@ export default function ProjectDetailsPage() {
               ))}
             </div>
 
-            {/* canInteract && (
+            {canInteract && (
               <div className="flex items-center gap-2">
                 <InterestButton
                   projectId={project.id}
@@ -405,7 +405,7 @@ export default function ProjectDetailsPage() {
                 />
                 <span className="text-sm text-gray-600">Express Interest</span>
               </div>
-            ) */}
+            )}
           </div>
         </div>
       </section>
@@ -794,12 +794,12 @@ export default function ProjectDetailsPage() {
         />
       </div>
 
-      {
-        // {user?.id === project.ownerId && (  <div className="max-w-7xl mx-auto px-1 pb-10">
-        //  <ProjectAnalyticsDashboard projectId={project.id} />
-        // </div>
-        //  )}
-      }
+      {user?.id === project.ownerId && (
+        <div className="max-w-7xl mx-auto px-1 pb-10">
+          <ProjectAnalyticsDashboard projectId={project.id} />
+        </div>
+      )}
+
       {user?.role === "INVESTOR" && project.status === "APPROVED" && (
         <>
           <Button onClick={() => setDdModalOpen(true)}>
