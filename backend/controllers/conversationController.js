@@ -5,7 +5,9 @@ export const createConversation = async (req, res, next) => {
   try {
     const currentUserId = req.user.id;
     const { otherUserId } = req.body;
-
+    if (req.user.role === "ADMIN") {
+      return next({ statusCode: 403, message: "Admins cannot use messaging" });
+    }
     if (!otherUserId) {
       return next({ statusCode: 400, message: "otherUserId required" });
     }
@@ -387,6 +389,7 @@ export const searchUsers = async (req, res, next) => {
       LEFT JOIN "Profile" p ON p."userId" = u.id
       WHERE u.search_vector @@ to_tsquery('english', ${tsQuery})
         AND u.id != ${req.user.id}
+        AND u.role != 'ADMIN'
       ORDER BY ts_rank(
         u.search_vector, 
         to_tsquery('english', ${tsQuery})

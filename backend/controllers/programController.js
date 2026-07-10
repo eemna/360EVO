@@ -144,6 +144,11 @@ export const getProgramById = async (req, res, next) => {
 
 export const createProgram = async (req, res, next) => {
   try {
+    if (req.user.role !== "ADMIN") {
+      return res
+        .status(403)
+        .json({ message: "Only admins can create programs" });
+    }
     const { startDate, endDate, applicationDeadline, ...rest } = req.body;
 
     const program = await prisma.program.create({
@@ -164,6 +169,15 @@ export const createProgram = async (req, res, next) => {
 
 export const updateProgram = async (req, res, next) => {
   try {
+    const existing = await prisma.program.findUnique({
+      where: { id: req.params.id },
+    });
+    if (!existing) {
+      return res.status(404).json({ message: "Program not found" });
+    }
+    if (existing.organizerId !== req.user.id && req.user.role !== "ADMIN") {
+      return res.status(403).json({ message: "Not allowed" });
+    }
     const { startDate, endDate, applicationDeadline, ...rest } = req.body;
 
     const program = await prisma.program.update({

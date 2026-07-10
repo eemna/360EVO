@@ -13,8 +13,8 @@ import {
   Search,
   ArrowRight,
   GraduationCap,
-  Building2,
   TrendingUp,
+  Lock,
 } from "lucide-react";
 
 export function Home() {
@@ -24,27 +24,27 @@ export function Home() {
       <section className="pt-32 pb-24 px-6">
         <div className="max-w-[1280px] mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Where Deep-Tech Meets Its Investors.
+            Where Deep Tech Meets the People Who Fund It.
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto mb-8 leading-relaxed">
-            360EVO uses AI to match deep-tech startups with investors who
-            understand your technology, your stage, and your industry — so you
-            spend less time searching and more time building.
+            360EVO uses AI-driven matching to connect deep-tech startups with
+            the investors, universities, and corporate innovators who are
+            actually looking for them — starting in Chicago and the Midwest.
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Link
-              to="/contact"
-              className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors inline-block"
+              to="/register"
+              className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors inline-block font-semibold"
             >
-              Get Early Access
+              Get Started Free
             </Link>
             <Link
               to="/contact"
-              className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors inline-block"
+              className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors inline-block font-semibold"
             >
-              Request a Demo
+              Request Investor Access
             </Link>
           </div>
 
@@ -78,36 +78,35 @@ export function Home() {
         </div>
       </section>
 
-      {/* Problem Section */}
+      {/* THE PROBLEM */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-[1280px] mx-auto text-center">
+          <p className="text-[#1D9E75] text-sm font-semibold tracking-wider mb-3">
+            THE PROBLEM
+          </p>
           <h2 className="text-4xl font-bold text-[#0D1B2A] mb-6">
-            The Innovation Gap Is Real.
+            Great Technology Still Dies in Obscurity.
           </h2>
           <p className="text-lg text-[#0D1B2A]/80 max-w-2xl mx-auto leading-relaxed">
-            Thousands of breakthrough technologies never reach the market — not
-            because the science isn't there, but because the right investors
-            never found them. Cold emails go unanswered. Demo days are a
-            lottery. And the platforms designed to help were built for social
-            apps, not deep-tech.
+            Startups spend months cold-emailing investors who aren't a fit.
+            Investors sift through hundreds of decks to find the handful
+            worth a meeting. Universities sit on IP with no clear path to
+            commercialization. Everyone is looking — almost no one is
+            finding each other efficiently.
           </p>
         </div>
       </section>
 
-      {/* Solution Section */}
+      {/* THE SOLUTION — 3 Pillars */}
       <section className="py-24 px-6 bg-[#0D1B2A]">
         <div className="max-w-[1280px] mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-6">
-              360EVO Changes the Equation.
-            </h2>
-            <p className="text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
-              We built 360EVO for the complexity of deep-tech — not the
-              simplicity of app startups. Our platform uses AI to score
-              technology readiness, assess investment compatibility, and connect
-              the right parties at the right time. No more cold outreach. No
-              more missed connections.
+            <p className="text-[#1D9E75] text-sm font-semibold tracking-wider mb-3">
+              HOW 360EVO SOLVES IT
             </p>
+            <h2 className="text-4xl font-bold text-white">
+              One Platform. Three Things That Actually Move Deals Forward.
+            </h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -116,26 +115,24 @@ export function Home() {
                 <Target className="text-[#1D9E75]" size={28} />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">
-                Precision Matching
+                AI-Driven Matching
               </h3>
               <p className="text-white/70 leading-relaxed">
-                Our AI evaluates technology readiness (TRL), sector alignment,
-                and investment stage to surface only the most relevant
-                connections — for both sides.
+                We score compatibility between startups and investors on
+                stage, sector, and technology readiness — not just keywords.
               </p>
             </div>
 
             <div className="p-8 rounded-xl bg-white/5 border border-white/10">
               <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-                <Microscope className="text-[#1D9E75]" size={28} />
+                <Shield className="text-[#1D9E75]" size={28} />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">
-                Built for Deep-Tech
+                Verified Intelligence
               </h3>
               <p className="text-white/70 leading-relaxed">
-                Unlike general platforms, 360EVO understands the language of
-                science, engineering, and research. From biotech to cleantech to
-                advanced materials.
+                Every profile is structured and evidence-based, so you spend
+                time on real signal, not guesswork.
               </p>
             </div>
 
@@ -144,21 +141,208 @@ export function Home() {
                 <Zap className="text-[#1D9E75]" size={28} />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">
-                Faster Path to Capital
+                A Shared Language
               </h3>
               <p className="text-white/70 leading-relaxed">
-                Stop spending months on outreach. Get matched, communicate
-                securely, and move deals forward — all in one place.
+                Startups, investors, universities, and corporate innovation
+                teams finally work from the same data and the same process.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works Teaser */}
+{/* PERSONA SPLIT */}
+<section className="py-24 px-6 bg-[#0D1B2A]">
+  <div className="max-w-[1280px] mx-auto">
+    <p className="text-[#1D9E75] text-sm font-semibold tracking-wider mb-3 text-center">
+      BUILT FOR EVERY SIDE OF THE ECOSYSTEM
+    </p>
+    <h2 className="text-4xl font-bold text-white text-center mb-16">
+      Who Is 360EVO For?
+    </h2>
+    <div className="grid md:grid-cols-3 gap-8">
+      {/* Startups */}
+      <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+        <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+          <Microscope className="text-[#1D9E75]" size={28} />
+        </div>
+        <p className="text-[#1D9E75] text-xs font-semibold tracking-wider mb-2">
+          FOR STARTUPS
+        </p>
+        <h3 className="text-xl font-bold text-white mb-3">
+          Get Discovered by Investors Who Are Actually Looking for You.
+        </h3>
+        <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
+          <li>
+            • AI-matched to relevant investors based on stage and sector
+          </li>
+          <li>
+            • One profile, ready to share — no more chasing warm intros
+          </li>
+        </ul>
+<Link
+  to="/contact?as=startup"
+  className="text-[#1D9E75] font-semibold hover:underline inline-flex items-center gap-1"
+>
+  Create Your Free Profile <ArrowRight size={16} />
+</Link>
+      </div>
+
+      {/* Investors */}
+      <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+        <div className="w-14 h-14 rounded-xl bg-[#C9A84C]/20 flex items-center justify-center mb-4">
+          <TrendingUp className="text-[#C9A84C]" size={28} />
+        </div>
+        <p className="text-[#C9A84C] text-xs font-semibold tracking-wider mb-2">
+          FOR INVESTORS
+        </p>
+        <h3 className="text-xl font-bold text-white mb-3">
+          Deal Flow That's Already Been Filtered for Fit.
+        </h3>
+        <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
+          <li>• AI-scored opportunities matched to your thesis</li>
+          <li>
+            • Structured data on every startup — no more digging through
+            decks for basics
+          </li>
+        </ul>
+<Link
+  to="/contact?as=investor"
+  className="text-[#C9A84C] font-semibold hover:underline inline-flex items-center gap-1"
+>
+  Request Investor Access <ArrowRight size={16} />
+</Link>
+      </div>
+
+      {/* Universities & Corporate Innovation Teams */}
+      <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+        <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+          <GraduationCap className="text-[#1D9E75]" size={28} />
+        </div>
+        <p className="text-[#1D9E75] text-xs font-semibold tracking-wider mb-2">
+          FOR UNIVERSITIES & CORPORATE INNOVATION TEAMS
+        </p>
+        <h3 className="text-xl font-bold text-white mb-3">
+          Turn Research and Innovation Into Real Commercial Outcomes.
+        </h3>
+        <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
+          <li>
+            • Track IP and cohorts, connect them directly to capital and
+            industry partners
+          </li>
+        </ul>
+<Link
+  to="/contact?as=partner"
+  className="text-[#1D9E75] font-semibold hover:underline inline-flex items-center gap-1"
+>
+  Talk to Our Team <ArrowRight size={16} />
+</Link>
+      </div>
+    </div>
+  </div>
+</section>
+
+      <div className="max-w-[1280px] mx-auto px-6">
+        <div className="border-t border-white/10" />
+      </div>
+
+      {/* FEATURES TEASER */}
+      <section className="py-24 px-6 bg-[#0D1B2A]">
+        <div className="max-w-[1280px] mx-auto">
+          <p className="text-[#1D9E75] text-sm font-semibold tracking-wider mb-3 text-center">
+            WHAT'S INSIDE THE PLATFORM
+          </p>
+          <h2 className="text-4xl font-bold text-white text-center mb-16">
+            Everything You Need, Nothing You Don't.
+          </h2>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+              <Lightbulb className="text-[#1D9E75] mb-3" size={32} />
+              <h4 className="text-white font-bold mb-2">
+                Matched on Fit, Not Just Keywords
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                AI Matching Engine — connects you to the right counterparts
+                based on stage, sector, and technology readiness.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+              <BarChart3 className="text-[#1D9E75] mb-3" size={32} />
+              <h4 className="text-white font-bold mb-2">
+                Know Exactly Where You Stand
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                TRL Scoring — structured scoring of technology maturity on
+                the 1–9 scale.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+              <Database className="text-[#1D9E75] mb-3" size={32} />
+              <h4 className="text-white font-bold mb-2">
+                Share Sensitive Materials, On Your Terms
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Secure Data Room — grant and revoke access per viewer, at
+                any time.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+              <MessageSquare className="text-[#1D9E75] mb-3" size={32} />
+              <h4 className="text-white font-bold mb-2">
+                Talk Directly, No Middleman
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                In-Platform Messaging — connect directly once matched, no
+                chasing email threads.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+              <Search className="text-[#1D9E75] mb-3" size={32} />
+              <h4 className="text-white font-bold mb-2">
+                Your Technology, Presented Properly
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Project Showcase — a structured profile format built for
+                deep tech, not a generic company page.
+              </p>
+            </div>
+
+            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+              <Calendar className="text-[#1D9E75] mb-3" size={32} />
+              <h4 className="text-white font-bold mb-2">
+                Stay in the Room, Not Just the Inbox
+              </h4>
+              <p className="text-white/70 text-sm leading-relaxed">
+                Events & Community Access — ecosystem events, cohort
+                programming, and updates.
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              to="/features"
+              className="text-[#C9A84C] hover:text-[#D4B55C] inline-flex items-center gap-2 font-medium"
+            >
+              See All Features <ArrowRight size={20} />
+            </Link>
+          </div>
+        </div>
+      </section>
+      
+{/* How It Works Teaser */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-[1280px] mx-auto">
           <div className="max-w-4xl mx-auto">
+            <h2 className="text-4xl font-bold text-[#0D1B2A] mb-14 text-center">
+              From Sign-Up to First Connection in Three Steps.
+            </h2>
             <div className="flex flex-col md:flex-row items-start gap-8">
               <div className="flex-1">
                 <div className="flex items-start gap-4 mb-8">
@@ -170,8 +354,8 @@ export function Home() {
                       Create Your Profile
                     </h3>
                     <p className="text-[#0D1B2A]/70 leading-relaxed">
-                      Tell us about your technology, your stage, and what you're
-                      looking for. Our AI builds your innovation fingerprint.
+                      Tell us about your technology, your stage, and what
+                      you're looking for.
                     </p>
                   </div>
                 </div>
@@ -187,7 +371,7 @@ export function Home() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-[#0D1B2A] mb-2">
-                      Get Matched
+                      Get AI-Matched
                     </h3>
                     <p className="text-[#0D1B2A]/70 leading-relaxed">
                       Our algorithm surfaces the investors, partners, or
@@ -208,11 +392,11 @@ export function Home() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold text-[#0D1B2A] mb-2">
-                      Connect & Move Forward
+                      Connect Directly
                     </h3>
                     <p className="text-[#0D1B2A]/70 leading-relaxed">
                       Reach out through our secure platform, share your data
-                      room, track your conversations, and close deals.
+                      room, and move forward.
                     </p>
                   </div>
                 </div>
@@ -230,266 +414,92 @@ export function Home() {
           </div>
         </div>
       </section>
-      {/* Who Is 360EVO For */}
-      <section className="py-24 px-6 bg-[#0D1B2A]">
-        <div className="max-w-[1280px] mx-auto">
-          <h2 className="text-4xl font-bold text-white text-center mb-12">
-            Who Is 360EVO For?
-          </h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-                <Microscope className="text-[#1D9E75]" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Startups & Researchers
-              </h3>
-              <ul className="space-y-2 text-white/70 leading-relaxed">
-                <li>
-                  • You've built something extraordinary. Finding the right
-                  investors shouldn't be this hard.
-                </li>
-                <li>
-                  • Get matched with investors who already understand your
-                  technology and are actively deploying capital in your space.
-                </li>
-                <li>
-                  • Manage your entire fundraising process in one place — from
-                  first contact to due diligence.
-                </li>
-              </ul>
-            </div>
-
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-                <TrendingUp className="text-[#1D9E75]" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Investors</h3>
-              <ul className="space-y-2 text-white/70 leading-relaxed">
-                <li>
-                  • Stop sifting through irrelevant deal flow. Get pre-scored
-                  opportunities that match your thesis.
-                </li>
-                <li>
-                  • Our AI-powered readiness scoring tells you the technology
-                  maturity level before you take a meeting.
-                </li>
-                <li>
-                  • Access a curated pipeline of deep-tech opportunities —
-                  before the market does.
-                </li>
-              </ul>
-            </div>
-
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-                <GraduationCap className="text-[#1D9E75]" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Universities & TTOs
-              </h3>
-              <ul className="space-y-2 text-white/70 leading-relaxed">
-                <li>
-                  • Turn research into revenue. Connect your faculty innovations
-                  with investors and industry partners who are ready to act.
-                </li>
-                <li>
-                  • Manage your IP portfolio, track commercialization progress,
-                  and access a global innovation network.
-                </li>
-              </ul>
-            </div>
-
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-                <Building2 className="text-[#1D9E75]" size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">
-                Accelerators & Corporates
-              </h3>
-              <ul className="space-y-2 text-white/70 leading-relaxed">
-                <li>
-                  • Scale your portfolio. 360EVO gives your cohort companies
-                  ongoing investor access beyond demo day.
-                </li>
-                <li>
-                  • Corporate innovation teams: identify emerging technology
-                  partners before your competitors do.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-      <div className="max-w-[1280px] mx-auto px-6">
+{/* PRICING TEASER */}
+<section className="py-24 px-6 bg-[#0D1B2A]">
+  <div className="max-w-2xl mx-auto text-center">
+    <h2 className="text-4xl font-bold text-white mb-4">
+      Simple Pricing. No Surprises.
+    </h2>
+    <p className="text-white/70 mb-2">
+      Start free as a startup. Investors and partners get a plan built
+      for how they source deals.
+    </p>
+    <p className="text-[#C9A84C] font-semibold text-lg mb-8">
+      Free to start · Plans from $199/mo.
+    </p>
+    <Link
+      to="/pricing"
+      className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors inline-flex items-center gap-2"
+    >
+      See Full Pricing <ArrowRight size={20} />
+    </Link>
+  </div>
+</section>
+ <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
       </div>
-      {/* Platform Highlights */}
+      {/* TRUST SECTION */}
       <section className="py-24 px-6 bg-[#0D1B2A]">
         <div className="max-w-[1280px] mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <Lightbulb className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">AI Matching Engine</h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Connects you to the right counterparts based on technology
-                readiness, sector, and stage compatibility.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <BarChart3 className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">
-                Technology Readiness Scoring (TRL)
-              </h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Know exactly where your technology stands on the universal 1–9
-                scale before you pitch.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <Database className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">Secure Data Room</h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Share pitch decks, financials, and IP documents with full
-                control over who sees what.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <MessageSquare className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">
-                In-Platform Messaging
-              </h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Communicate directly with investors or startups without exposing
-                personal contact info.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <Search className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">
-                Project Showcase Gallery
-              </h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Display your innovations in a structured, professional format
-                built for technical audiences.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <Calendar className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">
-                Events & Networking Hub
-              </h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Discover and join curated deep-tech events, pitch competitions,
-                and demo days.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white/5 border border-white/10">
-              <BarChart3 className="text-[#1D9E75] mb-3" size={32} />
-              <h4 className="text-white font-bold mb-2">
-                Innovation Dashboard
-              </h4>
-              <p className="text-white/70 text-sm leading-relaxed">
-                Track your matches, conversations, milestones, and activity in
-                one clean interface.
-              </p>
-            </div>
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              to="/features"
-              className="text-[#1D9E75] hover:text-[#1D9E75]/80 inline-flex items-center gap-2 font-medium"
-            >
-              Explore All Features <ArrowRight size={20} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Preview */}
-      <section className="py-24 px-6 bg-white">
-        <div className="max-w-[1280px] mx-auto">
-          <h2 className="text-4xl font-bold text-[#0D1B2A] text-center mb-12">
-            Simple, Transparent Pricing for Every Stage
+          <h2 className="text-4xl font-bold text-white text-center mb-16">
+            Built by People Who've Sat on Both Sides of the Table.
           </h2>
-
-          <div className="grid md:grid-cols-5 gap-6">
-            <div className="p-6 rounded-xl border-2 border-[#0D1B2A]/10">
-              <h3 className="font-bold text-[#0D1B2A] mb-2">Starter</h3>
-              <p className="text-sm text-[#0D1B2A]/70 mb-3">
-                Early-stage startups
-              </p>
-              <p className="text-2xl font-bold text-[#0D1B2A]">Free</p>
-            </div>
-
-            <div className="p-6 rounded-xl border-2 border-[#1D9E75]">
-              <div className="inline-block px-3 py-1 bg-[#1D9E75] text-white text-xs rounded-full mb-2">
-                Most Popular
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
+              <div className="w-12 h-12 rounded-lg bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+                <MapPin className="text-[#1D9E75]" size={22} />
               </div>
-              <h3 className="font-bold text-[#0D1B2A] mb-2">Growth</h3>
-              <p className="text-sm text-[#0D1B2A]/70 mb-3">Scaling startups</p>
-              <p className="text-2xl font-bold text-[#0D1B2A]">$199/mo</p>
-            </div>
-
-            <div className="p-6 rounded-xl border-2 border-[#0D1B2A]/10">
-              <h3 className="font-bold text-[#0D1B2A] mb-2">Investor Scout</h3>
-              <p className="text-sm text-[#0D1B2A]/70 mb-3">Angel investors</p>
-              <p className="text-2xl font-bold text-[#0D1B2A]">$299/mo</p>
-            </div>
-
-            <div className="p-6 rounded-xl border-2 border-[#0D1B2A]/10">
-              <h3 className="font-bold text-[#0D1B2A] mb-2">Professional</h3>
-              <p className="text-sm text-[#0D1B2A]/70 mb-3">
-                VCs / Institutions
+              <p className="text-white/70 leading-relaxed">
+                Founder-led, built in Chicago's innovation ecosystem — not a
+                generic SaaS bolted onto a database.
               </p>
-              <p className="text-2xl font-bold text-[#0D1B2A]">$999/mo</p>
             </div>
-
-            <div className="p-6 rounded-xl border-2 border-[#0D1B2A]/10">
-              <h3 className="font-bold text-[#0D1B2A] mb-2">Enterprise</h3>
-              <p className="text-sm text-[#0D1B2A]/70 mb-3">
-                Corporates / Universities
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
+              <div className="w-12 h-12 rounded-lg bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+                <Lock className="text-[#1D9E75]" size={22} />
+              </div>
+              <p className="text-white/70 leading-relaxed">
+                Data privacy by design — you control who sees your profile
+                and materials.
               </p>
-              <p className="text-2xl font-bold text-[#0D1B2A]">Custom</p>
             </div>
-          </div>
-
-          <div className="text-center mt-12">
-            <Link
-              to="/pricing"
-              className="text-[#1D9E75] hover:text-[#1D9E75]/80 inline-flex items-center gap-2 font-medium"
-            >
-              See Full Pricing <ArrowRight size={20} />
-            </Link>
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
+              <div className="w-12 h-12 rounded-lg bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+                <Target className="text-[#1D9E75]" size={22} />
+              </div>
+              <p className="text-white/70 leading-relaxed">
+                Structured, evidence-based matching — not a directory, not
+                cold-scraped LinkedIn data.
+              </p>
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Final CTA */}
-      <section className="py-24 px-6 bg-[#0D1B2A]">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Your Next Breakthrough Starts Here.
-          </h2>
-          <p className="text-xl text-white/80 mb-8">
-            Join the platform built for the innovators who are shaping what
-            comes next.
-          </p>
-          <Link
-            to="/contact"
-            className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors inline-flex items-center gap-2"
-          >
-            Get Early Access <ArrowRight size={20} />
-          </Link>
-        </div>
-      </section>
+ <div className="max-w-[1280px] mx-auto px-6">
+        <div className="border-t border-white/10" />
+      </div>
+{/* FINAL CTA BAND */}
+<section className="py-24 px-6 bg-[#0D1B2A]">
+  <div className="max-w-3xl mx-auto text-center">
+    <h2 className="text-4xl font-bold text-white mb-8">
+      Ready to Get Discovered — or Discover What's Next?
+    </h2>
+    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <Link
+        to="/contact?as=startup"
+        className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors inline-flex items-center justify-center gap-2 font-semibold"
+      >
+        Get Started Free <ArrowRight size={20} />
+      </Link>
+      <Link
+        to="/contact?as=investor"
+        className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors font-semibold"
+      >
+        Request Investor Access
+      </Link>
+    </div>
+  </div>
+</section>
     </div>
   );
 }

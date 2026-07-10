@@ -384,6 +384,7 @@ export default function ExpertsPage() {
               expert={expert}
               onClick={() => navigate(`/app/profile/${expert.id}`)}
               onBook={() => navigate(`/app/experts/${expert.id}/book`)}
+              currentUserRole={user?.role}
             />
           ))}
         </div>
@@ -432,10 +433,12 @@ function ExpertCard({
   expert,
   onClick,
   onBook,
+  currentUserRole,
 }: {
   expert: Expert;
   onClick: () => void;
   onBook: () => void;
+  currentUserRole?: string;
 }) {
   const { profile } = expert;
   if (!profile) return null;
@@ -552,18 +555,24 @@ function ExpertCard({
         )}
 
         {/* CTA */}
-        <Button
-          className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
-          disabled={profile.availabilityStatus !== "AVAILABLE"}
-          onClick={(e) => {
-            e.stopPropagation();
-            onBook();
-          }}
-        >
-          {profile.availabilityStatus === "AVAILABLE"
-            ? "Book Consultation"
-            : "View Profile"}
-        </Button>
+<Button
+  className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
+  disabled={
+    profile.availabilityStatus !== "AVAILABLE" ||
+    !currentUserRole ||
+    !["MEMBER", "STARTUP", "INVESTOR"].includes(currentUserRole)
+  }
+  onClick={(e) => {
+    e.stopPropagation();
+    onBook();
+  }}
+>
+  {!currentUserRole || !["MEMBER", "STARTUP", "INVESTOR"].includes(currentUserRole)
+    ? "View Profile"
+    : profile.availabilityStatus === "AVAILABLE"
+      ? "Book Consultation"
+      : "View Profile"}
+</Button>
       </CardContent>
     </Card>
   );

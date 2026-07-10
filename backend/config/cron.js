@@ -116,7 +116,7 @@ const narrativeRetryJob = new cron.CronJob("*/30 * * * *", async function () {
   try {
     const failedAssessments = await prisma.aiAssessment.findMany({
       where: {
-        llmModel: "groq/moe-4experts",
+        OR: [{ executiveSummary: null }, { llmModel: "rule-based-template" }],
         version: { lte: 3 },
       },
       include: {

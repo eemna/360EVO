@@ -1,49 +1,25 @@
 import { Link } from "react-router";
-import { Linkedin, Twitter } from "lucide-react";
 
 export function Footer() {
+  const year = new Date().getFullYear();
+
   return (
     <footer className="bg-[#0D1B2A] border-t border-white/10 pt-16 pb-8">
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          {/* Column 1 - Logo & Social */}
+          {/* Column 1 - Logo & Description */}
           <div>
             <div className="text-white font-bold text-xl mb-3">360EVO</div>
-            <p className="text-white/70 text-sm mb-4">
-              Connecting deep-tech innovation to capital
+            <p className="text-white/70 text-sm mb-2">
+              The matchmaking layer for deep-tech innovation.
             </p>
-            <div className="flex gap-3">
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-[#1D9E75] transition-colors"
-              >
-                <Linkedin size={20} />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white/70 hover:text-[#1D9E75] transition-colors"
-              >
-                <Twitter size={20} />
-              </a>
-            </div>
+            <p className="text-white/50 text-sm">Chicago, IL</p>
           </div>
 
-          {/* Column 2 - Platform */}
+          {/* Column 2 - Product */}
           <div>
-            <h4 className="text-white font-medium mb-4">Platform</h4>
+            <h4 className="text-white font-medium mb-4">Product</h4>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  to="/"
-                  className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
-                >
-                  Home
-                </Link>
-              </li>
               <li>
                 <Link
                   to="/features"
@@ -80,7 +56,7 @@ export function Footer() {
                   to="/about"
                   className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
                 >
-                  About Us
+                  About
                 </Link>
               </li>
               <li>
@@ -109,17 +85,9 @@ export function Footer() {
               <li>
                 <a
                   href="/terms"
-                  className="text-white/70 hover:text-[#e8eef5]transition-colors text-sm"
-                >
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/cookies"
                   className="text-white/70 hover:text-[#1D9E75] transition-colors text-sm"
                 >
-                  Cookie Policy
+                  Terms of Service
                 </a>
               </li>
             </ul>
@@ -127,9 +95,10 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
+       
         <div className="pt-8 border-t border-white/10">
           <p className="text-white/60 text-sm text-center">
-            © 2025 360EVO / 360DMMC. All rights reserved. Chicago, Illinois.
+            © {year} 360DMMC. All rights reserved.
           </p>
         </div>
       </div>

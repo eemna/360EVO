@@ -100,7 +100,9 @@ export default function LeftSidebar({
 
           <Card className="p-2 border-none shadow">
             <nav className="space-y-1">
-              {menuItems.map((item) => {
+  {menuItems
+    .filter((item) => !(item.path === "/app/conversation" && user?.role === "ADMIN"))
+    .map((item) => {
                 const isActive =
                   item.path === "/app"
                     ? location.pathname === "/app"

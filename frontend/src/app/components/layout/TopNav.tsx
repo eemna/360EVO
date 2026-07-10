@@ -283,16 +283,18 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
               </Link>
             </div>
 
-            <Link to="/app/conversation" aria-label="Messages">
-              <Button variant="ghost" size="icon" className="relative">
-                <MessageSquare className="h-5 w-5" />
-                {unreadMessages > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white px-1">
-                    {unreadMessages}
-                  </span>
-                )}
-              </Button>
-            </Link>
+{user?.role !== "ADMIN" && (
+  <Link to="/app/conversation" aria-label="Messages">
+    <Button variant="ghost" size="icon" className="relative">
+      <MessageSquare className="h-5 w-5" />
+      {unreadMessages > 0 && (
+        <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 text-xs text-white px-1">
+          {unreadMessages}
+        </span>
+      )}
+    </Button>
+  </Link>
+)}
 
             <div
               className="relative"

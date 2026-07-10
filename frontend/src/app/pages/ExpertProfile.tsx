@@ -72,7 +72,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
 
   useEffect(() => {
     if (!user || isOwnProfile) return;
-    if (!["MEMBER", "STARTUP", "ADMIN"].includes(user.role)) return;
+    if (!["MEMBER", "STARTUP", "INVESTOR"].includes(user.role)) return;
     let cancelled = false;
 
     api
@@ -251,8 +251,8 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
       </Card>
 
       {/* ── BOOK BUTTON ── */}
-      {!isOwnProfile &&
-        ["MEMBER", "STARTUP", "ADMIN"].includes(user?.role ?? "") && (
+{!isOwnProfile &&
+  ["MEMBER", "STARTUP", "INVESTOR"].includes(user?.role ?? "") && (
           <Card className="border-2 border-indigo-100">
             <CardContent className="pt-6 flex items-center justify-between">
               <div>

@@ -18,7 +18,7 @@ import { Eye, Target, RefreshCw } from "lucide-react";
 interface AIAssessment {
   trlScore: number;
   irScore: number;
-}
+} 
 
 interface Project {
   id: string;
@@ -41,7 +41,10 @@ interface Match {
   status: "SUGGESTED" | "VIEWED" | "CONTACTED" | "DISMISSED";
   thesisAlignmentSummary?: string | null;
   categoryScores: Record<string, number>;
-  reasoning: Record<string, unknown>;
+  reasoning: {
+  strengths: string[];
+  concerns: string[];
+};
   project: Project;
 }
 
@@ -53,12 +56,7 @@ function matchScoreColor(score: number) {
   return { text: "text-red-600", bg: "bg-red-100 border-red-200" };
 }
 
-function formatReasoningValue(v: unknown): string {
-  if (v === null || v === undefined) return "—";
-  if (typeof v === "boolean") return v ? "Yes" : "No";
-  if (typeof v === "number") return String(v);
-  return String(v);
-}
+
 
 const CATEGORY_META: Record<
   string,
@@ -116,7 +114,6 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
   }
 
   const cats = match.categoryScores as Record<string, number>;
-  const reasoning = match.reasoning as Record<string, unknown>;
   const ORDER = [
     "industry",
     "stage",
@@ -125,24 +122,6 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
     "geography",
     "irBonus",
   ];
-  const POSITIVE_VALUES = new Set([
-    "Exact",
-    "Strong overlap",
-    "Strong",
-    "Match",
-    "In range",
-    "Semantic match",
-    "Adjacent",
-  ]);
-  const NEGATIVE_VALUES = new Set([
-    "Weak",
-    "Mismatch",
-    "Out of range",
-    "Outside range",
-  ]);
-
-  const SKIP_KEYS = new Set(["thesisMembership", "_raw"]);
-
   return (
     <div className="space-y-6">
       {/* Score header */}
@@ -197,42 +176,39 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
         </div>
       </div>
 
-      {/* Reasoning flags */}
-      {Object.keys(reasoning).filter((k) => !SKIP_KEYS.has(k)).length > 0 && (
-        <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-            Signals
-          </p>
-          <div className="space-y-2">
-            {Object.entries(reasoning)
-              .filter(([k]) => !SKIP_KEYS.has(k))
-              .map(([k, v]) => {
-                const formatted = formatReasoningValue(v);
-                const isPositive = POSITIVE_VALUES.has(formatted);
-                const isNegative = NEGATIVE_VALUES.has(formatted);
-                return (
-                  <div
-                    key={k}
-                    className="flex items-center justify-between gap-2 text-xs"
-                  >
-                    <span className="text-gray-500 capitalize">
-                      {k.replace(/([A-Z])/g, " $1").trim()}
-                    </span>
-                    <span
-                      className={`font-semibold px-2 py-0.5 rounded-full text-xs ${
-                        isPositive
-                          ? "bg-green-50 text-green-700"
-                          : isNegative
-                            ? "bg-red-50 text-red-600"
-                            : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {formatted}
-                    </span>
-                  </div>
-                );
-              })}
-          </div>
+{/* Strengths & Concerns */}
+      {(match.reasoning.strengths?.length > 0 || match.reasoning.concerns?.length > 0) && (
+        <div className="space-y-3">
+          {match.reasoning.strengths?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-green-600 uppercase tracking-wider mb-2">
+                Strengths
+              </p>
+              <ul className="space-y-1">
+                {match.reasoning.strengths.map((s, i) => (
+                  <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                    <span className="text-green-500 mt-0.5">✓</span>
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {match.reasoning.concerns?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-2">
+                Concerns
+              </p>
+              <ul className="space-y-1">
+                {match.reasoning.concerns.map((c, i) => (
+                  <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                    <span className="text-red-400 mt-0.5">!</span>
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

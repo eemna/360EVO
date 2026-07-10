@@ -92,7 +92,7 @@ export const getUserById = async (req, res, next) => {
       }
     }
 
-    const { password, ...safeUser } = user;
+    const { passwordHash, ...safeUser } = user;
     const sanitizedUser = { ...safeUser };
 
     if (!isOwner && !isAdmin) {

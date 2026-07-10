@@ -197,8 +197,6 @@ if (process.env.NODE_ENV === "e2e") {
 
 app.use(errorHandler);
 
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
-
 const server = createServer(app);
 
 const io = new Server(server, {

@@ -20,7 +20,7 @@ export function HowItWorks() {
       <section className="py-24 px-6 bg-white">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold text-[#0D1B2A] mb-12 text-center">
-            For Startups & Researchers
+            For Startups
           </h2>
 
           <div className="space-y-16">
@@ -64,15 +64,15 @@ export function HowItWorks() {
                   Get AI-Scored
                 </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  The system evaluates your technology readiness (TRL) and
-                  investment compatibility score.
+                  The platform evaluates your technology readiness (TRL) and
+                  investor-compatibility score.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
-                    TRL Scoring Engine
+                    TRL Scoring
                   </span>
                   <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
-                    AI Analysis
+                    AI Matching
                   </span>
                 </div>
               </div>
@@ -89,15 +89,18 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
-                  Receive Matches
+                  Get Matched
                 </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  You're matched with investors whose thesis, sector focus, and
-                  stage preference align with your profile.
+                  You're surfaced to investors and partners whose stated
+                  thesis fits your stage and sector.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
-                    AI Matching Engine
+                    AI Matching
+                  </span>
+                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
+                    Investor Directory
                   </span>
                 </div>
               </div>
@@ -114,18 +117,15 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
-                  Start the Conversation
+                  Connect Directly
                 </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  Reach out (or accept inbound) via secure in-platform
-                  messaging. Share documents from your data room.
+                  Message matched investors directly inside the platform — no
+                  cold email required.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
-                    Messaging
-                  </span>
-                  <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
-                    Data Room
+                    In-Platform Messaging
                   </span>
                 </div>
               </div>
@@ -142,15 +142,15 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-[#0D1B2A] mb-3">
-                  Track & Close
+                  Share Securely
                 </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  Monitor your pipeline, manage follow-ups, and track deal
-                  progress from your dashboard.
+                  Grant data room access to serious conversations, revoke it
+                  anytime.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
-                    Innovation Dashboard
+                    Secure Data Room
                   </span>
                 </div>
               </div>
@@ -176,15 +176,15 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-white mb-3">
-                  Build Your Profile
+                  Set Your Thesis
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Define your investment thesis, sector focus, preferred stage,
-                  and check size range.
+                  Define sector, stage, and check-size preferences during
+                  onboarding.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
-                    Investor Profile Builder
+                    Profile Builder
                   </span>
                 </div>
               </div>
@@ -201,18 +201,18 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-white mb-3">
-                  Browse & Receive
+                  Receive Scored Deal Flow
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Get AI-curated deal flow. Browse the project gallery or let
-                  matches come to you.
+                  See startups AI-matched to your thesis, each with a TRL and
+                  compatibility score.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
                     AI Matching
                   </span>
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
-                    Gallery
+                    TRL Scoring
                   </span>
                 </div>
               </div>
@@ -229,18 +229,15 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-white mb-3">
-                  Evaluate Opportunities
+                  Review Structured Data
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Review TRL scores, team backgrounds, and project details.
-                  Request data room access instantly.
+                  Skip the inbox triage — every profile follows the same
+                  structured format.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
-                    TRL Scores
-                  </span>
-                  <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
-                    Data Room
+                    Project Showcase
                   </span>
                 </div>
               </div>
@@ -257,11 +254,10 @@ export function HowItWorks() {
               </div>
               <div className="flex-1 pt-2">
                 <h3 className="text-2xl font-bold text-white mb-3">
-                  Connect Directly
+                  Message Directly
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Reach out via secure messaging. No middlemen, no intro emails
-                  — just direct access.
+                  Reach out to startups that fit, inside the platform.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
@@ -285,12 +281,12 @@ export function HowItWorks() {
                   Track Your Pipeline
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Manage all your active conversations and deal stages in one
-                  dashboard.
+                  Use the analytics dashboard to monitor engagement across
+                  your deal flow.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
-                    Investor Dashboard
+                    Analytics Dashboard
                   </span>
                 </div>
               </div>
@@ -303,21 +299,21 @@ export function HowItWorks() {
       <section className="py-24 px-6 bg-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-[#0D1B2A] mb-8">
-            Ready to Try It Yourself?
+            See How It Works for Your Side of the Table.
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/contact"
-              className="px-8 py-4 bg-[#1D9E75] text-white rounded-xl hover:bg-[#1D9E75]/90 transition-colors"
-            >
-              Create a Free Account
-            </Link>
-            <Link
-              to="/contact"
-              className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
-            >
-              Request a Walkthrough
-            </Link>
+<Link
+  to="/contact?as=startup"
+  className="px-8 py-4 bg-[#1D9E75] text-white rounded-xl hover:bg-[#1D9E75]/90 transition-colors"
+>
+  Get Started Free →
+</Link>
+<Link
+  to="/contact?as=investor"
+  className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
+>
+  Request Investor Access →
+</Link>
           </div>
         </div>
       </section>

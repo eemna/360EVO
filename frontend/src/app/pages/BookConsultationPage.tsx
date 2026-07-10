@@ -45,7 +45,7 @@ interface Booking {
   expertId: string;
   startDateTime: string;
   endDateTime: string;
-  status: "PENDING" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
+  status: "PENDING" | "PENDING_PAYMENT" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
 }
 
 export function BookConsultationPage() {
@@ -86,25 +86,31 @@ export function BookConsultationPage() {
     };
 
     if (expertId) fetchExpert();
-  }, [expertId]);
+  }, [expertId]); 
 
-  useEffect(() => {
-    if (!expertId) return;
-    let cancelled = false;
+useEffect(() => {
+  if (!expertId) return;
+  let cancelled = false;
 
-    api
-      .get("/consultations")
-      .then(({ data }) => {
-        if (!cancelled) {
-          setBookings(data.filter((b: Booking) => b.expertId === expertId)); //ken booking not canceled
-        }
-      })
-      .catch(console.error);
+  api
+    .get("/consultations")
+    .then(({ data }) => {
+      if (!cancelled) {
+        setBookings(
+          data.filter(
+            (b: Booking) =>
+              b.expertId === expertId &&
+              ["PENDING", "PENDING_PAYMENT", "ACCEPTED"].includes(b.status),
+          ),
+        );
+      }
+    })
+    .catch(console.error);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [expertId]);
+  return () => {
+    cancelled = true;
+  };
+}, [expertId]);
 
   const isDateAvailable = (date: Date) => {
     if (!expert?.profile?.weeklyAvailability) return false;
@@ -198,7 +204,7 @@ export function BookConsultationPage() {
           title: "Location required",
           message: "Please enter meeting location",
         });
-        return;
+        return; 
       }
 
       setBooking(true);
@@ -221,10 +227,14 @@ export function BookConsultationPage() {
         dayOfWeek: startDateTime.getDay(),
       });
 
-      const { data: updatedBookings } = await api.get("/consultations");
-      setBookings(
-        updatedBookings.filter((b: Booking) => b.expertId === expert.id),
-      );
+const { data: updatedBookings } = await api.get("/consultations");
+setBookings(
+  updatedBookings.filter(
+    (b: Booking) =>
+      b.expertId === expert.id &&
+      ["PENDING", "PENDING_PAYMENT", "ACCEPTED"].includes(b.status),
+  ),
+);
 
       setSelectedSlot(null);
       setSelectedDate(undefined);
@@ -444,7 +454,7 @@ export function BookConsultationPage() {
             <CardContent>
               <div className="flex justify-center">
                 <Calendar
-                  mode="single" //select one day
+                  mode="single"
                   selected={selectedDate}
                   onSelect={(date) => {
                     if (!date) return;
