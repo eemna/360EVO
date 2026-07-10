@@ -29,7 +29,7 @@ export function calculateMatchScore(investorProfile, project, assessment) {
   );
 
   const thesisSim = thesisFuzzy._rawSimilarity || 0;
-
+  console.log("[DEBUG] thesisSim =", thesisSim);
   //const industryHigh = industryFuzzy.high;
 
   const techFuzzy = fuzzifyTechnology(
@@ -106,49 +106,49 @@ export function calculateMatchScore(investorProfile, project, assessment) {
     irBonus,
   };
 
-  const reasoning = {
-    industryFit:
-      industryFuzzy.high === 1.0
-        ? "Exact"
-        : industryFuzzy.medium > 0.5
-          ? "Partial"
-          : "Weak",
+  const strengths = [];
+  const concerns = [];
 
-    stageFit:
-      stageFuzzy.high === 1.0
-        ? "Exact"
-        : stageFuzzy.medium > 0.5
-          ? "Adjacent"
-          : "Outside range",
+  if (industryFuzzy.high === 1.0) strengths.push("Strong industry alignment");
+  else if (industryFuzzy.low === 1.0)
+    concerns.push("Industry doesn't match investor preferences");
 
-    fundingFit:
-      fundingFuzzy.high > 0.8
-        ? "In range"
-        : fundingFuzzy.medium > 0.3
-          ? "Close"
-          : "Out of range",
+  if (stageFuzzy.high === 1.0)
+    strengths.push("Project stage exactly matches investor preference");
+  else if (stageFuzzy.low > 0.5)
+    concerns.push("Project stage is outside investor's preferred range");
 
-    technologyFit:
-      techFuzzy._overlapRatio > 0.5
-        ? "Strong overlap"
-        : techFuzzy._nlpSim > 0.2
-          ? "Semantic match"
-          : "Weak",
+  if (fundingFuzzy.high > 0.8)
+    strengths.push("Funding sought is within investor's range");
+  else if (fundingFuzzy.low === 1.0)
+    concerns.push("Funding sought is outside investor's range");
 
-    thesisAlignment:
-      thesisSim > 0.35 ? "Strong" : thesisSim > 0.15 ? "Moderate" : "Weak",
+  if (techFuzzy._overlapRatio > 0.5)
+    strengths.push("Strong overlap in technology focus");
+  else if (techFuzzy._overlapRatio < 0.2 && techFuzzy._nlpSim < 0.2)
+    concerns.push("Limited technology alignment");
 
-    geographyFit:
-      geoFuzzy.high === 1.0
-        ? "Match"
-        : geoFuzzy.medium > 0
-          ? "Partial"
-          : "Mismatch",
+  if (thesisSim > 0.35)
+    strengths.push("Project aligns well with investment thesis");
+  else if (thesisSim < 0.15 && investorProfile.investmentThesis)
+    concerns.push("Weak alignment with stated investment thesis");
 
-    irScore: `${irScore}/100`,
+  if (geoFuzzy.high === 1.0)
+    strengths.push("Location matches investor's geographic preference");
+  else if (geoFuzzy.low === 1.0)
+    concerns.push("Location outside investor's geographic preference");
 
-    profileComplete: !isProfileIncomplete(investorProfile),
-  };
+  if (assessment?.irScore >= 70)
+    strengths.push("High Investment Readiness score");
+  else if (assessment?.irScore && assessment.irScore < 40)
+    concerns.push("Low Investment Readiness score");
+
+  if (isProfileIncomplete(investorProfile))
+    concerns.push(
+      "Investor profile is incomplete — match quality may be reduced",
+    );
+
+  const reasoning = { strengths, concerns };
 
   return { matchScore, categoryScores, reasoning };
 }

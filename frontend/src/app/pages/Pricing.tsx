@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { Check, X } from "lucide-react";
 import {
@@ -7,19 +8,201 @@ import {
   AccordionTrigger,
 } from "../components/ui/Accordion";
 
+const startupPlans = [
+  {
+    key: "starter",
+    name: "Starter",
+    audience: "Early-stage / pre-revenue startups",
+    monthly: 0,
+    features: [
+      "Basic profile",
+      "Limited matches (3/mo)",
+      "Community access",
+      "Events",
+    ],
+    cta: "Get Started Free",
+    highlight: false,
+  },
+  {
+    key: "growth",
+    name: "Growth",
+    audience: "Actively fundraising startups",
+    monthly: 199,
+    features: [
+      "Unlimited matches",
+      "Data room",
+      "AI scoring",
+      "Messaging & analytics",
+    ],
+    cta: "Start Free Trial",
+    highlight: true,
+  },
+  {
+    key: "scale",
+    name: "Scale",
+    audience: "Growth-stage / Series A+",
+    monthly: 499,
+    features: [
+      "Everything in Growth",
+      "Priority placement",
+      "Dedicated support",
+      "Advanced analytics",
+    ],
+    cta: "Start Free Trial",
+    highlight: false,
+  },
+];
+
+const investorPlans = [
+  {
+    key: "scout",
+    name: "Scout",
+    audience: "Angel investors / scouts",
+    monthly: 299,
+    features: [
+      "Deal flow access",
+      "AI-scored opportunities",
+      "Messaging",
+      "Basic filters",
+    ],
+    cta: "Start Free Trial",
+  },
+  {
+    key: "professional",
+    name: "Professional",
+    audience: "VC funds / family offices",
+    monthly: 999,
+    features: [
+      "Full deal flow",
+      "Advanced filters",
+      "Due diligence tools",
+      "Team seats (3)",
+    ],
+    cta: "Start Free Trial",
+  },
+  {
+    key: "institutional",
+    name: "Institutional",
+    audience: "Large VCs / corporate VC arms",
+    monthly: null,
+    features: [
+      "Custom seat count",
+      "API access",
+      "White-glove onboarding",
+      "SLA",
+    ],
+    cta: "Talk to Sales",
+  },
+];
+
+const institutionPlans = [
+  {
+    key: "university",
+    name: "University / TTO",
+    audience: "TTOs, research offices",
+    features: [
+      "IP portfolio tracking",
+      "Cohort management",
+      "Investor matchmaking",
+      "Reporting",
+    ],
+  },
+  {
+    key: "accelerator",
+    name: "Accelerator",
+    audience: "Accelerators & incubators",
+    features: [
+      "Cohort management",
+      "Alumni access",
+      "Investor network",
+      "Event tools",
+    ],
+  },
+  {
+    key: "corporate",
+    name: "Corporate",
+    audience: "Corporate innovation teams",
+    features: [
+      "Startup scouting",
+      "Innovation radar",
+      "Dedicated deal flow pipeline",
+    ],
+  },
+];
+
+function PriceDisplay({
+  monthly,
+  annual,
+}: {
+  monthly: number | null;
+  annual: boolean;
+}) {
+  if (monthly === null) {
+    return <span className="text-4xl font-bold text-white">Custom</span>;
+  }
+  if (monthly === 0) {
+    return <span className="text-4xl font-bold text-white">Free</span>;
+  }
+  if (!annual) {
+    return (
+      <div>
+        <span className="text-4xl font-bold text-white">${monthly}</span>
+        <span className="text-white/60">/mo</span>
+      </div>
+    );
+  }
+  const annualMonthlyEquivalent = Math.round(monthly * 0.8);
+  return (
+    <div>
+      <span className="text-4xl font-bold text-white">
+        ${annualMonthlyEquivalent}
+      </span>
+      <span className="text-white/60">/mo</span>
+      <p className="text-white/50 text-sm mt-1">
+        Billed ${annualMonthlyEquivalent * 12}/yr 
+      </p>
+    </div>
+  );
+}
+
 export function Pricing() {
+  const [annual, setAnnual] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#0D1B2A]">
       {/* Hero */}
-      <section className="pt-32 pb-24 px-6">
+      <section className="pt-32 pb-16 px-6">
         <div className="max-w-[1280px] mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
             Simple Pricing. Serious Results.
           </h1>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed mb-10">
             Whether you're a first-time founder or an institutional investor,
-            360EVO has a plan built for your stage.
+            there's a plan built for your stage.
           </p>
+
+          {/* Monthly / Annual Toggle */}
+          <div className="inline-flex items-center gap-4 bg-white/5 border border-white/10 rounded-full px-2 py-2">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                !annual ? "bg-white text-[#0D1B2A]" : "text-white/60"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-sm font-medium transition-colors ${
+                annual ? "bg-white text-[#0D1B2A]" : "text-white/60"
+              }`}
+            >
+              Annual
+              <span className="px-2 py-0.5 bg-[#1D9E75] text-white text-xs rounded-full">
+                Save 20%
+              </span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -30,149 +213,53 @@ export function Pricing() {
             For Startups
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Starter */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">Starter</h3>
-              <p className="text-white/60 mb-4">
-                Early-stage / pre-revenue startups
-              </p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">Free</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Basic profile</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Limited matches (3/mo)</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Community access</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Events</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+            {startupPlans.map((plan) => (
+              <div
+                key={plan.key}
+                className={`p-8 rounded-xl bg-white/5 relative ${
+                  plan.highlight
+                    ? "border-2 border-[#1D9E75]"
+                    : "border border-white/10"
+                }`}
               >
-                Get Started Free
-              </Link>
-            </div>
-
-            {/* Growth */}
-            <div className="p-8 rounded-xl bg-white/5 border-2 border-[#1D9E75] relative">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#1D9E75] text-white text-sm rounded-full">
-                Most Popular
+                {plan.highlight && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-[#1D9E75] text-white text-sm rounded-full">
+                    Most Popular
+                  </div>
+                )}
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {plan.name}
+                </h3>
+                <p className="text-white/60 mb-4">{plan.audience}</p>
+                <div className="mb-6 min-h-[56px]">
+                  <PriceDisplay monthly={plan.monthly} annual={annual} />
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2 text-white/70"
+                    >
+                      <Check
+                        className="text-[#1D9E75] flex-shrink-0 mt-0.5"
+                        size={20}
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/contact?as=startup"
+                  className={`block text-center px-6 py-3 rounded-lg transition-colors ${
+                    plan.highlight
+                      ? "bg-[#C9A84C] text-[#0D1B2A] hover:bg-[#D4B55C]"
+                      : "bg-white/10 text-white hover:bg-white/20"
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">Growth</h3>
-              <p className="text-white/60 mb-4">
-                Actively fundraising startups
-              </p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">$199</span>
-                <span className="text-white/60">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Unlimited matches</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Data room</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>AI scoring</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Messaging & analytics</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-[#C9A84C] text-[#0D1B2A] rounded-lg hover:bg-[#D4B55C] transition-colors"
-              >
-                Start Free Trial
-              </Link>
-            </div>
-
-            {/* Scale */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">Scale</h3>
-              <p className="text-white/60 mb-4">Growth-stage / Series A+</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">$499</span>
-                <span className="text-white/60">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Everything in Growth</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Priority placement</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Dedicated support</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Advanced analytics</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Start Free Trial
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
@@ -184,296 +271,96 @@ export function Pricing() {
             For Investors
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Scout */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">Scout</h3>
-              <p className="text-white/60 mb-4">Angel investors / scouts</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">$299</span>
-                <span className="text-white/60">/mo</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Deal flow access</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>AI-scored opportunities</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Messaging</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Basic filters</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+            {investorPlans.map((plan) => (
+              <div
+                key={plan.key}
+                className="p-8 rounded-xl bg-white/5 border border-white/10"
               >
-                Start Free Trial
-              </Link>
-            </div>
-
-            {/* Professional */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Professional
-              </h3>
-              <p className="text-white/60 mb-4">VC funds / family offices</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">$999</span>
-                <span className="text-white/60">/mo</span>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {plan.name}
+                </h3>
+                <p className="text-white/60 mb-4">{plan.audience}</p>
+                <div className="mb-6 min-h-[56px]">
+                  <PriceDisplay monthly={plan.monthly} annual={annual} />
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2 text-white/70"
+                    >
+                      <Check
+                        className="text-[#1D9E75] flex-shrink-0 mt-0.5"
+                        size={20}
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/contact?as=investor"
+                  className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  {plan.cta}
+                  {plan.cta === "Talk to Sales" ? " →" : ""}
+                </Link>
               </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Full deal flow</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Advanced filters</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Due diligence tools</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Team seats (3)</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Start Free Trial
-              </Link>
-            </div>
-
-            {/* Institutional */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Institutional
-              </h3>
-              <p className="text-white/60 mb-4">
-                Large VCs / corporate VC arms
-              </p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">Custom</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Custom seat count</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>API access</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>White-glove onboarding</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>SLA</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Talk to Sales
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Enterprise Tiers */}
+      {/* Institutional / Partner Tiers */}
       <section className="py-12 px-6">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">
-            For Institutions
+            For Institutions & Partners
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {/* University */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                University / TTO
-              </h3>
-              <p className="text-white/60 mb-4">TTOs, research offices</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">Custom</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>IP portfolio management</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Cohort tracking</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Investor matchmaking</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Reporting</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+            {institutionPlans.map((plan) => (
+              <div
+                key={plan.key}
+                className="p-8 rounded-xl bg-white/5 border border-white/10"
               >
-                Talk to Sales
-              </Link>
-            </div>
-
-            {/* Accelerator */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Accelerator
-              </h3>
-              <p className="text-white/60 mb-4">Accelerators & incubators</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">Custom</span>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {plan.name}
+                </h3>
+                <p className="text-white/60 mb-4">{plan.audience}</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-white">
+                    Custom
+                  </span>
+                </div>
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2 text-white/70 text-sm"
+                    >
+                      <Check
+                        className="text-[#1D9E75] flex-shrink-0 mt-0.5"
+                        size={20}
+                      />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  to="/contact?as=partner"
+                  className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  Talk to Sales →
+                </Link>
               </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Cohort management</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Alumni access</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Investor network</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Event tools</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Talk to Sales
-              </Link>
-            </div>
-
-            {/* Corporate */}
-            <div className="p-8 rounded-xl bg-white/5 border border-white/10">
-              <h3 className="text-2xl font-bold text-white mb-2">Corporate</h3>
-              <p className="text-white/60 mb-4">Corporate innovation teams</p>
-              <div className="mb-6">
-                <span className="text-4xl font-bold text-white">Custom</span>
-              </div>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Startup scouting</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Innovation radar</span>
-                </li>
-                <li className="flex items-start gap-2 text-white/70 text-sm">
-                  <Check
-                    className="text-[#1D9E75] flex-shrink-0 mt-0.5"
-                    size={20}
-                  />
-                  <span>Proprietary deal flow pipeline</span>
-                </li>
-              </ul>
-              <Link
-                to="/contact"
-                className="block text-center px-6 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
-              >
-                Talk to Sales
-              </Link>
-            </div>
+            ))}
           </div>
         </div>
       </section>
+
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
       </div>
+
       {/* Feature Comparison Table */}
       <section className="py-12 px-6">
         <div className="max-w-[1280px] mx-auto">
@@ -484,7 +371,7 @@ export function Pricing() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="text-left py-4 px-4 text-white/60 font-medium w-48">
+                  <th className="text-left py-4 px-4 text-white/60 font-medium w-56">
                     Feature
                   </th>
                   {["Starter", "Growth", "Scale", "Scout", "Professional"].map(
@@ -505,34 +392,28 @@ export function Pricing() {
                     feature: "AI Matching",
                     values: ["Limited", "✓", "✓", "✓", "✓"],
                   },
-                  { feature: "TRL Scoring", values: ["✗", "✓", "✓", "✓", "✓"] },
-                  { feature: "Data Room", values: ["✗", "✓", "✓", "✗", "✓"] },
                   {
-                    feature: "In-Platform Messaging",
-                    values: ["Limited", "✓", "✓", "✓", "✓"],
-                  },
-                  {
-                    feature: "Project Showcase",
-                    values: ["✓", "✓", "✓", "✗", "✗"],
-                  },
-                  {
-                    feature: "Investor Directory",
+                    feature: "TRL Scoring",
                     values: ["✗", "✓", "✓", "✓", "✓"],
                   },
                   {
-                    feature: "Events Access",
-                    values: ["✓", "✓", "✓", "✓", "✓"],
+                    feature: "Data Room",
+                    values: ["✗", "✓", "✓", "✗", "✓"],
                   },
                   {
-                    feature: "Analytics Dashboard",
+                    feature: "Messaging",
+                    values: ["Limited", "✓", "✓", "✓", "✓"],
+                  },
+                  {
+                    feature: "Investor/Startup Directory",
+                    values: ["✗", "✓", "✓", "✓", "✓"],
+                  },
+                  {
+                    feature: "Analytics",
                     values: ["✗", "Basic", "Advanced", "Basic", "Advanced"],
                   },
                   {
-                    feature: "Priority Placement",
-                    values: ["✗", "✗", "✓", "✗", "✓"],
-                  },
-                  {
-                    feature: "Dedicated Support",
+                    feature: "Priority Placement / Support",
                     values: ["✗", "✗", "✓", "✗", "✓"],
                   },
                 ].map(({ feature, values }) => (
@@ -546,7 +427,10 @@ export function Pricing() {
                     {values.map((val, i) => (
                       <td key={i} className="py-4 px-4 text-center">
                         {val === "✓" ? (
-                          <Check className="text-[#1D9E75] mx-auto" size={18} />
+                          <Check
+                            className="text-[#1D9E75] mx-auto"
+                            size={18}
+                          />
                         ) : val === "✗" ? (
                           <X className="text-white/20 mx-auto" size={18} />
                         ) : (
@@ -569,9 +453,11 @@ export function Pricing() {
           </div>
         </div>
       </section>
+
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
       </div>
+
       {/* FAQ */}
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto">
@@ -587,8 +473,8 @@ export function Pricing() {
                 Is there a free trial?
               </AccordionTrigger>
               <AccordionContent className="text-white/70">
-                Yes — the Starter plan is free forever with no credit card
-                required. Paid plans come with a 14-day free trial.
+                The Starter plan is free, always — no credit card required.
+                Paid plans include a 14-day free trial.
               </AccordionContent>
             </AccordionItem>
 
@@ -597,11 +483,11 @@ export function Pricing() {
               className="bg-white/5 border border-white/10 rounded-xl px-6"
             >
               <AccordionTrigger className="text-white hover:text-white/80">
-                Can I switch plans?
+                Can I change plans later?
               </AccordionTrigger>
               <AccordionContent className="text-white/70">
-                Absolutely. Upgrade or downgrade at any time. Changes take
-                effect at the next billing cycle.
+                Yes. Upgrade or downgrade anytime; changes apply at the next
+                billing cycle.
               </AccordionContent>
             </AccordionItem>
 
@@ -613,8 +499,8 @@ export function Pricing() {
                 What counts as a "match"?
               </AccordionTrigger>
               <AccordionContent className="text-white/70">
-                A match is a confirmed AI-generated connection between a startup
-                and an investor (or partner) based on compatibility scoring.
+                A confirmed, AI-generated connection between a startup and an
+                investor or partner, based on compatibility scoring.
               </AccordionContent>
             </AccordionItem>
 
@@ -626,9 +512,9 @@ export function Pricing() {
                 Do you take a success fee?
               </AccordionTrigger>
               <AccordionContent className="text-white/70">
-                For certain tiers, 360EVO charges a success fee on completed
-                introductions that lead to investment. This is disclosed upfront
-                per plan.
+                No standard success fee applies to Starter, Growth, or Scale.
+                Any success-based fee on Institutional plans is disclosed and
+                negotiated upfront.
               </AccordionContent>
             </AccordionItem>
 
@@ -640,34 +526,37 @@ export function Pricing() {
                 Is my data secure?
               </AccordionTrigger>
               <AccordionContent className="text-white/70">
-                Yes. All data is encrypted in transit and at rest. You control
-                who sees your documents and can revoke access at any time.
+                Yes. Data is encrypted in transit and at rest. You choose who
+                can view your profile and materials, and can revoke access at
+                any time.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
         </div>
       </section>
+
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
       </div>
+
       {/* Closing CTA */}
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
-            Not sure which plan is right for you?
+            Not Sure Which Plan Is Right for You?
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link
-              to="/contact"
+              to="/contact?as=partner"
               className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors"
             >
-              Talk to the Team
+              Talk to the Team →
             </Link>
             <Link
-              to="/contact"
+              to="/contact?as=startup"
               className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors"
             >
-              Start Free
+              Start Free →
             </Link>
           </div>
         </div>

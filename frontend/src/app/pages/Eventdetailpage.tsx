@@ -39,7 +39,17 @@ interface EventDetail {
   coverImage?: string;
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
   hostType: "ADMIN" | "EXPERT";
-  organizer: { id: string; name: string };
+  organizer: {
+  id: string;
+  name: string;
+  profile?: {
+    avatar?: string | null;
+    bio?: string | null;
+    expertise: string[];
+    avgRating: number;
+    reviewCount: number;
+  } | null;
+};
   registrations: Registration[];
   _count: { registrations: number };
   isRegistered: boolean;
@@ -270,15 +280,35 @@ export default function EventDetailPage() {
             <h1 className="text-3xl font-semibold text-gray-900 mb-2">
               {event.title}
             </h1>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <User className="w-4 h-4" />
-              <span>
-                Organized by{" "}
-                <span className="font-medium text-gray-700">
-                  {event.organizer.name}
-                </span>
-              </span>
-            </div>
+            {event.hostType === "EXPERT" && event.organizer.profile ? (
+  <div
+    onClick={() => navigate(`/app/profile/${event.organizer.id}`)}
+    className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+  >
+    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold flex-shrink-0 overflow-hidden">
+      {event.organizer.profile.avatar ? (
+        <img src={event.organizer.profile.avatar} alt={event.organizer.name} className="w-full h-full object-cover" />
+      ) : (
+        event.organizer.name.substring(0, 1).toUpperCase()
+      )}
+    </div>
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold text-gray-900">{event.organizer.name}</p>
+      {event.organizer.profile.reviewCount > 0 && (
+        <p className="text-xs text-gray-500">
+          ⭐ {event.organizer.profile.avgRating.toFixed(1)} ({event.organizer.profile.reviewCount} reviews)
+        </p>
+      )}
+    </div>
+  </div>
+) : (
+  <div className="flex items-center gap-2 text-sm text-gray-500">
+    <User className="w-4 h-4" />
+    <span>
+      Organized by <span className="font-medium text-gray-700">{event.organizer.name}</span>
+    </span>
+  </div>
+)}
           </div>
 
           {/* Description */}

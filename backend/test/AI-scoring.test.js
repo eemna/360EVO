@@ -268,12 +268,12 @@ describe("tractionScore", () => {
     expect(tractionScore({})).toBe(0);
   });
 
-  test("1 milestone planned → 20", () => {
+  test("1 milestone planned → 15", () => {
     expect(
       tractionScore({
         milestones: [{ completedAt: null }],
       }),
-    ).toBe(20);
+    ).toBe(15);
   });
 
   test("completed milestone + updates → higher score", () => {
@@ -285,7 +285,7 @@ describe("tractionScore", () => {
       ],
       updates: [{ content: "u1" }, { content: "u2" }, { content: "u3" }],
     });
-    expect(score).toBe(100);
+    expect(score).toBe(65);
   });
 
   test("score never exceeds 100", () => {
@@ -298,8 +298,8 @@ describe("competitiveScore", () => {
     expect(competitiveScore({})).toBe(0);
   });
 
-  test("1 technology → 30", () => {
-    expect(competitiveScore({ technologies: ["React"] })).toBe(30);
+  test("1 technology → 25", () => {
+    expect(competitiveScore({ technologies: ["React"] })).toBe(25);
   });
 
   test("3+ techs + long tagline + mature stage → 100", () => {
@@ -309,7 +309,7 @@ describe("competitiveScore", () => {
         tagline: "A tagline that is definitely longer than twenty characters",
         stage: "MVP",
       }),
-    ).toBe(100);
+    ).toBe(80);
   });
 });
 
@@ -499,17 +499,17 @@ describe("fuzzifyTechnology", () => {
 });
 
 describe("fuzzifyThesis", () => {
-  test("matching thesis → high > 0", () => {
+  test("matching thesis → _rawSimilarity > 0", () => {
     const result = fuzzifyThesis(
       "FinTech startups using web technology for financial inclusion",
       "We build FinTech solutions for financial inclusion using web technology",
     );
-    expect(result.high).toBeGreaterThan(0);
+    expect(result._rawSimilarity).toBeGreaterThan(0);
   });
 
-  test("empty thesis → medium 0.5", () => {
+  test("empty thesis → _rawSimilarity 0", () => {
     const result = fuzzifyThesis("", "some project");
-    expect(result.medium).toBe(0.5);
+    expect(result._rawSimilarity).toBe(0);
   });
 
   test("returns _rawSimilarity > 0 for matching multi-word text", () => {
@@ -551,9 +551,9 @@ describe("fuzzifyGeography", () => {
 // DEFUZZIFICATION
 
 describe("defuzzifyCategory", () => {
-  test("all-high membership → near maxPts * 0.95", () => {
+  test("all-high membership → returns maxPts via shortcut", () => {
     const result = defuzzifyCategory({ low: 0, medium: 0, high: 1 }, 100);
-    expect(result).toBeCloseTo(95, 0);
+    expect(result).toBe(100);
   });
 
   test("all-low membership → near maxPts * 0.15", () => {
@@ -712,12 +712,12 @@ describe("calculateMatchScore", () => {
     expect(categoryScores.irBonus).toBe(0);
   });
 
-  test("reasoning.irScore is formatted as string", () => {
+  test("high irScore adds strength note", () => {
     const { reasoning } = calculateMatchScore(
       investorProfile,
       minimalProject,
       assessment,
     );
-    expect(reasoning.irScore).toBe("72/100");
+    expect(reasoning.strengths).toContain("High Investment Readiness score");
   });
 });

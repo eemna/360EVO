@@ -26,6 +26,13 @@ const getNotifSettings = async (userId) => {
 export const createBooking = async (req, res, next) => {
   try {
     const memberId = req.user.id;
+
+    if (!["MEMBER", "STARTUP", "INVESTOR"].includes(req.user.role)) {
+      return res
+        .status(403)
+        .json({ message: "This role cannot book consultations" });
+    }
+
     const {
       expertId,
       date,

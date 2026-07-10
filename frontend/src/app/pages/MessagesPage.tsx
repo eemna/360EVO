@@ -19,6 +19,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "../components/ui/dialog";
+import { useLocation } from "react-router";
 
 interface User {
   id: string;
@@ -81,6 +82,7 @@ export function MessagesPage() {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const navigate = useNavigate();
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -181,6 +183,39 @@ export function MessagesPage() {
     };
     fetchMessages();
   }, [selectedConv, socket]);
+
+  useEffect(() => {
+  const otherUserId = (location.state as { otherUserId?: string } | null)?.otherUserId;
+  if (!otherUserId) return;
+
+  const openConversationWith = async () => {
+    try {
+      const { data } = await api.post("/conversations", { otherUserId });
+      setSelectedConv(data.id);
+      setMobileView("chat");
+      socket?.emit("join_conversation", data.id);
+
+      const { data: convs } = await api.get("/conversations");
+      setConversations(
+        convs.map((conv: Conversation) => ({
+          ...conv,
+          timestamp: conv.lastMessage
+            ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "",
+          typing: false,
+        })),
+      );
+      window.history.replaceState({}, document.title);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  openConversationWith();
+}, [location.state, socket]);
 
   useEffect(() => {
     if (!socket) return;
@@ -398,19 +433,19 @@ export function MessagesPage() {
                       {conv.otherUser?.name?.substring(0, 2)}
                     </AvatarFallback>
                   </Avatar>
-                  {onlineUsers.has(conv.otherUser.id) && (
-                    <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
-                  )}
+                  {onlineUsers.has(conv.otherUser?.id ?? "") && (
+  <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
+)}
                 </div>
                 <div className="flex-1 overflow-hidden min-w-0">
                   <div className="flex items-start justify-between mb-1">
                     <span
                       className={cn(
-                        "font-semibold text-sm truncate", //Coupe avec ...
+                        "font-semibold text-sm truncate",
                         conv.unread > 0 && "text-gray-900",
                       )}
                     >
-                      {conv.otherUser.name}
+                      {conv.otherUser?.name ?? "Unknown user"}
                     </span>
                     <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                       {conv.timestamp}

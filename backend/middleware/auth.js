@@ -3,9 +3,6 @@ import { prisma } from "../config/prisma.js";
 
 export const protect = async (req, res, next) => {
   try {
-    console.log(" Incoming request to protected route");
-    console.log("Authorization header:", req.headers.authorization);
-
     let token;
 
     if (
@@ -15,21 +12,17 @@ export const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
     }
 
-    console.log("Extracted token:", token);
-
     if (!token) {
       console.log(" No token found");
       return res.status(401).json({ message: "Not authorized" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Decoded token:", decoded);
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
     });
 
-    console.log("Found user:", user);
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
