@@ -28,7 +28,7 @@ export function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     api.get("/notifications").then(({ data }) => {
       setNotifications(data.notifications ?? data);

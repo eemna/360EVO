@@ -112,6 +112,3 @@ export {
   TableCell,
   TableCaption,
 };
-//shadcn/ui-style Table component library
-// a set of reusable, composable React components that wrap native HTML
-// table elements with Tailwind CSS styling
