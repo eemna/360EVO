@@ -120,7 +120,7 @@ export const createBooking = async (req, res, next) => {
     const overlapping = await prisma.booking.findFirst({
       where: {
         expertId,
-       status: { in: ["PENDING", "PENDING_PAYMENT", "ACCEPTED"] },
+        status: { in: ["PENDING", "PENDING_PAYMENT", "ACCEPTED"] },
         AND: [
           { startDateTime: { lt: endDateTime } },
           { endDateTime: { gt: startDateTime } },

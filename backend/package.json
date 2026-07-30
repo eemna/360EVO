@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "nodemon server.js",
     "build": "prisma generate && prisma migrate deploy",
-    "migrate:e2e": "npx cross-env DATABASE_URL=\"postgresql://neondb_owner:REMOVED_SECRET@ep-fancy-king-aijx6kwc-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require\" DIRECT_URL=\"postgresql://neondb_owner:REMOVED_SECRET@ep-fancy-king-aijx6kwc.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require\" npx prisma migrate deploy",
+    "migrate:e2e": "npx dotenv -e .env.test -- prisma migrate deploy",
     "test": "npx dotenv -e .env.test -- npx prisma migrate deploy && npx dotenv -e .env.test -- cross-env NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "lint": "eslint . --fix",
     "format": "prettier --write ."

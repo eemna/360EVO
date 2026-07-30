@@ -96,7 +96,7 @@ Now produce a final assessment. Respond ONLY with valid JSON:
     };
   }
 
-const raw = await callLlm(
+  const raw = await callLlm(
     `Analyze these startup documents for investment due diligence:
 
 ${combinedText.slice(0, CHUNK_SIZE)}

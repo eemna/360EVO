@@ -427,9 +427,9 @@ export default function MyApplicationsPage() {
   const isExpert = user?.role === "EXPERT";
 
   const [searchParams] = useSearchParams();
-const [activeTab, setActiveTab] = useState<Tab>(
-  (searchParams.get("tab") as Tab) ?? "programs"
-);
+  const [activeTab, setActiveTab] = useState<Tab>(
+    (searchParams.get("tab") as Tab) ?? "programs",
+  );
   const [programApps, setProgramApps] = useState<ProgramApplication[]>([]);
   const [eventApps, setEventApps] = useState<EventApplication[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);

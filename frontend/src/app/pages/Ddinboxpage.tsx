@@ -325,7 +325,7 @@ export default function DdInboxPage() {
                         </div>
                       )}
 
-                     {/* Investor view */}
+                      {/* Investor view */}
                       {isInvestor &&
                         req.status === "APPROVED" &&
                         req.dataRoom && (
@@ -401,7 +401,7 @@ export default function DdInboxPage() {
                           </Button>
                         ))}
 
-                     {/* INVESTOR: open data room when approved */}
+                      {/* INVESTOR: open data room when approved */}
                       {isInvestor &&
                         req.status === "APPROVED" &&
                         req.dataRoom &&

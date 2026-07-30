@@ -20,7 +20,8 @@ export function calculateTRLScore(project) {
 
   let score;
   if (stage === "IDEA") {
-    if (hasTeam && hasMilestones && stripHtml(project.fullDesc).length > 200) score = 3;
+    if (hasTeam && hasMilestones && stripHtml(project.fullDesc).length > 200)
+      score = 3;
     else if (stripHtml(project.shortDesc).length > 50) score = 2;
     else score = 1;
     if (hasIpProtection && score < 3) score = 3;

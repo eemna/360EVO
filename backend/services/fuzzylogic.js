@@ -336,7 +336,6 @@ export function inferStage(raw, { trlScore }) {
   let outMedium = raw.medium;
   let outLow = raw.low;
 
-
   const r2 = Math.min(raw.medium, trlHigh) * 0.3;
 
   outHigh = Math.max(outHigh, r2);
@@ -352,8 +351,6 @@ export function inferStage(raw, { trlScore }) {
     high: outHigh,
   };
 }
-
-
 
 export function inferFunding(raw, { irScore }) {
   const irNorm = irScore / 100;
@@ -376,8 +373,6 @@ export function inferFunding(raw, { irScore }) {
   }
   return { low: outLow, medium: outMedium, high: outHigh };
 }
-
-
 
 export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const exactHigh = sigmoid(overlapRatio, 0.5, 10);

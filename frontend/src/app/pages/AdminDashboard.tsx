@@ -322,15 +322,15 @@ export default function AdminDashboard() {
     fetchAll();
   }, [fetchAll]);
 
-useEffect(() => {
-  const section = searchParams.get("section");
-  const programId = searchParams.get("programId");
-  if (section === "programs" && programId && programs.length > 0) {
-    setActiveSection("programs");
-    const program = programs.find((p) => p.id === programId);
-    if (program) viewProgramApplications(program);
-  }
-}, [programs, searchParams]);
+  useEffect(() => {
+    const section = searchParams.get("section");
+    const programId = searchParams.get("programId");
+    if (section === "programs" && programId && programs.length > 0) {
+      setActiveSection("programs");
+      const program = programs.find((p) => p.id === programId);
+      if (program) viewProgramApplications(program);
+    }
+  }, [programs, searchParams]);
 
   useEffect(() => {
     if (activeSection === "revenue") fetchRevenue();

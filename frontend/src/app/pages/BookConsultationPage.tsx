@@ -94,23 +94,23 @@ export function BookConsultationPage() {
     if (expertId) fetchExpert();
   }, [expertId]);
 
-useEffect(() => {
-  if (!expertId) return;
-  let cancelled = false;
+  useEffect(() => {
+    if (!expertId) return;
+    let cancelled = false;
 
-  api
-    .get(`/consultations?expertId=${expertId}`)
-    .then(({ data }) => {
-      if (!cancelled) {
-        setBookings(data);
-      }
-    })
-    .catch(console.error);
+    api
+      .get(`/consultations?expertId=${expertId}`)
+      .then(({ data }) => {
+        if (!cancelled) {
+          setBookings(data);
+        }
+      })
+      .catch(console.error);
 
-  return () => {
-    cancelled = true;
-  };
-}, [expertId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [expertId]);
 
   const isDateAvailable = (date: Date) => {
     if (!expert?.profile?.weeklyAvailability) return false;
