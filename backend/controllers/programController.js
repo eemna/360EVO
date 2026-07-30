@@ -230,7 +230,7 @@ export const applyToProgram = async (req, res, next) => {
       type: "SYSTEM",
       title: "New Program Application",
       body: `A new application was submitted for "${program.title}"`,
-      link: `/app/admin`,
+      link: `/app/admin?section=programs&programId=${programId}`,
     });
 
     res.status(201).json(application);

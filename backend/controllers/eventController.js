@@ -386,7 +386,7 @@ export const applyToEvent = async (req, res, next) => {
       type: "EVENT",
       title: "New Event Application",
       body: `Someone applied to join "${event.title}".`,
-      link: `/app/events/${eventId}`,
+      link: `/app/programs/my-applications?tab=incoming`,
     });
 
     res.status(201).json(application);

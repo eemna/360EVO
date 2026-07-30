@@ -92,8 +92,8 @@ export function HowItWorks() {
                   Get Matched
                 </h3>
                 <p className="text-[#0D1B2A]/70 mb-4 leading-relaxed">
-                  You're surfaced to investors and partners whose stated
-                  thesis fits your stage and sector.
+                  You're surfaced to investors and partners whose stated thesis
+                  fits your stage and sector.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#1D9E75]/10 text-[#1D9E75] text-sm rounded-full">
@@ -281,8 +281,8 @@ export function HowItWorks() {
                   Track Your Pipeline
                 </h3>
                 <p className="text-white/70 mb-4 leading-relaxed">
-                  Use the analytics dashboard to monitor engagement across
-                  your deal flow.
+                  Use the analytics dashboard to monitor engagement across your
+                  deal flow.
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <span className="px-3 py-1 bg-[#C9A84C]/20 text-[#C9A84C] text-sm rounded-full">
@@ -302,18 +302,18 @@ export function HowItWorks() {
             See How It Works for Your Side of the Table.
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-<Link
-  to="/contact?as=startup"
-  className="px-8 py-4 bg-[#1D9E75] text-white rounded-xl hover:bg-[#1D9E75]/90 transition-colors"
->
-  Get Started Free →
-</Link>
-<Link
-  to="/contact?as=investor"
-  className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
->
-  Request Investor Access →
-</Link>
+            <Link
+              to="/contact?as=startup"
+              className="px-8 py-4 bg-[#1D9E75] text-white rounded-xl hover:bg-[#1D9E75]/90 transition-colors"
+            >
+              Get Started Free →
+            </Link>
+            <Link
+              to="/contact?as=investor"
+              className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
+            >
+              Request Investor Access →
+            </Link>
           </div>
         </div>
       </section>

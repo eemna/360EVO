@@ -34,7 +34,7 @@ export async function createDocumentRiskScan(documents) {
     const chunkResults = await Promise.all(
       chunks.map((chunk) =>
         callLlm(
-          `Analyze these startup documents for investment risks:\n\n${chunk}\n\nRespond ONLY with JSON: {"riskFlags":["..."],"highlights":["..."]}`,
+          `Analyze these startup documents for investment risks:\n\n${chunk}\n\nBase every risk flag and highlight ONLY on what is explicitly stated in this text. Do NOT reference investor preferences, thesis alignment, or market competitiveness unless the text itself discusses them.\n\nRespond ONLY with JSON: {"riskFlags":["..."],"highlights":["..."]}`,
           "You are a VC due diligence analyst. Find risks and positive signals in startup documents. Respond only in valid JSON, no markdown.",
           400,
         )
@@ -96,10 +96,12 @@ Now produce a final assessment. Respond ONLY with valid JSON:
     };
   }
 
-  const raw = await callLlm(
+const raw = await callLlm(
     `Analyze these startup documents for investment due diligence:
 
 ${combinedText.slice(0, CHUNK_SIZE)}
+
+Base every risk flag and highlight ONLY on what is explicitly stated in the document text above. Do NOT reference investor preferences, thesis alignment, industry fit, or market competitiveness unless the document text itself discusses them. If the documents don't mention something, do not include it.
 
 Respond ONLY with valid JSON in exactly this format:
 {
@@ -193,6 +195,8 @@ INVESTOR THESIS:
 ${investorProfile?.investmentThesis || "Not specified"}
 Preferred stages: ${investorProfile?.stages?.join(", ") || "Any"}
 Preferred industries: ${investorProfile?.industries?.join(", ") || "Any"}
+
+For "teamStrengths": base it only on team size, roles, and completeness from the data above. Do NOT invent claims about diversity, personality, or soft skills. If team size is 1, describe it plainly as a solo-founder team and its execution risk, without speculating about the founder's traits.
 
 Respond ONLY with valid JSON in exactly this format:
 {

@@ -1,3 +1,6 @@
+function stripHtml(html) {
+  return (html ?? "").replace(/<[^>]*>/g, "").trim();
+}
 export function calculateTRLScore(project) {
   const stage = project.stage;
   const hasTeam = project.teamMembers?.length > 0;
@@ -17,8 +20,8 @@ export function calculateTRLScore(project) {
 
   let score;
   if (stage === "IDEA") {
-    if (hasTeam && hasMilestones && project.fullDesc?.length > 200) score = 3;
-    else if (project.shortDesc?.length > 50) score = 2;
+    if (hasTeam && hasMilestones && stripHtml(project.fullDesc).length > 200) score = 3;
+    else if (stripHtml(project.shortDesc).length > 50) score = 2;
     else score = 1;
     if (hasIpProtection && score < 3) score = 3;
   } else if (stage === "PROTOTYPE") {
@@ -62,8 +65,8 @@ export function calculateTRLConfidence(project) {
   const checks = [
     !!project.title,
     !!project.tagline,
-    !!project.shortDesc,
-    project.fullDesc?.length > 100,
+    stripHtml(project.shortDesc).length > 0,
+    stripHtml(project.fullDesc).length > 100,
     !!project.stage,
     !!project.industry,
     project.technologies?.length > 0,
@@ -106,8 +109,8 @@ export function marketScore(project) {
   let score = 0;
 
   if (project.industry) score += 20;
-  if (project.shortDesc?.length > 80) score += 20;
-  if (project.fullDesc?.length > 300) score += 30;
+  if (stripHtml(project.shortDesc).length > 80) score += 20;
+  if (stripHtml(project.fullDesc).length > 300) score += 30;
   if (project.technologies?.length >= 2) score += 15;
   if (project.technologies?.length >= 5) score += 15;
 

@@ -75,8 +75,8 @@ export function Contact() {
             Let's Get You Where You're Going.
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-            Tell us which side of the table you're on — we'll route you to
-            the right next step.
+            Tell us which side of the table you're on — we'll route you to the
+            right next step.
           </p>
         </div>
       </section>

@@ -95,7 +95,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-       
+
         <div className="pt-8 border-t border-white/10">
           <p className="text-white/60 text-sm text-center">
             © {year} 360DMMC. All rights reserved.

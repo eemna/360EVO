@@ -45,7 +45,13 @@ interface Booking {
   expertId: string;
   startDateTime: string;
   endDateTime: string;
-  status: "PENDING" | "PENDING_PAYMENT" | "ACCEPTED" | "DECLINED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "PENDING_PAYMENT"
+    | "ACCEPTED"
+    | "DECLINED"
+    | "COMPLETED"
+    | "CANCELLED";
 }
 
 export function BookConsultationPage() {
@@ -86,23 +92,17 @@ export function BookConsultationPage() {
     };
 
     if (expertId) fetchExpert();
-  }, [expertId]); 
+  }, [expertId]);
 
 useEffect(() => {
   if (!expertId) return;
   let cancelled = false;
 
   api
-    .get("/consultations")
+    .get(`/consultations?expertId=${expertId}`)
     .then(({ data }) => {
       if (!cancelled) {
-        setBookings(
-          data.filter(
-            (b: Booking) =>
-              b.expertId === expertId &&
-              ["PENDING", "PENDING_PAYMENT", "ACCEPTED"].includes(b.status),
-          ),
-        );
+        setBookings(data);
       }
     })
     .catch(console.error);
@@ -204,7 +204,7 @@ useEffect(() => {
           title: "Location required",
           message: "Please enter meeting location",
         });
-        return; 
+        return;
       }
 
       setBooking(true);
@@ -227,14 +227,14 @@ useEffect(() => {
         dayOfWeek: startDateTime.getDay(),
       });
 
-const { data: updatedBookings } = await api.get("/consultations");
-setBookings(
-  updatedBookings.filter(
-    (b: Booking) =>
-      b.expertId === expert.id &&
-      ["PENDING", "PENDING_PAYMENT", "ACCEPTED"].includes(b.status),
-  ),
-);
+      const { data: updatedBookings } = await api.get("/consultations");
+      setBookings(
+        updatedBookings.filter(
+          (b: Booking) =>
+            b.expertId === expert.id &&
+            ["PENDING", "PENDING_PAYMENT", "ACCEPTED"].includes(b.status),
+        ),
+      );
 
       setSelectedSlot(null);
       setSelectedDate(undefined);

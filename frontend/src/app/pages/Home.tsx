@@ -89,10 +89,10 @@ export function Home() {
           </h2>
           <p className="text-lg text-[#0D1B2A]/80 max-w-2xl mx-auto leading-relaxed">
             Startups spend months cold-emailing investors who aren't a fit.
-            Investors sift through hundreds of decks to find the handful
-            worth a meeting. Universities sit on IP with no clear path to
-            commercialization. Everyone is looking — almost no one is
-            finding each other efficiently.
+            Investors sift through hundreds of decks to find the handful worth a
+            meeting. Universities sit on IP with no clear path to
+            commercialization. Everyone is looking — almost no one is finding
+            each other efficiently.
           </p>
         </div>
       </section>
@@ -118,8 +118,8 @@ export function Home() {
                 AI-Driven Matching
               </h3>
               <p className="text-white/70 leading-relaxed">
-                We score compatibility between startups and investors on
-                stage, sector, and technology readiness — not just keywords.
+                We score compatibility between startups and investors on stage,
+                sector, and technology readiness — not just keywords.
               </p>
             </div>
 
@@ -152,96 +152,96 @@ export function Home() {
         </div>
       </section>
 
-{/* PERSONA SPLIT */}
-<section className="py-24 px-6 bg-[#0D1B2A]">
-  <div className="max-w-[1280px] mx-auto">
-    <p className="text-[#1D9E75] text-sm font-semibold tracking-wider mb-3 text-center">
-      BUILT FOR EVERY SIDE OF THE ECOSYSTEM
-    </p>
-    <h2 className="text-4xl font-bold text-white text-center mb-16">
-      Who Is 360EVO For?
-    </h2>
-    <div className="grid md:grid-cols-3 gap-8">
-      {/* Startups */}
-      <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
-        <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-          <Microscope className="text-[#1D9E75]" size={28} />
-        </div>
-        <p className="text-[#1D9E75] text-xs font-semibold tracking-wider mb-2">
-          FOR STARTUPS
-        </p>
-        <h3 className="text-xl font-bold text-white mb-3">
-          Get Discovered by Investors Who Are Actually Looking for You.
-        </h3>
-        <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
-          <li>
-            • AI-matched to relevant investors based on stage and sector
-          </li>
-          <li>
-            • One profile, ready to share — no more chasing warm intros
-          </li>
-        </ul>
-<Link
-  to="/contact?as=startup"
-  className="text-[#1D9E75] font-semibold hover:underline inline-flex items-center gap-1"
->
-  Create Your Free Profile <ArrowRight size={16} />
-</Link>
-      </div>
+      {/* PERSONA SPLIT */}
+      <section className="py-24 px-6 bg-[#0D1B2A]">
+        <div className="max-w-[1280px] mx-auto">
+          <p className="text-[#1D9E75] text-sm font-semibold tracking-wider mb-3 text-center">
+            BUILT FOR EVERY SIDE OF THE ECOSYSTEM
+          </p>
+          <h2 className="text-4xl font-bold text-white text-center mb-16">
+            Who Is 360EVO For?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Startups */}
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+              <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+                <Microscope className="text-[#1D9E75]" size={28} />
+              </div>
+              <p className="text-[#1D9E75] text-xs font-semibold tracking-wider mb-2">
+                FOR STARTUPS
+              </p>
+              <h3 className="text-xl font-bold text-white mb-3">
+                Get Discovered by Investors Who Are Actually Looking for You.
+              </h3>
+              <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
+                <li>
+                  • AI-matched to relevant investors based on stage and sector
+                </li>
+                <li>
+                  • One profile, ready to share — no more chasing warm intros
+                </li>
+              </ul>
+              <Link
+                to="/contact?as=startup"
+                className="text-[#1D9E75] font-semibold hover:underline inline-flex items-center gap-1"
+              >
+                Create Your Free Profile <ArrowRight size={16} />
+              </Link>
+            </div>
 
-      {/* Investors */}
-      <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
-        <div className="w-14 h-14 rounded-xl bg-[#C9A84C]/20 flex items-center justify-center mb-4">
-          <TrendingUp className="text-[#C9A84C]" size={28} />
-        </div>
-        <p className="text-[#C9A84C] text-xs font-semibold tracking-wider mb-2">
-          FOR INVESTORS
-        </p>
-        <h3 className="text-xl font-bold text-white mb-3">
-          Deal Flow That's Already Been Filtered for Fit.
-        </h3>
-        <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
-          <li>• AI-scored opportunities matched to your thesis</li>
-          <li>
-            • Structured data on every startup — no more digging through
-            decks for basics
-          </li>
-        </ul>
-<Link
-  to="/contact?as=investor"
-  className="text-[#C9A84C] font-semibold hover:underline inline-flex items-center gap-1"
->
-  Request Investor Access <ArrowRight size={16} />
-</Link>
-      </div>
+            {/* Investors */}
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+              <div className="w-14 h-14 rounded-xl bg-[#C9A84C]/20 flex items-center justify-center mb-4">
+                <TrendingUp className="text-[#C9A84C]" size={28} />
+              </div>
+              <p className="text-[#C9A84C] text-xs font-semibold tracking-wider mb-2">
+                FOR INVESTORS
+              </p>
+              <h3 className="text-xl font-bold text-white mb-3">
+                Deal Flow That's Already Been Filtered for Fit.
+              </h3>
+              <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
+                <li>• AI-scored opportunities matched to your thesis</li>
+                <li>
+                  • Structured data on every startup — no more digging through
+                  decks for basics
+                </li>
+              </ul>
+              <Link
+                to="/contact?as=investor"
+                className="text-[#C9A84C] font-semibold hover:underline inline-flex items-center gap-1"
+              >
+                Request Investor Access <ArrowRight size={16} />
+              </Link>
+            </div>
 
-      {/* Universities & Corporate Innovation Teams */}
-      <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
-        <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
-          <GraduationCap className="text-[#1D9E75]" size={28} />
+            {/* Universities & Corporate Innovation Teams */}
+            <div className="p-8 rounded-xl bg-white/5 border border-white/10 flex flex-col">
+              <div className="w-14 h-14 rounded-xl bg-[#1D9E75]/20 flex items-center justify-center mb-4">
+                <GraduationCap className="text-[#1D9E75]" size={28} />
+              </div>
+              <p className="text-[#1D9E75] text-xs font-semibold tracking-wider mb-2">
+                FOR UNIVERSITIES & CORPORATE INNOVATION TEAMS
+              </p>
+              <h3 className="text-xl font-bold text-white mb-3">
+                Turn Research and Innovation Into Real Commercial Outcomes.
+              </h3>
+              <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
+                <li>
+                  • Track IP and cohorts, connect them directly to capital and
+                  industry partners
+                </li>
+              </ul>
+              <Link
+                to="/contact?as=partner"
+                className="text-[#1D9E75] font-semibold hover:underline inline-flex items-center gap-1"
+              >
+                Talk to Our Team <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
         </div>
-        <p className="text-[#1D9E75] text-xs font-semibold tracking-wider mb-2">
-          FOR UNIVERSITIES & CORPORATE INNOVATION TEAMS
-        </p>
-        <h3 className="text-xl font-bold text-white mb-3">
-          Turn Research and Innovation Into Real Commercial Outcomes.
-        </h3>
-        <ul className="space-y-2 text-white/70 leading-relaxed mb-6 flex-1">
-          <li>
-            • Track IP and cohorts, connect them directly to capital and
-            industry partners
-          </li>
-        </ul>
-<Link
-  to="/contact?as=partner"
-  className="text-[#1D9E75] font-semibold hover:underline inline-flex items-center gap-1"
->
-  Talk to Our Team <ArrowRight size={16} />
-</Link>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
@@ -275,8 +275,8 @@ export function Home() {
                 Know Exactly Where You Stand
               </h4>
               <p className="text-white/70 text-sm leading-relaxed">
-                TRL Scoring — structured scoring of technology maturity on
-                the 1–9 scale.
+                TRL Scoring — structured scoring of technology maturity on the
+                1–9 scale.
               </p>
             </div>
 
@@ -286,8 +286,8 @@ export function Home() {
                 Share Sensitive Materials, On Your Terms
               </h4>
               <p className="text-white/70 text-sm leading-relaxed">
-                Secure Data Room — grant and revoke access per viewer, at
-                any time.
+                Secure Data Room — grant and revoke access per viewer, at any
+                time.
               </p>
             </div>
 
@@ -308,8 +308,8 @@ export function Home() {
                 Your Technology, Presented Properly
               </h4>
               <p className="text-white/70 text-sm leading-relaxed">
-                Project Showcase — a structured profile format built for
-                deep tech, not a generic company page.
+                Project Showcase — a structured profile format built for deep
+                tech, not a generic company page.
               </p>
             </div>
 
@@ -335,8 +335,8 @@ export function Home() {
           </div>
         </div>
       </section>
-      
-{/* How It Works Teaser */}
+
+      {/* How It Works Teaser */}
       <section className="py-24 px-6 bg-white">
         <div className="max-w-[1280px] mx-auto">
           <div className="max-w-4xl mx-auto">
@@ -354,8 +354,8 @@ export function Home() {
                       Create Your Profile
                     </h3>
                     <p className="text-[#0D1B2A]/70 leading-relaxed">
-                      Tell us about your technology, your stage, and what
-                      you're looking for.
+                      Tell us about your technology, your stage, and what you're
+                      looking for.
                     </p>
                   </div>
                 </div>
@@ -414,28 +414,28 @@ export function Home() {
           </div>
         </div>
       </section>
-{/* PRICING TEASER */}
-<section className="py-24 px-6 bg-[#0D1B2A]">
-  <div className="max-w-2xl mx-auto text-center">
-    <h2 className="text-4xl font-bold text-white mb-4">
-      Simple Pricing. No Surprises.
-    </h2>
-    <p className="text-white/70 mb-2">
-      Start free as a startup. Investors and partners get a plan built
-      for how they source deals.
-    </p>
-    <p className="text-[#C9A84C] font-semibold text-lg mb-8">
-      Free to start · Plans from $199/mo.
-    </p>
-    <Link
-      to="/pricing"
-      className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors inline-flex items-center gap-2"
-    >
-      See Full Pricing <ArrowRight size={20} />
-    </Link>
-  </div>
-</section>
- <div className="max-w-[1280px] mx-auto px-6">
+      {/* PRICING TEASER */}
+      <section className="py-24 px-6 bg-[#0D1B2A]">
+        <div className="max-w-2xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Simple Pricing. No Surprises.
+          </h2>
+          <p className="text-white/70 mb-2">
+            Start free as a startup. Investors and partners get a plan built for
+            how they source deals.
+          </p>
+          <p className="text-[#C9A84C] font-semibold text-lg mb-8">
+            Free to start · Plans from $199/mo.
+          </p>
+          <Link
+            to="/pricing"
+            className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors inline-flex items-center gap-2"
+          >
+            See Full Pricing <ArrowRight size={20} />
+          </Link>
+        </div>
+      </section>
+      <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
       </div>
       {/* TRUST SECTION */}
@@ -459,8 +459,8 @@ export function Home() {
                 <Lock className="text-[#1D9E75]" size={22} />
               </div>
               <p className="text-white/70 leading-relaxed">
-                Data privacy by design — you control who sees your profile
-                and materials.
+                Data privacy by design — you control who sees your profile and
+                materials.
               </p>
             </div>
             <div className="p-8 rounded-xl bg-white/5 border border-white/10">
@@ -475,31 +475,31 @@ export function Home() {
           </div>
         </div>
       </section>
- <div className="max-w-[1280px] mx-auto px-6">
+      <div className="max-w-[1280px] mx-auto px-6">
         <div className="border-t border-white/10" />
       </div>
-{/* FINAL CTA BAND */}
-<section className="py-24 px-6 bg-[#0D1B2A]">
-  <div className="max-w-3xl mx-auto text-center">
-    <h2 className="text-4xl font-bold text-white mb-8">
-      Ready to Get Discovered — or Discover What's Next?
-    </h2>
-    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-      <Link
-        to="/contact?as=startup"
-        className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors inline-flex items-center justify-center gap-2 font-semibold"
-      >
-        Get Started Free <ArrowRight size={20} />
-      </Link>
-      <Link
-        to="/contact?as=investor"
-        className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors font-semibold"
-      >
-        Request Investor Access
-      </Link>
-    </div>
-  </div>
-</section>
+      {/* FINAL CTA BAND */}
+      <section className="py-24 px-6 bg-[#0D1B2A]">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-white mb-8">
+            Ready to Get Discovered — or Discover What's Next?
+          </h2>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              to="/contact?as=startup"
+              className="px-8 py-4 bg-[#C9A84C] text-[#0D1B2A] rounded-xl hover:bg-[#D4B55C] transition-colors inline-flex items-center justify-center gap-2 font-semibold"
+            >
+              Get Started Free <ArrowRight size={20} />
+            </Link>
+            <Link
+              to="/contact?as=investor"
+              className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 transition-colors font-semibold"
+            >
+              Request Investor Access
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

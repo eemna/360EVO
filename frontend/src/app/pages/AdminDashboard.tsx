@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router";
 import {
   Users,
   Clock,
@@ -159,6 +160,7 @@ type EventApplication = {
 };
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState<ActiveSection>("overview");
 
   const [stats, setStats] = useState<Stats | null>(null);
@@ -319,6 +321,16 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
+
+useEffect(() => {
+  const section = searchParams.get("section");
+  const programId = searchParams.get("programId");
+  if (section === "programs" && programId && programs.length > 0) {
+    setActiveSection("programs");
+    const program = programs.find((p) => p.id === programId);
+    if (program) viewProgramApplications(program);
+  }
+}, [programs, searchParams]);
 
   useEffect(() => {
     if (activeSection === "revenue") fetchRevenue();

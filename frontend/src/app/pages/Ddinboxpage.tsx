@@ -72,6 +72,9 @@ const statusConfig = {
   },
 };
 
+function isExpired(expiresAt: string | undefined) {
+  return !!expiresAt && new Date(expiresAt) < new Date();
+}
 export default function DdInboxPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -322,12 +325,20 @@ export default function DdInboxPage() {
                         </div>
                       )}
 
-                      {/* Investor view: show expiry if approved */}
+                     {/* Investor view */}
                       {isInvestor &&
                         req.status === "APPROVED" &&
                         req.dataRoom && (
-                          <p className="text-xs text-green-600 mt-1">
-                            Access expires:{" "}
+                          <p
+                            className={`text-xs mt-1 ${
+                              isExpired(req.dataRoom.expiresAt)
+                                ? "text-red-500"
+                                : "text-green-600"
+                            }`}
+                          >
+                            {isExpired(req.dataRoom.expiresAt)
+                              ? "Access expired: "
+                              : "Access expires: "}
                             {new Date(
                               req.dataRoom.expiresAt,
                             ).toLocaleDateString()}
@@ -366,10 +377,15 @@ export default function DdInboxPage() {
                         </>
                       )}
 
-                      {/* STARTUP: open their own data room */}
+                      {/* STARTUP */}
                       {!isInvestor &&
                         req.status === "APPROVED" &&
-                        req.dataRoom && (
+                        req.dataRoom &&
+                        (isExpired(req.dataRoom.expiresAt) ? (
+                          <span className="text-xs text-gray-400 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
+                            Data room expired
+                          </span>
+                        ) : (
                           <Button
                             size="sm"
                             onClick={() =>
@@ -383,12 +399,17 @@ export default function DdInboxPage() {
                             Open Data Room
                             <ChevronRight className="size-3" />
                           </Button>
-                        )}
+                        ))}
 
-                      {/* INVESTOR: open data room when approved */}
+                     {/* INVESTOR: open data room when approved */}
                       {isInvestor &&
                         req.status === "APPROVED" &&
-                        req.dataRoom && (
+                        req.dataRoom &&
+                        (isExpired(req.dataRoom.expiresAt) ? (
+                          <span className="text-xs text-gray-400 bg-gray-50 border border-gray-200 px-3 py-1.5 rounded-full">
+                            Access expired
+                          </span>
+                        ) : (
                           <Button
                             size="sm"
                             onClick={() =>
@@ -402,8 +423,7 @@ export default function DdInboxPage() {
                             Enter Data Room
                             <ChevronRight className="size-3" />
                           </Button>
-                        )}
-
+                        ))}
                       {/* INVESTOR: pending — show waiting state */}
                       {isInvestor && req.status === "PENDING" && (
                         <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">

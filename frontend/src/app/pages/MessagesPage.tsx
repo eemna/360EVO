@@ -185,37 +185,38 @@ export function MessagesPage() {
   }, [selectedConv, socket]);
 
   useEffect(() => {
-  const otherUserId = (location.state as { otherUserId?: string } | null)?.otherUserId;
-  if (!otherUserId) return;
+    const otherUserId = (location.state as { otherUserId?: string } | null)
+      ?.otherUserId;
+    if (!otherUserId) return;
 
-  const openConversationWith = async () => {
-    try {
-      const { data } = await api.post("/conversations", { otherUserId });
-      setSelectedConv(data.id);
-      setMobileView("chat");
-      socket?.emit("join_conversation", data.id);
+    const openConversationWith = async () => {
+      try {
+        const { data } = await api.post("/conversations", { otherUserId });
+        setSelectedConv(data.id);
+        setMobileView("chat");
+        socket?.emit("join_conversation", data.id);
 
-      const { data: convs } = await api.get("/conversations");
-      setConversations(
-        convs.map((conv: Conversation) => ({
-          ...conv,
-          timestamp: conv.lastMessage
-            ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "",
-          typing: false,
-        })),
-      );
-      window.history.replaceState({}, document.title);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        const { data: convs } = await api.get("/conversations");
+        setConversations(
+          convs.map((conv: Conversation) => ({
+            ...conv,
+            timestamp: conv.lastMessage
+              ? new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : "",
+            typing: false,
+          })),
+        );
+        window.history.replaceState({}, document.title);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  openConversationWith();
-}, [location.state, socket]);
+    openConversationWith();
+  }, [location.state, socket]);
 
   useEffect(() => {
     if (!socket) return;
@@ -434,8 +435,8 @@ export function MessagesPage() {
                     </AvatarFallback>
                   </Avatar>
                   {onlineUsers.has(conv.otherUser?.id ?? "") && (
-  <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
-)}
+                    <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
+                  )}
                 </div>
                 <div className="flex-1 overflow-hidden min-w-0">
                   <div className="flex items-start justify-between mb-1">

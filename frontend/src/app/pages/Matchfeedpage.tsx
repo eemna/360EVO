@@ -18,7 +18,7 @@ import { Eye, Target, RefreshCw } from "lucide-react";
 interface AIAssessment {
   trlScore: number;
   irScore: number;
-} 
+}
 
 interface Project {
   id: string;
@@ -42,9 +42,9 @@ interface Match {
   thesisAlignmentSummary?: string | null;
   categoryScores: Record<string, number>;
   reasoning: {
-  strengths: string[];
-  concerns: string[];
-};
+    strengths: string[];
+    concerns: string[];
+  };
   project: Project;
 }
 
@@ -55,8 +55,6 @@ function matchScoreColor(score: number) {
     return { text: "text-amber-600", bg: "bg-amber-100 border-amber-200" };
   return { text: "text-red-600", bg: "bg-red-100 border-red-200" };
 }
-
-
 
 const CATEGORY_META: Record<
   string,
@@ -176,8 +174,9 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
         </div>
       </div>
 
-{/* Strengths & Concerns */}
-      {(match.reasoning.strengths?.length > 0 || match.reasoning.concerns?.length > 0) && (
+      {/* Strengths & Concerns */}
+      {(match.reasoning.strengths?.length > 0 ||
+        match.reasoning.concerns?.length > 0) && (
         <div className="space-y-3">
           {match.reasoning.strengths?.length > 0 && (
             <div>
@@ -186,7 +185,10 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
               </p>
               <ul className="space-y-1">
                 {match.reasoning.strengths.map((s, i) => (
-                  <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                  <li
+                    key={i}
+                    className="text-xs text-gray-600 flex items-start gap-1.5"
+                  >
                     <span className="text-green-500 mt-0.5">✓</span>
                     {s}
                   </li>
@@ -201,7 +203,10 @@ function MatchReasoningPanel({ match }: { match: Match | null }) {
               </p>
               <ul className="space-y-1">
                 {match.reasoning.concerns.map((c, i) => (
-                  <li key={i} className="text-xs text-gray-600 flex items-start gap-1.5">
+                  <li
+                    key={i}
+                    className="text-xs text-gray-600 flex items-start gap-1.5"
+                  >
                     <span className="text-red-400 mt-0.5">!</span>
                     {c}
                   </li>

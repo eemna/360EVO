@@ -100,32 +100,38 @@ export default function LeftSidebar({
 
           <Card className="p-2 border-none shadow">
             <nav className="space-y-1">
-  {menuItems
-    .filter((item) => !(item.path === "/app/conversation" && user?.role === "ADMIN"))
-    .map((item) => {
-                const isActive =
-                  item.path === "/app"
-                    ? location.pathname === "/app"
-                    : location.pathname.startsWith(item.path);
-                const Icon = item.icon;
+              {menuItems
+                .filter(
+                  (item) =>
+                    !(
+                      item.path === "/app/conversation" &&
+                      user?.role === "ADMIN"
+                    ),
+                )
+                .map((item) => {
+                  const isActive =
+                    item.path === "/app"
+                      ? location.pathname === "/app"
+                      : location.pathname.startsWith(item.path);
+                  const Icon = item.icon;
 
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                      isActive
-                        ? "bg-blue-50 text-blue-600 font-medium"
-                        : "text-gray-700 hover:bg-gray-100",
-                    )}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.label}
-                  </Link>
-                );
-              })}
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={onClose}
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                        isActive
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700 hover:bg-gray-100",
+                      )}
+                    >
+                      <Icon className="h-5 w-5" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
             </nav>
           </Card>
         </div>

@@ -159,7 +159,7 @@ function PriceDisplay({
       </span>
       <span className="text-white/60">/mo</span>
       <p className="text-white/50 text-sm mt-1">
-        Billed ${annualMonthlyEquivalent * 12}/yr 
+        Billed ${annualMonthlyEquivalent * 12}/yr
       </p>
     </div>
   );
@@ -327,9 +327,7 @@ export function Pricing() {
                 </h3>
                 <p className="text-white/60 mb-4">{plan.audience}</p>
                 <div className="mb-6">
-                  <span className="text-4xl font-bold text-white">
-                    Custom
-                  </span>
+                  <span className="text-4xl font-bold text-white">Custom</span>
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((f) => (
@@ -427,10 +425,7 @@ export function Pricing() {
                     {values.map((val, i) => (
                       <td key={i} className="py-4 px-4 text-center">
                         {val === "✓" ? (
-                          <Check
-                            className="text-[#1D9E75] mx-auto"
-                            size={18}
-                          />
+                          <Check className="text-[#1D9E75] mx-auto" size={18} />
                         ) : val === "✗" ? (
                           <X className="text-white/20 mx-auto" size={18} />
                         ) : (
@@ -473,8 +468,8 @@ export function Pricing() {
                 Is there a free trial?
               </AccordionTrigger>
               <AccordionContent className="text-white/70">
-                The Starter plan is free, always — no credit card required.
-                Paid plans include a 14-day free trial.
+                The Starter plan is free, always — no credit card required. Paid
+                plans include a 14-day free trial.
               </AccordionContent>
             </AccordionItem>
 
