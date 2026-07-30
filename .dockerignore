@@ -4,7 +4,6 @@ npm-debug.log
 .git
 .gitignore
 .env
-.env.*
 monitoring/.env
 dist
 build
