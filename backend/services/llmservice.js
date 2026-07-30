@@ -1,5 +1,7 @@
 import Groq from "groq-sdk";
-
+function stripHtml(html) {
+  return (html ?? "").replace(/<[^>]*>/g, "").trim();
+}
 export async function callLlm(prompt, systemPrompt, maxTokens = 1000) {
   const groq = new Groq({
     apiKey: process.env.GROQ_API_KEY || "dummy-key-for-tests",
@@ -74,7 +76,7 @@ export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
       callLlm(
         `Project: ${project.title} | Stage: ${project.stage}
          Technologies: ${project.technologies?.join(", ") || "none"}
-         Description: ${project.shortDesc}
+         Description: ${stripHtml(project.shortDesc)}
          IP Status: ${project.ipStatus ?? "NONE"}
          Rule-based TRL score: ${trlScore}/9
          Respond ONLY with: {"trlNarrative":"<2 sentences on technical maturity>","trlRisk":"<1 sentence on biggest technical risk>"}`,
@@ -87,7 +89,7 @@ export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
       // Expert 2 — Market
       callLlm(
         `Project: ${project.title} | Industry: ${project.industry}
-        Description: ${project.fullDesc?.slice(0, 400)}
+        Description: ${stripHtml(project.fullDesc).slice(0, 400)}
         Market IR score: ${irBreakdown?.market || 0}/100
         Respond ONLY with: {"marketNarrative":"<2 sentences on market opportunity>","marketRisk":"<1 sentence on market risk>"}`,
         EXPERTS.market,
@@ -102,6 +104,9 @@ export async function runMixtureOfExperts(project, trlScore, irBreakdown) {
          Team size: ${project.teamMembers?.length || 0}
          Members: ${project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") || "none"}
          Team IR score: ${irBreakdown?.team || 0}/100
+
+         Base your assessment ONLY on team size, role coverage, and whether profiles are complete. Do NOT infer soft skills, diversity, stamina, or personality traits that aren't in the data above. If team size is 1, describe it as a solo-founder team and note the single-founder execution risk directly — do not speculate about the founder's individual capabilities.
+
          Respond ONLY with: {"teamNarrative":"<2 sentences on team quality>","teamRisk":"<1 sentence on team gap>"}`,
         EXPERTS.team,
         300,
@@ -265,7 +270,7 @@ PROJECT:
 - Stage: ${project.stage}
 - Technologies: ${project.technologies?.join(", ") || "none"}
 - Location: ${project.location || "unspecified"}
-- Full description: ${project.fullDesc?.slice(0, 600)}
+- Full description: ${stripHtml(project.fullDesc).slice(0, 600)}
 - IP Status: ${project.ipStatus ?? "NONE"}
 - TRL Score: ${assessment?.trlScore || 0}/9
 - IR Score: ${assessment?.irScore || 0}/100
@@ -317,8 +322,8 @@ export async function createPitchAnalysisMoE(project, assessment) {
 PROJECT:
 - Title: ${project.title}
 - Tagline: ${project.tagline}
-- Short description: ${project.shortDesc}
-- Full description: ${project.fullDesc?.slice(0, 600)}
+- Short description: ${stripHtml(project.shortDesc)}
+- Full description: ${stripHtml(project.fullDesc).slice(0, 600)}
 - Team (${project.teamMembers?.length || 0} members): ${
         project.teamMembers?.map((m) => `${m.name} (${m.role})`).join(", ") ||
         "none listed"
@@ -351,7 +356,7 @@ PROJECT:
 - Title: ${project.title}
 - Industry: ${project.industry}
 - Stage: ${project.stage}
-- Full description: ${project.fullDesc?.slice(0, 600)}
+- Full description: ${stripHtml(project.fullDesc).slice(0, 600)}
 - Technologies: ${project.technologies?.join(", ") || "none"}
 - Funding sought: ${project.fundingSought} ${project.currency}
 - Team size: ${project.teamMembers?.length || 0} members

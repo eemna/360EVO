@@ -11,8 +11,8 @@ export function About() {
             We Built the Platform We Wished Existed.
           </h1>
           <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed">
-            360EVO exists because too much good technology never finds the
-            right room.
+            360EVO exists because too much good technology never finds the right
+            room.
           </p>
         </div>
       </section>
@@ -22,15 +22,14 @@ export function About() {
         <div className="max-w-3xl mx-auto">
           <div className="space-y-6 text-lg text-[#0D1B2A]/90 leading-relaxed">
             <p>
-              Our team spent years working in the Chicago
-              innovation ecosystem and kept seeing the same problem:
-              brilliant technology stuck without a clear path to the people
-              who could fund, license, or scale it. Meanwhile, investors and
-              corporate innovation teams were struggling to find credible,
-              vetted opportunities outside their existing networks. 360EVO
-              was built to close that gap — starting in Chicago, with the
-              goal of becoming the connective layer for deep-tech innovation
-              nationally.
+              Our team spent years working in the Chicago innovation ecosystem
+              and kept seeing the same problem: brilliant technology stuck
+              without a clear path to the people who could fund, license, or
+              scale it. Meanwhile, investors and corporate innovation teams were
+              struggling to find credible, vetted opportunities outside their
+              existing networks. 360EVO was built to close that gap — starting
+              in Chicago, with the goal of becoming the connective layer for
+              deep-tech innovation nationally.
             </p>
           </div>
         </div>
@@ -44,14 +43,14 @@ export function About() {
               OUR MISSION
             </p>
             <p className="text-2xl text-white font-medium leading-relaxed">
-              To make deep-tech innovation discoverable — so the best
-              technology finds the right capital, partners, and path to
-              market, regardless of who the founder already knows.
+              To make deep-tech innovation discoverable — so the best technology
+              finds the right capital, partners, and path to market, regardless
+              of who the founder already knows.
             </p>
           </div>
-      <div className="max-w-[1280px] mx-auto px-6">
-        <div className="border-t border-white/10" />
-      </div>
+          <div className="max-w-[1280px] mx-auto px-6">
+            <div className="border-t border-white/10" />
+          </div>
           {/* Values Grid */}
           <div className="grid md:grid-cols-2 gap-8">
             <div className="p-8 rounded-xl bg-white/5 border border-white/10">
@@ -86,8 +85,8 @@ export function About() {
                 Built With the Ecosystem
               </h3>
               <p className="text-white/70 leading-relaxed">
-                We work directly with founders, investors, and universities
-                to shape the platform.
+                We work directly with founders, investors, and universities to
+                shape the platform.
               </p>
             </div>
 
@@ -151,12 +150,12 @@ export function About() {
         <div className="max-w-3xl mx-auto">
           <div className="px-8 py-12 bg-white border-l-4 border-[#C9A84C] rounded-r-xl">
             <p className="text-xl text-[#0D1B2A] leading-relaxed">
-              Chicago and the Midwest produce world-class research and
-              deep-tech talent — through institutions like Northwestern,
-              University of Chicago, UIUC, and a growing network of
-              accelerators and innovation hubs — without the density of
-              capital that coasts have. 360EVO starts here because the gap is
-              real, and closing it matters.
+              Chicago and the Midwest produce world-class research and deep-tech
+              talent — through institutions like Northwestern, University of
+              Chicago, UIUC, and a growing network of accelerators and
+              innovation hubs — without the density of capital that coasts have.
+              360EVO starts here because the gap is real, and closing it
+              matters.
             </p>
           </div>
         </div>

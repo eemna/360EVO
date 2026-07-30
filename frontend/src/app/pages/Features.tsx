@@ -43,8 +43,8 @@ export function Features() {
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
                 Scores compatibility between startups and investors/partners
-                using stage, sector, technology readiness, and stated thesis
-                — surfacing the connections most likely to go somewhere.
+                using stage, sector, technology readiness, and stated thesis —
+                surfacing the connections most likely to go somewhere.
               </p>
               <p className="text-[#C9A84C] text-sm">For: All user types</p>
             </div>
@@ -70,12 +70,10 @@ export function Features() {
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
                 Structured scoring of a startup's technology maturity, so
-                investors can quickly gauge risk and founders know how to
-                talk about their stage.
+                investors can quickly gauge risk and founders know how to talk
+                about their stage.
               </p>
-              <p className="text-[#C9A84C] text-sm">
-                For: Startups, Investors
-              </p>
+              <p className="text-[#C9A84C] text-sm">For: Startups, Investors</p>
             </div>
           </div>
 
@@ -96,9 +94,7 @@ export function Features() {
                 controlled data room — grant and revoke access per viewer, at
                 any time.
               </p>
-              <p className="text-[#C9A84C] text-sm">
-                For: Startups, Investors
-              </p>
+              <p className="text-[#C9A84C] text-sm">For: Startups, Investors</p>
             </div>
             <div className="h-64 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
               <span className="text-white/30">Secure Data Room</span>
@@ -121,8 +117,8 @@ export function Features() {
                 Talk Directly, No Middleman
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Once matched, connect directly inside the platform — no
-                chasing email threads or hoping a warm intro comes through.
+                Once matched, connect directly inside the platform — no chasing
+                email threads or hoping a warm intro comes through.
               </p>
               <p className="text-[#C9A84C] text-sm">For: All user types</p>
             </div>
@@ -141,9 +137,9 @@ export function Features() {
                 Your Technology, Presented Properly
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                A structured profile format built for deep tech — not a
-                generic company page — so technical differentiation actually
-                comes through.
+                A structured profile format built for deep tech — not a generic
+                company page — so technical differentiation actually comes
+                through.
               </p>
               <p className="text-[#C9A84C] text-sm">For: Startups</p>
             </div>
@@ -168,9 +164,8 @@ export function Features() {
                 See Who's Actually Looking
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Browse investor and partner profiles by sector, stage focus,
-                and check size, so outreach starts with fit already
-                confirmed.
+                Browse investor and partner profiles by sector, stage focus, and
+                check size, so outreach starts with fit already confirmed.
               </p>
               <p className="text-[#C9A84C] text-sm">For: Startups</p>
             </div>
@@ -189,12 +184,10 @@ export function Features() {
                 See What's Working
               </h3>
               <p className="text-white/70 mb-4 leading-relaxed">
-                Track profile views, match quality, and engagement over time
-                — so you know whether your positioning is landing.
+                Track profile views, match quality, and engagement over time —
+                so you know whether your positioning is landing.
               </p>
-              <p className="text-[#C9A84C] text-sm">
-                For: Startups, Investors
-              </p>
+              <p className="text-[#C9A84C] text-sm">For: Startups, Investors</p>
             </div>
             <div className="h-64 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center">
               <span className="text-white/30">Analytics Dashboard</span>
@@ -233,18 +226,18 @@ export function Features() {
             See It Work for You.
           </h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-           <Link
-  to="/contact?as=startup"
-  className="px-8 py-4 bg-[#1D9E75] text-white rounded-xl hover:bg-[#1D9E75]/90 transition-colors"
->
-  Get Started Free →
-</Link>
-<Link
-  to="/contact?as=investor"
-  className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
->
-  Request Investor Access →
-</Link>
+            <Link
+              to="/contact?as=startup"
+              className="px-8 py-4 bg-[#1D9E75] text-white rounded-xl hover:bg-[#1D9E75]/90 transition-colors"
+            >
+              Get Started Free →
+            </Link>
+            <Link
+              to="/contact?as=investor"
+              className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
+            >
+              Request Investor Access →
+            </Link>
           </div>
         </div>
       </section>

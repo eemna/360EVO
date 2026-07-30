@@ -555,24 +555,25 @@ function ExpertCard({
         )}
 
         {/* CTA */}
-<Button
-  className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
-  disabled={
-    profile.availabilityStatus !== "AVAILABLE" ||
-    !currentUserRole ||
-    !["MEMBER", "STARTUP", "INVESTOR"].includes(currentUserRole)
-  }
-  onClick={(e) => {
-    e.stopPropagation();
-    onBook();
-  }}
->
-  {!currentUserRole || !["MEMBER", "STARTUP", "INVESTOR"].includes(currentUserRole)
-    ? "View Profile"
-    : profile.availabilityStatus === "AVAILABLE"
-      ? "Book Consultation"
-      : "View Profile"}
-</Button>
+        <Button
+          className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
+          disabled={
+            profile.availabilityStatus !== "AVAILABLE" ||
+            !currentUserRole ||
+            !["MEMBER", "STARTUP", "INVESTOR"].includes(currentUserRole)
+          }
+          onClick={(e) => {
+            e.stopPropagation();
+            onBook();
+          }}
+        >
+          {!currentUserRole ||
+          !["MEMBER", "STARTUP", "INVESTOR"].includes(currentUserRole)
+            ? "View Profile"
+            : profile.availabilityStatus === "AVAILABLE"
+              ? "Book Consultation"
+              : "View Profile"}
+        </Button>
       </CardContent>
     </Card>
   );

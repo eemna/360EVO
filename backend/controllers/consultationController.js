@@ -120,7 +120,7 @@ export const createBooking = async (req, res, next) => {
     const overlapping = await prisma.booking.findFirst({
       where: {
         expertId,
-        status: { in: ["PENDING", "ACCEPTED"] },
+       status: { in: ["PENDING", "PENDING_PAYMENT", "ACCEPTED"] },
         AND: [
           { startDateTime: { lt: endDateTime } },
           { endDateTime: { gt: startDateTime } },
@@ -236,6 +236,18 @@ export const cancelUnpaidBooking = async (req, res, next) => {
 export const getConsultations = async (req, res, next) => {
   try {
     const userId = req.user.id;
+    const { expertId } = req.query;
+
+    if (expertId) {
+      const busySlots = await prisma.booking.findMany({
+        where: {
+          expertId,
+          status: { in: ["PENDING", "PENDING_PAYMENT", "ACCEPTED"] },
+        },
+        select: { startDateTime: true, endDateTime: true },
+      });
+      return res.json(busySlots);
+    }
 
     const bookings = await prisma.booking.findMany({
       where: {

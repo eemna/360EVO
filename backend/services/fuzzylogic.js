@@ -217,7 +217,7 @@ export function fuzzifyFunding(investorProfile, project) {
   const min = hasMin ? Number(investorProfile.fundingMin) : 0;
   const max = hasMax ? Number(investorProfile.fundingMax) : F * 10;
 
-  const tol = (max - min) * 0.2 || max * 0.2;
+  const tol = hasMin ? min * 0.3 : max * 0.2;
   return {
     high: trapezoidal(F, min - tol, min, max, max + tol),
     medium: trapezoidal(
@@ -336,10 +336,6 @@ export function inferStage(raw, { trlScore }) {
   let outMedium = raw.medium;
   let outLow = raw.low;
 
-  // R2:
-  // IF stageMatch IS medium
-  // AND trl IS high
-  // THEN output IS high
 
   const r2 = Math.min(raw.medium, trlHigh) * 0.3;
 
@@ -356,6 +352,8 @@ export function inferStage(raw, { trlScore }) {
     high: outHigh,
   };
 }
+
+
 
 export function inferFunding(raw, { irScore }) {
   const irNorm = irScore / 100;
@@ -378,6 +376,8 @@ export function inferFunding(raw, { irScore }) {
   }
   return { low: outLow, medium: outMedium, high: outHigh };
 }
+
+
 
 export function inferTechnology(raw, { overlapRatio, nlpSim }) {
   const exactHigh = sigmoid(overlapRatio, 0.5, 10);

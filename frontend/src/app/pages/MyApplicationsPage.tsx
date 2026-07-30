@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -425,7 +426,10 @@ export default function MyApplicationsPage() {
   const { showToast } = useToast();
   const isExpert = user?.role === "EXPERT";
 
-  const [activeTab, setActiveTab] = useState<Tab>("programs");
+  const [searchParams] = useSearchParams();
+const [activeTab, setActiveTab] = useState<Tab>(
+  (searchParams.get("tab") as Tab) ?? "programs"
+);
   const [programApps, setProgramApps] = useState<ProgramApplication[]>([]);
   const [eventApps, setEventApps] = useState<EventApplication[]>([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);

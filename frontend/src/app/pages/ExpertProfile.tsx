@@ -251,8 +251,8 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
       </Card>
 
       {/* ── BOOK BUTTON ── */}
-{!isOwnProfile &&
-  ["MEMBER", "STARTUP", "INVESTOR"].includes(user?.role ?? "") && (
+      {!isOwnProfile &&
+        ["MEMBER", "STARTUP", "INVESTOR"].includes(user?.role ?? "") && (
           <Card className="border-2 border-indigo-100">
             <CardContent className="pt-6 flex items-center justify-between">
               <div>

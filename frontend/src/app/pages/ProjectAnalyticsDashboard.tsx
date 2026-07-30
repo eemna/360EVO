@@ -30,7 +30,7 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
-import { MessageCircle } from "lucide-react"; 
+import { MessageCircle } from "lucide-react";
 
 interface InterestedUser {
   id: string;
@@ -188,23 +188,27 @@ export default function ProjectAnalyticsDashboard({
       pct: Math.round((totals.interests / maxMetric) * 100),
     },
   ];
-const navigate = useNavigate();
-const [showInterests, setShowInterests] = useState(false);
-const [interestedUsers, setInterestedUsers] = useState<InterestedUser[]>([]);
-const [loadingInterests, setLoadingInterests] = useState(false);
+  const navigate = useNavigate();
+  const [showInterests, setShowInterests] = useState(false);
+  const [interestedUsers, setInterestedUsers] = useState<InterestedUser[]>([]);
+  const [loadingInterests, setLoadingInterests] = useState(false);
 
-const fetchInterestedUsers = async () => {
-  try {
-    setLoadingInterests(true);
-    const { data } = await api.get(`/bookmarks/interests/${projectId}`);
-    setInterestedUsers(data);
-    setShowInterests(true);
-  } catch {
-    showToast({ type: "error", title: "Failed to load interested users", message: "" });
-  } finally {
-    setLoadingInterests(false);
-  }
-};
+  const fetchInterestedUsers = async () => {
+    try {
+      setLoadingInterests(true);
+      const { data } = await api.get(`/bookmarks/interests/${projectId}`);
+      setInterestedUsers(data);
+      setShowInterests(true);
+    } catch {
+      showToast({
+        type: "error",
+        title: "Failed to load interested users",
+        message: "",
+      });
+    } finally {
+      setLoadingInterests(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -350,22 +354,22 @@ const fetchInterestedUsers = async () => {
           {/* Engagement + Sources */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Funnel */}
-<Card className="border border-gray-200">
-  <CardHeader className="pb-2 flex flex-row items-center justify-between">
-    <CardTitle className="text-sm">Engagement Funnel</CardTitle>
-    {totals.interests > 0 && (
-      <Button
-        size="sm"
-        variant="ghost"
-        className="h-7 text-xs text-pink-600 gap-1"
-        onClick={fetchInterestedUsers}
-        disabled={loadingInterests}
-      >
-        <Heart className="size-3" />
-        {loadingInterests ? "..." : "View"}
-      </Button>
-    )}
-  </CardHeader>
+            <Card className="border border-gray-200">
+              <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                <CardTitle className="text-sm">Engagement Funnel</CardTitle>
+                {totals.interests > 0 && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 text-xs text-pink-600 gap-1"
+                    onClick={fetchInterestedUsers}
+                    disabled={loadingInterests}
+                  >
+                    <Heart className="size-3" />
+                    {loadingInterests ? "..." : "View"}
+                  </Button>
+                )}
+              </CardHeader>
               <CardContent className="space-y-3">
                 {funnelItems.map(({ label, value, color, pct }) => (
                   <div key={label}>
@@ -484,52 +488,62 @@ const fetchInterestedUsers = async () => {
         </>
       )}
       <Dialog open={showInterests} onOpenChange={setShowInterests}>
-  <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-    <DialogHeader>
-      <DialogTitle>Interested Users ({interestedUsers.length})</DialogTitle>
-    </DialogHeader>
-    <div className="space-y-3 py-2">
-      {interestedUsers.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-6">
-          No one has expressed interest yet.
-        </p>
-      ) : (
-        interestedUsers.map((interest) => (
-          <div
-            key={interest.id}
-            className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
-          >
-            <Avatar className="size-10 flex-shrink-0">
-              <AvatarImage src={interest.user.profile?.avatar ?? undefined} />
-              <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm">
-                {interest.user.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900">{interest.user.name}</p>
-              <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{interest.message}</p>
-              <p className="text-[11px] text-gray-400 mt-1">
-                {new Date(interest.createdAt).toLocaleDateString()}
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Interested Users ({interestedUsers.length})
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            {interestedUsers.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-6">
+                No one has expressed interest yet.
               </p>
-            </div>
-            <Button
-  size="sm"
-  variant="outline"
-  className="h-8 gap-1.5 text-xs flex-shrink-0"
-  onClick={() => {
-    setShowInterests(false);
-    navigate("/app/conversation", { state: { otherUserId: interest.user.id } });
-  }}
->
-  <MessageCircle className="size-3.5" />
-  Message
-</Button>
+            ) : (
+              interestedUsers.map((interest) => (
+                <div
+                  key={interest.id}
+                  className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors"
+                >
+                  <Avatar className="size-10 flex-shrink-0">
+                    <AvatarImage
+                      src={interest.user.profile?.avatar ?? undefined}
+                    />
+                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm">
+                      {interest.user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {interest.user.name}
+                    </p>
+                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">
+                      {interest.message}
+                    </p>
+                    <p className="text-[11px] text-gray-400 mt-1">
+                      {new Date(interest.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 gap-1.5 text-xs flex-shrink-0"
+                    onClick={() => {
+                      setShowInterests(false);
+                      navigate("/app/conversation", {
+                        state: { otherUserId: interest.user.id },
+                      });
+                    }}
+                  >
+                    <MessageCircle className="size-3.5" />
+                    Message
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
-        ))
-      )}
-    </div>
-  </DialogContent>
-</Dialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
