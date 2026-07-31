@@ -54,7 +54,7 @@ services:
     environment:
       - GF_USERS_ALLOW_SIGN_UP=false
     ports:
-      - "127.0.0.1:3005:3000"
+      - "127.0.0.1:3007:3000"
     volumes:
       - grafana-data:/var/lib/grafana
     depends_on:
