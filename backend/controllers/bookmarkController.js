@@ -65,7 +65,7 @@ export const getBookmarks = async (req, res, next) => {
     res.json(bookmarks.map((b) => b.project));
   } catch (error) {
     next(error);
-  } 
+  }
 };
 
 export const getBookmarkIds = async (req, res, next) => {

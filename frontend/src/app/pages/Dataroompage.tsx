@@ -197,7 +197,7 @@ export default function DataRoomPage() {
   const [aiSuggesting, setAiSuggesting] = useState<string | null>(null);
 
   const fetchDataRoom = useCallback(async () => {
-    try { 
+    try {
       setLoading(true);
       const { data } = await api.get(`/data-rooms/${id}`);
       setDataRoom(data);
@@ -444,7 +444,7 @@ export default function DataRoomPage() {
                   ? "bg-indigo-100 text-indigo-700 border-indigo-200"
                   : "bg-green-100 text-green-700 border-green-200"
               }
-            > 
+            >
               {isInvestor ? "Investor View" : "Startup View"}
             </Badge>
           </div>
@@ -598,8 +598,11 @@ export default function DataRoomPage() {
             {[
               { key: "documents", label: "Documents", icon: FolderOpen },
               {
-                key: "qa", label: `Q&A (${qaThreads.length})`, icon: MessageSquare },
-                
+                key: "qa",
+                label: `Q&A (${qaThreads.length})`,
+                icon: MessageSquare,
+              },
+
               ...(isOwner
                 ? [{ key: "activity", label: "Activity", icon: Activity }]
                 : []),
