@@ -265,9 +265,17 @@ export const getDataRoom = async (req, res, next) => {
     });
 
     const visibleDocs = full.documents.filter(
-      (d) => d.accessLevel === "OPEN" || isOwner,
-    );
-    res.json({ ...full, documents: visibleDocs, isInvestor, isOwner });
+  (d) => d.accessLevel === "OPEN" || isOwner,
+);
+
+res.json({
+  ...full,
+  documents: visibleDocs,
+  documentCount: visibleDocs.length,
+  ragIndexedCount: visibleDocs.filter((d) => d.ragIndexed).length,
+  isInvestor,
+  isOwner,
+});
   } catch (error) {
     if (error.status)
       return res.status(error.status).json({ message: error.message });
@@ -711,7 +719,7 @@ export const suggestAnswer = async (req, res, next) => {
       where: { id: dataRoomId },
       include: { documents: true },
     });
-
+    console.log(`[RAG-QA] Sending question for dataRoomId=${dataRoomId} | question="${thread.question}" | docsInRoom=${fullRoom.documents.length}`);
     let suggestion;
     const hasIndexedDocs = fullRoom.documents.some((d) => d.ragIndexed);
 
@@ -742,7 +750,7 @@ export const suggestAnswer = async (req, res, next) => {
                 .filter((d) => d.ragIndexed)
                 .map((d) => d.name),
             };
-            console.error(`[RAG-QA] Used n8n agent for thread ${threadId}`);
+            console.error(`[RAG-QA] Used n8n agent for thread ${threadId} | dataRoomId=${dataRoomId} | sourceDocs=${JSON.stringify(suggestion.sourceDocs)}`);
           } catch (parseErr) {
             console.error(`[RAG-QA] JSON parse failed:`, parseErr.message);
           }
