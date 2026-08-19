@@ -9,7 +9,6 @@ import {
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
-import { Calendar } from "../components/ui/calendar";
 import { Skeleton } from "../components/ui/skeleton";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
@@ -30,6 +29,7 @@ import api from "../../services/axios";
 import type { User, WeeklyAvailability } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import AvailabilityCalendar from "../components/ui/Availabilitycalendar";
 
 const dayNames = [
   "Sunday",
@@ -40,30 +40,19 @@ const dayNames = [
   "Friday",
   "Saturday",
 ];
-interface Booking {
-  id: string;
-  expertId: string;
-  startDateTime: string;
-  endDateTime: string;
-  status:
-    | "PENDING"
-    | "PENDING_PAYMENT"
-    | "ACCEPTED"
-    | "DECLINED"
-    | "COMPLETED"
-    | "CANCELLED";
-}
+
+
 
 export function BookConsultationPage() {
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [duration, setDuration] = useState(30);
 
   const { showToast } = useToast();
   const [booking, setBooking] = useState(false);
   const { expertId } = useParams();
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null); // ISO complet
+  const [dayOfWeek, setDayOfWeek] = useState<number | null>(null);
 
   const [topic, setTopic] = useState("");
   const [message, setMessage] = useState("");
@@ -78,125 +67,36 @@ export function BookConsultationPage() {
     ? (Number(expert.profile.hourlyRate) * duration) / 60
     : 0;
 
-  // Load public expert profile data Includes: - expert basic info - profile - weekly availability - latest reviews - computed availability status
   useEffect(() => {
-    const fetchExpert = async () => {
-      try {
-        const { data } = await api.get(`/experts/${expertId}`);
-        setExpert(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchExpert = async () => {
+  try {
+    const { data } = await api.get(`/experts/${expertId}`);
+    setExpert(data);
+  } catch (error) {
+    console.error(error);
+    showToast({
+      type: "error",
+      title: "Failed to load expert",
+      message: "Please try again later.",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
     if (expertId) fetchExpert();
-  }, [expertId]);
+  }, [expertId, showToast]);
 
-  useEffect(() => {
-    if (!expertId) return;
-    let cancelled = false;
-
-    api
-      .get(`/consultations?expertId=${expertId}`)
-      .then(({ data }) => {
-        if (!cancelled) {
-          setBookings(data);
-        }
-      })
-      .catch(console.error);
-
-    return () => {
-      cancelled = true;
-    };
-  }, [expertId]);
-
-  const isDateAvailable = (date: Date) => {
-    if (!expert?.profile?.weeklyAvailability) return false;
-
-    const dayNumber = date.getDay();
-
-    return expert.profile.weeklyAvailability.some(
-      (slot) => slot.day === dayNumber && slot.enabled,
-    );
-  };
-
-  const generateTimeSlots = (date: Date) => {
-    if (!expert?.profile?.weeklyAvailability) return [];
-
-    const dayNumber = date.getDay();
-
-    const availability = expert.profile.weeklyAvailability.find(
-      (slot) => slot.day === dayNumber && slot.enabled,
-    );
-
-    if (!availability?.startTime || !availability?.endTime) return [];
-
-    const slots: string[] = [];
-
-    const [startHour, startMinute] = availability.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-
-    const start = new Date(date);
-    start.setHours(startHour, startMinute, 0, 0);
-
-    const end = new Date(date);
-    end.setHours(endHour, endMinute, 0, 0);
-
-    const current = new Date(start);
-    //keep generating slots while current time is before end time
-    while (current < end) {
-      const slotStart = new Date(current);
-      const slotEnd = new Date(current);
-      slotEnd.setMinutes(slotEnd.getMinutes() + duration);
-
-      if (slotEnd > end) break;
-      //skips past times
-      //continues generating next slots every 30 min par defaut
-      if (slotStart <= new Date()) {
-        current.setMinutes(current.getMinutes() + 30);
-        continue;
-      }
-
-      const isOverlapping = bookings.some((booking) => {
-        const bookingStart = new Date(booking.startDateTime);
-        const bookingEnd = new Date(booking.endDateTime);
-
-        return slotStart < bookingEnd && slotEnd > bookingStart;
-      });
-
-      if (!isOverlapping) {
-        slots.push(slotStart.toTimeString().slice(0, 5));
-      }
-
-      current.setMinutes(current.getMinutes() + 30); //moves to the next slot
-    }
-
-    return slots;
-  };
-
-  const isDateFullyBooked = (date: Date) => {
-    if (!isDateAvailable(date)) return true;
-
-    const slots = generateTimeSlots(date);
-    return slots.length === 0;
-  };
-
-  //
-  //
-  //
-
-  const timeSlots = selectedDate ? generateTimeSlots(selectedDate) : [];
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   const handleConfirmBooking = async () => {
-    if (!selectedDate || !selectedSlot || !expert) return;
-
+  if (!selectedSlot || dayOfWeek === null || !expert) {
+    showToast({
+      type: "warning",
+      title: "Missing information",
+      message: "Please select a date and time first.",
+    });
+    return;
+  }
     try {
       if (meetingType === "IN_PERSON" && !location.trim()) {
         showToast({
@@ -208,36 +108,27 @@ export function BookConsultationPage() {
       }
 
       setBooking(true);
-      const [hour, minute] = selectedSlot.split(":").map(Number);
-      const startDateTime = new Date(selectedDate);
-      startDateTime.setHours(hour, minute, 0, 0);
-      const tzOffset = startDateTime.getTimezoneOffset(); //how far the user's local time is from UTC
+      const startDateTime = new Date(selectedSlot);
+      const tzOffset = startDateTime.getTimezoneOffset();
 
       await api.post("/consultations/request", {
         expertId: expert.id,
-        date: selectedDate.toISOString(), //converts the date into a standard international string format
-        timeSlot: selectedSlot,
-        startDateTimeISO: startDateTime.toISOString(),
+        date: selectedSlot.slice(0, 10), // "YYYY-MM-DD"
+        timeSlot: selectedSlot.slice(11, 16), // "HH:mm"
+        startDateTimeISO: selectedSlot,
         duration,
         message,
         topic,
         meetingType,
         location: meetingType === "IN_PERSON" ? location : null,
         tzOffset,
-        dayOfWeek: startDateTime.getDay(),
+        dayOfWeek,
       });
 
-      const { data: updatedBookings } = await api.get("/consultations");
-      setBookings(
-        updatedBookings.filter(
-          (b: Booking) =>
-            b.expertId === expert.id &&
-            ["PENDING", "PENDING_PAYMENT", "ACCEPTED"].includes(b.status),
-        ),
-      );
+
 
       setSelectedSlot(null);
-      setSelectedDate(undefined);
+      setDayOfWeek(null);
       setTopic("");
       setMessage("");
       setLocation("");
@@ -278,7 +169,6 @@ export function BookConsultationPage() {
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column skeleton */}
         <div className="space-y-6">
           <Card>
             <CardContent className="pt-6 flex flex-col items-center gap-4">
@@ -300,7 +190,6 @@ export function BookConsultationPage() {
           </Card>
         </div>
 
-        {/* Right column skeleton */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
@@ -325,10 +214,11 @@ export function BookConsultationPage() {
       </div>
     );
   }
+
   if (!expert || !expert.profile) return <div>Expert not found</div>;
+
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header */}
       <div className="mb-6">
         <Button
           variant="ghost"
@@ -336,7 +226,7 @@ export function BookConsultationPage() {
           onClick={() => navigate(-1)}
         >
           <ArrowLeft className="size-4 mr-2" />
-          Back to Profile
+          Back
         </Button>
         <h1 className="text-3xl font-semibold text-gray-900">
           Book a Consultation
@@ -349,7 +239,6 @@ export function BookConsultationPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="lg:col-span-1 space-y-6">
-          {/* Expert Card */}
           <Card className="shadow-md">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
@@ -398,7 +287,6 @@ export function BookConsultationPage() {
             </CardContent>
           </Card>
 
-          {/* Weekly Schedule Reference */}
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle className="text-base">Typical Availability</CardTitle>
@@ -441,132 +329,51 @@ export function BookConsultationPage() {
 
         {/* Right Column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Step 1: Select Date */}
+          {/* Step 1: Select Date & Time */}
           <Card className="shadow-md">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-semibold">
                   1
                 </div>
-                <CardTitle>Select a Date</CardTitle>
+                <CardTitle>Select a Date & Time</CardTitle>
+              </div>
+              <div className="flex gap-3 mt-4">
+                {[30, 60, 90].map((d) => (
+                  <Button
+                    key={d}
+                    variant={duration === d ? "secondary" : "outline"}
+                    onClick={() => {
+                      setDuration(d);
+                      setSelectedSlot(null);
+                      setDayOfWeek(null);
+                    }}
+                  >
+                    {d} min
+                  </Button>
+                ))}
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex justify-center">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    if (!date) return;
-
-                    setSelectedSlot(null);
-                    const normalized = new Date(date);
-                    normalized.setHours(12, 0, 0, 0); //Changes time to noon
-                    setSelectedDate(normalized);
-                  }}
-                  disabled={(date) =>
-                    date < today ||
-                    !isDateAvailable(date) ||
-                    isDateFullyBooked(date)
-                  }
-                  className="rounded-lg border border-gray-300 shadow-sm p-4" //styles to whole calendar
-                  modifiers={{
-                    // to check available days
-                    available: (date) =>
-                      date >= today &&
-                      isDateAvailable(date) &&
-                      !isDateFullyBooked(date),
-                  }}
-                  //custom style to dates marked available
-                  modifiersClassNames={{
-                    available: "bg-indigo-50 font-semibold",
-                  }}
-                />
-              </div>
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-900 flex items-center gap-2">
-                  <CalendarIcon className="size-4" />
-                  <span>
-                    Available dates are highlighted. Select a date to view time
-                    slots.
-                  </span>
-                </p>
-              </div>
+<AvailabilityCalendar
+  expertId={expertId!}
+  durationMinutes={duration}
+  selectedSlot={selectedSlot}
+  onSelectSlot={(iso: string, dow: number) => {
+    setSelectedSlot(iso);
+    setDayOfWeek(dow);
+  }}
+/>
             </CardContent>
           </Card>
 
-          {/* Step 2: Select Time Slot */}
-          {selectedDate && (
-            <Card className="shadow-md">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-semibold">
-                    2
-                  </div>
-                  <CardTitle>Select a Time Slot</CardTitle>
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  Available times for{" "}
-                  {selectedDate && (
-                    <span className="font-semibold">
-                      {format(selectedDate, "EEEE, MMMM d, yyyy")}
-                    </span>
-                  )}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-3 mb-6">
-                  {[30, 60, 90].map((d) => (
-                    <Button
-                      key={d}
-                      variant={duration === d ? "secondary" : "outline"}
-                      onClick={() => {
-                        setDuration(d);
-                        setSelectedSlot(null);
-                      }}
-                    >
-                      {d} min
-                    </Button>
-                  ))}
-                </div>
-
-                {timeSlots.length > 0 ? (
-                  <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
-                    {timeSlots.map((slot) => (
-                      <Button
-                        key={slot}
-                        variant={
-                          selectedSlot === slot ? "secondary" : "outline"
-                        }
-                        className={cn(
-                          "h-auto py-3 flex flex-col items-center",
-                          selectedSlot === slot
-                            ? "bg-indigo-600 hover:bg-indigo-700"
-                            : "hover:bg-indigo-50 hover:border-indigo-300",
-                        )}
-                        onClick={() => setSelectedSlot(slot)}
-                      >
-                        <Clock className="size-4 mb-1" />
-                        <span className="text-sm font-medium">{slot}</span>
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    No available time slots for this date
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Step 3: Confirm */}
-          {selectedDate && selectedSlot && (
+          {/* Step 2: Confirm */}
+          {selectedSlot && (
             <Card className="shadow-md border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-semibold">
-                    3
+                    2
                   </div>
                   <CardTitle>Confirm Your Booking</CardTitle>
                 </div>
@@ -578,8 +385,10 @@ export function BookConsultationPage() {
                     <div>
                       <p className="text-sm text-gray-600">Date & Time</p>
                       <p className="font-semibold text-gray-900">
-                        {format(selectedDate, "EEEE, MMMM d, yyyy")} at{" "}
-                        {selectedSlot}
+                        {format(
+                          new Date(selectedSlot),
+                          "EEEE, MMMM d, yyyy 'at' HH:mm",
+                        )}
                       </p>
                     </div>
                   </div>
@@ -600,9 +409,9 @@ export function BookConsultationPage() {
                     </div>
                   </div>
                 </div>
+
                 <div className="space-y-2">
                   <Label>Meeting Type</Label>
-
                   <div className="flex gap-3">
                     <Button
                       type="button"
@@ -630,6 +439,7 @@ export function BookConsultationPage() {
                     </Button>
                   </div>
                 </div>
+
                 {meetingType === "IN_PERSON" && (
                   <div className="space-y-2">
                     <Label htmlFor="location">Meeting Location *</Label>
@@ -643,6 +453,7 @@ export function BookConsultationPage() {
                     />
                   </div>
                 )}
+
                 <div className="space-y-2">
                   <Label htmlFor="topic">Topic *</Label>
                   <Textarea
@@ -654,7 +465,17 @@ export function BookConsultationPage() {
                     className="resize-none"
                   />
                 </div>
-
+<div className="space-y-2">
+  <Label htmlFor="message">Message (optional)</Label>
+  <Textarea
+    id="message"
+    placeholder="Anything else the expert should know?"
+    value={message}
+    onChange={(e) => setMessage(e.target.value)}
+    rows={2}
+    className="resize-none"
+  />
+</div>
                 <Button
                   className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"
                   onClick={handleConfirmBooking}

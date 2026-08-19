@@ -12,7 +12,11 @@ import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 
 dotenv.config();
-
+const logoHeader = `
+  <div style="text-align: center; margin-bottom: 24px;">
+    <img src="https://res.cloudinary.com/dzlh5isw5/image/upload/v1786639995/logo_pcbjyc.png?v=2" alt="360EVO" style="height: 48px;" />
+  </div>
+`;
 export const register = async (req, res, next) => {
   try {
     const {
@@ -24,6 +28,7 @@ export const register = async (req, res, next) => {
       stage,
       expertise,
       hourlyRate,
+      inviteToken,
     } = req.body;
 
     if (!name || !email || !password || !role) {
@@ -38,9 +43,27 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    const normalizedRole = role.toUpperCase();
+    let adminInvite = null;
+    if (inviteToken) {
+      adminInvite = await prisma.adminInvite.findUnique({
+        where: { token: inviteToken },
+      });
 
-    if (!["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(normalizedRole)) {
+      if (
+        !adminInvite ||
+        adminInvite.expiresAt < new Date() ||
+        adminInvite.email !== email
+      ) {
+        return res.status(400).json({ message: "Invalid or expired invite link" });
+      }
+    }
+
+    const normalizedRole = adminInvite ? "ADMIN" : role.toUpperCase();
+
+    if (
+      !adminInvite &&
+      !["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(normalizedRole)
+    ) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
@@ -58,6 +81,7 @@ export const register = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const verificationToken = crypto.randomBytes(32).toString("hex");
+
     if (
       normalizedRole === "EXPERT" &&
       hourlyRate !== undefined &&
@@ -74,6 +98,7 @@ export const register = async (req, res, next) => {
         message: "Invalid startup stage",
       });
     }
+
     await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
@@ -81,6 +106,7 @@ export const register = async (req, res, next) => {
           email,
           passwordHash: hashedPassword,
           role: normalizedRole,
+          isVerified: !!adminInvite,
         },
       });
 
@@ -105,16 +131,26 @@ export const register = async (req, res, next) => {
         },
       });
 
-      await tx.emailVerification.create({
-        data: {
-          userId: createdUser.id,
-          token: verificationToken,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-      });
+      if (adminInvite) {
+        await tx.adminInvite.delete({ where: { id: adminInvite.id } });
+      } else {
+        await tx.emailVerification.create({
+          data: {
+            userId: createdUser.id,
+            token: verificationToken,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          },
+        });
+      }
 
       return createdUser;
     });
+
+    if (adminInvite) {
+      return res.status(201).json({
+        message: "Account created — you now have admin access. You can log in.",
+      });
+    }
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
@@ -122,9 +158,10 @@ export const register = async (req, res, next) => {
       to: email,
       subject: "Verify your email",
       html: `
-    <p>Click below to verify your email:</p>
-    <a href="${verificationLink}">${verificationLink}</a>
-  `,
+        ${logoHeader}
+        <p>Click below to verify your email:</p>
+        <a href="${verificationLink}">${verificationLink}</a>
+      `,
     }).catch((err) => console.error("Email failed:", err));
 
     res.status(201).json({
@@ -168,7 +205,36 @@ export const login = async (req, res, next) => {
         message: "Account is suspended",
       });
     }
+const requires2FA = userData.twoFactorEnabled || userData.role === "ADMIN";
 
+if (requires2FA) {
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+  await prisma.user.update({
+    where: { id: userData.id },
+    data: {
+      twoFactorCode: code,
+      twoFactorCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+    },
+  });
+
+sendEmail({
+  to: userData.email,
+  subject: "Your 360EVO verification code",
+  html: `
+    ${logoHeader}
+    <p>Your verification code is: <strong>${code}</strong></p><p>Expires in 10 minutes.</p>
+  `,
+}).catch((err) => console.error("Email failed:", err));
+
+  const preAuthToken = jwt.sign(
+    { id: userData.id, twoFactorPending: true },
+    process.env.JWT_SECRET,
+    { expiresIn: "10m" },
+  );
+
+  return res.json({ twoFactorRequired: true, preAuthToken });
+}
     const accessToken = generateAccessToken(userData.id);
     const refreshToken = generateRefreshToken(userData.id);
 
@@ -284,14 +350,15 @@ export const forgotPassword = async (req, res, next) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-    sendEmail({
-      to: email,
-      subject: "Reset your password",
-      html: `
+sendEmail({
+  to: email,
+  subject: "Reset your password",
+  html: `
+    ${logoHeader}
     <p>Click below to reset your password:</p>
     <a href="${resetLink}">${resetLink}</a>
   `,
-    }).catch((err) => console.error("Email failed:", err));
+}).catch((err) => console.error("Email failed:", err));
 
     res.json({
       message: "If this email exists, a reset link has been sent",
@@ -329,14 +396,15 @@ export const resendVerification = async (req, res, next) => {
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-    sendEmail({
-      to: email,
-      subject: "Verify your email",
-      html: `
+sendEmail({
+  to: email,
+  subject: "Verify your email",
+  html: `
+    ${logoHeader}
     <p>Click below to verify your email:</p>
     <a href="${verificationLink}">${verificationLink}</a>
   `,
-    }).catch((err) => console.error("Email failed:", err));
+}).catch((err) => console.error("Email failed:", err));
 
     res.json({ message: "Verification email resent" });
   } catch (error) {
@@ -381,6 +449,12 @@ export const updateEmail = async (req, res, next) => {
     const userId = req.user.id;
     const { email } = req.body;
 
+    if (req.user.role === "ADMIN") {
+      return res.status(403).json({
+        message: "Admin accounts cannot change their own email. Contact another administrator.",
+      });
+    }
+
     if (!email) {
       return res.status(400).json({
         message: "Email is required",
@@ -413,15 +487,15 @@ export const updateEmail = async (req, res, next) => {
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&type=change-email&email=${encodeURIComponent(email)}`;
 
-    sendEmail({
-      to: email,
-      subject: "Verify your new email",
-      html: `
-        <p>Click below to confirm your new email:</p>
-        <a href="${verificationLink}">${verificationLink}</a>
-      `,
-    }).catch((err) => console.error("Email failed:", err));
-
+sendEmail({
+  to: email,
+  subject: "Verify your new email",
+  html: `
+    ${logoHeader}
+    <p>Click below to confirm your new email:</p>
+    <a href="${verificationLink}">${verificationLink}</a>
+  `,
+}).catch((err) => console.error("Email failed:", err));
     res.json({
       message: "Verification email sent to new address",
     });
@@ -717,6 +791,77 @@ export const updateProfile = async (req, res, next) => {
     });
 
     res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyTwoFactor = async (req, res, next) => {
+  try {
+    const { preAuthToken, code } = req.body;
+
+    if (!preAuthToken || !code) {
+      return res.status(400).json({ message: "Token and code are required" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(preAuthToken, process.env.JWT_SECRET);
+    } catch {
+      return res.status(401).json({ message: "Session expired, please login again" });
+    }
+
+    if (!decoded.twoFactorPending) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    const userData = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      include: { profile: true },
+    });
+
+    if (
+      !userData ||
+      userData.twoFactorCode !== code ||
+      !userData.twoFactorCodeExpiresAt ||
+      userData.twoFactorCodeExpiresAt < new Date()
+    ) {
+      return res.status(401).json({ message: "Invalid or expired code" });
+    }
+
+    await prisma.user.update({
+      where: { id: userData.id },
+      data: { twoFactorCode: null, twoFactorCodeExpiresAt: null },
+    });
+
+    const accessToken = generateAccessToken(userData.id);
+    const refreshToken = generateRefreshToken(userData.id);
+    const hashedRefreshToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    await prisma.refreshToken.deleteMany({ where: { userId: userData.id } });
+    await prisma.refreshToken.create({
+      data: {
+        userId: userData.id,
+        tokenHash: hashedRefreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    res.json({
+      accessToken,
+      user: {
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+        name: userData.name,
+        profile: userData.profile,
+      },
+    });
   } catch (error) {
     next(error);
   }

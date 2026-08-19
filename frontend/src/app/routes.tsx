@@ -53,6 +53,11 @@ import { Features } from "./pages/Features";
 import { Pricing } from "./pages/Pricing";
 import { HowItWorks } from "./pages/HowItWorks";
 import { Contact } from "./pages/Contact";
+import VerifyTwoFactorPage from "./pages/VerifyTwoFactorPage";
+import StartupProfile from "./pages/StartupProfile";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -66,6 +71,7 @@ export const router = createBrowserRouter([
       // { path: "/", element: <Landing /> },
       { path: "/login", element: <Login /> },
       { path: "/register", element: <Register /> },
+      { path: "/verify-2fa", element: <VerifyTwoFactorPage /> },
       { path: "/verify-email", element: <VerifyEmailPage /> },
       { path: "/forgot-password", element: <ForgotPasswordPage /> },
       { path: "/reset-password", element: <ResetPasswordPage /> },
@@ -113,6 +119,22 @@ export const router = createBrowserRouter([
           </RoleRoute>
         ),
       },
+      {
+  path: "admin/users",
+  element: (
+    <RoleRoute allowedRoles={["ADMIN"]}>
+      <AdminUsersPage />
+    </RoleRoute>
+  ),
+},
+{
+  path: "admin/analytics",
+  element: (
+    <RoleRoute allowedRoles={["ADMIN"]}>
+      <AdminAnalyticsPage />
+    </RoleRoute>
+  ),
+},
       {
         path: "investor/matches",
         element: (
@@ -178,6 +200,14 @@ export const router = createBrowserRouter([
       { path: "saved", element: <SavedProjectsPage /> },
       { path: "notifications", element: <NotificationsPage /> },
       { path: "conversation", element: <MessagesPage /> },
+      {
+  path: "startup-profile",
+  element: (
+    <RoleRoute allowedRoles={["STARTUP"]}>
+      <StartupProfile />
+    </RoleRoute>
+  ),
+},
       {
         path: "profile/:id",
         element: <Profile />,

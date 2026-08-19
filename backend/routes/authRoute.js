@@ -11,6 +11,7 @@ import {
   getMe,
   logout,
   changePassword,
+  verifyTwoFactor,
   updateEmail,
   updateProfile,
   verifyNewEmail,
@@ -44,5 +45,5 @@ router.put("/change-password", protect, changePassword);
 router.put("/update-email", protect, updateEmail);
 router.put("/update-profile", protect, updateProfile);
 router.post("/verify-new-email", protect, verifyNewEmail);
-
+router.post("/verify-2fa", verifyTwoFactor);
 export default router;

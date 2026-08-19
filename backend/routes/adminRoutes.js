@@ -15,6 +15,12 @@ import {
   getEventApplications,
   updateEventApplicationStatus,
   getStat,
+  getGrowthAnalytics,
+  getEngagementAnalytics,
+  getRevenueAnalytics,
+  getEventProgramAnalytics,
+  deleteUser,
+  inviteAdmin,
 } from "../controllers/adminController.js";
 import {
   getAdminStats,
@@ -37,7 +43,7 @@ router.patch("/experts/:id/approve", approveExpert);
 router.patch("/experts/:id/reject", rejectExpert);
 router.patch("/users/:id/suspend", suspendUser);
 router.patch("/users/:id/unsuspend", unsuspendUser);
-
+router.get("/analytics/growth", getGrowthAnalytics);
 router.get("/stats", getAdminStats);
 router.get("/stat", getStat);
 
@@ -52,4 +58,9 @@ router.put(
   "/events/:id/applications/:appId/status",
   updateEventApplicationStatus,
 );
+router.get("/analytics/engagement", getEngagementAnalytics);
+router.get("/analytics/revenue", getRevenueAnalytics);
+router.get("/analytics/events-programs", getEventProgramAnalytics);
+router.delete("/users/:id", protect, authorize("ADMIN"), deleteUser);
+router.post("/admins/invite", protect, authorize("ADMIN"), inviteAdmin);
 export default router;

@@ -13,6 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
+import { Calendar as CalendarWidget } from "../components/ui/calendar";
 import { format } from "date-fns";
 import { Skeleton } from "../components/ui/skeleton";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
@@ -24,7 +25,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
-import { useNavigate } from "react-router";
 import { Textarea } from "../components/ui/textarea";
 import { Label } from "../components/ui/label";
 import {
@@ -38,9 +38,10 @@ import {
   MessageSquare,
   DollarSign,
   AlertCircle,
-  ChevronLeft,
   Video,
-  // MapPin,
+  CalendarDays,
+  List,
+  LayoutGrid,
 } from "lucide-react";
 import { useEffect } from "react";
 import api from "../../services/axios";
@@ -78,13 +79,115 @@ interface Booking {
   review?: { id: string } | null;
 }
 
+type ViewMode = "status" | "calendar" | "list";
+type ListSubTab = "upcoming" | "past";
+
+const getBookingStatusBadgeClasses = (status: Booking["status"]) => {
+  switch (status) {
+    case "ACCEPTED":
+      return "bg-green-100 text-green-700 border-green-300";
+    case "PENDING":
+      return "bg-orange-100 text-orange-700 border-orange-300";
+    case "PENDING_PAYMENT":
+      return "bg-yellow-100 text-yellow-700 border-yellow-300";
+    case "COMPLETED":
+      return "bg-gray-100 text-gray-700 border-gray-300";
+    case "DECLINED":
+    case "CANCELLED":
+      return "bg-red-100 text-red-700 border-red-300";
+    default:
+      return "bg-gray-100 text-gray-700 border-gray-300";
+  }
+};
+
+const getBookingStatusLabel = (status: Booking["status"]) => {
+  switch (status) {
+    case "PENDING":
+      return "Pending Review";
+    case "PENDING_PAYMENT":
+      return "Awaiting Payment";
+    case "ACCEPTED":
+      return "Confirmed";
+    case "COMPLETED":
+      return "Completed";
+    case "DECLINED":
+      return "Declined";
+    case "CANCELLED":
+      return "Cancelled";
+    default:
+      return status;
+  }
+};
+
+function BookingSummaryCard({ booking }: { booking: Booking }) {
+  return (
+    <Card className="border-l-4 border-l-indigo-400">
+      <CardContent className="py-4 space-y-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <p className="font-semibold text-gray-900">
+            {booking.member?.name || "Client"}
+          </p>
+          <Badge className={`border ${getBookingStatusBadgeClasses(booking.status)}`}>
+            {getBookingStatusLabel(booking.status)}
+          </Badge>
+        </div>
+        <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="size-4" />
+            <span>{format(new Date(booking.startDateTime), "EEEE, MMMM d, yyyy")}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Clock className="size-4" />
+            <span>
+              {format(new Date(booking.startDateTime), "HH:mm")} ({booking.duration} min)
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="size-4" />
+            <span>${Number(booking.price).toFixed(2)}</span>
+          </div>
+        </div>
+        {booking.topic && (
+          <p className="text-sm text-gray-700">
+            <span className="font-medium">Topic:</span> {booking.topic}
+          </p>
+        )}
+        {booking.meetingType === "VIDEO" && booking.meetingLink && (
+          <div className="flex items-center gap-1.5 text-sm text-blue-600">
+            <Video className="size-4" />
+            <a
+              href={booking.meetingLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline break-all"
+            >
+              Join video call
+            </a>
+          </div>
+        )}
+        {booking.meetingType === "IN_PERSON" && booking.location && (
+          <div className="flex items-center gap-1.5 text-sm text-amber-700">
+            <MapPin className="size-4" />
+            <span>{booking.location}</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ManageReservations() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+
+  const [viewMode, setViewMode] = useState<ViewMode>("status");
+  const [listSubTab, setListSubTab] = useState<ListSubTab>("upcoming");
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState <
+    Date | undefined
+  >(new Date());
 
   const handleCompleteBooking = async (bookingId: string) => {
     try {
@@ -105,7 +208,7 @@ export function ManageReservations() {
     }
   };
 
-  const [processingAction, setProcessingAction] = useState<
+  const [processingAction, setProcessingAction] = useState <
     "accept" | "reject" | "cancel" | "complete" | null
   >(null);
   //Fetch consultations from the backend when the user is available
@@ -137,6 +240,28 @@ export function ManageReservations() {
   const awaitingPaymentBookings = bookings.filter(
     (b) => b.status === "PENDING_PAYMENT",
   );
+
+  const now = new Date();
+  const upcomingBookings = bookings.filter(
+    (b) =>
+      new Date(b.startDateTime) >= now &&
+      !["CANCELLED", "DECLINED", "COMPLETED"].includes(b.status),
+  );
+  const pastBookings = bookings.filter(
+    (b) =>
+      new Date(b.startDateTime) < now ||
+      ["CANCELLED", "DECLINED", "COMPLETED"].includes(b.status),
+  );
+
+  const getBookingsForDate = (date: Date) =>
+    bookings.filter((b) => {
+      const d = new Date(b.startDateTime);
+      return (
+        d.getFullYear() === date.getFullYear() &&
+        d.getMonth() === date.getMonth() &&
+        d.getDate() === date.getDate()
+      );
+    });
 
   const scheduleData = confirmedBookings.map((b) => ({
     date: b.startDateTime,
@@ -306,16 +431,9 @@ export function ManageReservations() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            className="mb-4 -ml-2"
-            onClick={() => navigate(-1)}
-          >
-            <ChevronLeft className="size-4 mr-2" />
-            Back to Profile
-          </Button>
+         
           <h1 className="text-4xl font-semibold text-gray-900 mb-2">
-            Manage Reservations
+            Bookings
           </h1>
           <p className="text-gray-600">
             Review pending requests, manage your schedule, and handle your
@@ -386,509 +504,670 @@ export function ManageReservations() {
           </Card>
         </div>
 
-        {/* Main Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex w-full gap-2 mb-6 overflow-x-auto px-1 justify-start">
-            <TabsTrigger
-              value="pending"
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-            >
-              Pending Requests
-              {pendingBookings.length > 0 && (
-                <Badge className="ml-2 bg-orange-500 text-white">
-                  {pendingBookings.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="awaiting"
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-            >
-              {" "}
-              Awaiting Payment
-              {awaitingPaymentBookings.length > 0 && (
-                <Badge className="ml-2 bg-yellow-500 text-white">
-                  {awaitingPaymentBookings.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger
-              value="confirmed"
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-            >
-              Confirmed Sessions
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="schedule"
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-            >
-              Schedule
-            </TabsTrigger>
-            <TabsTrigger
-              value="completed"
-              className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
-            >
-              Completed
-              {completedBookings.length > 0 && (
-                <Badge className="ml-2 bg-gray-500 text-white">
-                  {completedBookings.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Pending Requests Tab */}
-          <TabsContent
-            value="pending"
-            className="space-y-6 max-h-[70vh] overflow-y-auto pr-2"
+        {/* View Switcher */}
+        <div className="flex items-center gap-2 mb-6">
+          <Button
+            size="sm"
+            variant={viewMode === "status" ? "secondary" : "outline"}
+            onClick={() => setViewMode("status")}
+            className="gap-1.5"
           >
-            {pendingBookings.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <div className="size-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="size-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-600 text-lg">No pending requests</p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    You're all caught up! New booking requests will appear here.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              pendingBookings.map((booking) => (
-                <Card
-                  key={booking.id}
-                  className="border-l-4 border-l-orange-500"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl">
-                            {booking.member?.name || "Member"}
-                          </CardTitle>
-                          <Badge className="bg-orange-100 text-orange-700 border-orange-300 border">
-                            Pending Review
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1.5">
-                            <User className="size-4" />
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="size-4" />
-                            <span>{formatDate(booking.startDateTime)}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="size-4" />
-                            <span>
-                              {format(new Date(booking.startDateTime), "HH:mm")}{" "}
-                              ({booking.duration} min)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <DollarSign className="size-4" />
-                            <span>${Number(booking.price).toFixed(2)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-2 pt-0">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-1">
-                        Topic: {booking.topic}
-                      </p>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        {booking.description}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      {/* Meeting Type */}
-                      <div className="flex items-center gap-2">
-                        {booking.meetingType === "VIDEO" ? (
-                          <>
-                            <Video className="size-4 text-gray-500" />
-                            <span className="text-sm text-gray-600">
-                              Video Call
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <MapPin className="size-4 text-gray-500" />
-                            <span className="text-sm text-gray-600">
-                              In Person - {booking.location}
-                            </span>
-                          </>
-                        )}
-                      </div>
+            <LayoutGrid className="size-4" />
+            By Status
+          </Button>
+          <Button
+            size="sm"
+            variant={viewMode === "calendar" ? "secondary" : "outline"}
+            onClick={() => setViewMode("calendar")}
+            className="gap-1.5"
+          >
+            <CalendarDays className="size-4" />
+            Calendar
+          </Button>
+          <Button
+            size="sm"
+            variant={viewMode === "list" ? "secondary" : "outline"}
+            onClick={() => setViewMode("list")}
+            className="gap-1.5"
+          >
+            <List className="size-4" />
+            List
+          </Button>
+        </div>
 
-                      {/* Join Button */}
-                      {booking.meetingType === "VIDEO" &&
-                        booking.meetingLink && (
-                          <Button
-                            size="sm"
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                            onClick={() =>
-                              window.open(booking.meetingLink, "_blank")
-                            }
-                          >
-                            <Video className="size-4 mr-1" />
-                            Join
-                          </Button>
-                        )}
+        {/* ── STATUS VIEW (existing tabs, unchanged) ── */}
+        {viewMode === "status" && (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="flex w-full gap-2 mb-6 overflow-x-auto px-1 justify-start">
+              <TabsTrigger
+                value="pending"
+                className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                Pending Requests
+                {pendingBookings.length > 0 && (
+                  <Badge className="ml-2 bg-orange-500 text-white">
+                    {pendingBookings.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="awaiting"
+                className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                {" "}
+                Awaiting Payment
+                {awaitingPaymentBookings.length > 0 && (
+                  <Badge className="ml-2 bg-yellow-500 text-white">
+                    {awaitingPaymentBookings.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="confirmed"
+                className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                Confirmed Sessions
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="schedule"
+                className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                Schedule
+              </TabsTrigger>
+              <TabsTrigger
+                value="completed"
+                className="flex-shrink-0 whitespace-nowrap rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                Completed
+                {completedBookings.length > 0 && (
+                  <Badge className="ml-2 bg-gray-500 text-white">
+                    {completedBookings.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Pending Requests Tab */}
+            <TabsContent
+              value="pending"
+              className="space-y-6 max-h-[70vh] overflow-y-auto pr-2"
+            >
+              {pendingBookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <div className="size-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <CheckCircle2 className="size-8 text-gray-400" />
                     </div>
-                    <div className="flex gap-3 pt-4 ">
-                      <Button
-                        onClick={() => handleAcceptBooking(booking.id)}
-                        className="flex-1 bg-green-600 hover:bg-green-700"
-                      >
-                        {processingId === booking.id &&
-                        processingAction === "accept" ? (
-                          <LoadingSpinner size="sm" className="mr-2" />
-                        ) : (
-                          <CheckCircle2 className="size-4 mr-2" />
-                        )}
-                        Accept Booking
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setSelectedBooking(booking);
-                          setRejectDialogOpen(true);
-                        }}
-                        variant="outline"
-                        className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
-                      >
-                        {processingId === booking.id &&
-                        processingAction === "reject" ? (
-                          <LoadingSpinner size="sm" className="mr-2" />
-                        ) : (
-                          <XCircle className="size-4 mr-2" />
-                        )}
-                        Reject
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </TabsContent>
-          <TabsContent value="awaiting" className="space-y-6">
-            {awaitingPaymentBookings.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-gray-600 text-lg">
-                    No sessions awaiting payment
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              awaitingPaymentBookings.map((booking) => (
-                <Card
-                  key={booking.id}
-                  className="border-l-4 border-l-yellow-400"
-                >
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <CardTitle className="text-xl">
-                        {booking.member?.name}
-                      </CardTitle>
-                      <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300 border">
-                        Awaiting Payment
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="size-4" />
-                        <span>{formatDate(booking.startDateTime)}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="size-4" />
-                        <span>
-                          {format(new Date(booking.startDateTime), "HH:mm")} (
-                          {booking.duration} min)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <DollarSign className="size-4" />
-                        <span>${Number(booking.price).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-500">
-                      Waiting for the client to complete payment.
+                    <p className="text-gray-600 text-lg">No pending requests</p>
+                    <p className="text-gray-500 text-sm mt-1">
+                      You're all caught up! New booking requests will appear here.
                     </p>
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </TabsContent>
-          {/* Confirmed Sessions Tab */}
-          <TabsContent value="confirmed" className="space-y-6">
-            {confirmedBookings.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <div className="size-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calendar className="size-8 text-gray-400" />
-                  </div>
-                  <p className="text-gray-600 text-lg">No confirmed sessions</p>
-                  <p className="text-gray-500 text-sm mt-1">
-                    Accept pending requests to see them here.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              confirmedBookings.map((booking) => (
-                <Card
-                  key={booking.id}
-                  className="border-l-4 border-l-green-500"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <CardTitle className="text-xl">
-                            {booking.member.name}
-                          </CardTitle>
-                          <Badge className="bg-green-100 text-green-700 border-green-300 border">
-                            <CheckCircle2 className="size-3 mr-1" />
-                            Confirmed
-                          </Badge>
-                        </div>
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                          <div className="flex items-center gap-1.5">
-                            <User className="size-4" />
-                            <span>{booking.founderName}</span>
+              ) : (
+                pendingBookings.map((booking) => (
+                  <Card
+                    key={booking.id}
+                    className="border-l-4 border-l-orange-500"
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <CardTitle className="text-xl">
+                              {booking.member?.name || "Member"}
+                            </CardTitle>
+                            <Badge className="bg-orange-100 text-orange-700 border-orange-300 border">
+                              Pending Review
+                            </Badge>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="size-4" />
-                            <span>{formatDate(booking.startDateTime)}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="size-4" />
-                            <span>
-                              {format(new Date(booking.startDateTime), "HH:mm")}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <DollarSign className="size-4" />
-                            <span>${Number(booking.price).toFixed(2)}</span>
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1.5">
+                              <User className="size-4" />
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="size-4" />
+                              <span>{formatDate(booking.startDateTime)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="size-4" />
+                              <span>
+                                {format(new Date(booking.startDateTime), "HH:mm")}{" "}
+                                ({booking.duration} min)
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="size-4" />
+                              <span>${Number(booking.price).toFixed(2)}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 mb-1">
-                        Topic: {booking.topic}
+                    </CardHeader>
+                    <CardContent className="space-y-2 pt-0">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">
+                          Topic: {booking.topic}
+                        </p>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {booking.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        {/* Meeting Type */}
+                        <div className="flex items-center gap-2">
+                          {booking.meetingType === "VIDEO" ? (
+                            <>
+                              <Video className="size-4 text-gray-500" />
+                              <span className="text-sm text-gray-600">
+                                Video Call
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <MapPin className="size-4 text-gray-500" />
+                              <span className="text-sm text-gray-600">
+                                In Person - {booking.location}
+                              </span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Join Button */}
+                        {booking.meetingType === "VIDEO" &&
+                          booking.meetingLink && (
+                            <Button
+                              size="sm"
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                              onClick={() =>
+                                window.open(booking.meetingLink, "_blank")
+                              }
+                            >
+                              <Video className="size-4 mr-1" />
+                              Join
+                            </Button>
+                          )}
+                      </div>
+                      <div className="flex gap-3 pt-4 ">
+                        <Button
+                          onClick={() => handleAcceptBooking(booking.id)}
+                          className="flex-1 bg-green-600 hover:bg-green-700"
+                        >
+                          {processingId === booking.id &&
+                          processingAction === "accept" ? (
+                            <LoadingSpinner size="sm" className="mr-2" />
+                          ) : (
+                            <CheckCircle2 className="size-4 mr-2" />
+                          )}
+                          Accept Booking
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setRejectDialogOpen(true);
+                          }}
+                          variant="outline"
+                          className="flex-1 border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                          {processingId === booking.id &&
+                          processingAction === "reject" ? (
+                            <LoadingSpinner size="sm" className="mr-2" />
+                          ) : (
+                            <XCircle className="size-4 mr-2" />
+                          )}
+                          Reject
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+            <TabsContent value="awaiting" className="space-y-6">
+              {awaitingPaymentBookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-600 text-lg">
+                      No sessions awaiting payment
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                awaitingPaymentBookings.map((booking) => (
+                  <Card
+                    key={booking.id}
+                    className="border-l-4 border-l-yellow-400"
+                  >
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <CardTitle className="text-xl">
+                          {booking.member?.name}
+                        </CardTitle>
+                        <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300 border">
+                          Awaiting Payment
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="size-4" />
+                          <span>{formatDate(booking.startDateTime)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="size-4" />
+                          <span>
+                            {format(new Date(booking.startDateTime), "HH:mm")} (
+                            {booking.duration} min)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <DollarSign className="size-4" />
+                          <span>${Number(booking.price).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-500">
+                        Waiting for the client to complete payment.
                       </p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+            {/* Confirmed Sessions Tab */}
+            <TabsContent value="confirmed" className="space-y-6">
+              {confirmedBookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <div className="size-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Calendar className="size-8 text-gray-400" />
                     </div>
-
-                    {/* Video Call Box */}
-
-                    {booking.meetingType === "VIDEO" && booking.meetingLink && (
-                      <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                        <Video className="size-5 text-blue-600 mt-1" />
-
-                        <div className="flex flex-col">
-                          <p className="text-sm font-medium text-gray-700">
-                            Video Call
-                          </p>
-
-                          <a
-                            href={booking.meetingLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:underline break-all"
-                          >
-                            {booking.meetingLink}
-                          </a>
+                    <p className="text-gray-600 text-lg">No confirmed sessions</p>
+                    <p className="text-gray-500 text-sm mt-1">
+                      Accept pending requests to see them here.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                confirmedBookings.map((booking) => (
+                  <Card
+                    key={booking.id}
+                    className="border-l-4 border-l-green-500"
+                  >
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <CardTitle className="text-xl">
+                              {booking.member.name}
+                            </CardTitle>
+                            <Badge className="bg-green-100 text-green-700 border-green-300 border">
+                              <CheckCircle2 className="size-3 mr-1" />
+                              Confirmed
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                            <div className="flex items-center gap-1.5">
+                              <User className="size-4" />
+                              <span>{booking.founderName}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="size-4" />
+                              <span>{formatDate(booking.startDateTime)}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="size-4" />
+                              <span>
+                                {format(new Date(booking.startDateTime), "HH:mm")}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <DollarSign className="size-4" />
+                              <span>${Number(booking.price).toFixed(2)}</span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    )}
-                    {booking.meetingType === "IN_PERSON" &&
-                      booking.location && (
-                        <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-                          <MapPin className="size-5 text-amber-600 mt-1" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900 mb-1">
+                          Topic: {booking.topic}
+                        </p>
+                      </div>
+
+                      {/* Video Call Box */}
+
+                      {booking.meetingType === "VIDEO" && booking.meetingLink && (
+                        <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                          <Video className="size-5 text-blue-600 mt-1" />
 
                           <div className="flex flex-col">
                             <p className="text-sm font-medium text-gray-700">
-                              In-Person Meeting
-                            </p>
-
-                            <p className="text-sm text-gray-600">
-                              {booking.location}
+                              Video Call
                             </p>
 
                             <a
-                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location || "")}`}
+                              href={booking.meetingLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-orange-500 hover:underline"
+                              className="text-sm text-blue-600 hover:underline break-all"
                             >
-                              Open in Maps
+                              {booking.meetingLink}
                             </a>
                           </div>
                         </div>
                       )}
+                      {booking.meetingType === "IN_PERSON" &&
+                        booking.location && (
+                          <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+                            <MapPin className="size-5 text-amber-600 mt-1" />
 
-                    <div className="flex items-center gap-3 pt-1">
-                      {booking.meetingType === "VIDEO" &&
-                        booking.meetingLink && (
-                          <Button
-                            onClick={() =>
-                              window.open(booking.meetingLink, "_blank")
-                            }
-                            className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-medium"
-                          >
-                            <Video className="size-4 mr-2" />
-                            Join Meeting
-                          </Button>
+                            <div className="flex flex-col">
+                              <p className="text-sm font-medium text-gray-700">
+                                In-Person Meeting
+                              </p>
+
+                              <p className="text-sm text-gray-600">
+                                {booking.location}
+                              </p>
+
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location || "")}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-orange-500 hover:underline"
+                              >
+                                Open in Maps
+                              </a>
+                            </div>
+                          </div>
                         )}
 
-                      <Button
-                        onClick={() => {
-                          setSelectedBooking(booking);
-                          setCancelDialogOpen(true);
-                        }}
-                        variant="outline"
-                        className="border-red-300 text-red-600 hover:bg-red-50"
-                      >
-                        Cancel
-                      </Button>
+                      <div className="flex items-center gap-3 pt-1">
+                        {booking.meetingType === "VIDEO" &&
+                          booking.meetingLink && (
+                            <Button
+                              onClick={() =>
+                                window.open(booking.meetingLink, "_blank")
+                              }
+                              className="flex-1 h-11 bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white font-medium"
+                            >
+                              <Video className="size-4 mr-2" />
+                              Join Meeting
+                            </Button>
+                          )}
 
-                      {user?.id === booking.expertId &&
-                        booking.status === "ACCEPTED" && (
-                          <Button
-                            onClick={() => handleCompleteBooking(booking.id)}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            disabled={processingId === booking.id}
-                          >
-                            {processingId === booking.id ? (
-                              <LoadingSpinner size="sm" className="mr-2" />
-                            ) : (
-                              <CheckCircle2 className="size-4 mr-2" />
-                            )}
-                            Mark Complete
-                          </Button>
-                        )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </TabsContent>
-          <TabsContent value="completed" className="space-y-6">
-            {completedBookings.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-gray-600 text-lg">
-                    No completed sessions yet
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              completedBookings.map((booking) => (
-                <Card key={booking.id} className="border-l-4 border-l-gray-400">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <CardTitle className="text-xl">
-                        {booking.member?.name}
-                      </CardTitle>
-                      <Badge className="bg-gray-100 text-gray-700 border">
-                        Completed
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="size-4" />
-                        <span>{formatDate(booking.startDateTime)}</span>
+                        <Button
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setCancelDialogOpen(true);
+                          }}
+                          variant="outline"
+                          className="border-red-300 text-red-600 hover:bg-red-50"
+                        >
+                          Cancel
+                        </Button>
+
+                        {user?.id === booking.expertId &&
+                          booking.status === "ACCEPTED" && (
+                            <Button
+                              onClick={() => handleCompleteBooking(booking.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              disabled={processingId === booking.id}
+                            >
+                              {processingId === booking.id ? (
+                                <LoadingSpinner size="sm" className="mr-2" />
+                              ) : (
+                                <CheckCircle2 className="size-4 mr-2" />
+                              )}
+                              Mark Complete
+                            </Button>
+                          )}
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="size-4" />
-                        <span>
-                          {format(new Date(booking.startDateTime), "HH:mm")} (
-                          {booking.duration} min)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <DollarSign className="size-4" />
-                        <span>${Number(booking.price).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm font-semibold text-gray-900 mb-3">
-                      Topic: {booking.topic}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+            <TabsContent value="completed" className="space-y-6">
+              {completedBookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center">
+                    <p className="text-gray-600 text-lg">
+                      No completed sessions yet
                     </p>
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </TabsContent>
-          {/* Schedule Tab */}
-          <TabsContent value="schedule">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="size-5" />
-                  Your Schedule
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {scheduleData.map((slot, index) => (
-                    <div
-                      key={index}
-                      className={`p-4 rounded-lg border-2 ${
-                        slot.status === "confirmed"
-                          ? "bg-green-50 border-green-200"
-                          : slot.status === "pending"
-                            ? "bg-orange-50 border-orange-200"
-                            : "bg-blue-50 border-blue-200"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <p className="font-semibold text-gray-900">
-                              {formatDate(slot.date)}
-                            </p>
-                            <Badge
-                              className={`border ${getStatusColor(slot.status)}`}
-                            >
-                              {slot.status.charAt(0).toUpperCase() +
-                                slot.status.slice(1)}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="size-4" />
-                              <span>
-                                {slot.time} ({slot.duration} min)
-                              </span>
+              ) : (
+                completedBookings.map((booking) => (
+                  <Card key={booking.id} className="border-l-4 border-l-gray-400">
+                    <CardHeader>
+                      <div className="flex items-center gap-3">
+                        <CardTitle className="text-xl">
+                          {booking.member?.name}
+                        </CardTitle>
+                        <Badge className="bg-gray-100 text-gray-700 border">
+                          Completed
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-2">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="size-4" />
+                          <span>{formatDate(booking.startDateTime)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="size-4" />
+                          <span>
+                            {format(new Date(booking.startDateTime), "HH:mm")} (
+                            {booking.duration} min)
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <DollarSign className="size-4" />
+                          <span>${Number(booking.price).toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm font-semibold text-gray-900 mb-3">
+                        Topic: {booking.topic}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+            {/* Schedule Tab */}
+            <TabsContent value="schedule">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="size-5" />
+                    Your Schedule
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {scheduleData.map((slot, index) => (
+                      <div
+                        key={index}
+                        className={`p-4 rounded-lg border-2 ${
+                          slot.status === "confirmed"
+                            ? "bg-green-50 border-green-200"
+                            : slot.status === "pending"
+                              ? "bg-orange-50 border-orange-200"
+                              : "bg-blue-50 border-blue-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <p className="font-semibold text-gray-900">
+                                {formatDate(slot.date)}
+                              </p>
+                              <Badge
+                                className={`border ${getStatusColor(slot.status)}`}
+                              >
+                                {slot.status.charAt(0).toUpperCase() +
+                                  slot.status.slice(1)}
+                              </Badge>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <Building className="size-4" />
-                              <span>{slot.client}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <MessageSquare className="size-4" />
-                              <span>{slot.topic}</span>
+                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                              <div className="flex items-center gap-1.5">
+                                <Clock className="size-4" />
+                                <span>
+                                  {slot.time} ({slot.duration} min)
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <Building className="size-4" />
+                                <span>{slot.client}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <MessageSquare className="size-4" />
+                                <span>{slot.topic}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {/* ── CALENDAR VIEW ── */}
+        {viewMode === "calendar" && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CalendarDays className="size-5" />
+                  Calendar
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <CalendarWidget
+                    mode="single"
+                    selected={calendarSelectedDate}
+                    onSelect={setCalendarSelectedDate}
+                    modifiers={{
+                      hasBooking: (date) => getBookingsForDate(date).length > 0,
+                    }}
+                    modifiersClassNames={{
+                      hasBooking: "bg-indigo-100 font-semibold text-indigo-700",
+                    }}
+                    className="rounded-lg border border-gray-300 shadow-sm p-4"
+                  />
                 </div>
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  Highlighted dates have at least one session scheduled.
+                </p>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">
+                  {calendarSelectedDate
+                    ? format(calendarSelectedDate, "EEEE, MMMM d, yyyy")
+                    : "Select a date"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 max-h-[500px] overflow-y-auto">
+                {calendarSelectedDate &&
+                  getBookingsForDate(calendarSelectedDate).length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-6">
+                      No sessions on this date
+                    </p>
+                  )}
+                {calendarSelectedDate &&
+                  getBookingsForDate(calendarSelectedDate).map((booking) => (
+                    <BookingSummaryCard key={booking.id} booking={booking} />
+                  ))}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* ── LIST VIEW (Upcoming / Past) ── */}
+        {viewMode === "list" && (
+          <Tabs
+            value={listSubTab}
+            onValueChange={(v) => setListSubTab(v as ListSubTab)}
+          >
+            <TabsList className="mb-6">
+              <TabsTrigger
+                value="upcoming"
+                className="rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                Upcoming
+                {upcomingBookings.length > 0 && (
+                  <Badge className="ml-2 bg-indigo-500 text-white">
+                    {upcomingBookings.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger
+                value="past"
+                className="rounded-lg border bg-white data-[state=active]:bg-gray-100 px-4"
+              >
+                Past
+                {pastBookings.length > 0 && (
+                  <Badge className="ml-2 bg-gray-500 text-white">
+                    {pastBookings.length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upcoming" className="space-y-4">
+              {upcomingBookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center text-gray-500">
+                    No upcoming sessions
+                  </CardContent>
+                </Card>
+              ) : (
+                [...upcomingBookings]
+                  .sort(
+                    (a, b) =>
+                      new Date(a.startDateTime).getTime() -
+                      new Date(b.startDateTime).getTime(),
+                  )
+                  .map((booking) => (
+                    <BookingSummaryCard key={booking.id} booking={booking} />
+                  ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="past" className="space-y-4">
+              {pastBookings.length === 0 ? (
+                <Card>
+                  <CardContent className="py-12 text-center text-gray-500">
+                    No past sessions
+                  </CardContent>
+                </Card>
+              ) : (
+                [...pastBookings]
+                  .sort(
+                    (a, b) =>
+                      new Date(b.startDateTime).getTime() -
+                      new Date(a.startDateTime).getTime(),
+                  )
+                  .map((booking) => (
+                    <BookingSummaryCard key={booking.id} booking={booking} />
+                  ))
+              )}
+            </TabsContent>
+          </Tabs>
+        )}
 
         {/* Reject Booking Dialog */}
         <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>

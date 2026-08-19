@@ -16,7 +16,7 @@ async function syncProgramStatuses() {
 export const getPrograms = async (req, res, next) => {
   try {
     await syncProgramStatuses();
-    const { type, status = "OPEN", search, page = 1, limit = 8 } = req.query;
+    const { type, status = "all", search, page = 1, limit = 8 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 

@@ -481,7 +481,7 @@ export function ExpertDashboard() {
               className="bg-indigo-600 hover:bg-indigo-700"
             >
               <Calendar className="size-4 mr-2" />
-              Manage Reservations
+              Bookings
             </Button>
             <Button
               variant="outline"

@@ -7,8 +7,6 @@ import {
   X,
   Loader2,
   Calendar,
-  ShieldOff,
-  ShieldCheck,
   BarChart3,
   TrendingUp,
   BookOpen,
@@ -36,13 +34,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
+
 import {
   LineChart,
   Line,
@@ -52,6 +44,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import api from "../../services/axios";
+import { ConfirmActionDialog } from "../components/ui/ConfirmActionDialog";
 
 type Stats = {
   users: number;
@@ -125,12 +118,11 @@ const PROGRAM_TYPE_COLORS: Record<string, string> = {
 
 type ActiveSection =
   | "overview"
-  | "users"
   | "projects"
   | "programs"
   | "experts"
   | "revenue"
-  | "events";
+  | "events" ;
 
 type EventRegistration = {
   id: string;
@@ -158,6 +150,11 @@ type EventApplication = {
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   user: { name: string; email: string; role: string };
 };
+
+
+
+
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -171,13 +168,10 @@ export default function AdminDashboard() {
   const [revenueData, setRevenueData] = useState<RevenueRow[]>([]);
   const [rawRevenueData, setRawRevenueData] = useState<RevenueRow[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [suspendLoading, setSuspendLoading] = useState<string | null>(null);
   const [expertApplicants, setExpertApplicants] = useState<User[]>([]);
 
   const [events, setEvents] = useState<AdminEvent[]>([]);
 
-  const [userSearch, setUserSearch] = useState("");
-  const [userRoleFilter, setUserRoleFilter] = useState("all");
 
   const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [eventRegistrations, setEventRegistrations] = useState<
@@ -253,6 +247,30 @@ export default function AdminDashboard() {
       prev.map((a) => (a.id === appId ? { ...a, status } : a)),
     );
   };
+const confirmProjectAction = async () => {
+  if (!pendingProjectAction) return;
+  const { project, action } = pendingProjectAction;
+  if (action === "approve") await handleApprove(project.id);
+  else await handleReject(project.id);
+};
+
+const confirmExpertAction = async () => {
+  if (!pendingExpertAction) return;
+  const { user, action } = pendingExpertAction;
+  if (action === "approve") await handleApproveExpert(user.id);
+  else await handleRejectExpert(user.id);
+};
+
+const confirmProgramAppAction = async () => {
+  if (!pendingProgramApp) return;
+  await handleApplicationStatus(pendingProgramApp.app.id, pendingProgramApp.status);
+};
+
+const confirmEventAppAction = async () => {
+  if (!pendingEventApp) return;
+  await handleEventApplicationStatus(pendingEventApp.app.id, pendingEventApp.status);
+};
+
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -288,17 +306,22 @@ export default function AdminDashboard() {
 
   const fetchRevenue = useCallback(async () => {
     try {
-      const { data } = await api.get("/admin/reports/revenue");
+ const { data } = await api.get("/admin/reports/revenue");
 
-      const raw = data.map((row: RevenueRow) => ({
-        ...row,
-        month: new Date(row.month).toLocaleDateString("en-US", {
-          month: "short",
-          year: "numeric",
-        }),
-        total: Number(row.total),
-        count: Number(row.count),
-      }));
+const sorted = [...data].sort(
+  (a: RevenueRow, b: RevenueRow) =>
+    new Date(a.month).getTime() - new Date(b.month).getTime(),
+);
+
+const raw = sorted.map((row: RevenueRow) => ({
+  ...row,
+  month: new Date(row.month).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  }),
+  total: Number(row.total),
+  count: Number(row.count),
+}));
       setRawRevenueData(raw);
 
       const merged = raw.reduce((acc: RevenueRow[], row: RevenueRow) => {
@@ -361,27 +384,6 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleRoleChange = async (userId: string, role: string) => {
-    await api.patch(`/admin/users/${userId}/role`, { role });
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role } : u)));
-  };
-
-  const handleToggleSuspend = async (user: User) => {
-    try {
-      setSuspendLoading(user.id);
-      const endpoint = user.isSuspended
-        ? `/admin/users/${user.id}/unsuspend`
-        : `/admin/users/${user.id}/suspend`;
-      await api.patch(endpoint);
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.id === user.id ? { ...u, isSuspended: !u.isSuspended } : u,
-        ),
-      );
-    } finally {
-      setSuspendLoading(null);
-    }
-  };
 
   const handleApproveExpert = async (userId: string) => {
     await api.patch(`/admin/experts/${userId}/approve`);
@@ -404,14 +406,7 @@ export default function AdminDashboard() {
     setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
   };
 
-  const filteredUsers = users.filter((u) => {
-    const matchSearch =
-      !userSearch ||
-      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-      u.email.toLowerCase().includes(userSearch.toLowerCase());
-    const matchRole = userRoleFilter === "all" || u.role === userRoleFilter;
-    return matchSearch && matchRole;
-  });
+
 
   const NAV_ITEMS: {
     key: ActiveSection;
@@ -426,7 +421,6 @@ export default function AdminDashboard() {
       icon: FolderOpen,
       badge: projects.length || undefined,
     },
-    { key: "users", label: "Users", icon: Users },
     {
       key: "experts",
       label: "Experts",
@@ -437,6 +431,39 @@ export default function AdminDashboard() {
     { key: "revenue", label: "Revenue", icon: DollarSign },
     { key: "events", label: "Events", icon: Calendar },
   ];
+
+
+
+
+
+const [expertsView, setExpertsView] = useState<"pending" | "all">("pending");
+const [expertSearch, setExpertSearch] = useState("");
+const [pendingProjectAction, setPendingProjectAction] = useState <
+  { project: Project; action: "approve" | "reject" } | null
+>(null);
+const [pendingExpertAction, setPendingExpertAction] = useState <
+  { user: User; action: "approve" | "reject" } | null
+>(null);
+const [pendingProgramApp, setPendingProgramApp] = useState <
+  { app: ProgramApplication; status: "ACCEPTED" | "REJECTED" } | null
+>(null);
+const [pendingEventApp, setPendingEventApp] = useState <
+  { app: EventApplication; status: "ACCEPTED" | "REJECTED" } | null
+>(null);
+
+const allExperts = users.filter(
+  (u) =>
+    u.role === "EXPERT" ||
+    (u.profile?.expertApplicationStatus &&
+      u.profile.expertApplicationStatus !== "NONE"),
+);
+
+const filteredAllExperts = allExperts.filter(
+  (u) =>
+    !expertSearch ||
+    u.name.toLowerCase().includes(expertSearch.toLowerCase()) ||
+    u.email.toLowerCase().includes(expertSearch.toLowerCase()),
+);
 
   if (loading) {
     return (
@@ -462,7 +489,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Admin Panel</h1>
+          <h1 className="text-3xl font-semibold text-gray-900">Overview</h1>
           <p className="text-gray-500 text-sm mt-1">
             Manage the 360EVO platform
           </p>
@@ -608,18 +635,16 @@ export default function AdminDashboard() {
               </p>
               <p className="text-xs text-blue-500 mt-0.5">Click to review →</p>
             </button>
-            <button
-              onClick={() => setActiveSection("users")}
-              className="text-left p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors"
-            >
-              <p className="text-2xl font-bold text-red-700">
-                {users.filter((u) => u.isSuspended).length}
-              </p>
-              <p className="text-sm text-red-600 font-medium">
-                Suspended Users
-              </p>
-              <p className="text-xs text-red-500 mt-0.5">Click to manage →</p>
-            </button>
+<button
+  onClick={() => navigate("/app/admin/users")}
+  className="text-left p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors"
+>
+  <p className="text-2xl font-bold text-red-700">
+    {users.filter((u) => u.isSuspended).length}
+  </p>
+  <p className="text-sm text-red-600 font-medium">Suspended Users</p>
+  <p className="text-xs text-red-500 mt-0.5">Click to manage →</p>
+</button>
           </div>
         </div>
       )}
@@ -678,32 +703,33 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={actionLoading === project.id}
-                            onClick={() => handleApprove(project.id)}
-                            className="border-green-500 text-green-600 hover:bg-green-50"
-                          >
-                            {actionLoading === project.id ? (
-                              <Loader2 className="size-4 animate-spin" />
-                            ) : (
-                              <>
-                                <Check className="size-4 mr-1" />
-                                Approve
-                              </>
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            disabled={actionLoading === project.id}
-                            onClick={() => handleReject(project.id)}
-                            className="border-red-500 text-red-600 hover:bg-red-50"
-                          >
-                            <X className="size-4 mr-1" />
-                            Reject
-                          </Button>
+
+<Button
+  size="sm"
+  variant="outline"
+  disabled={actionLoading === project.id}
+  onClick={() => setPendingProjectAction({ project, action: "approve" })}
+  className="border-green-500 text-green-600 hover:bg-green-50"
+>
+  {actionLoading === project.id ? (
+    <Loader2 className="size-4 animate-spin" />
+  ) : (
+    <>
+      <Check className="size-4 mr-1" />
+      Approve
+    </>
+  )}
+</Button>
+<Button
+  size="sm"
+  variant="outline"
+  disabled={actionLoading === project.id}
+  onClick={() => setPendingProjectAction({ project, action: "reject" })}
+  className="border-red-500 text-red-600 hover:bg-red-50"
+>
+  <X className="size-4 mr-1" />
+  Reject
+</Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -715,151 +741,124 @@ export default function AdminDashboard() {
         </Card>
       )}
 
-      {/* ── USERS ─ */}
-      {activeSection === "users" && (
-        <div className="space-y-4">
-          {/* Filters */}
-          <div className="flex gap-3 flex-wrap">
-            <div className="relative flex-1 min-w-48">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
-              <Input
-                placeholder="Search users..."
-                value={userSearch}
-                onChange={(e) => setUserSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={userRoleFilter} onValueChange={setUserRoleFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="MEMBER">Member</SelectItem>
-                <SelectItem value="STARTUP">Startup</SelectItem>
-                <SelectItem value="EXPERT">Expert</SelectItem>
-                <SelectItem value="INVESTOR">Investor</SelectItem>
-                <SelectItem value="ADMIN">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Card className="border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="size-4" />
-                Users ({filteredUsers.length})
-              </CardTitle>
-            </CardHeader>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Change Role</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((user) => (
-                    <TableRow
-                      key={user.id}
-                      className={user.isSuspended ? "bg-red-50 opacity-80" : ""}
-                    >
-                      <TableCell
-                        className="font-medium cursor-pointer hover:text-indigo-600"
-                        onClick={() => navigate(`/app/profile/${user.id}`)}
-                      >
-                        {user.name}
-                      </TableCell>
-                      <TableCell className="text-gray-500 text-sm">
-                        {user.email}
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={ROLE_COLORS[user.role]}>
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          className={
-                            user.isSuspended
-                              ? "bg-red-100 text-red-700"
-                              : "bg-green-100 text-green-700"
-                          }
-                        >
-                          {user.isSuspended ? "Suspended" : "Active"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={user.role}
-                          disabled={user.isSuspended}
-                          onValueChange={(v) => handleRoleChange(user.id, v)}
-                        >
-                          <SelectTrigger className="w-36">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="MEMBER">Member</SelectItem>
-                            <SelectItem value="STARTUP">Startup</SelectItem>
-                            <SelectItem value="EXPERT">Expert</SelectItem>
-                            <SelectItem value="INVESTOR">Investor</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={suspendLoading === user.id}
-                          onClick={() => handleToggleSuspend(user)}
-                          className={
-                            user.isSuspended
-                              ? "border-green-500 text-green-600 hover:bg-green-50"
-                              : "border-red-400 text-red-600 hover:bg-red-50"
-                          }
-                        >
-                          {suspendLoading === user.id ? (
-                            <Loader2 className="size-4 animate-spin" />
-                          ) : user.isSuspended ? (
-                            <>
-                              <ShieldCheck className="size-4 mr-1" />
-                              Reactivate
-                            </>
-                          ) : (
-                            <>
-                              <ShieldOff className="size-4 mr-1" />
-                              Suspend
-                            </>
-                          )}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
-        </div>
-      )}
+    
 
       {/* ── EXPERT APPLICATIONS ─ */}
-      {activeSection === "experts" && (
+{activeSection === "experts" && (
+  <div className="space-y-4">
+    {/* Sub-tabs */}
+    <div className="flex gap-2">
+      <button
+        onClick={() => setExpertsView("pending")}
+        className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          expertsView === "pending"
+            ? "bg-indigo-600 text-white"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+        }`}
+      >
+        Pending Experts
+        {expertApplicants.length > 0 && (
+          <span className="ml-1.5 text-xs font-bold">
+            ({expertApplicants.length})
+          </span>
+        )}
+      </button>
+      <button
+        onClick={() => setExpertsView("all")}
+        className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          expertsView === "all"
+            ? "bg-indigo-600 text-white"
+            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+        }`}
+      >
+        All Experts ({allExperts.length})
+      </button>
+    </div>
+
+    {expertsView === "pending" ? (
+      <Card className="border border-gray-200">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <TrendingUp className="size-4 text-green-600" />
+            Expert Applications
+            {expertApplicants.length > 0 && (
+              <Badge className="bg-amber-100 text-amber-700">
+                {expertApplicants.length} pending
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Expertise</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {expertApplicants.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-gray-400">
+                    No pending expert applications
+                  </TableCell>
+                </TableRow>
+              ) : (
+                expertApplicants.map((u) => (
+                  <TableRow key={u.id}>
+                    <TableCell className="font-medium">{u.name}</TableCell>
+                    <TableCell className="text-gray-500">{u.email}</TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {u.profile?.expertise?.join(", ") || "—"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+<Button
+  size="sm"
+  variant="outline"
+  className="border-green-500 text-green-600 hover:bg-green-50"
+  onClick={() => setPendingExpertAction({ user: u, action: "approve" })}
+>
+  <Check className="size-4 mr-1" />
+  Approve
+</Button>
+<Button
+  size="sm"
+  variant="outline"
+  className="border-red-500 text-red-600 hover:bg-red-50"
+  onClick={() => setPendingExpertAction({ user: u, action: "reject" })}
+>
+  <X className="size-4 mr-1" />
+  Reject
+</Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </Card>
+    ) : (
+      <>
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+          <Input
+            placeholder="Search experts..."
+            value={expertSearch}
+            onChange={(e) => setExpertSearch(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
         <Card className="border border-gray-200">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="size-4 text-green-600" />
-              Expert Applications
-              {expertApplicants.length > 0 && (
-                <Badge className="bg-amber-100 text-amber-700">
-                  {expertApplicants.length} pending
-                </Badge>
-              )}
+              <Users className="size-4 text-green-600" />
+              All Experts ({filteredAllExperts.length})
             </CardTitle>
           </CardHeader>
           <div className="overflow-x-auto">
@@ -869,57 +868,63 @@ export default function AdminDashboard() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Expertise</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expertApplicants.length === 0 ? (
+                {filteredAllExperts.length === 0 ? (
                   <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="text-center py-8 text-gray-400"
-                    >
-                      No pending expert applications
+                    <TableCell colSpan={4} className="text-center py-8 text-gray-400">
+                      No experts found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  expertApplicants.map((u) => (
-                    <TableRow key={u.id}>
-                      <TableCell className="font-medium">{u.name}</TableCell>
-                      <TableCell className="text-gray-500">{u.email}</TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {u.profile?.expertise?.join(", ") || "—"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-green-500 text-green-600 hover:bg-green-50"
-                            onClick={() => handleApproveExpert(u.id)}
+                  filteredAllExperts.map((u) => {
+                    const status =
+                      u.role === "EXPERT"
+                        ? "APPROVED"
+                        : u.profile?.expertApplicationStatus && u.profile.expertApplicationStatus !== "NONE"
+                          ? u.profile.expertApplicationStatus
+                          : "—";
+                    return (
+                      <TableRow key={u.id}>
+                        <TableCell
+                          className="font-medium cursor-pointer hover:text-indigo-600"
+                          onClick={() => navigate(`/app/profile/${u.id}`)}
+                        >
+                          {u.name}
+                        </TableCell>
+                        <TableCell className="text-gray-500">{u.email}</TableCell>
+                        <TableCell className="text-sm text-gray-600">
+                          {u.profile?.expertise?.join(", ") || "—"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={
+                              status === "APPROVED"
+                                ? "bg-green-100 text-green-700"
+                                : status === "REJECTED"
+                                  ? "bg-red-100 text-red-700"
+                                  : status === "PENDING"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-gray-100 text-gray-600"
+                            }
                           >
-                            <Check className="size-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-red-500 text-red-600 hover:bg-red-50"
-                            onClick={() => handleRejectExpert(u.id)}
-                          >
-                            <X className="size-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                            {status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </div>
         </Card>
-      )}
+      </>
+    )}
+  </div>
+)}
 
       {activeSection === "programs" &&
         (selectedProgram ? (
@@ -991,28 +996,24 @@ export default function AdminDashboard() {
                         <TableCell className="text-right">
                           {app.status === "PENDING" && (
                             <div className="flex justify-end gap-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-green-500 text-green-600 hover:bg-green-50"
-                                onClick={() =>
-                                  handleApplicationStatus(app.id, "ACCEPTED")
-                                }
-                              >
-                                <Check className="size-4 mr-1" />
-                                Accept
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-red-500 text-red-600 hover:bg-red-50"
-                                onClick={() =>
-                                  handleApplicationStatus(app.id, "REJECTED")
-                                }
-                              >
-                                <X className="size-4 mr-1" />
-                                Reject
-                              </Button>
+<Button
+  size="sm"
+  variant="outline"
+  className="border-green-500 text-green-600 hover:bg-green-50"
+  onClick={() => setPendingProgramApp({ app, status: "ACCEPTED" })}
+>
+  <Check className="size-4 mr-1" />
+  Accept
+</Button>
+<Button
+  size="sm"
+  variant="outline"
+  className="border-red-500 text-red-600 hover:bg-red-50"
+  onClick={() => setPendingProgramApp({ app, status: "REJECTED" })}
+>
+  <X className="size-4 mr-1" />
+  Reject
+</Button>
                             </div>
                           )}
                         </TableCell>
@@ -1180,34 +1181,24 @@ export default function AdminDashboard() {
                           <TableCell className="text-right">
                             {app.status === "PENDING" && (
                               <div className="flex justify-end gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-green-500 text-green-600 hover:bg-green-50"
-                                  onClick={() =>
-                                    handleEventApplicationStatus(
-                                      app.id,
-                                      "ACCEPTED",
-                                    )
-                                  }
-                                >
-                                  <Check className="size-4 mr-1" />
-                                  Accept
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-red-500 text-red-600 hover:bg-red-50"
-                                  onClick={() =>
-                                    handleEventApplicationStatus(
-                                      app.id,
-                                      "REJECTED",
-                                    )
-                                  }
-                                >
-                                  <X className="size-4 mr-1" />
-                                  Reject
-                                </Button>
+<Button
+  size="sm"
+  variant="outline"
+  className="border-green-500 text-green-600 hover:bg-green-50"
+  onClick={() => setPendingEventApp({ app, status: "ACCEPTED" })}
+>
+  <Check className="size-4 mr-1" />
+  Accept
+</Button>
+<Button
+  size="sm"
+  variant="outline"
+  className="border-red-500 text-red-600 hover:bg-red-50"
+  onClick={() => setPendingEventApp({ app, status: "REJECTED" })}
+>
+  <X className="size-4 mr-1" />
+  Reject
+</Button>
                               </div>
                             )}
                           </TableCell>
@@ -1526,6 +1517,62 @@ export default function AdminDashboard() {
           )}
         </div>
       )}
+
+<ConfirmActionDialog
+  open={!!pendingProjectAction}
+  onOpenChange={(open) => !open && setPendingProjectAction(null)}
+  title={pendingProjectAction?.action === "approve" ? "Approve this project?" : "Reject this project?"}
+  description={
+    pendingProjectAction
+      ? `${pendingProjectAction.action === "approve" ? "Approve" : "Reject"} "${pendingProjectAction.project.title}" by ${pendingProjectAction.project.owner?.name}?`
+      : ""
+  }
+  confirmLabel={pendingProjectAction?.action === "approve" ? "Approve" : "Reject"}
+  destructive={pendingProjectAction?.action === "reject"}
+  onConfirm={confirmProjectAction}
+/>
+
+<ConfirmActionDialog
+  open={!!pendingExpertAction}
+  onOpenChange={(open) => !open && setPendingExpertAction(null)}
+  title={pendingExpertAction?.action === "approve" ? "Approve this expert application?" : "Reject this expert application?"}
+  description={
+    pendingExpertAction
+      ? `${pendingExpertAction.action === "approve" ? "Approve" : "Reject"} the expert application from ${pendingExpertAction.user.name} (${pendingExpertAction.user.email})?`
+      : ""
+  }
+  confirmLabel={pendingExpertAction?.action === "approve" ? "Approve" : "Reject"}
+  destructive={pendingExpertAction?.action === "reject"}
+  onConfirm={confirmExpertAction}
+/>
+
+<ConfirmActionDialog
+  open={!!pendingProgramApp}
+  onOpenChange={(open) => !open && setPendingProgramApp(null)}
+  title={pendingProgramApp?.status === "ACCEPTED" ? "Accept this application?" : "Reject this application?"}
+  description={
+    pendingProgramApp
+      ? `${pendingProgramApp.status === "ACCEPTED" ? "Accept" : "Reject"} ${pendingProgramApp.app.user.name}'s application to "${selectedProgram?.title}"?`
+      : ""
+  }
+  confirmLabel={pendingProgramApp?.status === "ACCEPTED" ? "Accept" : "Reject"}
+  destructive={pendingProgramApp?.status === "REJECTED"}
+  onConfirm={confirmProgramAppAction}
+/>
+
+<ConfirmActionDialog
+  open={!!pendingEventApp}
+  onOpenChange={(open) => !open && setPendingEventApp(null)}
+  title={pendingEventApp?.status === "ACCEPTED" ? "Accept this application?" : "Reject this application?"}
+  description={
+    pendingEventApp
+      ? `${pendingEventApp.status === "ACCEPTED" ? "Accept" : "Reject"} ${pendingEventApp.app.user.name}'s application to "${selectedEventForApps?.title}"?`
+      : ""
+  }
+  confirmLabel={pendingEventApp?.status === "ACCEPTED" ? "Accept" : "Reject"}
+  destructive={pendingEventApp?.status === "REJECTED"}
+  onConfirm={confirmEventAppAction}
+/>
     </div>
   );
 }

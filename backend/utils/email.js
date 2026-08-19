@@ -7,6 +7,7 @@ export const sendEmail = async ({ to, subject, html }) => {
     console.log("Sending email to:", to);
     console.log("Using API KEY:", !!process.env.SENDGRID_API_KEY);
     console.log("From:", process.env.EMAIL_USER);
+
     const msg = {
       to,
       from: process.env.EMAIL_USER,

@@ -2,6 +2,7 @@ import { prisma } from "../config/prisma.js";
 import { createNotification } from "../utils/createNotification.js";
 import { runProjectAssessment } from "../services/assessmentService.js";
 import { sendEmail } from "../utils/email.js";
+import crypto from "crypto";
 
 export const getPendingProjects = async (req, res, next) => {
   try {
@@ -443,6 +444,350 @@ export const updateEventApplicationStatus = async (req, res, next) => {
     }
 
     res.json(app);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getGrowthAnalytics = async (req, res, next) => {
+  try {
+    const { range = "monthly", startDate, endDate } = req.query;
+
+    const validRanges = { daily: "day", weekly: "week", monthly: "month" };
+    const bucket = validRanges[range] || "month";
+
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 jours par défaut
+    const end = endDate ? new Date(endDate) : new Date();
+
+    const rows = await prisma.$queryRawUnsafe(
+      `
+      SELECT
+        date_trunc('${bucket}', "createdAt") AS period,
+        role,
+        COUNT(*)::int AS count
+      FROM "User"
+      WHERE "createdAt" >= $1 AND "createdAt" <= $2
+      GROUP BY period, role
+      ORDER BY period ASC
+      `,
+      start,
+      end,
+    );
+
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEngagementAnalytics = async (req, res, next) => {
+  try {
+    const { range = "monthly", startDate, endDate } = req.query;
+
+    const validRanges = { daily: "day", weekly: "week", monthly: "month" };
+    const bucket = validRanges[range] || "month";
+
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+
+    const [projectsByStatus, matches, messages, dataRoomActivity, activeUsers] =
+      await Promise.all([
+        prisma.$queryRawUnsafe(
+          `
+          SELECT date_trunc('${bucket}', "createdAt") AS period, status, COUNT(*)::int AS count
+          FROM "Project"
+          WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          GROUP BY period, status
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+        prisma.$queryRawUnsafe(
+          `
+          SELECT date_trunc('${bucket}', "createdAt") AS period, COUNT(*)::int AS count
+          FROM "Match"
+          WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          GROUP BY period
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+        prisma.$queryRawUnsafe(
+          `
+          SELECT date_trunc('${bucket}', "createdAt") AS period, COUNT(*)::int AS count
+          FROM "Message"
+          WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          GROUP BY period
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+        prisma.$queryRawUnsafe(
+          `
+          SELECT date_trunc('${bucket}', "createdAt") AS period, COUNT(*)::int AS count
+          FROM "DataRoomActivity"
+          WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          GROUP BY period
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+        prisma.$queryRawUnsafe(
+          `
+          SELECT date_trunc('${bucket}', activity_date) AS period, COUNT(DISTINCT user_id)::int AS count
+          FROM (
+            SELECT "senderId" AS user_id, "createdAt" AS activity_date FROM "Message"
+            WHERE "createdAt" >= $1 AND "createdAt" <= $2
+            UNION ALL
+            SELECT "ownerId" AS user_id, "createdAt" AS activity_date FROM "Project"
+            WHERE "createdAt" >= $1 AND "createdAt" <= $2
+            UNION ALL
+            SELECT "userId" AS user_id, "createdAt" AS activity_date FROM "DataRoomActivity"
+            WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          ) combined
+          GROUP BY period
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+      ]);
+
+    res.json({
+      projectsByStatus,
+      matches,
+      messages,
+      dataRoomActivity,
+      activeUsers,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getRevenueAnalytics = async (req, res, next) => {
+  try {
+    const { range = "monthly", startDate, endDate } = req.query;
+
+    const validRanges = { daily: "day", weekly: "week", monthly: "month" };
+    const bucket = validRanges[range] || "month";
+
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+
+    const rows = await prisma.$queryRawUnsafe(
+      `
+      SELECT
+        date_trunc('${bucket}', "createdAt") AS period,
+        "referenceType",
+        SUM(amount)::float AS total,
+        COUNT(*)::int AS count
+      FROM "Payment"
+      WHERE "createdAt" >= $1 AND "createdAt" <= $2 AND status = 'SUCCEEDED'
+      GROUP BY period, "referenceType"
+      ORDER BY period ASC
+      `,
+      start,
+      end,
+    );
+
+    res.json(rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getEventProgramAnalytics = async (req, res, next) => {
+  try {
+    const { range = "monthly", startDate, endDate } = req.query;
+
+    const validRanges = { daily: "day", weekly: "week", monthly: "month" };
+    const bucket = validRanges[range] || "month";
+
+    const start = startDate
+      ? new Date(startDate)
+      : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+
+    const [eventRegistrations, eventApplications, programApplications] =
+      await Promise.all([
+        prisma.$queryRawUnsafe(
+          `
+          SELECT
+            date_trunc('${bucket}', "createdAt") AS period,
+            COUNT(*)::int AS registrations
+          FROM "EventRegistration"
+          WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          GROUP BY period
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+        prisma.$queryRawUnsafe(
+          `
+          SELECT
+            date_trunc('${bucket}', "createdAt") AS period,
+            status,
+            COUNT(*)::int AS count
+          FROM "EventApplication"
+          WHERE "createdAt" >= $1 AND "createdAt" <= $2
+          GROUP BY period, status
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+        prisma.$queryRawUnsafe(
+          `
+          SELECT
+            date_trunc('${bucket}', "submittedAt") AS period,
+            status,
+            COUNT(*)::int AS count
+          FROM "ProgramApplication"
+          WHERE "submittedAt" >= $1 AND "submittedAt" <= $2
+          GROUP BY period, status
+          ORDER BY period ASC
+          `,
+          start,
+          end,
+        ),
+      ]);
+
+const eventFillRates = await prisma.$queryRaw`
+  SELECT
+    e.id,
+    e.title,
+    e.capacity,
+    COUNT(DISTINCT er.id)::int AS registrations,
+    CASE
+      WHEN e.capacity > 0
+        THEN ROUND((COUNT(DISTINCT er.id)::numeric / e.capacity) * 100, 2)
+      ELSE 0
+    END AS "fillRate"
+  FROM "Event" e
+  LEFT JOIN "EventRegistration" er ON er."eventId" = e.id
+  WHERE e.capacity IS NOT NULL
+  GROUP BY e.id, e.title, e.capacity
+  ORDER BY e.date DESC
+  LIMIT 50
+`;
+
+const programFillRates = await prisma.$queryRaw`
+  SELECT
+    p.id,
+    p.title,
+    p.capacity,
+    COUNT(DISTINCT pp.id)::int AS participants,
+    COUNT(DISTINCT pa.id)::int AS applications,
+    CASE
+      WHEN p.capacity > 0
+        THEN ROUND((COUNT(DISTINCT pp.id)::numeric / p.capacity) * 100, 2)
+      ELSE 0
+    END AS "fillRate"
+  FROM "Program" p
+  LEFT JOIN "ProgramParticipant" pp ON pp."programId" = p.id
+  LEFT JOIN "ProgramApplication" pa ON pa."programId" = p.id
+  WHERE p.capacity IS NOT NULL
+  GROUP BY p.id, p.title, p.capacity
+  ORDER BY p."createdAt" DESC
+  LIMIT 50
+`;
+
+    res.json({
+      eventRegistrations,
+      eventApplications,
+      programApplications,
+      eventFillRates,
+      programFillRates,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (id === req.user.id) {
+      return res.status(400).json({ message: "You cannot delete your own account" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.role === "ADMIN") {
+      return res.status(400).json({ message: "Demote this admin before deleting" });
+    }
+
+    await prisma.user.delete({ where: { id } });
+    res.json({ message: "User deleted" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const inviteAdmin = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const existing = await prisma.user.findUnique({ where: { email } });
+
+    if (existing) {
+      const updated = await prisma.user.update({
+        where: { email },
+        data: { role: "ADMIN" },
+      });
+      await createNotification({
+        userId: updated.id,
+        type: "SYSTEM",
+        title: "You've been made an admin",
+        body: "An administrator granted you admin access to 360EVO.",
+        link: "/app/admin",
+      });
+      return res.json({ message: "Existing user promoted to admin" });
+    }
+
+    const inviteToken = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 jours
+
+    await prisma.adminInvite.deleteMany({ where: { email } });
+
+    await prisma.adminInvite.create({
+      data: {
+        email,
+        token: inviteToken,
+        expiresAt,
+        invitedBy: req.user.id,
+      },
+    });
+
+    const inviteLink = `${process.env.CLIENT_URL}/register?inviteToken=${inviteToken}&email=${encodeURIComponent(email)}`;
+
+    await sendEmail({
+      to: email,
+      subject: "You've been invited as an admin on 360EVO",
+      html: `
+        <p>You've been invited to join 360EVO as an administrator.</p>
+        <p>Click below to create your account — you'll be granted admin access automatically:</p>
+        <p><a href="${inviteLink}">${inviteLink}</a></p>
+        <p>This invite link expires in 7 days.</p>
+      `,
+    });
+
+    res.json({ message: "Invite email sent" });
   } catch (error) {
     next(error);
   }

@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { createNotification } from "../utils/createNotification.js";
+import { getEffectiveAvailability } from "../services/availabilityService.js";
 dotenv.config();
 
 export const getPublicExpertProfile = async (req, res, next) => {
@@ -270,6 +271,103 @@ export const applyExpert = async (req, res, next) => {
     });
   } catch (error) {
     console.error("APPLY EXPERT ERROR:", error.message);
+    next(error);
+  }
+};
+
+
+export const getExpertAvailability = async (req, res, next) => {
+  try {
+    const { id: expertId } = req.params;
+    const { month } = req.query; 
+    const profile = await prisma.profile.findUnique({
+      where: { userId: expertId },
+    });
+    if (!profile) return res.status(404).json({ message: "Expert not found" });
+
+    const [year, monthNum] = month.split("-").map(Number);
+    const daysInMonth = new Date(year, monthNum, 0).getDate();
+
+    const now = new Date();
+    const minNoticeMs = (profile.minNoticeHours ?? 0) * 60 * 60 * 1000;
+    const horizonMs =
+      profile.bookingHorizonDays != null
+        ? profile.bookingHorizonDays * 24 * 60 * 60 * 1000
+        : null;
+
+    const result = [];
+    for (let d = 1; d <= daysInMonth; d++) {
+      const date = new Date(Date.UTC(year, monthNum - 1, d));
+
+      if (date.getTime() + 24 * 60 * 60 * 1000 - minNoticeMs < now.getTime()) continue;
+      if (horizonMs != null && date.getTime() - now.getTime() > horizonMs) continue;
+
+      const availability = await getEffectiveAvailability(profile.id, date);
+      if (availability) {
+        result.push({
+          date: date.toISOString().slice(0, 10),
+          startTime: availability.startTime,
+          endTime: availability.endTime,
+        });
+      }
+    }
+
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAvailabilitySettings = async (req, res, next) => {
+  try {
+    const { minNoticeHours, bookingHorizonDays } = req.body;
+    const updated = await prisma.profile.update({
+      where: { userId: req.user.id },
+      data: { minNoticeHours, bookingHorizonDays },
+    });
+    res.json(updated);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listAvailabilityOverrides = async (req, res, next) => {
+  try {
+    const profile = await prisma.profile.findUnique({ where: { userId: req.user.id } });
+    const overrides = await prisma.availabilityOverride.findMany({
+      where: { profileId: profile.id },
+      orderBy: { date: "asc" },
+    });
+    res.json(overrides);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const upsertAvailabilityOverride = async (req, res, next) => {
+  try {
+    const { date, isAvailable, startTime, endTime } = req.body;
+    const profile = await prisma.profile.findUnique({ where: { userId: req.user.id } });
+
+    const dayStart = new Date(date);
+    dayStart.setUTCHours(0, 0, 0, 0);
+
+    const override = await prisma.availabilityOverride.upsert({
+      where: { profileId_date: { profileId: profile.id, date: dayStart } },
+      update: { isAvailable, startTime, endTime },
+      create: { profileId: profile.id, date: dayStart, isAvailable, startTime, endTime },
+    });
+    res.json(override);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAvailabilityOverride = async (req, res, next) => {
+  try {
+    await prisma.availabilityOverride.delete({ where: { id: req.params.id } });
+    res.json({ message: "Override removed" });
+  } catch (error) {
     next(error);
   }
 };

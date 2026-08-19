@@ -8,10 +8,13 @@ export function Navigation() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0D1B2A] border-b border-white/10">
       <div className="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="text-white font-bold text-xl">
-          360EVO
-        </Link>
+      
+{/* Logo */}
+<Link to="/" className="flex items-center gap-2">
+  <div className="h-10 w-40 rounded-lg bg-white flex items-center justify-center p-1">
+    <img src="/logo.png" alt="360EVO" className="h-full w-full object-contain" />
+  </div>
+</Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-8">

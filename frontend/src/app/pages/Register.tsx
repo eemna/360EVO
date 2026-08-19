@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router";
+import { useNavigate, useSearchParams, Link } from "react-router";
 import api from "../../services/axios";
 import { AxiosError } from "axios";
 
@@ -16,7 +16,7 @@ import {
 import { Card, CardContent } from "../components/ui/card";
 import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 import { useToast } from "../../context/ToastContext";
-
+import { Eye, EyeOff } from "lucide-react";
 import { Briefcase, Users, User, TrendingUp, CheckCircle2 } from "lucide-react";
 
 type Role = "member" | "startup" | "expert" | "investor" | null;
@@ -36,17 +36,24 @@ interface FormData {
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const inviteToken = searchParams.get("inviteToken");
+  const inviteEmail = searchParams.get("email");
+  const isAdminInvite = !!inviteToken;
+
+  const [currentStep, setCurrentStep] = useState(isAdminInvite ? 2 : 1);
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
-    email: "",
+    email: isAdminInvite && inviteEmail ? inviteEmail : "",
     password: "",
     confirmPassword: "",
-    role: null,
+    role: isAdminInvite ? "member" : null, 
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const updateFormData = <K extends keyof FormData>(
     field: K,
@@ -103,6 +110,11 @@ export default function RegistrationPage() {
         });
         return;
       }
+
+      if (isAdminInvite) {
+        handleSubmit();
+        return;
+      }
     }
 
     setCurrentStep((prev) => prev + 1);
@@ -110,42 +122,46 @@ export default function RegistrationPage() {
 
   const handleBack = () => setCurrentStep((prev) => prev - 1);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setLoading(true);
-    if (formData.role === "startup" && !formData.companyName) {
-      showToast({
-        type: "warning",
-        title: "Missing field",
-        message: "Company name is required for startups.",
-      });
-      setLoading(false);
-      return;
+
+    if (!isAdminInvite) {
+      if (formData.role === "startup" && !formData.companyName) {
+        showToast({
+          type: "warning",
+          title: "Missing field",
+          message: "Company name is required for startups.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (formData.role === "expert" && !formData.expertise) {
+        showToast({
+          type: "warning",
+          title: "Missing field",
+          message: "Expertise is required for experts.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (
+        formData.role === "expert" &&
+        formData.hourlyRate &&
+        isNaN(Number(formData.hourlyRate))
+      ) {
+        showToast({
+          type: "error",
+          title: "Invalid value",
+          message: "Hourly rate must be a valid number.",
+        });
+        setLoading(false);
+        return;
+      }
     }
 
-    if (formData.role === "expert" && !formData.expertise) {
-      showToast({
-        type: "warning",
-        title: "Missing field",
-        message: "Expertise is required for experts.",
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (
-      formData.role === "expert" &&
-      formData.hourlyRate &&
-      isNaN(Number(formData.hourlyRate))
-    ) {
-      showToast({
-        type: "error",
-        title: "Invalid value",
-        message: "Hourly rate must be a valid number.",
-      });
-      setLoading(false);
-      return;
-    }
     try {
       await api.post("/auth/register", {
         name: formData.fullName,
@@ -161,13 +177,22 @@ export default function RegistrationPage() {
         hourlyRate: formData.hourlyRate
           ? Number(formData.hourlyRate)
           : undefined,
+        ...(isAdminInvite && { inviteToken }),
       });
 
-      showToast({
-        type: "success",
-        title: "Check your email",
-        message: "We sent you a verification link.",
-      });
+      if (isAdminInvite) {
+        showToast({
+          type: "success",
+          title: "Account created 🎉",
+          message: "You now have admin access. You can log in.",
+        });
+      } else {
+        showToast({
+          type: "success",
+          title: "Check your email",
+          message: "We sent you a verification link.",
+        });
+      }
       navigate("/login");
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
@@ -217,34 +242,36 @@ export default function RegistrationPage() {
     <div className="w-full bg-[#e8eef5] py-8 px-4 flex flex-col items-center">
       <div className="w-full max-w-2xl">
         {/* Step indicators */}
-        <div className="mb-10 flex justify-center">
-          <div className="flex items-center gap-4">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 font-medium transition-all ${
-                    currentStep >= step
-                      ? "bg-[#C9A84C] border-[#C9A84C] text-[#0D1B2A]"
-                      : "bg-transparent border-white/20 text-white/40"
-                  }`}
-                >
-                  {currentStep > step ? (
-                    <CheckCircle2 className="w-5 h-5" />
-                  ) : (
-                    step
-                  )}
-                </div>
-                {step < 3 && (
-                  <div
-                    className={`w-16 h-0.5 mx-2 transition-all ${
-                      currentStep > step ? "bg-[#C9A84C]" : "bg-white/10"
-                    }`}
-                  />
-                )}
-              </div>
-            ))}
+{!isAdminInvite && (
+  <div className="mb-10 flex justify-center">
+    <div className="flex items-center gap-4">
+      {[1, 2, 3].map((step) => (
+        <div key={step} className="flex items-center">
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center border-2 font-medium transition-all ${
+              currentStep >= step
+                ? "bg-[#C9A84C] border-[#C9A84C] text-[#0D1B2A]"
+                : "bg-gray-100 border-gray-300 text-gray-500"
+            }`}
+          >
+            {currentStep > step ? (
+              <CheckCircle2 className="w-5 h-5" />
+            ) : (
+              step
+            )}
           </div>
+          {step < 3 && (
+            <div
+              className={`w-16 h-0.5 mx-2 transition-all ${
+                currentStep > step ? "bg-[#C9A84C]" : "bg-gray-300"
+              }`}
+            />
+          )}
         </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {/* Card */}
         <Card className="bg-[#1A2A3A] border-white/10 rounded-xl">
@@ -322,8 +349,14 @@ export default function RegistrationPage() {
               {currentStep === 2 && (
                 <div className="space-y-5">
                   <h2 className="text-2xl text-center font-semibold text-white">
-                    Basic Information
+                    {isAdminInvite ? "Create Your Admin Account" : "Basic Information"}
                   </h2>
+
+                  {isAdminInvite && (
+                    <p className="text-sm text-center text-[#1D9E75] bg-[#1D9E75]/10 border border-[#1D9E75]/30 rounded-lg py-2 px-3">
+                      You've been invited as an administrator. Complete your details below.
+                    </p>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="fullName" className="text-white/80">
@@ -351,7 +384,8 @@ export default function RegistrationPage() {
                       onChange={(e) => updateFormData("email", e.target.value)}
                       placeholder="you@example.com"
                       autoComplete="email"
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
+                      disabled={isAdminInvite}
+                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0 disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
 
@@ -359,52 +393,86 @@ export default function RegistrationPage() {
                     <Label htmlFor="password" className="text-white/80">
                       Password
                     </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) =>
-                        updateFormData("password", e.target.value)
-                      }
-                      placeholder="Min 8 chars, upper, lower, number"
-                      autoComplete="new-password"
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) =>
+                          updateFormData("password", e.target.value)
+                        }
+                        placeholder="Min 8 chars, upper, lower, number"
+                        autoComplete="new-password"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0 pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showPassword ? (
+                          <Eye className="w-5 h-5" />
+                        ) : (
+                          <EyeOff className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                     <PasswordStrengthBar password={formData.password} />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword" className="text-white/80">
                       Confirm Password
                     </Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        updateFormData("confirmPassword", e.target.value)
-                      }
-                      placeholder="Repeat your password"
-                      autoComplete="new-password"
-                      className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={(e) =>
+                          updateFormData("confirmPassword", e.target.value)
+                        }
+                        placeholder="Repeat your password"
+                        autoComplete="new-password"
+                        className="bg-white/5 border-white/20 text-white placeholder:text-white/30 focus-visible:ring-[#1D9E75] focus-visible:ring-offset-0 pr-11"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                        tabIndex={-1}
+                      >
+                        {showConfirmPassword ? (
+                          <Eye className="w-5 h-5" />
+                        ) : (
+                          <EyeOff className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="flex gap-3">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleBack}
-                      className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
-                    >
-                      Back
-                    </Button>
+                    {!isAdminInvite && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleBack}
+                        className="flex-1 py-3 bg-transparent border-white/20 text-white hover:bg-white/10 hover:text-white rounded-lg"
+                      >
+                        Back
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       onClick={handleNext}
+                      disabled={loading}
                       className="flex-1 py-3 bg-[#C9A84C] hover:bg-[#D4B55C] text-[#0D1B2A] font-semibold rounded-lg"
                     >
-                      Continue
+                      {isAdminInvite
+                        ? loading
+                          ? "Creating account..."
+                          : "Complete Registration"
+                        : "Continue"}
                     </Button>
                   </div>
                 </div>

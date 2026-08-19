@@ -52,6 +52,7 @@ import {
 import { useNavigate } from "react-router";
 import api from "../../services/axios";
 import { LocationAutocompleteInput } from "../components/ui/LocationAutocompleteInput";
+import AvailabilityManager from "../components/ui/Availabilitymanager";
 
 interface PrivacySettings {
   showEmail?: boolean;
@@ -110,34 +111,40 @@ export default function Profile() {
   const [investorProfile, setInvestorProfile] =
     useState<InvestorProfileData | null>(null);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const targetId = !id || id === "me" ? user?.id : id;
-        if (!targetId) return;
+useEffect(() => {
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const targetId = !id || id === "me" ? user?.id : id;
+      if (!targetId) return;
 
-        const { data } = await api.get(`/users/${targetId}`);
-        setProfileUser(data);
+      const { data } = await api.get(`/users/${targetId}`);
+      setProfileUser(data);
 
-        if (data.role === "INVESTOR") {
-          try {
-            const { data: invData } = await api.get("/investor-profile");
-            setInvestorProfile(invData);
-          } catch {
-            setInvestorProfile(null);
-          }
+      if (data.role === "INVESTOR") {
+        try {
+          const { data: invData } = await api.get("/investor-profile");
+          setInvestorProfile(invData);
+        } catch {
+          setInvestorProfile(null);
         }
-      } catch (err) {
-        const error = err as AxiosError;
-        if (error.response?.status === 404) setProfileUser(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      const error = err as AxiosError;
+      if (error.response?.status === 404) setProfileUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    if (user) fetchProfile();
-  }, [id, user]);
+  if (user) fetchProfile();
+}, [id, user]);
+
+useEffect(() => {
+  if (user?.id === profileUser?.id && profileUser?.role === "STARTUP") {
+    navigate("/app/startup-profile", { replace: true });
+  }
+}, [user, profileUser, navigate]);
 
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1111,6 +1118,10 @@ text-white border border-white/30 gap-2"
                               </div>
                             );
                           })}
+                        </div>
+                        {/* Booking rules + date overrides */}
+                        <div className="pt-4 border-t">
+                           <AvailabilityManager />
                         </div>
                       </div>
                     </CardContent>

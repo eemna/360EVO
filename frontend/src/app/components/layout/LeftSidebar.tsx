@@ -14,8 +14,12 @@ import {
   X,
   GraduationCap,
   Layers,
+  Building2,
+  LineChart,
+  CalendarCheck,
 } from "lucide-react";
 import { cn } from "../ui/utils";
+
 export interface Profile {
   avatar?: string;
 }
@@ -27,14 +31,28 @@ export interface User {
   role: string;
   profile?: Profile;
 }
+
 interface ResponsiveSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const menuItems = [
-  { icon: Home, label: "Dashboard", path: "/app" },
-  { icon: User, label: "My Profile", path: "/app/profile/me" },
+const getMenuItems = (role?: string) => [
+  { icon: Home, label: "Overview", path: "/app" },
+  ...(role === "ADMIN"
+    ? [
+        { icon: Users, label: "Users", path: "/app/admin/users" },
+        { icon: LineChart, label: "Analytics", path: "/app/admin/analytics" },
+      ]
+    : []),
+  ...(role === "STARTUP"
+    ? [{ icon: Building2, label: "My Startup", path: "/app/startup-profile" }]
+    : role === "ADMIN"
+      ? []
+      : [{ icon: User, label: "My Profile", path: "/app/profile/me" }]),
+    ...(role === "EXPERT"
+    ? [{ icon: CalendarCheck, label: "Bookings", path: "/app/expert/reservations" }]
+    : []),
   { icon: Users, label: "Events", path: "/app/events" },
   { icon: Layers, label: "Programs", path: "/app/programs" },
   { icon: Briefcase, label: "Projects", path: "/app/projects" },
@@ -48,8 +66,11 @@ export default function LeftSidebar({
   isOpen,
   onClose,
 }: ResponsiveSidebarProps) {
-  const location = useLocation(); //current location
+  const location = useLocation();
   const { user } = useAuth();
+
+  // ICI, à l'intérieur du composant, user.role existe déjà → on peut appeler la fonction
+  const menuItems = getMenuItems(user?.role);
 
   return (
     <>
@@ -61,7 +82,6 @@ export default function LeftSidebar({
         onClick={onClose}
       />
 
-      {/* Sidebar */}
       <aside
         className={cn(
           "fixed top-16 bottom-0 left-0 z-40 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out",

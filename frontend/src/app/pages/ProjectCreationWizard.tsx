@@ -45,6 +45,7 @@ interface ProjectCreationWizardProps {
   loading: boolean;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   onProjectSaved: () => void;
+  embedded?: boolean; // AJOUT
 }
 
 const STEPS = ["Basics", "Details", "Team", "Funding", "Media & Submit"];
@@ -194,6 +195,7 @@ export function ProjectCreationWizard({
   projectId: externalProjectId,
   projectStatus,
   onProjectSaved,
+  embedded = false,
 }: ProjectCreationWizardProps) {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const isApproved = projectStatus === "APPROVED";
@@ -652,12 +654,18 @@ export function ProjectCreationWizard({
     };
   }, [currentProjectId, isSubmitting, isOpen, watch, getValues, mapFormToApi]);
 
-  if (!isOpen) return null;
+if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-50 w-full max-w-7xl lg:max-w-6xl max-h-[95vh] flex flex-col my-8">
-        {/* Header */}
+return (
+  <div className={embedded 
+    ? "w-full" 
+    : "fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+  }>
+    <div className={embedded
+      ? "bg-white rounded-2xl shadow-sm border border-gray-100 w-full flex flex-col"
+      : "bg-white rounded-2xl shadow-2xl border border-gray-50 w-full max-w-7xl lg:max-w-6xl max-h-[95vh] flex flex-col my-8"
+    }>
+       {/* Header */}
         <div className="flex items-center justify-between px-8 py-6 border-b border-gray-50">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-semibold">
@@ -680,14 +688,16 @@ export function ProjectCreationWizard({
             )}
           </div>
 
-          <Button
-            onClick={handleClose}
-            variant="ghost"
-            size="icon"
-            className="bg-gray-100 hover:bg-gray-200 shadow-none transition-colors"
-          >
-            <X className="size-4 text-red-500 " />
-          </Button>
+{!embedded && (
+  <Button
+    onClick={handleClose}
+    variant="ghost"
+    size="icon"
+    className="bg-gray-100 hover:bg-gray-200 shadow-none transition-colors"
+  >
+    <X className="size-4 text-red-500 " />
+  </Button>
+)}
         </div>
 
         {/* Progress Indicator */}
@@ -1551,13 +1561,15 @@ export function ProjectCreationWizard({
             </Button>
 
             <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleNewProject}
-              >
-                New Project
-              </Button>
+{!embedded && (
+  <Button
+    type="button"
+    variant="outline"
+    onClick={handleNewProject}
+  >
+    New Project
+  </Button>
+)}
               {!currentProjectId && (
                 <Button type="button" variant="outline" onClick={saveDraft}>
                   <UploadIcon className="size-4 mr-2" />

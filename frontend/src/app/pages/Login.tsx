@@ -4,6 +4,7 @@ import api from "../../services/axios";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useAuth } from "../../hooks/useAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,23 +15,36 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+  const [showPassword, setShowPassword] = useState(false);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    try {
-      const response = await api.post("/auth/login", { email, password });
-      login(response.data.user, response.data.accessToken);
+try {
+const response = await api.post("/auth/login", { email, password });
 
-      showToast({
-        type: "success",
-        title: "Login successful 🎉",
-        message: "Welcome back!",
-      });
-      navigate("/app");
-    } catch (err: unknown) {
+if (response.data.twoFactorRequired) {
+  navigate("/verify-2fa", {
+    state: { preAuthToken: response.data.preAuthToken },
+  });
+  return;
+}
+
+login(response.data.user, response.data.accessToken);
+
+showToast({
+  type: "success",
+  title: "Login successful 🎉",
+  message: "Welcome back!",
+});
+
+  if (response.data.user.role === "STARTUP") {
+    navigate("/app/startup-profile");
+  } else {
+    navigate("/app");
+  }
+} catch (err: unknown) {
       const axiosErr = err as {
         response?: { status?: number; data?: { message?: string } };
       };
@@ -70,12 +84,13 @@ export default function LoginPage() {
   return (
     <div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
       <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#C9A84C]">
-            <span className="font-bold text-[#0D1B2A] text-lg">360</span>
-          </div>
-        </div>
+       
+{/* Logo */}
+<div className="flex justify-center mb-6">
+  <div className="h-14 w-30 rounded-lg bg-white flex items-center justify-center p-1.5">
+    <img src="/logo.png" alt="360EVO" className="h-full w-full object-contain" />
+  </div>
+</div>
 
         <h1 className="text-center text-white text-xl font-semibold mb-2">
           Welcome back to 360EVO
@@ -112,26 +127,40 @@ export default function LoginPage() {
           </div>
 
           {/* Password Field - Fixed white text */}
-          <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="text-white/80 text-sm font-medium"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg 
-                         text-white placeholder-white/40 
-                         focus:outline-none focus:border-[#1D9E75] focus:ring-1 focus:ring-[#1D9E75]/50
-                         transition-colors"
-              required
-            />
-          </div>
+<div className="space-y-2">
+  <label
+    htmlFor="password"
+    className="text-white/80 text-sm font-medium"
+  >
+    Password
+  </label>
+  <div className="relative">
+    <input
+      id="password"
+      type={showPassword ? "text" : "password"}
+      placeholder="Enter your password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/20 rounded-lg 
+                 text-white placeholder-white/40 
+                 focus:outline-none focus:border-[#1D9E75] focus:ring-1 focus:ring-[#1D9E75]/50
+                 transition-colors"
+      required
+    />
+    <button
+      type="button"
+      onClick={() => setShowPassword((prev) => !prev)}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-black/70 transition-colors"
+      tabIndex={-1}
+    >
+      {showPassword ? (
+        <Eye className="w-5 h-5" />
+      ) : (
+        <EyeOff className="w-5 h-5" />
+      )}
+    </button>
+  </div>
+</div>
 
           {/* Forgot Password */}
           <div className="flex justify-end">

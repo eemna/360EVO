@@ -7,6 +7,7 @@ import {
   updateTeamMemberPhoto,
   getProjectById,
   getMyProjects,
+  getMyStartupProject,
   getFeaturedProjects,
   getPublicProjects,
   getStartupDashboard,
@@ -23,6 +24,7 @@ router.get("/", protect, getPublicProjects);
 router.get("/featured", protect, getFeaturedProjects);
 router.get("/dashboard", protect, getStartupDashboard);
 router.get("/mine", protect, getMyProjects);
+router.get("/my-startup", protect, getMyStartupProject);
 router.get("/:id/analytics", protect, getProjectAnalytics);
 router.get("/:id", protect, getProjectById);
 router.post("/", protect, createProject);

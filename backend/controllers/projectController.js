@@ -229,6 +229,40 @@ export const getMyProjects = async (req, res, next) => {
   }
 };
 
+export const getMyStartupProject = async (req, res, next) => {
+  try {
+    let project = await prisma.project.findFirst({
+      where: { ownerId: req.user.id },
+      orderBy: { createdAt: "asc" },
+      include: { teamMembers: true, milestones: true, documents: true },
+    });
+
+    if (!project) {
+      project = await prisma.project.create({
+        data: {
+          ownerId: req.user.id,
+          title: `${req.user.name}'s Startup`,
+          tagline: "",
+          shortDesc: "",
+          fullDesc: "",
+          industry: "",
+          location: "",
+          stage: "IDEA",
+          status: "DRAFT",
+          visibility: "CONNECTIONS",
+          currency: "USD",
+        },
+        include: { teamMembers: true, milestones: true, documents: true },
+      });
+    }
+
+    res.json(project);
+  } catch (error) {
+    console.error("GET MY STARTUP PROJECT ERROR:", error);
+    next(error);
+  }
+};
+
 export const deleteProject = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -363,24 +397,39 @@ export const submitProject = async (req, res, next) => {
 
     const project = await prisma.project.findUnique({
       where: { id },
+      include: { teamMembers: true, milestones: true, documents: true },
     });
 
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
-
     if (project.ownerId !== req.user.id) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    if (!project.title || !project.shortDesc || !project.fullDesc) {
-      return res.status(400).json({ message: "Missing required fields" });
+    const missing = [];
+    if (!project.title) missing.push("title");
+    if (!project.tagline) missing.push("tagline");
+    if (!project.shortDesc) missing.push("short description");
+    if (!project.fullDesc) missing.push("full description");
+    if (!project.industry) missing.push("industry");
+    if (!project.technologies?.length) missing.push("technology tags");
+    if (!project.fundingSought) missing.push("funding sought");
+    if (!project.teamMembers?.length) missing.push("team members");
+    if (!project.milestones?.length) missing.push("milestones");
+    if (!project.documents?.length) missing.push("documents");
+
+    if (missing.length) {
+      return res.status(400).json({
+        message: `Complete your startup profile before submitting: ${missing.join(", ")}`,
+      });
     }
 
     const updated = await prisma.project.update({
       where: { id },
       data: { status: "PENDING", visibility: "CONNECTIONS" },
     });
+
     const admins = await prisma.user.findMany({
       where: { role: "ADMIN" },
       select: { id: true },

@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { createNotification } from "../utils/createNotification.js";
+import { assertBookingAllowed } from "../services/availabilityService.js"
 import Stripe from "stripe";
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -80,41 +81,14 @@ export const createBooking = async (req, res, next) => {
     const endDateTime = new Date(startDateTime);
     endDateTime.setMinutes(endDateTime.getMinutes() + Number(duration));
 
-    const day = dayOfWeek;
-    const availability = expert.profile.weeklyAvailability.find(
-      (slot) => slot.day === day && slot.enabled,
-    );
-
-    if (!availability || !availability.startTime || !availability.endTime) {
-      return res.status(400).json({ message: "Expert not available this day" });
-    }
-
-    const [startHour, startMinute] = availability.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute] = availability.endTime.split(":").map(Number);
-    const [localHour, localMinute] = timeSlot.split(":").map(Number);
-
-    const bookingStartMins = localHour * 60 + localMinute;
-    const bookingEndMins = bookingStartMins + Number(duration);
-
-    const windowStartMins = startHour * 60 + startMinute;
-    const windowEndMins = endHour * 60 + endMinute;
-
-    console.log("[WINDOW CHECK]", {
-      bookingStartMins,
-      bookingEndMins,
-      windowStartMins,
-      windowEndMins,
-      localHour,
-      localMinute,
-      tzOffset,
-    });
-
-    if (bookingStartMins < windowStartMins || bookingEndMins > windowEndMins) {
-      return res
-        .status(400)
-        .json({ message: "Booking exceeds expert availability window" });
+    try {
+      await assertBookingAllowed({
+        profile: expert.profile,
+        startDateTime,
+        endDateTime,
+      });
+    } catch (err) {
+      return res.status(400).json({ message: err.message });
     }
 
     const overlapping = await prisma.booking.findFirst({

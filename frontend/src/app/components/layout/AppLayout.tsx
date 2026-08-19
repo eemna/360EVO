@@ -5,7 +5,9 @@ import LeftSidebar from "./LeftSidebar";
 import { SocketProvider } from "../../../providers/SocketProvider";
 import { BookmarkProvider } from "../../../providers/BookmarkProvider";
 import { ErrorBoundary } from "../ui/ErrorBoundary";
+import { useAnalytics } from "../../../hooks/useAnalytics";
 export default function AppLayout() {
+  useAnalytics();
   const [SidebarOpen, setIsSidebarOpen] = useState(false);
   return (
     <SocketProvider>
