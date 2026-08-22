@@ -11,6 +11,7 @@ import { cookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
 import { OAuth2Client } from "google-auth-library";
+import { isDisposableEmail } from "../utils/disposableDomains.js";
 
 dotenv.config();
 
@@ -149,6 +150,12 @@ export const register = async (req, res, next) => {
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+
+    if (isDisposableEmail(email)) {
+      return res.status(400).json({
+        message: "Please use a permanent email address to register.",
+      });
     }
 
     const existingUser = await prisma.user.findUnique({

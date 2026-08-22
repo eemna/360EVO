@@ -18,6 +18,7 @@ import {
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import forgotPasswordRateLimit from "../middleware/forgotPasswordRateLimit.js";
+import loginRateLimit from "../middleware/loginRateLimit.js";
 import { requireRecaptcha } from "../middleware/recaptcha.js";
 
 const router = express.Router();
@@ -35,7 +36,7 @@ router.post(
   ],
   register,
 );
-router.post("/login", requireRecaptcha("login"), login);
+router.post("/login", loginRateLimit, requireRecaptcha("login"), login);
 router.post("/google", requireRecaptcha("google_auth"), googleAuth);
 router.post("/logout", protect, logout);
 router.get("/me", protect, getMe);
