@@ -10,8 +10,129 @@ import { sendEmail } from "../utils/email.js";
 import { cookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
+import { OAuth2Client } from "google-auth-library";
 
 dotenv.config();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// GOOGLE OAUTH — accepts a Google ID token from the frontend GIS button,
+// verifies it against Google, then finds-or-creates the user.
+export const googleAuth = async (req, res, next) => {
+  try {
+    const { credential, role } = req.body;
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res
+        .status(503)
+        .json({ message: "Google sign-in is not configured" });
+    }
+
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential required" });
+    }
+
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({ message: "Invalid Google credential" });
+    }
+
+    const email = payload?.email?.toLowerCase();
+    if (!email || payload.email_verified !== true) {
+      return res
+        .status(401)
+        .json({ message: "Google account email is not verified" });
+    }
+
+    let userData = await prisma.user.findUnique({
+      where: { email },
+      include: { profile: true },
+    });
+
+    if (userData?.isSuspended) {
+      return res.status(403).json({ message: "Account is suspended" });
+    }
+
+    if (!userData) {
+      // First Google sign-in: create account. Role from the register page,
+      // validated against the same allowlist as email registration.
+      const requestedRole =
+        typeof role === "string" ? role.toUpperCase() : null;
+      const safeRole = ["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(
+        requestedRole,
+      )
+        ? requestedRole
+        : "MEMBER";
+
+      userData = await prisma.$transaction(async (tx) => {
+        const created = await tx.user.create({
+          data: {
+            name: payload.name || email.split("@")[0],
+            email,
+            // Random, unusable password — account is Google-only until the
+            // user sets a password via reset flow.
+            passwordHash: await bcrypt.hash(
+              crypto.randomBytes(32).toString("hex"),
+              12,
+            ),
+            role: safeRole,
+            isVerified: true, // Google already verified this email
+          },
+        });
+
+        await tx.profile.create({
+          data: {
+            userId: created.id,
+            avatar: payload.picture || null,
+          },
+        });
+
+        return tx.user.findUnique({
+          where: { id: created.id },
+          include: { profile: true },
+        });
+      });
+    }
+
+    const accessToken = generateAccessToken(userData.id);
+    const refreshToken = generateRefreshToken(userData.id);
+
+    const hashedRefreshToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    await prisma.refreshToken.deleteMany({ where: { userId: userData.id } });
+    await prisma.refreshToken.create({
+      data: {
+        userId: userData.id,
+        tokenHash: hashedRefreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    res.json({
+      accessToken,
+      user: {
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+        name: userData.name,
+        profile: userData.profile,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const register = async (req, res, next) => {
   try {
@@ -36,6 +157,15 @@ export const register = async (req, res, next) => {
 
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Honeypot: real users never see/fill the hidden "website" field.
+    // Bots that fill it get a fake success and no account is created.
+    if (req.body.website) {
+      return res.status(201).json({
+        message:
+          "Registration successful. Please check your email to verify your account.",
+      });
     }
 
     const normalizedRole = role.toUpperCase();

@@ -4,11 +4,14 @@ import api from "../../services/axios";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useAuth } from "../../hooks/useAuth";
+import { useRecaptcha } from "../../hooks/useRecaptcha";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { showToast } = useToast();
+  const { getToken } = useRecaptcha();
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +24,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/login", { email, password });
+      const recaptchaToken = await getToken("login");
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+        recaptchaToken,
+      });
       login(response.data.user, response.data.accessToken);
 
       showToast({
@@ -160,6 +168,14 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {/* Divider + Google */}
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-white/40 text-xs">or</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+        <GoogleSignInButton />
 
         {/* Sign Up Link */}
         <p className="text-center mt-6 text-white/60 text-sm">

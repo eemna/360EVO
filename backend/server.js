@@ -57,7 +57,6 @@ const allowedOrigins = [
   "http://localhost",
   "https://360evo.ai",
   "http://localhost:5173",
-  "https://three60evo-frontend.onrender.com",
 ];
 
 app.use(

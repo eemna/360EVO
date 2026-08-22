@@ -8,11 +8,13 @@ import api from "../../services/axios";
 import { AxiosError } from "axios";
 import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
+import { useRecaptcha } from "../../hooks/useRecaptcha";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
 
+  const { getToken } = useRecaptcha();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
 
@@ -25,7 +27,8 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      await api.post("/auth/forgot-password", { email });
+      const recaptchaToken = await getToken("forgot_password");
+      await api.post("/auth/forgot-password", { email, recaptchaToken });
 
       showToast({
         type: "success",
