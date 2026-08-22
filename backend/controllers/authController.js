@@ -10,13 +10,133 @@ import { sendEmail } from "../utils/email.js";
 import { cookieOptions } from "../utils/cookieOptions.js";
 import jwt from "jsonwebtoken";
 import { Prisma } from "@prisma/client";
+import { OAuth2Client } from "google-auth-library";
+import { isDisposableEmail } from "../utils/disposableDomains.js";
 
 dotenv.config();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
 const logoHeader = `
   <div style="text-align: center; margin-bottom: 24px;">
     <img src="https://res.cloudinary.com/dzlh5isw5/image/upload/v1786639995/logo_pcbjyc.png?v=2" alt="360EVO" style="height: 48px;" />
   </div>
 `;
+
+// GOOGLE OAUTH — accepts a Google ID token from the frontend GIS button,
+// verifies it against Google, then finds-or-creates the user.
+export const googleAuth = async (req, res, next) => {
+  try {
+    const { credential, role } = req.body;
+
+    if (!process.env.GOOGLE_CLIENT_ID) {
+      return res
+        .status(503)
+        .json({ message: "Google sign-in is not configured" });
+    }
+
+    if (!credential) {
+      return res.status(400).json({ message: "Google credential required" });
+    }
+
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: credential,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch {
+      return res.status(401).json({ message: "Invalid Google credential" });
+    }
+
+    const email = payload?.email?.toLowerCase();
+    if (!email || payload.email_verified !== true) {
+      return res
+        .status(401)
+        .json({ message: "Google account email is not verified" });
+    }
+
+    let userData = await prisma.user.findUnique({
+      where: { email },
+      include: { profile: true },
+    });
+
+    if (userData?.isSuspended) {
+      return res.status(403).json({ message: "Account is suspended" });
+    }
+
+    if (!userData) {
+      const requestedRole =
+        typeof role === "string" ? role.toUpperCase() : null;
+      const safeRole = ["MEMBER", "EXPERT", "STARTUP", "INVESTOR"].includes(
+        requestedRole,
+      )
+        ? requestedRole
+        : "MEMBER";
+
+      userData = await prisma.$transaction(async (tx) => {
+        const created = await tx.user.create({
+          data: {
+            name: payload.name || email.split("@")[0],
+            email,
+            passwordHash: await bcrypt.hash(
+              crypto.randomBytes(32).toString("hex"),
+              12,
+            ),
+            role: safeRole,
+            isVerified: true,
+          },
+        });
+
+        await tx.profile.create({
+          data: {
+            userId: created.id,
+            avatar: payload.picture || null,
+          },
+        });
+
+        return tx.user.findUnique({
+          where: { id: created.id },
+          include: { profile: true },
+        });
+      });
+    }
+
+    const accessToken = generateAccessToken(userData.id);
+    const refreshToken = generateRefreshToken(userData.id);
+
+    const hashedRefreshToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    await prisma.refreshToken.deleteMany({ where: { userId: userData.id } });
+    await prisma.refreshToken.create({
+      data: {
+        userId: userData.id,
+        tokenHash: hashedRefreshToken,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    res.json({
+      accessToken,
+      user: {
+        id: userData.id,
+        email: userData.email,
+        role: userData.role,
+        name: userData.name,
+        profile: userData.profile,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const register = async (req, res, next) => {
   try {
     const {
@@ -35,12 +155,26 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
+    if (isDisposableEmail(email)) {
+      return res.status(400).json({
+        message: "Please use a permanent email address to register.",
+      });
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Honeypot: real users never see/fill the hidden "website" field.
+    if (req.body.website) {
+      return res.status(201).json({
+        message:
+          "Registration successful. Please check your email to verify your account.",
+      });
     }
 
     let adminInvite = null;
@@ -115,19 +249,16 @@ export const register = async (req, res, next) => {
       await tx.profile.create({
         data: {
           userId: createdUser.id,
-
           expertise:
             normalizedRole === "EXPERT"
               ? Array.isArray(expertise)
                 ? expertise
                 : [expertise]
               : [],
-
           hourlyRate:
             normalizedRole === "EXPERT" && hourlyRate
               ? new Prisma.Decimal(hourlyRate)
               : null,
-
           companyName: normalizedRole === "STARTUP" ? companyName : null,
           stage: normalizedRole === "STARTUP" ? stage || null : null,
         },
@@ -187,9 +318,7 @@ export const login = async (req, res, next) => {
 
     const userData = await prisma.user.findUnique({
       where: { email },
-      include: {
-        profile: true,
-      },
+      include: { profile: true },
     });
 
     if (!userData || !(await bcrypt.compare(password, userData.passwordHash))) {
@@ -207,6 +336,7 @@ export const login = async (req, res, next) => {
         message: "Account is suspended",
       });
     }
+
     const requires2FA = userData.twoFactorEnabled || userData.role === "ADMIN";
 
     if (requires2FA) {
@@ -224,9 +354,9 @@ export const login = async (req, res, next) => {
         to: userData.email,
         subject: "Your 360EVO verification code",
         html: `
-    ${logoHeader}
-    <p>Your verification code is: <strong>${code}</strong></p><p>Expires in 10 minutes.</p>
-  `,
+          ${logoHeader}
+          <p>Your verification code is: <strong>${code}</strong></p><p>Expires in 10 minutes.</p>
+        `,
       }).catch((err) => console.error("Email failed:", err));
 
       const preAuthToken = jwt.sign(
@@ -237,6 +367,7 @@ export const login = async (req, res, next) => {
 
       return res.json({ twoFactorRequired: true, preAuthToken });
     }
+
     const accessToken = generateAccessToken(userData.id);
     const refreshToken = generateRefreshToken(userData.id);
 
@@ -308,8 +439,6 @@ export const verifyEmail = async (req, res, next) => {
   }
 };
 
-//  FORGOT PASSWORD
-
 export const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
@@ -339,15 +468,8 @@ export const forgotPassword = async (req, res, next) => {
 
     await prisma.passwordReset.upsert({
       where: { userId: user.id },
-      update: {
-        token: hashedResetToken,
-        expiresAt,
-      },
-      create: {
-        userId: user.id,
-        token: hashedResetToken,
-        expiresAt,
-      },
+      update: { token: hashedResetToken, expiresAt },
+      create: { userId: user.id, token: hashedResetToken, expiresAt },
     });
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
@@ -356,10 +478,10 @@ export const forgotPassword = async (req, res, next) => {
       to: email,
       subject: "Reset your password",
       html: `
-    ${logoHeader}
-    <p>Click below to reset your password:</p>
-    <a href="${resetLink}">${resetLink}</a>
-  `,
+        ${logoHeader}
+        <p>Click below to reset your password:</p>
+        <a href="${resetLink}">${resetLink}</a>
+      `,
     }).catch((err) => console.error("Email failed:", err));
 
     res.json({
@@ -402,10 +524,10 @@ export const resendVerification = async (req, res, next) => {
       to: email,
       subject: "Verify your email",
       html: `
-    ${logoHeader}
-    <p>Click below to verify your email:</p>
-    <a href="${verificationLink}">${verificationLink}</a>
-  `,
+        ${logoHeader}
+        <p>Click below to verify your email:</p>
+        <a href="${verificationLink}">${verificationLink}</a>
+      `,
     }).catch((err) => console.error("Email failed:", err));
 
     res.json({ message: "Verification email resent" });
@@ -446,6 +568,7 @@ export const refreshToken = async (req, res, next) => {
     next(error);
   }
 };
+
 export const updateEmail = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -459,9 +582,7 @@ export const updateEmail = async (req, res, next) => {
     }
 
     if (!email) {
-      return res.status(400).json({
-        message: "Email is required",
-      });
+      return res.status(400).json({ message: "Email is required" });
     }
 
     const existing = await prisma.user.findUnique({
@@ -469,9 +590,7 @@ export const updateEmail = async (req, res, next) => {
     });
 
     if (existing) {
-      return res.status(400).json({
-        message: "Email already in use",
-      });
+      return res.status(400).json({ message: "Email already in use" });
     }
 
     await prisma.emailVerification.deleteMany({
@@ -494,18 +613,18 @@ export const updateEmail = async (req, res, next) => {
       to: email,
       subject: "Verify your new email",
       html: `
-    ${logoHeader}
-    <p>Click below to confirm your new email:</p>
-    <a href="${verificationLink}">${verificationLink}</a>
-  `,
+        ${logoHeader}
+        <p>Click below to confirm your new email:</p>
+        <a href="${verificationLink}">${verificationLink}</a>
+      `,
     }).catch((err) => console.error("Email failed:", err));
-    res.json({
-      message: "Verification email sent to new address",
-    });
+
+    res.json({ message: "Verification email sent to new address" });
   } catch (error) {
     next(error);
   }
 };
+
 export const verifyNewEmail = async (req, res, next) => {
   try {
     const { token, email } = req.body;
@@ -528,24 +647,19 @@ export const verifyNewEmail = async (req, res, next) => {
 
     await prisma.user.update({
       where: { id: record.userId },
-      data: {
-        email,
-        isVerified: true,
-      },
+      data: { email, isVerified: true },
     });
 
     await prisma.emailVerification.delete({
       where: { id: record.id },
     });
 
-    res.json({
-      message: "Email updated successfully",
-    });
+    res.json({ message: "Email updated successfully" });
   } catch (error) {
     next(error);
   }
 };
-//  RESET PASSWORD
+
 export const resetPassword = async (req, res, next) => {
   try {
     const { token, newPassword } = req.body;
@@ -563,9 +677,7 @@ export const resetPassword = async (req, res, next) => {
     });
 
     if (!resetRecord || resetRecord.expiresAt < new Date()) {
-      return res.status(400).json({
-        message: "Invalid or expired token",
-      });
+      return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 12);
@@ -626,7 +738,6 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-//  LOGOUT
 export const logout = async (req, res, next) => {
   try {
     const token = req.cookies.refreshToken;
@@ -657,6 +768,7 @@ export const logout = async (req, res, next) => {
     next(error);
   }
 };
+
 export const changePassword = async (req, res, next) => {
   try {
     const userId = req.user.id;
@@ -745,19 +857,14 @@ export const updateProfile = async (req, res, next) => {
         profileData.availabilityStatus = availabilityStatus;
 
       if (Array.isArray(expertise)) profileData.expertise = expertise;
-
       if (Array.isArray(industries)) profileData.industries = industries;
-
       if (Array.isArray(certifications))
         profileData.certifications = certifications;
 
       const profile = await tx.profile.upsert({
         where: { userId },
         update: profileData,
-        create: {
-          userId,
-          ...profileData,
-        },
+        create: { userId, ...profileData },
       });
 
       if (Array.isArray(weeklyAvailability)) {
@@ -784,11 +891,7 @@ export const updateProfile = async (req, res, next) => {
       return tx.user.findUnique({
         where: { id: userId },
         include: {
-          profile: {
-            include: {
-              weeklyAvailability: true,
-            },
-          },
+          profile: { include: { weeklyAvailability: true } },
         },
       });
     });
