@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import dotenv from "dotenv";
 import { createNotification } from "../utils/createNotification.js";
-import { assertBookingAllowed } from "../services/availabilityService.js"
+import { assertBookingAllowed } from "../services/availabilityService.js";
 import Stripe from "stripe";
 dotenv.config();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);

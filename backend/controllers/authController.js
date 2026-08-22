@@ -54,7 +54,9 @@ export const register = async (req, res, next) => {
         adminInvite.expiresAt < new Date() ||
         adminInvite.email !== email
       ) {
-        return res.status(400).json({ message: "Invalid or expired invite link" });
+        return res
+          .status(400)
+          .json({ message: "Invalid or expired invite link" });
       }
     }
 
@@ -205,36 +207,36 @@ export const login = async (req, res, next) => {
         message: "Account is suspended",
       });
     }
-const requires2FA = userData.twoFactorEnabled || userData.role === "ADMIN";
+    const requires2FA = userData.twoFactorEnabled || userData.role === "ADMIN";
 
-if (requires2FA) {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+    if (requires2FA) {
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-  await prisma.user.update({
-    where: { id: userData.id },
-    data: {
-      twoFactorCode: code,
-      twoFactorCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
-    },
-  });
+      await prisma.user.update({
+        where: { id: userData.id },
+        data: {
+          twoFactorCode: code,
+          twoFactorCodeExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      });
 
-sendEmail({
-  to: userData.email,
-  subject: "Your 360EVO verification code",
-  html: `
+      sendEmail({
+        to: userData.email,
+        subject: "Your 360EVO verification code",
+        html: `
     ${logoHeader}
     <p>Your verification code is: <strong>${code}</strong></p><p>Expires in 10 minutes.</p>
   `,
-}).catch((err) => console.error("Email failed:", err));
+      }).catch((err) => console.error("Email failed:", err));
 
-  const preAuthToken = jwt.sign(
-    { id: userData.id, twoFactorPending: true },
-    process.env.JWT_SECRET,
-    { expiresIn: "10m" },
-  );
+      const preAuthToken = jwt.sign(
+        { id: userData.id, twoFactorPending: true },
+        process.env.JWT_SECRET,
+        { expiresIn: "10m" },
+      );
 
-  return res.json({ twoFactorRequired: true, preAuthToken });
-}
+      return res.json({ twoFactorRequired: true, preAuthToken });
+    }
     const accessToken = generateAccessToken(userData.id);
     const refreshToken = generateRefreshToken(userData.id);
 
@@ -350,15 +352,15 @@ export const forgotPassword = async (req, res, next) => {
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`;
 
-sendEmail({
-  to: email,
-  subject: "Reset your password",
-  html: `
+    sendEmail({
+      to: email,
+      subject: "Reset your password",
+      html: `
     ${logoHeader}
     <p>Click below to reset your password:</p>
     <a href="${resetLink}">${resetLink}</a>
   `,
-}).catch((err) => console.error("Email failed:", err));
+    }).catch((err) => console.error("Email failed:", err));
 
     res.json({
       message: "If this email exists, a reset link has been sent",
@@ -396,15 +398,15 @@ export const resendVerification = async (req, res, next) => {
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}`;
 
-sendEmail({
-  to: email,
-  subject: "Verify your email",
-  html: `
+    sendEmail({
+      to: email,
+      subject: "Verify your email",
+      html: `
     ${logoHeader}
     <p>Click below to verify your email:</p>
     <a href="${verificationLink}">${verificationLink}</a>
   `,
-}).catch((err) => console.error("Email failed:", err));
+    }).catch((err) => console.error("Email failed:", err));
 
     res.json({ message: "Verification email resent" });
   } catch (error) {
@@ -451,7 +453,8 @@ export const updateEmail = async (req, res, next) => {
 
     if (req.user.role === "ADMIN") {
       return res.status(403).json({
-        message: "Admin accounts cannot change their own email. Contact another administrator.",
+        message:
+          "Admin accounts cannot change their own email. Contact another administrator.",
       });
     }
 
@@ -487,15 +490,15 @@ export const updateEmail = async (req, res, next) => {
 
     const verificationLink = `${process.env.CLIENT_URL}/verify-email?token=${verificationToken}&type=change-email&email=${encodeURIComponent(email)}`;
 
-sendEmail({
-  to: email,
-  subject: "Verify your new email",
-  html: `
+    sendEmail({
+      to: email,
+      subject: "Verify your new email",
+      html: `
     ${logoHeader}
     <p>Click below to confirm your new email:</p>
     <a href="${verificationLink}">${verificationLink}</a>
   `,
-}).catch((err) => console.error("Email failed:", err));
+    }).catch((err) => console.error("Email failed:", err));
     res.json({
       message: "Verification email sent to new address",
     });
@@ -808,7 +811,9 @@ export const verifyTwoFactor = async (req, res, next) => {
     try {
       decoded = jwt.verify(preAuthToken, process.env.JWT_SECRET);
     } catch {
-      return res.status(401).json({ message: "Session expired, please login again" });
+      return res
+        .status(401)
+        .json({ message: "Session expired, please login again" });
     }
 
     if (!decoded.twoFactorPending) {

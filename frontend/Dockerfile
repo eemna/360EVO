@@ -3,12 +3,7 @@ FROM node:22 AS build
 WORKDIR /app
 
 COPY package*.json ./
-<<<<<<< HEAD
 RUN npm ci
-=======
-RUN npm install
-
->>>>>>> bf5e1243718fc039fc6e580d21eaabafffef4d0e
 COPY . .
 
 RUN npm run build

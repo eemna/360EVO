@@ -50,8 +50,14 @@ const getMenuItems = (role?: string) => [
     : role === "ADMIN"
       ? []
       : [{ icon: User, label: "My Profile", path: "/app/profile/me" }]),
-    ...(role === "EXPERT"
-    ? [{ icon: CalendarCheck, label: "Bookings", path: "/app/expert/reservations" }]
+  ...(role === "EXPERT"
+    ? [
+        {
+          icon: CalendarCheck,
+          label: "Bookings",
+          path: "/app/expert/reservations",
+        },
+      ]
     : []),
   { icon: Users, label: "Events", path: "/app/events" },
   { icon: Layers, label: "Programs", path: "/app/programs" },

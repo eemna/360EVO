@@ -24,7 +24,6 @@ interface ConfirmActionDialogProps {
   onConfirm: () => Promise<void> | void;
 }
 
-
 export function ConfirmActionDialog({
   open,
   onOpenChange,
@@ -101,7 +100,11 @@ export function ConfirmActionDialog({
                 : "bg-indigo-600 hover:bg-indigo-700"
             }
           >
-            {loading ? <Loader2 className="size-4 animate-spin" /> : confirmLabel}
+            {loading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              confirmLabel
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

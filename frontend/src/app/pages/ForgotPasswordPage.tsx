@@ -55,11 +55,15 @@ export default function ForgotPasswordPage() {
     <div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
       <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
         {/* Logo */}
-<div className="flex justify-center mb-6">
-  <div className="h-14 w-30 rounded-lg bg-white flex items-center justify-center p-1.5">
-    <img src="/logo.png" alt="360EVO" className="h-full w-full object-contain" />
-  </div>
-</div>
+        <div className="flex justify-center mb-6">
+          <div className="h-14 w-30 rounded-lg bg-white flex items-center justify-center p-1.5">
+            <img
+              src="/logo.png"
+              alt="360EVO"
+              className="h-full w-full object-contain"
+            />
+          </div>
+        </div>
 
         {/* Title */}
         <h1 className="text-center text-white text-xl font-semibold mb-2">

@@ -5,9 +5,21 @@ import { Input } from "./input";
 import { Label } from "./label";
 import { Badge } from "./badge";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "./select";
-import { Loader2, Plus, Trash2, CalendarOff, CalendarCheck, Clock, CalendarRange } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Trash2,
+  CalendarOff,
+  CalendarCheck,
+  Clock,
+  CalendarRange,
+} from "lucide-react";
 import { useToast } from "../../../context/ToastContext";
 import api from "../../../services/axios";
 
@@ -30,7 +42,9 @@ export default function AvailabilityManager() {
 
   const [overrides, setOverrides] = useState<Override[]>([]);
   const [overrideDate, setOverrideDate] = useState("");
-  const [overrideType, setOverrideType] = useState<"unavailable" | "custom">("unavailable");
+  const [overrideType, setOverrideType] = useState<"unavailable" | "custom">(
+    "unavailable",
+  );
   const [overrideStart, setOverrideStart] = useState("09:00");
   const [overrideEnd, setOverrideEnd] = useState("17:00");
   const [addingOverride, setAddingOverride] = useState(false);
@@ -66,10 +80,18 @@ export default function AvailabilityManager() {
         minNoticeHours: Number(minNoticeHours),
         bookingHorizonDays: horizonEnabled ? Number(bookingHorizonDays) : null,
       });
-      showToast({ type: "success", title: "Settings saved", message: "Your booking rules have been updated." });
+      showToast({
+        type: "success",
+        title: "Settings saved",
+        message: "Your booking rules have been updated.",
+      });
     } catch (err) {
       console.error(err);
-      showToast({ type: "error", title: "Failed to save", message: "Something went wrong." });
+      showToast({
+        type: "error",
+        title: "Failed to save",
+        message: "Something went wrong.",
+      });
     } finally {
       setSavingSettings(false);
     }
@@ -86,14 +108,26 @@ export default function AvailabilityManager() {
         endTime: overrideType === "custom" ? overrideEnd : null,
       });
       setOverrides((prev) => {
-        const withoutSameDate = prev.filter((o) => o.date.slice(0, 10) !== data.date.slice(0, 10));
-        return [...withoutSameDate, data].sort((a, b) => a.date.localeCompare(b.date));
+        const withoutSameDate = prev.filter(
+          (o) => o.date.slice(0, 10) !== data.date.slice(0, 10),
+        );
+        return [...withoutSameDate, data].sort((a, b) =>
+          a.date.localeCompare(b.date),
+        );
       });
       setOverrideDate("");
-      showToast({ type: "success", title: "Override added", message: "This date's availability has been updated." });
+      showToast({
+        type: "success",
+        title: "Override added",
+        message: "This date's availability has been updated.",
+      });
     } catch (err) {
       console.error(err);
-      showToast({ type: "error", title: "Failed to add override", message: "Something went wrong." });
+      showToast({
+        type: "error",
+        title: "Failed to add override",
+        message: "Something went wrong.",
+      });
     } finally {
       setAddingOverride(false);
     }
@@ -120,7 +154,9 @@ export default function AvailabilityManager() {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  const upcomingOverrides = overrides.filter((o) => o.date.slice(0, 10) >= today);
+  const upcomingOverrides = overrides.filter(
+    (o) => o.date.slice(0, 10) >= today,
+  );
   const pastOverrides = overrides.filter((o) => o.date.slice(0, 10) < today);
 
   return (
@@ -176,7 +212,9 @@ export default function AvailabilityManager() {
                   type="number"
                   min={1}
                   value={bookingHorizonDays}
-                  onChange={(e) => setBookingHorizonDays(Number(e.target.value))}
+                  onChange={(e) =>
+                    setBookingHorizonDays(Number(e.target.value))
+                  }
                   className="w-28"
                 />
                 <span className="text-sm text-gray-600">days out</span>
@@ -189,7 +227,11 @@ export default function AvailabilityManager() {
             disabled={savingSettings}
             className="bg-indigo-600 hover:bg-indigo-700"
           >
-            {savingSettings ? <Loader2 className="size-4 animate-spin" /> : "Save rules"}
+            {savingSettings ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              "Save rules"
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -205,8 +247,8 @@ export default function AvailabilityManager() {
         <CardContent className="space-y-5">
           <p className="text-xs text-gray-500">
             Override your regular weekly schedule for a specific date — mark a
-            holiday as unavailable, or open extra hours on a day you're
-            normally off.
+            holiday as unavailable, or open extra hours on a day you're normally
+            off.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-end p-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -222,12 +264,19 @@ export default function AvailabilityManager() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Type</Label>
-                <Select value={overrideType} onValueChange={(v) => setOverrideType(v as "unavailable" | "custom")}>
+                <Select
+                  value={overrideType}
+                  onValueChange={(v) =>
+                    setOverrideType(v as "unavailable" | "custom")
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unavailable">Mark unavailable</SelectItem>
+                    <SelectItem value="unavailable">
+                      Mark unavailable
+                    </SelectItem>
                     <SelectItem value="custom">Custom hours</SelectItem>
                   </SelectContent>
                 </Select>
@@ -256,14 +305,20 @@ export default function AvailabilityManager() {
               disabled={!overrideDate || addingOverride}
               className="gap-1.5 bg-indigo-600 hover:bg-indigo-700"
             >
-              {addingOverride ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+              {addingOverride ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4" />
+              )}
               Add
             </Button>
           </div>
 
           <div className="space-y-2">
             {upcomingOverrides.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-6">No upcoming overrides</p>
+              <p className="text-sm text-gray-400 text-center py-6">
+                No upcoming overrides
+              </p>
             ) : (
               upcomingOverrides.map((o) => (
                 <div
@@ -290,7 +345,9 @@ export default function AvailabilityManager() {
                           {o.startTime} – {o.endTime}
                         </p>
                       ) : (
-                        <Badge className="bg-red-100 text-red-700 text-[10px] mt-0.5">Unavailable</Badge>
+                        <Badge className="bg-red-100 text-red-700 text-[10px] mt-0.5">
+                          Unavailable
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -315,12 +372,16 @@ export default function AvailabilityManager() {
           {pastOverrides.length > 0 && (
             <details className="text-sm text-gray-500">
               <summary className="cursor-pointer hover:text-gray-700">
-                {pastOverrides.length} past override{pastOverrides.length > 1 ? "s" : ""}
+                {pastOverrides.length} past override
+                {pastOverrides.length > 1 ? "s" : ""}
               </summary>
               <div className="mt-2 space-y-1.5 opacity-60">
                 {pastOverrides.map((o) => (
                   <div key={o.id} className="text-xs px-3 py-1.5">
-                    {new Date(o.date).toLocaleDateString()} — {o.isAvailable ? `${o.startTime}–${o.endTime}` : "Unavailable"}
+                    {new Date(o.date).toLocaleDateString()} —{" "}
+                    {o.isAvailable
+                      ? `${o.startTime}–${o.endTime}`
+                      : "Unavailable"}
                   </div>
                 ))}
               </div>

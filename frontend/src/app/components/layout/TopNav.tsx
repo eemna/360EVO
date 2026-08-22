@@ -212,10 +212,13 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
           </Button>
 
           {/* Logo */}
-<Link to="/app" className="flex items-center gap-2 shrink-0">
-  <img src="/logo.png" alt="360EVO" className="h-40 w-30 rounded-lg object-contain" />
- 
-</Link>
+          <Link to="/app" className="flex items-center gap-2 shrink-0">
+            <img
+              src="/logo.png"
+              alt="360EVO"
+              className="h-40 w-30 rounded-lg object-contain"
+            />
+          </Link>
 
           <div className="hidden lg:flex flex-1 max-w-sm xl:max-w-md mx-2">
             <GlobalSearchBar />

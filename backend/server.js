@@ -55,6 +55,7 @@ app.use(helmet());
 
 const allowedOrigins = [
   "http://localhost",
+  "http://localhost:8081",
   "https://360evo.ai",
   "http://localhost:5173",
   "https://three60evo-frontend.onrender.com",

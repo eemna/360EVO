@@ -198,31 +198,31 @@ export default function Settings() {
     }
     setLoading(false);
   };
-const handleTwoFactorToggle = async (val: boolean) => {
-  setTwoFactorSaving(true);
-  try {
-    await api.put("/users/2fa", { enabled: val });
-    setTwoFactorEnabled(val);
-    showToast({
-      type: "success",
-      title: "2FA Updated",
-      message: val
-        ? "Two-factor authentication is now enabled."
-        : "Two-factor authentication is now disabled.",
-    });
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
+  const handleTwoFactorToggle = async (val: boolean) => {
+    setTwoFactorSaving(true);
+    try {
+      await api.put("/users/2fa", { enabled: val });
+      setTwoFactorEnabled(val);
       showToast({
-        type: "error",
-        title: "Failed",
-        message:
-          error.response?.data?.message || "Could not update 2FA setting.",
+        type: "success",
+        title: "2FA Updated",
+        message: val
+          ? "Two-factor authentication is now enabled."
+          : "Two-factor authentication is now disabled.",
       });
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        showToast({
+          type: "error",
+          title: "Failed",
+          message:
+            error.response?.data?.message || "Could not update 2FA setting.",
+        });
+      }
+    } finally {
+      setTwoFactorSaving(false);
     }
-  } finally {
-    setTwoFactorSaving(false);
-  }
-};
+  };
   const handlePasswordUpdate = async () => {
     if (newPassword !== confirmPassword) {
       showToast({
@@ -413,130 +413,136 @@ const handleTwoFactorToggle = async (val: boolean) => {
             </Button>
           </TabsContent>
 
- <TabsContent value="account" className="space-y-8">
-  <div className="space-y-4">
-    <Label>Email Address</Label>
-    {user?.role === "ADMIN" ? (
-      <>
-        <Input type="email" value={email} disabled className="opacity-60 cursor-not-allowed" />
-        <p className="text-sm text-gray-500">
-          Admin email changes aren't self-service. Contact another administrator if this needs to change.
-        </p>
-      </>
-    ) : (
-      <>
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <Button
-          onClick={handleEmailUpdate}
-          disabled={loading || email === user?.email}
-        >
-          {loading ? <LoadingSpinner size="sm" /> : "Update Email"}
-        </Button>
-      </>
-    )}
-  </div>
+          <TabsContent value="account" className="space-y-8">
+            <div className="space-y-4">
+              <Label>Email Address</Label>
+              {user?.role === "ADMIN" ? (
+                <>
+                  <Input
+                    type="email"
+                    value={email}
+                    disabled
+                    className="opacity-60 cursor-not-allowed"
+                  />
+                  <p className="text-sm text-gray-500">
+                    Admin email changes aren't self-service. Contact another
+                    administrator if this needs to change.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Button
+                    onClick={handleEmailUpdate}
+                    disabled={loading || email === user?.email}
+                  >
+                    {loading ? <LoadingSpinner size="sm" /> : "Update Email"}
+                  </Button>
+                </>
+              )}
+            </div>
 
-  <Separator />
+            <Separator />
 
             <div className="space-y-4">
               <Label>Change Password</Label>
-        <div className="relative">
-  <Input
-    type={showCurrentPassword ? "text" : "password"}
-    placeholder="Current Password"
-    value={currentPassword}
-    onChange={(e) => setCurrentPassword(e.target.value)}
-    className="pr-11"
-  />
-  <button
-    type="button"
-    onClick={() => setShowCurrentPassword((prev) => !prev)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-    tabIndex={-1}
-  >
-    {showCurrentPassword ? (
-      <Eye className="w-5 h-5" />
-    ) : (
-      <EyeOff className="w-5 h-5" />
-    )}
-  </button>
-</div>
-<div className="relative">
-  <Input
-    type={showNewPassword ? "text" : "password"}
-    placeholder="New Password"
-    value={newPassword}
-    onChange={(e) => setNewPassword(e.target.value)}
-    className="pr-11"
-  />
-  <button
-    type="button"
-    onClick={() => setShowNewPassword((prev) => !prev)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-    tabIndex={-1}
-  >
-    {showNewPassword ? (
-      <Eye className="w-5 h-5" />
-    ) : (
-      <EyeOff className="w-5 h-5" />
-    )}
-  </button>
-</div>
-<div className="relative">
-  <Input
-    type={showConfirmPassword ? "text" : "password"}
-    placeholder="Confirm New Password"
-    value={confirmPassword}
-    onChange={(e) => setConfirmPassword(e.target.value)}
-    className="pr-11"
-  />
-  <button
-    type="button"
-    onClick={() => setShowConfirmPassword((prev) => !prev)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-    tabIndex={-1}
-  >
-    {showConfirmPassword ? (
-      <Eye className="w-5 h-5" />
-    ) : (
-      <EyeOff className="w-5 h-5" />
-    )}
-  </button>
-</div>
+              <div className="relative">
+                <Input
+                  type={showCurrentPassword ? "text" : "password"}
+                  placeholder="Current Password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showCurrentPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showNewPassword ? "text" : "password"}
+                  placeholder="New Password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  placeholder="Confirm New Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <Eye className="w-5 h-5" />
+                  ) : (
+                    <EyeOff className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
               <Button onClick={handlePasswordUpdate} disabled={loading}>
                 {loading ? <LoadingSpinner size="sm" /> : "Update Password"}
               </Button>
             </div>
             {user?.role !== "ADMIN" && (
-  <>
-    <Separator />
+              <>
+                <Separator />
 
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <Label className="flex items-center gap-2">
-            <Shield className="size-4" />
-            Two-Factor Authentication
-          </Label>
-          <p className="text-sm text-gray-500 mt-1">
-            Add an extra layer of security to your account.
-          </p>
-        </div>
-        <Toggle
-          checked={twoFactorEnabled}
-          onCheckedChange={handleTwoFactorToggle}
-        />
-      </div>
-      {twoFactorSaving && (
-        <p className="text-xs text-gray-400">Saving...</p>
-      )}
-    </div>
-  </>
-)}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="flex items-center gap-2">
+                        <Shield className="size-4" />
+                        Two-Factor Authentication
+                      </Label>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Add an extra layer of security to your account.
+                      </p>
+                    </div>
+                    <Toggle
+                      checked={twoFactorEnabled}
+                      onCheckedChange={handleTwoFactorToggle}
+                    />
+                  </div>
+                  {twoFactorSaving && (
+                    <p className="text-xs text-gray-400">Saving...</p>
+                  )}
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">

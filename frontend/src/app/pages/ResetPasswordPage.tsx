@@ -132,64 +132,64 @@ export default function ResetPasswordPage() {
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-             <div className="space-y-2">
-  <Label htmlFor="newPassword">New Password</Label>
-  <div className="relative">
-    <Input
-      id="newPassword"
-      type={showPassword ? "text" : "password"}
-      placeholder="••••••••"
-      value={newPassword}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        setNewPassword(e.target.value)
-      }
-      className="bg-input-background border-0 pr-11"
-      required
-    />
-    <button
-      type="button"
-      onClick={() => setShowPassword((prev) => !prev)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-      tabIndex={-1}
-    >
-      {showPassword ? (
-        <Eye className="w-5 h-5" />
-      ) : (
-        <EyeOff className="w-5 h-5" />
-      )}
-    </button>
-  </div>
-  <PasswordStrengthBar password={newPassword} />
-</div>
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={newPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setNewPassword(e.target.value)
+                    }
+                    className="bg-input-background border-0 pr-11"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <Eye className="w-5 h-5" />
+                    ) : (
+                      <EyeOff className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                <PasswordStrengthBar password={newPassword} />
+              </div>
 
-<div className="space-y-2">
-  <Label htmlFor="confirmPassword">Confirm Password</Label>
-  <div className="relative">
-    <Input
-      id="confirmPassword"
-      type={showConfirmPassword ? "text" : "password"}
-      placeholder="••••••••"
-      value={confirmPassword}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-        setConfirmPassword(e.target.value)
-      }
-      className="bg-input-background border-0 pr-11"
-      required
-    />
-    <button
-      type="button"
-      onClick={() => setShowConfirmPassword((prev) => !prev)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-      tabIndex={-1}
-    >
-      {showConfirmPassword ? (
-        <Eye className="w-5 h-5" />
-      ) : (
-        <EyeOff className="w-5 h-5" />
-      )}
-    </button>
-  </div>
-</div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setConfirmPassword(e.target.value)
+                    }
+                    className="bg-input-background border-0 pr-11"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? (
+                      <Eye className="w-5 h-5" />
+                    ) : (
+                      <EyeOff className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
 
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-md">

@@ -122,7 +122,7 @@ type ActiveSection =
   | "programs"
   | "experts"
   | "revenue"
-  | "events" ;
+  | "events";
 
 type EventRegistration = {
   id: string;
@@ -151,10 +151,6 @@ type EventApplication = {
   user: { name: string; email: string; role: string };
 };
 
-
-
-
-
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -171,7 +167,6 @@ export default function AdminDashboard() {
   const [expertApplicants, setExpertApplicants] = useState<User[]>([]);
 
   const [events, setEvents] = useState<AdminEvent[]>([]);
-
 
   const [selectedEvent, setSelectedEvent] = useState<AdminEvent | null>(null);
   const [eventRegistrations, setEventRegistrations] = useState<
@@ -247,30 +242,35 @@ export default function AdminDashboard() {
       prev.map((a) => (a.id === appId ? { ...a, status } : a)),
     );
   };
-const confirmProjectAction = async () => {
-  if (!pendingProjectAction) return;
-  const { project, action } = pendingProjectAction;
-  if (action === "approve") await handleApprove(project.id);
-  else await handleReject(project.id);
-};
+  const confirmProjectAction = async () => {
+    if (!pendingProjectAction) return;
+    const { project, action } = pendingProjectAction;
+    if (action === "approve") await handleApprove(project.id);
+    else await handleReject(project.id);
+  };
 
-const confirmExpertAction = async () => {
-  if (!pendingExpertAction) return;
-  const { user, action } = pendingExpertAction;
-  if (action === "approve") await handleApproveExpert(user.id);
-  else await handleRejectExpert(user.id);
-};
+  const confirmExpertAction = async () => {
+    if (!pendingExpertAction) return;
+    const { user, action } = pendingExpertAction;
+    if (action === "approve") await handleApproveExpert(user.id);
+    else await handleRejectExpert(user.id);
+  };
 
-const confirmProgramAppAction = async () => {
-  if (!pendingProgramApp) return;
-  await handleApplicationStatus(pendingProgramApp.app.id, pendingProgramApp.status);
-};
+  const confirmProgramAppAction = async () => {
+    if (!pendingProgramApp) return;
+    await handleApplicationStatus(
+      pendingProgramApp.app.id,
+      pendingProgramApp.status,
+    );
+  };
 
-const confirmEventAppAction = async () => {
-  if (!pendingEventApp) return;
-  await handleEventApplicationStatus(pendingEventApp.app.id, pendingEventApp.status);
-};
-
+  const confirmEventAppAction = async () => {
+    if (!pendingEventApp) return;
+    await handleEventApplicationStatus(
+      pendingEventApp.app.id,
+      pendingEventApp.status,
+    );
+  };
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -306,22 +306,22 @@ const confirmEventAppAction = async () => {
 
   const fetchRevenue = useCallback(async () => {
     try {
- const { data } = await api.get("/admin/reports/revenue");
+      const { data } = await api.get("/admin/reports/revenue");
 
-const sorted = [...data].sort(
-  (a: RevenueRow, b: RevenueRow) =>
-    new Date(a.month).getTime() - new Date(b.month).getTime(),
-);
+      const sorted = [...data].sort(
+        (a: RevenueRow, b: RevenueRow) =>
+          new Date(a.month).getTime() - new Date(b.month).getTime(),
+      );
 
-const raw = sorted.map((row: RevenueRow) => ({
-  ...row,
-  month: new Date(row.month).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  }),
-  total: Number(row.total),
-  count: Number(row.count),
-}));
+      const raw = sorted.map((row: RevenueRow) => ({
+        ...row,
+        month: new Date(row.month).toLocaleDateString("en-US", {
+          month: "short",
+          year: "numeric",
+        }),
+        total: Number(row.total),
+        count: Number(row.count),
+      }));
       setRawRevenueData(raw);
 
       const merged = raw.reduce((acc: RevenueRow[], row: RevenueRow) => {
@@ -384,7 +384,6 @@ const raw = sorted.map((row: RevenueRow) => ({
     }
   };
 
-
   const handleApproveExpert = async (userId: string) => {
     await api.patch(`/admin/experts/${userId}/approve`);
     setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
@@ -405,8 +404,6 @@ const raw = sorted.map((row: RevenueRow) => ({
     await api.patch(`/admin/experts/${userId}/reject`);
     setExpertApplicants((prev) => prev.filter((u) => u.id !== userId));
   };
-
-
 
   const NAV_ITEMS: {
     key: ActiveSection;
@@ -432,38 +429,38 @@ const raw = sorted.map((row: RevenueRow) => ({
     { key: "events", label: "Events", icon: Calendar },
   ];
 
+  const [expertsView, setExpertsView] = useState<"pending" | "all">("pending");
+  const [expertSearch, setExpertSearch] = useState("");
+  const [pendingProjectAction, setPendingProjectAction] = useState<{
+    project: Project;
+    action: "approve" | "reject";
+  } | null>(null);
+  const [pendingExpertAction, setPendingExpertAction] = useState<{
+    user: User;
+    action: "approve" | "reject";
+  } | null>(null);
+  const [pendingProgramApp, setPendingProgramApp] = useState<{
+    app: ProgramApplication;
+    status: "ACCEPTED" | "REJECTED";
+  } | null>(null);
+  const [pendingEventApp, setPendingEventApp] = useState<{
+    app: EventApplication;
+    status: "ACCEPTED" | "REJECTED";
+  } | null>(null);
 
+  const allExperts = users.filter(
+    (u) =>
+      u.role === "EXPERT" ||
+      (u.profile?.expertApplicationStatus &&
+        u.profile.expertApplicationStatus !== "NONE"),
+  );
 
-
-
-const [expertsView, setExpertsView] = useState<"pending" | "all">("pending");
-const [expertSearch, setExpertSearch] = useState("");
-const [pendingProjectAction, setPendingProjectAction] = useState <
-  { project: Project; action: "approve" | "reject" } | null
->(null);
-const [pendingExpertAction, setPendingExpertAction] = useState <
-  { user: User; action: "approve" | "reject" } | null
->(null);
-const [pendingProgramApp, setPendingProgramApp] = useState <
-  { app: ProgramApplication; status: "ACCEPTED" | "REJECTED" } | null
->(null);
-const [pendingEventApp, setPendingEventApp] = useState <
-  { app: EventApplication; status: "ACCEPTED" | "REJECTED" } | null
->(null);
-
-const allExperts = users.filter(
-  (u) =>
-    u.role === "EXPERT" ||
-    (u.profile?.expertApplicationStatus &&
-      u.profile.expertApplicationStatus !== "NONE"),
-);
-
-const filteredAllExperts = allExperts.filter(
-  (u) =>
-    !expertSearch ||
-    u.name.toLowerCase().includes(expertSearch.toLowerCase()) ||
-    u.email.toLowerCase().includes(expertSearch.toLowerCase()),
-);
+  const filteredAllExperts = allExperts.filter(
+    (u) =>
+      !expertSearch ||
+      u.name.toLowerCase().includes(expertSearch.toLowerCase()) ||
+      u.email.toLowerCase().includes(expertSearch.toLowerCase()),
+  );
 
   if (loading) {
     return (
@@ -635,16 +632,18 @@ const filteredAllExperts = allExperts.filter(
               </p>
               <p className="text-xs text-blue-500 mt-0.5">Click to review →</p>
             </button>
-<button
-  onClick={() => navigate("/app/admin/users")}
-  className="text-left p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors"
->
-  <p className="text-2xl font-bold text-red-700">
-    {users.filter((u) => u.isSuspended).length}
-  </p>
-  <p className="text-sm text-red-600 font-medium">Suspended Users</p>
-  <p className="text-xs text-red-500 mt-0.5">Click to manage →</p>
-</button>
+            <button
+              onClick={() => navigate("/app/admin/users")}
+              className="text-left p-4 bg-red-50 border border-red-200 rounded-xl hover:bg-red-100 transition-colors"
+            >
+              <p className="text-2xl font-bold text-red-700">
+                {users.filter((u) => u.isSuspended).length}
+              </p>
+              <p className="text-sm text-red-600 font-medium">
+                Suspended Users
+              </p>
+              <p className="text-xs text-red-500 mt-0.5">Click to manage →</p>
+            </button>
           </div>
         </div>
       )}
@@ -703,33 +702,42 @@ const filteredAllExperts = allExperts.filter(
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-
-<Button
-  size="sm"
-  variant="outline"
-  disabled={actionLoading === project.id}
-  onClick={() => setPendingProjectAction({ project, action: "approve" })}
-  className="border-green-500 text-green-600 hover:bg-green-50"
->
-  {actionLoading === project.id ? (
-    <Loader2 className="size-4 animate-spin" />
-  ) : (
-    <>
-      <Check className="size-4 mr-1" />
-      Approve
-    </>
-  )}
-</Button>
-<Button
-  size="sm"
-  variant="outline"
-  disabled={actionLoading === project.id}
-  onClick={() => setPendingProjectAction({ project, action: "reject" })}
-  className="border-red-500 text-red-600 hover:bg-red-50"
->
-  <X className="size-4 mr-1" />
-  Reject
-</Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={actionLoading === project.id}
+                            onClick={() =>
+                              setPendingProjectAction({
+                                project,
+                                action: "approve",
+                              })
+                            }
+                            className="border-green-500 text-green-600 hover:bg-green-50"
+                          >
+                            {actionLoading === project.id ? (
+                              <Loader2 className="size-4 animate-spin" />
+                            ) : (
+                              <>
+                                <Check className="size-4 mr-1" />
+                                Approve
+                              </>
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={actionLoading === project.id}
+                            onClick={() =>
+                              setPendingProjectAction({
+                                project,
+                                action: "reject",
+                              })
+                            }
+                            className="border-red-500 text-red-600 hover:bg-red-50"
+                          >
+                            <X className="size-4 mr-1" />
+                            Reject
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -741,190 +749,211 @@ const filteredAllExperts = allExperts.filter(
         </Card>
       )}
 
-    
-
       {/* ── EXPERT APPLICATIONS ─ */}
-{activeSection === "experts" && (
-  <div className="space-y-4">
-    {/* Sub-tabs */}
-    <div className="flex gap-2">
-      <button
-        onClick={() => setExpertsView("pending")}
-        className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-          expertsView === "pending"
-            ? "bg-indigo-600 text-white"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-        }`}
-      >
-        Pending Experts
-        {expertApplicants.length > 0 && (
-          <span className="ml-1.5 text-xs font-bold">
-            ({expertApplicants.length})
-          </span>
-        )}
-      </button>
-      <button
-        onClick={() => setExpertsView("all")}
-        className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-          expertsView === "all"
-            ? "bg-indigo-600 text-white"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-        }`}
-      >
-        All Experts ({allExperts.length})
-      </button>
-    </div>
-
-    {expertsView === "pending" ? (
-      <Card className="border border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="size-4 text-green-600" />
-            Expert Applications
-            {expertApplicants.length > 0 && (
-              <Badge className="bg-amber-100 text-amber-700">
-                {expertApplicants.length} pending
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Expertise</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expertApplicants.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-gray-400">
-                    No pending expert applications
-                  </TableCell>
-                </TableRow>
-              ) : (
-                expertApplicants.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.name}</TableCell>
-                    <TableCell className="text-gray-500">{u.email}</TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {u.profile?.expertise?.join(", ") || "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-<Button
-  size="sm"
-  variant="outline"
-  className="border-green-500 text-green-600 hover:bg-green-50"
-  onClick={() => setPendingExpertAction({ user: u, action: "approve" })}
->
-  <Check className="size-4 mr-1" />
-  Approve
-</Button>
-<Button
-  size="sm"
-  variant="outline"
-  className="border-red-500 text-red-600 hover:bg-red-50"
-  onClick={() => setPendingExpertAction({ user: u, action: "reject" })}
->
-  <X className="size-4 mr-1" />
-  Reject
-</Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+      {activeSection === "experts" && (
+        <div className="space-y-4">
+          {/* Sub-tabs */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setExpertsView("pending")}
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                expertsView === "pending"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              Pending Experts
+              {expertApplicants.length > 0 && (
+                <span className="ml-1.5 text-xs font-bold">
+                  ({expertApplicants.length})
+                </span>
               )}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
-    ) : (
-      <>
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
-          <Input
-            placeholder="Search experts..."
-            value={expertSearch}
-            onChange={(e) => setExpertSearch(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+            </button>
+            <button
+              onClick={() => setExpertsView("all")}
+              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                expertsView === "all"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              All Experts ({allExperts.length})
+            </button>
+          </div>
 
-        <Card className="border border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="size-4 text-green-600" />
-              All Experts ({filteredAllExperts.length})
-            </CardTitle>
-          </CardHeader>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Expertise</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredAllExperts.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8 text-gray-400">
-                      No experts found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredAllExperts.map((u) => {
-                    const status =
-                      u.role === "EXPERT"
-                        ? "APPROVED"
-                        : u.profile?.expertApplicationStatus && u.profile.expertApplicationStatus !== "NONE"
-                          ? u.profile.expertApplicationStatus
-                          : "—";
-                    return (
-                      <TableRow key={u.id}>
+          {expertsView === "pending" ? (
+            <Card className="border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <TrendingUp className="size-4 text-green-600" />
+                  Expert Applications
+                  {expertApplicants.length > 0 && (
+                    <Badge className="bg-amber-100 text-amber-700">
+                      {expertApplicants.length} pending
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Expertise</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {expertApplicants.length === 0 ? (
+                      <TableRow>
                         <TableCell
-                          className="font-medium cursor-pointer hover:text-indigo-600"
-                          onClick={() => navigate(`/app/profile/${u.id}`)}
+                          colSpan={4}
+                          className="text-center py-8 text-gray-400"
                         >
-                          {u.name}
-                        </TableCell>
-                        <TableCell className="text-gray-500">{u.email}</TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {u.profile?.expertise?.join(", ") || "—"}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={
-                              status === "APPROVED"
-                                ? "bg-green-100 text-green-700"
-                                : status === "REJECTED"
-                                  ? "bg-red-100 text-red-700"
-                                  : status === "PENDING"
-                                    ? "bg-amber-100 text-amber-700"
-                                    : "bg-gray-100 text-gray-600"
-                            }
-                          >
-                            {status}
-                          </Badge>
+                          No pending expert applications
                         </TableCell>
                       </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </Card>
-      </>
-    )}
-  </div>
-)}
+                    ) : (
+                      expertApplicants.map((u) => (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium">
+                            {u.name}
+                          </TableCell>
+                          <TableCell className="text-gray-500">
+                            {u.email}
+                          </TableCell>
+                          <TableCell className="text-sm text-gray-600">
+                            {u.profile?.expertise?.join(", ") || "—"}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-green-500 text-green-600 hover:bg-green-50"
+                                onClick={() =>
+                                  setPendingExpertAction({
+                                    user: u,
+                                    action: "approve",
+                                  })
+                                }
+                              >
+                                <Check className="size-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500 text-red-600 hover:bg-red-50"
+                                onClick={() =>
+                                  setPendingExpertAction({
+                                    user: u,
+                                    action: "reject",
+                                  })
+                                }
+                              >
+                                <X className="size-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          ) : (
+            <>
+              <div className="relative max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
+                <Input
+                  placeholder="Search experts..."
+                  value={expertSearch}
+                  onChange={(e) => setExpertSearch(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <Card className="border border-gray-200">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="size-4 text-green-600" />
+                    All Experts ({filteredAllExperts.length})
+                  </CardTitle>
+                </CardHeader>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Expertise</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredAllExperts.length === 0 ? (
+                        <TableRow>
+                          <TableCell
+                            colSpan={4}
+                            className="text-center py-8 text-gray-400"
+                          >
+                            No experts found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredAllExperts.map((u) => {
+                          const status =
+                            u.role === "EXPERT"
+                              ? "APPROVED"
+                              : u.profile?.expertApplicationStatus &&
+                                  u.profile.expertApplicationStatus !== "NONE"
+                                ? u.profile.expertApplicationStatus
+                                : "—";
+                          return (
+                            <TableRow key={u.id}>
+                              <TableCell
+                                className="font-medium cursor-pointer hover:text-indigo-600"
+                                onClick={() => navigate(`/app/profile/${u.id}`)}
+                              >
+                                {u.name}
+                              </TableCell>
+                              <TableCell className="text-gray-500">
+                                {u.email}
+                              </TableCell>
+                              <TableCell className="text-sm text-gray-600">
+                                {u.profile?.expertise?.join(", ") || "—"}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={
+                                    status === "APPROVED"
+                                      ? "bg-green-100 text-green-700"
+                                      : status === "REJECTED"
+                                        ? "bg-red-100 text-red-700"
+                                        : status === "PENDING"
+                                          ? "bg-amber-100 text-amber-700"
+                                          : "bg-gray-100 text-gray-600"
+                                  }
+                                >
+                                  {status}
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+              </Card>
+            </>
+          )}
+        </div>
+      )}
 
       {activeSection === "programs" &&
         (selectedProgram ? (
@@ -996,24 +1025,34 @@ const filteredAllExperts = allExperts.filter(
                         <TableCell className="text-right">
                           {app.status === "PENDING" && (
                             <div className="flex justify-end gap-2">
-<Button
-  size="sm"
-  variant="outline"
-  className="border-green-500 text-green-600 hover:bg-green-50"
-  onClick={() => setPendingProgramApp({ app, status: "ACCEPTED" })}
->
-  <Check className="size-4 mr-1" />
-  Accept
-</Button>
-<Button
-  size="sm"
-  variant="outline"
-  className="border-red-500 text-red-600 hover:bg-red-50"
-  onClick={() => setPendingProgramApp({ app, status: "REJECTED" })}
->
-  <X className="size-4 mr-1" />
-  Reject
-</Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-green-500 text-green-600 hover:bg-green-50"
+                                onClick={() =>
+                                  setPendingProgramApp({
+                                    app,
+                                    status: "ACCEPTED",
+                                  })
+                                }
+                              >
+                                <Check className="size-4 mr-1" />
+                                Accept
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-red-500 text-red-600 hover:bg-red-50"
+                                onClick={() =>
+                                  setPendingProgramApp({
+                                    app,
+                                    status: "REJECTED",
+                                  })
+                                }
+                              >
+                                <X className="size-4 mr-1" />
+                                Reject
+                              </Button>
                             </div>
                           )}
                         </TableCell>
@@ -1181,24 +1220,34 @@ const filteredAllExperts = allExperts.filter(
                           <TableCell className="text-right">
                             {app.status === "PENDING" && (
                               <div className="flex justify-end gap-2">
-<Button
-  size="sm"
-  variant="outline"
-  className="border-green-500 text-green-600 hover:bg-green-50"
-  onClick={() => setPendingEventApp({ app, status: "ACCEPTED" })}
->
-  <Check className="size-4 mr-1" />
-  Accept
-</Button>
-<Button
-  size="sm"
-  variant="outline"
-  className="border-red-500 text-red-600 hover:bg-red-50"
-  onClick={() => setPendingEventApp({ app, status: "REJECTED" })}
->
-  <X className="size-4 mr-1" />
-  Reject
-</Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-green-500 text-green-600 hover:bg-green-50"
+                                  onClick={() =>
+                                    setPendingEventApp({
+                                      app,
+                                      status: "ACCEPTED",
+                                    })
+                                  }
+                                >
+                                  <Check className="size-4 mr-1" />
+                                  Accept
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-red-500 text-red-600 hover:bg-red-50"
+                                  onClick={() =>
+                                    setPendingEventApp({
+                                      app,
+                                      status: "REJECTED",
+                                    })
+                                  }
+                                >
+                                  <X className="size-4 mr-1" />
+                                  Reject
+                                </Button>
                               </div>
                             )}
                           </TableCell>
@@ -1518,61 +1567,85 @@ const filteredAllExperts = allExperts.filter(
         </div>
       )}
 
-<ConfirmActionDialog
-  open={!!pendingProjectAction}
-  onOpenChange={(open) => !open && setPendingProjectAction(null)}
-  title={pendingProjectAction?.action === "approve" ? "Approve this project?" : "Reject this project?"}
-  description={
-    pendingProjectAction
-      ? `${pendingProjectAction.action === "approve" ? "Approve" : "Reject"} "${pendingProjectAction.project.title}" by ${pendingProjectAction.project.owner?.name}?`
-      : ""
-  }
-  confirmLabel={pendingProjectAction?.action === "approve" ? "Approve" : "Reject"}
-  destructive={pendingProjectAction?.action === "reject"}
-  onConfirm={confirmProjectAction}
-/>
+      <ConfirmActionDialog
+        open={!!pendingProjectAction}
+        onOpenChange={(open) => !open && setPendingProjectAction(null)}
+        title={
+          pendingProjectAction?.action === "approve"
+            ? "Approve this project?"
+            : "Reject this project?"
+        }
+        description={
+          pendingProjectAction
+            ? `${pendingProjectAction.action === "approve" ? "Approve" : "Reject"} "${pendingProjectAction.project.title}" by ${pendingProjectAction.project.owner?.name}?`
+            : ""
+        }
+        confirmLabel={
+          pendingProjectAction?.action === "approve" ? "Approve" : "Reject"
+        }
+        destructive={pendingProjectAction?.action === "reject"}
+        onConfirm={confirmProjectAction}
+      />
 
-<ConfirmActionDialog
-  open={!!pendingExpertAction}
-  onOpenChange={(open) => !open && setPendingExpertAction(null)}
-  title={pendingExpertAction?.action === "approve" ? "Approve this expert application?" : "Reject this expert application?"}
-  description={
-    pendingExpertAction
-      ? `${pendingExpertAction.action === "approve" ? "Approve" : "Reject"} the expert application from ${pendingExpertAction.user.name} (${pendingExpertAction.user.email})?`
-      : ""
-  }
-  confirmLabel={pendingExpertAction?.action === "approve" ? "Approve" : "Reject"}
-  destructive={pendingExpertAction?.action === "reject"}
-  onConfirm={confirmExpertAction}
-/>
+      <ConfirmActionDialog
+        open={!!pendingExpertAction}
+        onOpenChange={(open) => !open && setPendingExpertAction(null)}
+        title={
+          pendingExpertAction?.action === "approve"
+            ? "Approve this expert application?"
+            : "Reject this expert application?"
+        }
+        description={
+          pendingExpertAction
+            ? `${pendingExpertAction.action === "approve" ? "Approve" : "Reject"} the expert application from ${pendingExpertAction.user.name} (${pendingExpertAction.user.email})?`
+            : ""
+        }
+        confirmLabel={
+          pendingExpertAction?.action === "approve" ? "Approve" : "Reject"
+        }
+        destructive={pendingExpertAction?.action === "reject"}
+        onConfirm={confirmExpertAction}
+      />
 
-<ConfirmActionDialog
-  open={!!pendingProgramApp}
-  onOpenChange={(open) => !open && setPendingProgramApp(null)}
-  title={pendingProgramApp?.status === "ACCEPTED" ? "Accept this application?" : "Reject this application?"}
-  description={
-    pendingProgramApp
-      ? `${pendingProgramApp.status === "ACCEPTED" ? "Accept" : "Reject"} ${pendingProgramApp.app.user.name}'s application to "${selectedProgram?.title}"?`
-      : ""
-  }
-  confirmLabel={pendingProgramApp?.status === "ACCEPTED" ? "Accept" : "Reject"}
-  destructive={pendingProgramApp?.status === "REJECTED"}
-  onConfirm={confirmProgramAppAction}
-/>
+      <ConfirmActionDialog
+        open={!!pendingProgramApp}
+        onOpenChange={(open) => !open && setPendingProgramApp(null)}
+        title={
+          pendingProgramApp?.status === "ACCEPTED"
+            ? "Accept this application?"
+            : "Reject this application?"
+        }
+        description={
+          pendingProgramApp
+            ? `${pendingProgramApp.status === "ACCEPTED" ? "Accept" : "Reject"} ${pendingProgramApp.app.user.name}'s application to "${selectedProgram?.title}"?`
+            : ""
+        }
+        confirmLabel={
+          pendingProgramApp?.status === "ACCEPTED" ? "Accept" : "Reject"
+        }
+        destructive={pendingProgramApp?.status === "REJECTED"}
+        onConfirm={confirmProgramAppAction}
+      />
 
-<ConfirmActionDialog
-  open={!!pendingEventApp}
-  onOpenChange={(open) => !open && setPendingEventApp(null)}
-  title={pendingEventApp?.status === "ACCEPTED" ? "Accept this application?" : "Reject this application?"}
-  description={
-    pendingEventApp
-      ? `${pendingEventApp.status === "ACCEPTED" ? "Accept" : "Reject"} ${pendingEventApp.app.user.name}'s application to "${selectedEventForApps?.title}"?`
-      : ""
-  }
-  confirmLabel={pendingEventApp?.status === "ACCEPTED" ? "Accept" : "Reject"}
-  destructive={pendingEventApp?.status === "REJECTED"}
-  onConfirm={confirmEventAppAction}
-/>
+      <ConfirmActionDialog
+        open={!!pendingEventApp}
+        onOpenChange={(open) => !open && setPendingEventApp(null)}
+        title={
+          pendingEventApp?.status === "ACCEPTED"
+            ? "Accept this application?"
+            : "Reject this application?"
+        }
+        description={
+          pendingEventApp
+            ? `${pendingEventApp.status === "ACCEPTED" ? "Accept" : "Reject"} ${pendingEventApp.app.user.name}'s application to "${selectedEventForApps?.title}"?`
+            : ""
+        }
+        confirmLabel={
+          pendingEventApp?.status === "ACCEPTED" ? "Accept" : "Reject"
+        }
+        destructive={pendingEventApp?.status === "REJECTED"}
+        onConfirm={confirmEventAppAction}
+      />
     </div>
   );
 }

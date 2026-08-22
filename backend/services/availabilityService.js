@@ -1,6 +1,5 @@
 import { prisma } from "../config/prisma.js";
 
-
 export async function getEffectiveAvailability(profileId, date) {
   const dayStart = new Date(date);
   dayStart.setUTCHours(0, 0, 0, 0);
@@ -11,7 +10,11 @@ export async function getEffectiveAvailability(profileId, date) {
 
   if (override) {
     if (!override.isAvailable) return null;
-    return { startTime: override.startTime, endTime: override.endTime, isOverride: true };
+    return {
+      startTime: override.startTime,
+      endTime: override.endTime,
+      isOverride: true,
+    };
   }
 
   const dayOfWeek = dayStart.getUTCDay();
@@ -20,11 +23,18 @@ export async function getEffectiveAvailability(profileId, date) {
   });
 
   if (!weeklyRule) return null;
-  return { startTime: weeklyRule.startTime, endTime: weeklyRule.endTime, isOverride: false };
+  return {
+    startTime: weeklyRule.startTime,
+    endTime: weeklyRule.endTime,
+    isOverride: false,
+  };
 }
 
-
-export async function assertBookingAllowed({ profile, startDateTime, endDateTime }) {
+export async function assertBookingAllowed({
+  profile,
+  startDateTime,
+  endDateTime,
+}) {
   const now = new Date();
 
   // ── Préavis minimum ──
@@ -46,19 +56,26 @@ export async function assertBookingAllowed({ profile, startDateTime, endDateTime
   }
 
   // ── Disponibilité effective (override > hebdo) ──
-  const availability = await getEffectiveAvailability(profile.id, startDateTime);
+  const availability = await getEffectiveAvailability(
+    profile.id,
+    startDateTime,
+  );
   if (!availability) {
     throw new Error("Expert is not available on this date.");
   }
 
-  const [startHour, startMinute] = availability.startTime.split(":").map(Number);
+  const [startHour, startMinute] = availability.startTime
+    .split(":")
+    .map(Number);
   const [endHour, endMinute] = availability.endTime.split(":").map(Number);
 
   const windowStartMins = startHour * 60 + startMinute;
   const windowEndMins = endHour * 60 + endMinute;
 
-  const bookingStartMins = startDateTime.getUTCHours() * 60 + startDateTime.getUTCMinutes();
-  const bookingEndMins = endDateTime.getUTCHours() * 60 + endDateTime.getUTCMinutes();
+  const bookingStartMins =
+    startDateTime.getUTCHours() * 60 + startDateTime.getUTCMinutes();
+  const bookingEndMins =
+    endDateTime.getUTCHours() * 60 + endDateTime.getUTCMinutes();
 
   if (bookingStartMins < windowStartMins || bookingEndMins > windowEndMins) {
     throw new Error("Requested time is outside the expert's available hours.");

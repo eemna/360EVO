@@ -664,7 +664,7 @@ export const getEventProgramAnalytics = async (req, res, next) => {
         ),
       ]);
 
-const eventFillRates = await prisma.$queryRaw`
+    const eventFillRates = await prisma.$queryRaw`
   SELECT
     e.id,
     e.title,
@@ -683,7 +683,7 @@ const eventFillRates = await prisma.$queryRaw`
   LIMIT 50
 `;
 
-const programFillRates = await prisma.$queryRaw`
+    const programFillRates = await prisma.$queryRaw`
   SELECT
     p.id,
     p.title,
@@ -716,19 +716,22 @@ const programFillRates = await prisma.$queryRaw`
   }
 };
 
-
 export const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
 
     if (id === req.user.id) {
-      return res.status(400).json({ message: "You cannot delete your own account" });
+      return res
+        .status(400)
+        .json({ message: "You cannot delete your own account" });
     }
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user.role === "ADMIN") {
-      return res.status(400).json({ message: "Demote this admin before deleting" });
+      return res
+        .status(400)
+        .json({ message: "Demote this admin before deleting" });
     }
 
     await prisma.user.delete({ where: { id } });

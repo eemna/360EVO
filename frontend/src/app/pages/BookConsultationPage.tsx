@@ -41,8 +41,6 @@ const dayNames = [
   "Saturday",
 ];
 
-
-
 export function BookConsultationPage() {
   const [duration, setDuration] = useState(30);
 
@@ -68,35 +66,34 @@ export function BookConsultationPage() {
     : 0;
 
   useEffect(() => {
-const fetchExpert = async () => {
-  try {
-    const { data } = await api.get(`/experts/${expertId}`);
-    setExpert(data);
-  } catch (error) {
-    console.error(error);
-    showToast({
-      type: "error",
-      title: "Failed to load expert",
-      message: "Please try again later.",
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+    const fetchExpert = async () => {
+      try {
+        const { data } = await api.get(`/experts/${expertId}`);
+        setExpert(data);
+      } catch (error) {
+        console.error(error);
+        showToast({
+          type: "error",
+          title: "Failed to load expert",
+          message: "Please try again later.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
     if (expertId) fetchExpert();
   }, [expertId, showToast]);
 
-
   const handleConfirmBooking = async () => {
-  if (!selectedSlot || dayOfWeek === null || !expert) {
-    showToast({
-      type: "warning",
-      title: "Missing information",
-      message: "Please select a date and time first.",
-    });
-    return;
-  }
+    if (!selectedSlot || dayOfWeek === null || !expert) {
+      showToast({
+        type: "warning",
+        title: "Missing information",
+        message: "Please select a date and time first.",
+      });
+      return;
+    }
     try {
       if (meetingType === "IN_PERSON" && !location.trim()) {
         showToast({
@@ -124,8 +121,6 @@ const fetchExpert = async () => {
         tzOffset,
         dayOfWeek,
       });
-
-
 
       setSelectedSlot(null);
       setDayOfWeek(null);
@@ -355,15 +350,15 @@ const fetchExpert = async () => {
               </div>
             </CardHeader>
             <CardContent>
-<AvailabilityCalendar
-  expertId={expertId!}
-  durationMinutes={duration}
-  selectedSlot={selectedSlot}
-  onSelectSlot={(iso: string, dow: number) => {
-    setSelectedSlot(iso);
-    setDayOfWeek(dow);
-  }}
-/>
+              <AvailabilityCalendar
+                expertId={expertId!}
+                durationMinutes={duration}
+                selectedSlot={selectedSlot}
+                onSelectSlot={(iso: string, dow: number) => {
+                  setSelectedSlot(iso);
+                  setDayOfWeek(dow);
+                }}
+              />
             </CardContent>
           </Card>
 
@@ -465,17 +460,17 @@ const fetchExpert = async () => {
                     className="resize-none"
                   />
                 </div>
-<div className="space-y-2">
-  <Label htmlFor="message">Message (optional)</Label>
-  <Textarea
-    id="message"
-    placeholder="Anything else the expert should know?"
-    value={message}
-    onChange={(e) => setMessage(e.target.value)}
-    rows={2}
-    className="resize-none"
-  />
-</div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message (optional)</Label>
+                  <Textarea
+                    id="message"
+                    placeholder="Anything else the expert should know?"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    rows={2}
+                    className="resize-none"
+                  />
+                </div>
                 <Button
                   className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"
                   onClick={handleConfirmBooking}

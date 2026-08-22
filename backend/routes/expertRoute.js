@@ -18,7 +18,11 @@ router.get("/", protect, getExperts);
 router.put("/availability-settings", protect, updateAvailabilitySettings);
 router.get("/availability-overrides", protect, listAvailabilityOverrides);
 router.post("/availability-overrides", protect, upsertAvailabilityOverride);
-router.delete("/availability-overrides/:id", protect, deleteAvailabilityOverride);
+router.delete(
+  "/availability-overrides/:id",
+  protect,
+  deleteAvailabilityOverride,
+);
 
 router.get("/:id/availability", protect, getExpertAvailability);
 router.get("/:id", protect, getPublicExpertProfile);

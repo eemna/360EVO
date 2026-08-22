@@ -275,11 +275,10 @@ export const applyExpert = async (req, res, next) => {
   }
 };
 
-
 export const getExpertAvailability = async (req, res, next) => {
   try {
     const { id: expertId } = req.params;
-    const { month } = req.query; 
+    const { month } = req.query;
     const profile = await prisma.profile.findUnique({
       where: { userId: expertId },
     });
@@ -299,8 +298,10 @@ export const getExpertAvailability = async (req, res, next) => {
     for (let d = 1; d <= daysInMonth; d++) {
       const date = new Date(Date.UTC(year, monthNum - 1, d));
 
-      if (date.getTime() + 24 * 60 * 60 * 1000 - minNoticeMs < now.getTime()) continue;
-      if (horizonMs != null && date.getTime() - now.getTime() > horizonMs) continue;
+      if (date.getTime() + 24 * 60 * 60 * 1000 - minNoticeMs < now.getTime())
+        continue;
+      if (horizonMs != null && date.getTime() - now.getTime() > horizonMs)
+        continue;
 
       const availability = await getEffectiveAvailability(profile.id, date);
       if (availability) {
@@ -333,7 +334,9 @@ export const updateAvailabilitySettings = async (req, res, next) => {
 
 export const listAvailabilityOverrides = async (req, res, next) => {
   try {
-    const profile = await prisma.profile.findUnique({ where: { userId: req.user.id } });
+    const profile = await prisma.profile.findUnique({
+      where: { userId: req.user.id },
+    });
     const overrides = await prisma.availabilityOverride.findMany({
       where: { profileId: profile.id },
       orderBy: { date: "asc" },
@@ -347,7 +350,9 @@ export const listAvailabilityOverrides = async (req, res, next) => {
 export const upsertAvailabilityOverride = async (req, res, next) => {
   try {
     const { date, isAvailable, startTime, endTime } = req.body;
-    const profile = await prisma.profile.findUnique({ where: { userId: req.user.id } });
+    const profile = await prisma.profile.findUnique({
+      where: { userId: req.user.id },
+    });
 
     const dayStart = new Date(date);
     dayStart.setUTCHours(0, 0, 0, 0);
@@ -355,7 +360,13 @@ export const upsertAvailabilityOverride = async (req, res, next) => {
     const override = await prisma.availabilityOverride.upsert({
       where: { profileId_date: { profileId: profile.id, date: dayStart } },
       update: { isAvailable, startTime, endTime },
-      create: { profileId: profile.id, date: dayStart, isAvailable, startTime, endTime },
+      create: {
+        profileId: profile.id,
+        date: dayStart,
+        isAvailable,
+        startTime,
+        endTime,
+      },
     });
     res.json(override);
   } catch (error) {

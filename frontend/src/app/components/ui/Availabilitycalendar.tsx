@@ -17,7 +17,6 @@ interface AvailabilityCalendarProps {
   selectedSlot?: string | null;
 }
 
-
 export default function AvailabilityCalendar({
   expertId,
   durationMinutes,
@@ -54,7 +53,10 @@ export default function AvailabilityCalendar({
     fetchAvailability();
   }, [fetchAvailability]);
 
-  const availableDateSet = useMemo(() => new Set(days.map((d) => d.date)), [days]);
+  const availableDateSet = useMemo(
+    () => new Set(days.map((d) => d.date)),
+    [days],
+  );
   const dayLookup = useMemo(() => {
     const map: Record<string, DayAvailability> = {};
     days.forEach((d) => (map[d.date] = d));
@@ -95,11 +97,17 @@ export default function AvailabilityCalendar({
     return slots;
   }, [selectedDate, dayLookup, durationMinutes]);
 
-  const monthLabel = monthCursor.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const monthLabel = monthCursor.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
   const isCurrentOrFutureMonth = () => {
     const now = new Date();
-    return monthCursor.getFullYear() > now.getFullYear() ||
-      (monthCursor.getFullYear() === now.getFullYear() && monthCursor.getMonth() >= now.getMonth());
+    return (
+      monthCursor.getFullYear() > now.getFullYear() ||
+      (monthCursor.getFullYear() === now.getFullYear() &&
+        monthCursor.getMonth() >= now.getMonth())
+    );
   };
 
   return (
@@ -113,15 +121,25 @@ export default function AvailabilityCalendar({
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => setMonthCursor((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1))}
+            onClick={() =>
+              setMonthCursor(
+                (d) => new Date(d.getFullYear(), d.getMonth() - 1, 1),
+              )
+            }
           >
             <ChevronLeft className="size-4" />
           </Button>
-          <span className="text-sm font-medium w-32 text-center">{monthLabel}</span>
+          <span className="text-sm font-medium w-32 text-center">
+            {monthLabel}
+          </span>
           <Button
             size="icon"
             variant="ghost"
-            onClick={() => setMonthCursor((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1))}
+            onClick={() =>
+              setMonthCursor(
+                (d) => new Date(d.getFullYear(), d.getMonth() + 1, 1),
+              )
+            }
           >
             <ChevronRight className="size-4" />
           </Button>
@@ -138,7 +156,10 @@ export default function AvailabilityCalendar({
             <div>
               <div className="grid grid-cols-7 gap-1 mb-1.5">
                 {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
-                  <div key={i} className="text-center text-xs font-medium text-gray-400">
+                  <div
+                    key={i}
+                    className="text-center text-xs font-medium text-gray-400"
+                  >
                     {d}
                   </div>
                 ))}
@@ -168,7 +189,9 @@ export default function AvailabilityCalendar({
                 })}
               </div>
               {!isCurrentOrFutureMonth() && (
-                <p className="text-xs text-gray-400 mt-2">Showing a past month</p>
+                <p className="text-xs text-gray-400 mt-2">
+                  Showing a past month
+                </p>
               )}
               {availableDateSet.size === 0 && (
                 <p className="text-sm text-gray-400 text-center py-6">
@@ -196,7 +219,9 @@ export default function AvailabilityCalendar({
                       <button
                         key={time}
                         onClick={() => {
-                          const dayOfWeek = new Date(`${selectedDate}T00:00:00`).getDay();
+                          const dayOfWeek = new Date(
+                            `${selectedDate}T00:00:00`,
+                          ).getDay();
                           onSelectSlot(iso, dayOfWeek);
                         }}
                         className={`px-2 py-2 rounded-lg text-sm font-medium border transition-colors ${

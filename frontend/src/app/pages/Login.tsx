@@ -21,30 +21,30 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
 
-try {
-const response = await api.post("/auth/login", { email, password });
+    try {
+      const response = await api.post("/auth/login", { email, password });
 
-if (response.data.twoFactorRequired) {
-  navigate("/verify-2fa", {
-    state: { preAuthToken: response.data.preAuthToken },
-  });
-  return;
-}
+      if (response.data.twoFactorRequired) {
+        navigate("/verify-2fa", {
+          state: { preAuthToken: response.data.preAuthToken },
+        });
+        return;
+      }
 
-login(response.data.user, response.data.accessToken);
+      login(response.data.user, response.data.accessToken);
 
-showToast({
-  type: "success",
-  title: "Login successful 🎉",
-  message: "Welcome back!",
-});
+      showToast({
+        type: "success",
+        title: "Login successful 🎉",
+        message: "Welcome back!",
+      });
 
-  if (response.data.user.role === "STARTUP") {
-    navigate("/app/startup-profile");
-  } else {
-    navigate("/app");
-  }
-} catch (err: unknown) {
+      if (response.data.user.role === "STARTUP") {
+        navigate("/app/startup-profile");
+      } else {
+        navigate("/app");
+      }
+    } catch (err: unknown) {
       const axiosErr = err as {
         response?: { status?: number; data?: { message?: string } };
       };
@@ -84,13 +84,16 @@ showToast({
   return (
     <div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
       <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
-       
-{/* Logo */}
-<div className="flex justify-center mb-6">
-  <div className="h-14 w-30 rounded-lg bg-white flex items-center justify-center p-1.5">
-    <img src="/logo.png" alt="360EVO" className="h-full w-full object-contain" />
-  </div>
-</div>
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <div className="h-14 w-30 rounded-lg bg-white flex items-center justify-center p-1.5">
+            <img
+              src="/logo.png"
+              alt="360EVO"
+              className="h-full w-full object-contain"
+            />
+          </div>
+        </div>
 
         <h1 className="text-center text-white text-xl font-semibold mb-2">
           Welcome back to 360EVO
@@ -127,40 +130,40 @@ showToast({
           </div>
 
           {/* Password Field - Fixed white text */}
-<div className="space-y-2">
-  <label
-    htmlFor="password"
-    className="text-white/80 text-sm font-medium"
-  >
-    Password
-  </label>
-  <div className="relative">
-    <input
-      id="password"
-      type={showPassword ? "text" : "password"}
-      placeholder="Enter your password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/20 rounded-lg 
+          <div className="space-y-2">
+            <label
+              htmlFor="password"
+              className="text-white/80 text-sm font-medium"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 pr-11 bg-white/5 border border-white/20 rounded-lg 
                  text-white placeholder-white/40 
                  focus:outline-none focus:border-[#1D9E75] focus:ring-1 focus:ring-[#1D9E75]/50
                  transition-colors"
-      required
-    />
-    <button
-      type="button"
-      onClick={() => setShowPassword((prev) => !prev)}
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-black/70 transition-colors"
-      tabIndex={-1}
-    >
-      {showPassword ? (
-        <Eye className="w-5 h-5" />
-      ) : (
-        <EyeOff className="w-5 h-5" />
-      )}
-    </button>
-  </div>
-</div>
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-black/70 transition-colors"
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <Eye className="w-5 h-5" />
+                ) : (
+                  <EyeOff className="w-5 h-5" />
+                )}
+              </button>
+            </div>
+          </div>
 
           {/* Forgot Password */}
           <div className="flex justify-end">

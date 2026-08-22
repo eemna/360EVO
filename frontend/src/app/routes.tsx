@@ -120,21 +120,21 @@ export const router = createBrowserRouter([
         ),
       },
       {
-  path: "admin/users",
-  element: (
-    <RoleRoute allowedRoles={["ADMIN"]}>
-      <AdminUsersPage />
-    </RoleRoute>
-  ),
-},
-{
-  path: "admin/analytics",
-  element: (
-    <RoleRoute allowedRoles={["ADMIN"]}>
-      <AdminAnalyticsPage />
-    </RoleRoute>
-  ),
-},
+        path: "admin/users",
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <AdminUsersPage />
+          </RoleRoute>
+        ),
+      },
+      {
+        path: "admin/analytics",
+        element: (
+          <RoleRoute allowedRoles={["ADMIN"]}>
+            <AdminAnalyticsPage />
+          </RoleRoute>
+        ),
+      },
       {
         path: "investor/matches",
         element: (
@@ -201,13 +201,13 @@ export const router = createBrowserRouter([
       { path: "notifications", element: <NotificationsPage /> },
       { path: "conversation", element: <MessagesPage /> },
       {
-  path: "startup-profile",
-  element: (
-    <RoleRoute allowedRoles={["STARTUP"]}>
-      <StartupProfile />
-    </RoleRoute>
-  ),
-},
+        path: "startup-profile",
+        element: (
+          <RoleRoute allowedRoles={["STARTUP"]}>
+            <StartupProfile />
+          </RoleRoute>
+        ),
+      },
       {
         path: "profile/:id",
         element: <Profile />,

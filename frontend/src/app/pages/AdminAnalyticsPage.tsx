@@ -8,7 +8,12 @@ import {
   Calendar,
   BookOpen,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import {
   Select,
   SelectContent,
@@ -173,8 +178,7 @@ export default function AdminAnalyticsPage() {
   const [revenueAnalyticsData, setRevenueAnalyticsData] = useState<
     RevenueAnalyticsRow[]
   >([]);
-  const [revenueAnalyticsLoading, setRevenueAnalyticsLoading] =
-    useState(false);
+  const [revenueAnalyticsLoading, setRevenueAnalyticsLoading] = useState(false);
 
   const fetchRevenueAnalytics = useCallback(async () => {
     setRevenueAnalyticsLoading(true);
@@ -287,9 +291,7 @@ export default function AdminAnalyticsPage() {
       {/* ── Global time range controls ── */}
       <div className="flex items-center justify-between flex-wrap gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-600">
-            Time range:
-          </span>
+          <span className="text-sm font-medium text-gray-600">Time range:</span>
           <Select
             value={growthRange}
             onValueChange={(v) => setGrowthRange(v as TimeRange)}
@@ -432,7 +434,9 @@ export default function AdminAnalyticsPage() {
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={formatSimpleForChart(engagementData.activeUsers)}>
+              <LineChart
+                data={formatSimpleForChart(engagementData.activeUsers)}
+              >
                 <XAxis
                   dataKey="period"
                   tick={{ fontSize: 11, fill: "#9ca3af" }}

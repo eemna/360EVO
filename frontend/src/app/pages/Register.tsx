@@ -50,7 +50,7 @@ export default function RegistrationPage() {
     email: isAdminInvite && inviteEmail ? inviteEmail : "",
     password: "",
     confirmPassword: "",
-    role: isAdminInvite ? "member" : null, 
+    role: isAdminInvite ? "member" : null,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -242,36 +242,36 @@ export default function RegistrationPage() {
     <div className="w-full bg-[#e8eef5] py-8 px-4 flex flex-col items-center">
       <div className="w-full max-w-2xl">
         {/* Step indicators */}
-{!isAdminInvite && (
-  <div className="mb-10 flex justify-center">
-    <div className="flex items-center gap-4">
-      {[1, 2, 3].map((step) => (
-        <div key={step} className="flex items-center">
-          <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center border-2 font-medium transition-all ${
-              currentStep >= step
-                ? "bg-[#C9A84C] border-[#C9A84C] text-[#0D1B2A]"
-                : "bg-gray-100 border-gray-300 text-gray-500"
-            }`}
-          >
-            {currentStep > step ? (
-              <CheckCircle2 className="w-5 h-5" />
-            ) : (
-              step
-            )}
+        {!isAdminInvite && (
+          <div className="mb-10 flex justify-center">
+            <div className="flex items-center gap-4">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 font-medium transition-all ${
+                      currentStep >= step
+                        ? "bg-[#C9A84C] border-[#C9A84C] text-[#0D1B2A]"
+                        : "bg-gray-100 border-gray-300 text-gray-500"
+                    }`}
+                  >
+                    {currentStep > step ? (
+                      <CheckCircle2 className="w-5 h-5" />
+                    ) : (
+                      step
+                    )}
+                  </div>
+                  {step < 3 && (
+                    <div
+                      className={`w-16 h-0.5 mx-2 transition-all ${
+                        currentStep > step ? "bg-[#C9A84C]" : "bg-gray-300"
+                      }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-          {step < 3 && (
-            <div
-              className={`w-16 h-0.5 mx-2 transition-all ${
-                currentStep > step ? "bg-[#C9A84C]" : "bg-gray-300"
-              }`}
-            />
-          )}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
+        )}
 
         {/* Card */}
         <Card className="bg-[#1A2A3A] border-white/10 rounded-xl">
@@ -349,12 +349,15 @@ export default function RegistrationPage() {
               {currentStep === 2 && (
                 <div className="space-y-5">
                   <h2 className="text-2xl text-center font-semibold text-white">
-                    {isAdminInvite ? "Create Your Admin Account" : "Basic Information"}
+                    {isAdminInvite
+                      ? "Create Your Admin Account"
+                      : "Basic Information"}
                   </h2>
 
                   {isAdminInvite && (
                     <p className="text-sm text-center text-[#1D9E75] bg-[#1D9E75]/10 border border-[#1D9E75]/30 rounded-lg py-2 px-3">
-                      You've been invited as an administrator. Complete your details below.
+                      You've been invited as an administrator. Complete your
+                      details below.
                     </p>
                   )}
 

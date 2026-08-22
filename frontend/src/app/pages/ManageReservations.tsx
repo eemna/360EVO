@@ -127,19 +127,24 @@ function BookingSummaryCard({ booking }: { booking: Booking }) {
           <p className="font-semibold text-gray-900">
             {booking.member?.name || "Client"}
           </p>
-          <Badge className={`border ${getBookingStatusBadgeClasses(booking.status)}`}>
+          <Badge
+            className={`border ${getBookingStatusBadgeClasses(booking.status)}`}
+          >
             {getBookingStatusLabel(booking.status)}
           </Badge>
         </div>
         <div className="flex flex-wrap gap-3 text-sm text-gray-600">
           <div className="flex items-center gap-1.5">
             <Calendar className="size-4" />
-            <span>{format(new Date(booking.startDateTime), "EEEE, MMMM d, yyyy")}</span>
+            <span>
+              {format(new Date(booking.startDateTime), "EEEE, MMMM d, yyyy")}
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
             <Clock className="size-4" />
             <span>
-              {format(new Date(booking.startDateTime), "HH:mm")} ({booking.duration} min)
+              {format(new Date(booking.startDateTime), "HH:mm")} (
+              {booking.duration} min)
             </span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -185,7 +190,7 @@ export function ManageReservations() {
 
   const [viewMode, setViewMode] = useState<ViewMode>("status");
   const [listSubTab, setListSubTab] = useState<ListSubTab>("upcoming");
-  const [calendarSelectedDate, setCalendarSelectedDate] = useState <
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<
     Date | undefined
   >(new Date());
 
@@ -208,7 +213,7 @@ export function ManageReservations() {
     }
   };
 
-  const [processingAction, setProcessingAction] = useState <
+  const [processingAction, setProcessingAction] = useState<
     "accept" | "reject" | "cancel" | "complete" | null
   >(null);
   //Fetch consultations from the backend when the user is available
@@ -431,7 +436,6 @@ export function ManageReservations() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-         
           <h1 className="text-4xl font-semibold text-gray-900 mb-2">
             Bookings
           </h1>
@@ -601,7 +605,8 @@ export function ManageReservations() {
                     </div>
                     <p className="text-gray-600 text-lg">No pending requests</p>
                     <p className="text-gray-500 text-sm mt-1">
-                      You're all caught up! New booking requests will appear here.
+                      You're all caught up! New booking requests will appear
+                      here.
                     </p>
                   </CardContent>
                 </Card>
@@ -633,7 +638,10 @@ export function ManageReservations() {
                             <div className="flex items-center gap-1.5">
                               <Clock className="size-4" />
                               <span>
-                                {format(new Date(booking.startDateTime), "HH:mm")}{" "}
+                                {format(
+                                  new Date(booking.startDateTime),
+                                  "HH:mm",
+                                )}{" "}
                                 ({booking.duration} min)
                               </span>
                             </div>
@@ -783,7 +791,9 @@ export function ManageReservations() {
                     <div className="size-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <Calendar className="size-8 text-gray-400" />
                     </div>
-                    <p className="text-gray-600 text-lg">No confirmed sessions</p>
+                    <p className="text-gray-600 text-lg">
+                      No confirmed sessions
+                    </p>
                     <p className="text-gray-500 text-sm mt-1">
                       Accept pending requests to see them here.
                     </p>
@@ -819,7 +829,10 @@ export function ManageReservations() {
                             <div className="flex items-center gap-1.5">
                               <Clock className="size-4" />
                               <span>
-                                {format(new Date(booking.startDateTime), "HH:mm")}
+                                {format(
+                                  new Date(booking.startDateTime),
+                                  "HH:mm",
+                                )}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5">
@@ -839,26 +852,27 @@ export function ManageReservations() {
 
                       {/* Video Call Box */}
 
-                      {booking.meetingType === "VIDEO" && booking.meetingLink && (
-                        <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                          <Video className="size-5 text-blue-600 mt-1" />
+                      {booking.meetingType === "VIDEO" &&
+                        booking.meetingLink && (
+                          <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+                            <Video className="size-5 text-blue-600 mt-1" />
 
-                          <div className="flex flex-col">
-                            <p className="text-sm font-medium text-gray-700">
-                              Video Call
-                            </p>
+                            <div className="flex flex-col">
+                              <p className="text-sm font-medium text-gray-700">
+                                Video Call
+                              </p>
 
-                            <a
-                              href={booking.meetingLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-blue-600 hover:underline break-all"
-                            >
-                              {booking.meetingLink}
-                            </a>
+                              <a
+                                href={booking.meetingLink}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:underline break-all"
+                              >
+                                {booking.meetingLink}
+                              </a>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
                       {booking.meetingType === "IN_PERSON" &&
                         booking.location && (
                           <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
@@ -942,7 +956,10 @@ export function ManageReservations() {
                 </Card>
               ) : (
                 completedBookings.map((booking) => (
-                  <Card key={booking.id} className="border-l-4 border-l-gray-400">
+                  <Card
+                    key={booking.id}
+                    className="border-l-4 border-l-gray-400"
+                  >
                     <CardHeader>
                       <div className="flex items-center gap-3">
                         <CardTitle className="text-xl">

@@ -10,14 +10,18 @@ export function Footer() {
           {/* Column 1 - Logo & Description */}
           <div>
             {/* Logo */}
-<Link to="/" className="flex items-center gap-2 mb-3">
-  <div className="h-14 w-32 rounded-lg bg-white flex items-center justify-center p-1">
-    <img src="/logo.png" alt="360EVO" className="h-full w-full object-contain" />
-  </div>
-</Link>
-<p className="text-white/70 text-sm mb-2">
-  The matchmaking layer for deep-tech innovation.
-</p>
+            <Link to="/" className="flex items-center gap-2 mb-3">
+              <div className="h-14 w-32 rounded-lg bg-white flex items-center justify-center p-1">
+                <img
+                  src="/logo.png"
+                  alt="360EVO"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            </Link>
+            <p className="text-white/70 text-sm mb-2">
+              The matchmaking layer for deep-tech innovation.
+            </p>
             <p className="text-white/50 text-sm">Chicago, IL</p>
           </div>
 

@@ -14,14 +14,28 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "../components/ui/table";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "../components/ui/select";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-  DialogFooter, DialogClose,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from "../components/ui/dialog";
 import { ConfirmActionDialog } from "../components/ui/ConfirmActionDialog";
 import api from "../../services/axios";
@@ -55,7 +69,8 @@ export default function AdminUsersPage() {
   const [userRoleFilter, setUserRoleFilter] = useState("all");
 
   // ── Confirmation dialog states ──────────────────────
-  const [pendingRoleChange, setPendingRoleChange] = useState<PendingRoleChange>(null);
+  const [pendingRoleChange, setPendingRoleChange] =
+    useState<PendingRoleChange>(null);
   const [pendingSuspend, setPendingSuspend] = useState<User | null>(null);
   const [pendingDelete, setPendingDelete] = useState<User | null>(null);
 
@@ -225,22 +240,35 @@ export default function AdminUsersPage() {
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow key={user.id} className={user.isSuspended ? "bg-red-50 opacity-80" : ""}>
+                <TableRow
+                  key={user.id}
+                  className={user.isSuspended ? "bg-red-50 opacity-80" : ""}
+                >
                   <TableCell
                     className="font-medium cursor-pointer hover:text-indigo-600"
                     onClick={() => navigate(`/app/profile/${user.id}`)}
                   >
                     {user.name}
                   </TableCell>
-                  <TableCell className="text-gray-500 text-sm">{user.email}</TableCell>
+                  <TableCell className="text-gray-500 text-sm">
+                    {user.email}
+                  </TableCell>
                   <TableCell>
-                    <Badge className={ROLE_COLORS[user.role]}>{user.role}</Badge>
+                    <Badge className={ROLE_COLORS[user.role]}>
+                      {user.role}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-gray-500 text-sm">
                     {new Date(user.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Badge className={user.isSuspended ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}>
+                    <Badge
+                      className={
+                        user.isSuspended
+                          ? "bg-red-100 text-red-700"
+                          : "bg-green-100 text-green-700"
+                      }
+                    >
                       {user.isSuspended ? "Suspended" : "Active"}
                     </Badge>
                   </TableCell>
@@ -281,18 +309,30 @@ export default function AdminUsersPage() {
                         {actionLoadingId === user.id ? (
                           <Loader2 className="size-4 animate-spin" />
                         ) : user.isSuspended ? (
-                          <><ShieldCheck className="size-4 mr-1" />Reactivate</>
+                          <>
+                            <ShieldCheck className="size-4 mr-1" />
+                            Reactivate
+                          </>
                         ) : (
-                          <><ShieldOff className="size-4 mr-1" />Suspend</>
+                          <>
+                            <ShieldOff className="size-4 mr-1" />
+                            Suspend
+                          </>
                         )}
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        disabled={actionLoadingId === user.id || user.role === "ADMIN"}
+                        disabled={
+                          actionLoadingId === user.id || user.role === "ADMIN"
+                        }
                         onClick={() => setPendingDelete(user)}
                         className="border-red-500 text-red-600 hover:bg-red-50"
-                        title={user.role === "ADMIN" ? "Demote before deleting" : "Delete user"}
+                        title={
+                          user.role === "ADMIN"
+                            ? "Demote before deleting"
+                            : "Delete user"
+                        }
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -321,10 +361,16 @@ export default function AdminUsersPage() {
               : `Change ${pendingRoleChange.user.name}'s role from ${pendingRoleChange.user.role} to ${pendingRoleChange.newRole}?`
             : ""
         }
-        confirmLabel={pendingRoleChange?.newRole === "ADMIN" ? "Grant admin access" : "Change role"}
+        confirmLabel={
+          pendingRoleChange?.newRole === "ADMIN"
+            ? "Grant admin access"
+            : "Change role"
+        }
         destructive={pendingRoleChange?.newRole === "ADMIN"}
         requireTextConfirmation={
-          pendingRoleChange?.newRole === "ADMIN" ? pendingRoleChange.user.email : undefined
+          pendingRoleChange?.newRole === "ADMIN"
+            ? pendingRoleChange.user.email
+            : undefined
         }
         requireTextLabel="Type the user's email to confirm"
         onConfirm={confirmRoleChange}
@@ -334,7 +380,11 @@ export default function AdminUsersPage() {
       <ConfirmActionDialog
         open={!!pendingSuspend}
         onOpenChange={(open) => !open && setPendingSuspend(null)}
-        title={pendingSuspend?.isSuspended ? "Reactivate this account?" : "Suspend this account?"}
+        title={
+          pendingSuspend?.isSuspended
+            ? "Reactivate this account?"
+            : "Suspend this account?"
+        }
         description={
           pendingSuspend
             ? pendingSuspend.isSuspended
