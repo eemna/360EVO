@@ -214,7 +214,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
           {/* Logo */}
           <Link to="/app" className="flex items-center gap-2 shrink-0">
             <img
-              src="/logo.png"
+              src="/LOGO_WHITE.png"
               alt="360EVO"
               className="h-40 w-30 rounded-lg object-contain"
             />
