@@ -83,7 +83,7 @@ export function LocationAutocompleteInput({ value, onChange }: Props) {
             return (
               <li
                 key={s.place_id}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-indigo-50 cursor-pointer"
+                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-primary/10 cursor-pointer"
                 onMouseDown={() => {
                   onChange(short);
                   setOpen(false);

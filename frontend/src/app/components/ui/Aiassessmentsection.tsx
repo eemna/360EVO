@@ -178,7 +178,7 @@ export default function AIAssessmentSection({
             <Button
               onClick={handleTriggerAssessment}
               disabled={triggering}
-              className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+              className="bg-primary hover:bg-primary/90 gap-2"
             >
               {triggering ? (
                 <>
@@ -200,8 +200,10 @@ export default function AIAssessmentSection({
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BrainCircuit className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-xl font-semibold text-gray-900">AI Assessment</h2>
+          <BrainCircuit className="w-5 h-5 text-primary" />
+          <h2 className="text-xl font-semibold text-foreground">
+            AI Assessment
+          </h2>
           <TRLBadge score={assessment.trlScore} />
         </div>
 
@@ -321,7 +323,7 @@ export default function AIAssessmentSection({
       {/* Investor only panels */}
       {isInvestor && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="border border-indigo-100 bg-gradient-to-br from-indigo-50/30 to-white">
+          <Card className="border border-primary/10 bg-gradient-to-br from-indigo-50/30 to-white">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <span>⊕</span> Thesis Alignment
@@ -335,7 +337,7 @@ export default function AIAssessmentSection({
             </CardContent>
           </Card>
 
-          <Card className="border border-indigo-100 bg-gradient-to-br from-indigo-50/30 to-white">
+          <Card className="border border-primary/10 bg-gradient-to-br from-indigo-50/30 to-white">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <span>◷</span> Pitch Analysis

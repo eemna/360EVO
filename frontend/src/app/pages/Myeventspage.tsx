@@ -130,7 +130,7 @@ function EventRow({
           </div>
         </div>
 
-        <h3 className="font-semibold text-gray-900 mt-1 truncate">
+        <h3 className="font-semibold text-foreground mt-1 truncate">
           {event.title}
         </h3>
 
@@ -336,7 +336,7 @@ export default function MyEventsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">My Events</h1>
+          <h1 className="text-3xl font-semibold text-foreground">My Events</h1>
           <p className="text-gray-500 text-sm mt-1">
             Manage your events and registrations.
           </p>
@@ -344,7 +344,7 @@ export default function MyEventsPage() {
         {canOrganize && (
           <Button
             onClick={() => navigate("/app/events/create")}
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             <Plus className="w-4 h-4" />
             Create Event
@@ -359,13 +359,13 @@ export default function MyEventsPage() {
             onClick={() => setTab("organized")}
             className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
               tab === "organized"
-                ? "border-blue-600 text-blue-600"
+                ? "border-primary text-primary"
                 : "border-transparent text-gray-500 hover:text-gray-800"
             }`}
           >
             My Organized Events
             {organized.length > 0 && (
-              <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+              <span className="ml-2 bg-primary/20 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
                 {organized.length}
               </span>
             )}
@@ -375,13 +375,13 @@ export default function MyEventsPage() {
           onClick={() => setTab("registered")}
           className={`px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
             tab === "registered"
-              ? "border-blue-600 text-blue-600"
+              ? "border-primary text-primary"
               : "border-transparent text-gray-500 hover:text-gray-800"
           }`}
         >
           Registered Events
           {registered.length > 0 && (
-            <span className="ml-2 bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-0.5 rounded-full">
+            <span className="ml-2 bg-primary/20 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
               {registered.length}
             </span>
           )}
@@ -403,7 +403,7 @@ export default function MyEventsPage() {
               action={
                 <Button
                   onClick={() => navigate("/app/events/create")}
-                  className="bg-blue-600 hover:bg-blue-700 gap-2"
+                  className="bg-primary hover:bg-primary/90 gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   Create your first event

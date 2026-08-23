@@ -38,7 +38,7 @@ type Project = {
 const stageColors = {
   IDEA: "bg-gray-100 text-gray-700",
   PROTOTYPE: "bg-blue-100 text-blue-700",
-  MVP: "bg-indigo-100 text-indigo-700",
+  MVP: "bg-primary/20 text-primary",
   GROWTH: "bg-purple-100 text-purple-700",
   SCALING: "bg-green-100 text-green-700",
 };
@@ -125,7 +125,7 @@ export function ProjectGallery() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-900">
+        <h1 className="text-3xl font-semibold text-foreground">
           Project Gallery
         </h1>
         <p className="text-gray-600 mt-1">
@@ -248,7 +248,7 @@ export function ProjectGallery() {
             <div className="bg-gray-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
               <Search className="size-8 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-foreground mb-2">
               No projects found
             </h3>
             <p className="text-gray-600">
@@ -276,7 +276,7 @@ export function ProjectGallery() {
                   </div>
                 )}
 
-                <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {project.title}
                 </h3>
 
@@ -297,7 +297,7 @@ export function ProjectGallery() {
                     <Badge
                       key={tech}
                       variant="outline"
-                      className="text-xs border-indigo-200 text-indigo-700"
+                      className="text-xs border-primary/20 text-primary"
                     >
                       {tech}
                     </Badge>
@@ -360,7 +360,7 @@ export function ProjectGallery() {
               onClick={() => setCurrentPage(i + 1)}
               className={`size-9 rounded-md text-sm font-medium ${
                 currentPage === i + 1
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-primary text-white"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >

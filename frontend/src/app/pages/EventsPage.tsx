@@ -209,20 +209,20 @@ function EventCard({ event }: { event: Event }) {
       <div className="p-4">
         <h3
           className={`font-semibold text-sm leading-snug mb-2 line-clamp-2 transition-colors
-          ${unavailable ? "text-gray-400" : "text-gray-900 group-hover:text-blue-600"}`}
+          ${unavailable ? "text-gray-400" : "text-foreground group-hover:text-primary"}`}
         >
           {event.title}
         </h3>
 
         <div className="space-y-1.5 mb-3">
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Calendar className="w-4 h-4 flex-shrink-0 text-blue-500" />
+            <Calendar className="w-4 h-4 flex-shrink-0 text-primary" />
             <span>{date}</span>
             <span className="text-gray-400">·</span>
             <span>{time}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
-            <MapPin className="w-4 h-4 flex-shrink-0 text-blue-500" />
+            <MapPin className="w-4 h-4 flex-shrink-0 text-primary" />
             <span className="truncate">
               {event.location || (event.virtualLink ? "Online" : "TBD")}
             </span>
@@ -246,7 +246,7 @@ function EventCard({ event }: { event: Event }) {
               )}
             </div>
 
-            <span className="text-sm font-semibold text-blue-600">
+            <span className="text-sm font-semibold text-primary">
               {Number(event.price) > 0
                 ? `$${Number(event.price).toFixed(2)}`
                 : "Free"}
@@ -330,13 +330,13 @@ export default function EventsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Events</h1>
+          <h1 className="text-3xl font-semibold text-foreground">Events</h1>
         </div>
 
         {canCreateEvent && (
           <Button
             onClick={() => navigate("/app/events/create")}
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             <Plus className="w-4 h-4" />
             Create Event
@@ -368,8 +368,8 @@ export default function EventsPage() {
               onClick={() => setSelectedType(type.value)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                 selectedType === type.value
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-blue-300 hover:text-blue-600"
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-white text-gray-600 border border-gray-200 hover:border-primary/30 hover:text-primary"
               }`}
             >
               {type.label}
@@ -454,7 +454,7 @@ export default function EventsPage() {
                 onClick={() => setPage(i + 1)}
                 className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
                   page === i + 1
-                    ? "bg-blue-600 text-white shadow-sm"
+                    ? "bg-primary text-white shadow-sm"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >

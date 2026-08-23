@@ -165,7 +165,7 @@ export default function AvailabilityManager() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="size-4 text-indigo-600" />
+            <Clock className="size-4 text-primary" />
             Booking Rules
           </CardTitle>
         </CardHeader>
@@ -225,7 +225,7 @@ export default function AvailabilityManager() {
           <Button
             onClick={saveSettings}
             disabled={savingSettings}
-            className="bg-indigo-600 hover:bg-indigo-700"
+            className="bg-primary hover:bg-primary/90"
           >
             {savingSettings ? (
               <Loader2 className="size-4 animate-spin" />
@@ -303,7 +303,7 @@ export default function AvailabilityManager() {
             <Button
               onClick={addOverride}
               disabled={!overrideDate || addingOverride}
-              className="gap-1.5 bg-indigo-600 hover:bg-indigo-700"
+              className="gap-1.5 bg-primary hover:bg-primary/90"
             >
               {addingOverride ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -332,7 +332,7 @@ export default function AvailabilityManager() {
                       <CalendarOff className="size-4 text-red-500" />
                     )}
                     <div>
-                      <p className="text-sm font-medium text-gray-900">
+                      <p className="text-sm font-medium text-foreground">
                         {new Date(o.date).toLocaleDateString("en-US", {
                           weekday: "short",
                           month: "short",

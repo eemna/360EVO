@@ -137,7 +137,7 @@ function ResultCard({ result }: { result: SearchResult }) {
   return (
     <div
       onClick={() => navigate(result.url)}
-      className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-blue-100 transition-all cursor-pointer group"
+      className="flex items-start gap-4 p-4 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:border-primary/10 transition-all cursor-pointer group"
     >
       {result.type === "user" || result.type === "expert" ? (
         <div className="w-10 h-10 rounded-full bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
@@ -167,7 +167,7 @@ function ResultCard({ result }: { result: SearchResult }) {
             {result.type.charAt(0).toUpperCase() + result.type.slice(1)}
           </span>
         </div>
-        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors leading-snug">
+        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">
           <Highlighted html={result.title} />
         </h3>
         <MetaLine result={result} />
@@ -178,7 +178,7 @@ function ResultCard({ result }: { result: SearchResult }) {
         )}
       </div>
 
-      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-blue-400 flex-shrink-0 mt-1 transition-colors" />
+      <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-primary/60 flex-shrink-0 mt-1 transition-colors" />
     </div>
   );
 }
@@ -274,7 +274,7 @@ export default function SearchResultsPage() {
             value={localQ}
             onChange={(e) => setLocalQ(e.target.value)}
             placeholder="Search anything…"
-            className="w-full pl-12 pr-4 py-3.5 text-base bg-white border border-gray-200 rounded-2xl shadow-sm outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-50 transition-all"
+            className="w-full pl-12 pr-4 py-3.5 text-base bg-white border border-gray-200 rounded-2xl shadow-sm outline-none focus:border-primary/30 focus:ring-2 focus:ring-blue-50 transition-all"
           />
         </form>
 
@@ -296,15 +296,15 @@ export default function SearchResultsPage() {
                 onClick={() => setTab(key)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                   active
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-white text-gray-600 border border-gray-200 hover:border-blue-200 hover:text-blue-600"
+                    ? "bg-primary text-white shadow-sm"
+                    : "bg-white text-gray-600 border border-gray-200 hover:border-primary/20 hover:text-primary"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
                 {label}
                 {data && (
                   <span
-                    className={`text-xs px-1.5 py-0.5 rounded-full ${active ? "bg-blue-500" : "bg-gray-100 text-gray-500"}`}
+                    className={`text-xs px-1.5 py-0.5 rounded-full ${active ? "bg-primary" : "bg-gray-100 text-gray-500"}`}
                   >
                     {count}
                   </span>

@@ -10,9 +10,9 @@ export function Navigation() {
       <div className="max-w-[1280px] mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <div className="h-10 w-40 rounded-lg bg-white flex items-center justify-center p-1">
+          <div className="h-12 w-45 flex items-center justify-center">
             <img
-              src="/logo.png"
+              src="/Logo_WHITE.png"
               alt="360EVO"
               className="h-full w-full object-contain"
             />

@@ -135,7 +135,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Briefcase className="size-5 text-indigo-600" />
+            <Briefcase className="size-5 text-primary" />
             Professional Information
           </CardTitle>
         </CardHeader>
@@ -145,7 +145,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
               <p className="text-sm text-muted-foreground">
                 Years of Experience
               </p>
-              <p className="text-3xl font-bold text-indigo-600">
+              <p className="text-3xl font-bold text-primary">
                 {profile.yearsOfExperience ?? "—"}
               </p>
             </Card>
@@ -153,7 +153,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
               <p className="text-sm text-muted-foreground">Rating</p>
               <div className="flex items-center gap-2 mt-1">
                 <Star className="size-5 text-yellow-400 fill-yellow-400" />
-                <p className="text-3xl font-bold text-indigo-600">
+                <p className="text-3xl font-bold text-primary">
                   {profile.avgRating?.toFixed(1) ?? "0.0"}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -180,7 +180,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
             </p>
             <div className="flex flex-wrap gap-2">
               {profile.expertise?.map((skill: string) => (
-                <Badge key={skill} className="bg-indigo-100 text-indigo-700">
+                <Badge key={skill} className="bg-primary/20 text-primary">
                   {skill}
                 </Badge>
               ))}
@@ -204,7 +204,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="size-5 text-indigo-600" />
+            <Calendar className="size-5 text-primary" />
             Weekly Availability
           </CardTitle>
         </CardHeader>
@@ -253,10 +253,10 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
       {/* ── BOOK BUTTON ── */}
       {!isOwnProfile &&
         ["MEMBER", "STARTUP", "INVESTOR"].includes(user?.role ?? "") && (
-          <Card className="border-2 border-indigo-100">
+          <Card className="border-2 border-primary/10">
             <CardContent className="pt-6 flex items-center justify-between">
               <div>
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-foreground">
                   Book a session with {profileUser.name}
                 </p>
                 <p className="text-sm text-gray-500 mt-0.5">
@@ -268,7 +268,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
               <Button
                 disabled={computedStatus !== "AVAILABLE"}
                 onClick={() => navigate(`/app/experts/${profileUser.id}/book`)}
-                className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 disabled:opacity-50"
               >
                 {computedStatus === "AVAILABLE"
                   ? "Book Consultation"
@@ -280,17 +280,19 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
 
       {/* ── MANAGE RESERVATIONS (expert own profile) ── */}
       {isOwnProfile && (
-        <Card className="border-2 border-indigo-100">
+        <Card className="border-2 border-primary/10">
           <CardContent className="pt-6 flex items-center justify-between">
             <div>
-              <p className="font-semibold text-gray-900">Your Consultations</p>
+              <p className="font-semibold text-foreground">
+                Your Consultations
+              </p>
               <p className="text-sm text-gray-500 mt-0.5">
                 View and manage your booking requests
               </p>
             </div>
             <Button
               onClick={() => navigate("/app/expert/reservations")}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-primary hover:bg-primary/90"
             >
               Manage Reservations
             </Button>
@@ -303,7 +305,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Clock className="size-5 text-indigo-600" />
+              <Clock className="size-5 text-primary" />
               My Consultations with {profileUser.name}
             </CardTitle>
           </CardHeader>
@@ -316,7 +318,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                 {/* Header */}
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-foreground">
                       {booking.topic}
                     </p>
                     <p className="text-sm text-gray-500">
@@ -386,7 +388,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
                     booking.meetingLink && (
                       <Button
                         size="sm"
-                        className="bg-indigo-600 hover:bg-indigo-700"
+                        className="bg-primary hover:bg-primary/90"
                         onClick={() =>
                           window.open(booking.meetingLink, "_blank")
                         }
@@ -518,7 +520,7 @@ export default function ExpertProfile({ profileUser }: ExpertProfileProps) {
             <Button
               onClick={handleSubmitReview}
               disabled={reviewRating === 0}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-primary hover:bg-primary/90"
             >
               Submit Review
             </Button>

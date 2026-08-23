@@ -116,7 +116,7 @@ export function ExpertDashboard() {
       <div className="max-w-5xl mx-auto space-y-8">
         {/* ── Header ── */}
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">
+          <h1 className="text-3xl font-semibold text-foreground">
             Welcome back, {user?.name?.split(" ")[0]}
           </h1>
           <p className="text-gray-500 mt-1">
@@ -179,7 +179,7 @@ export function ExpertDashboard() {
         {/* ── Earnings Stats ── */}
         <div>
           <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <TrendingUp className="size-5 text-indigo-600" />
+            <TrendingUp className="size-5 text-primary" />
             Earnings Overview
           </h2>
 
@@ -190,7 +190,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Total Earned</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {loadingEarnings
                         ? "..."
                         : `$${earnings.totalEarned.toFixed(2)}`}
@@ -212,7 +212,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">This Month</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {loadingEarnings
                         ? "..."
                         : `$${earnings.thisMonthEarned.toFixed(2)}`}
@@ -221,8 +221,8 @@ export function ExpertDashboard() {
                       {earnings.thisMonthSessions} sessions this month
                     </p>
                   </div>
-                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Calendar className="size-6 text-blue-600" />
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Calendar className="size-6 text-primary" />
                   </div>
                 </div>
               </CardContent>
@@ -234,7 +234,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Upcoming Earnings</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {loadingEarnings
                         ? "..."
                         : `$${earnings.pendingEarnings.toFixed(2)}`}
@@ -254,13 +254,13 @@ export function ExpertDashboard() {
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              <Calendar className="size-5 text-blue-500" />
+              <Calendar className="size-5 text-primary" />
               My Events
             </h2>
             <Button
               size="sm"
               onClick={() => navigate("/app/events/create")}
-              className="bg-blue-600 hover:bg-blue-700 gap-1.5"
+              className="bg-primary hover:bg-primary/90 gap-1.5"
             >
               <Plus className="size-4" />
               Create Workshop
@@ -274,15 +274,15 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Total Events</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {loadingEvents ? "..." : myEvents.length}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {loadingEvents ? "" : `${publishedEvents} published`}
                     </p>
                   </div>
-                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Calendar className="size-6 text-blue-600" />
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Calendar className="size-6 text-primary" />
                   </div>
                 </div>
               </CardContent>
@@ -294,7 +294,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Total Attendees</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {loadingEvents ? "..." : totalEventRegistrations}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
@@ -314,7 +314,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Event Revenue</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {loadingEvents
                         ? "..."
                         : `$${totalEventRevenue.toFixed(2)}`}
@@ -347,7 +347,7 @@ export function ExpertDashboard() {
                 <Button
                   size="sm"
                   onClick={() => navigate("/app/events/create")}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700"
+                  className="mt-3 bg-primary hover:bg-primary/90"
                 >
                   Create your first workshop
                 </Button>
@@ -360,7 +360,7 @@ export function ExpertDashboard() {
                   className="flex items-center justify-between bg-white border border-gray-100 rounded-xl p-4 cursor-pointer hover:shadow-sm transition-all"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 text-sm truncate">
+                    <p className="font-medium text-foreground text-sm truncate">
                       {event.title}
                     </p>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -393,7 +393,7 @@ export function ExpertDashboard() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-blue-600 w-full"
+                className="text-primary w-full"
                 onClick={() => navigate("/app/events/my")}
               >
                 View all {myEvents.length} events →
@@ -415,7 +415,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Average Rating</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       ★ {user?.profile?.avgRating?.toFixed(1) ?? "0.0"}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
@@ -435,15 +435,15 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Sessions Done</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {earnings.completedSessions}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       Total completed consultations
                     </p>
                   </div>
-                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <CheckCircle2 className="size-6 text-indigo-600" />
+                  <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
+                    <CheckCircle2 className="size-6 text-primary" />
                   </div>
                 </div>
               </CardContent>
@@ -455,7 +455,7 @@ export function ExpertDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-500">Hourly Rate</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">
+                    <p className="text-2xl font-bold text-foreground mt-1">
                       {user?.profile?.hourlyRate
                         ? `$${user.profile.hourlyRate}/hr`
                         : "Not set"}
@@ -478,7 +478,7 @@ export function ExpertDashboard() {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => navigate("/app/expert/reservations")}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-primary hover:bg-primary/90"
             >
               <Calendar className="size-4 mr-2" />
               Bookings

@@ -271,7 +271,7 @@ function MatchCard({
           {/* Left */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-semibold text-gray-900 text-base leading-tight">
+              <h3 className="font-semibold text-foreground text-base leading-tight">
                 {match.project.title}
               </h3>
               <StatusDot status={match.status} />
@@ -280,7 +280,7 @@ function MatchCard({
               <Badge className="bg-cyan-50 text-cyan-700 border border-cyan-200 text-xs">
                 {match.project.industry}
               </Badge>
-              <Badge className="bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs">
+              <Badge className="bg-primary/10 text-primary border border-primary/20 text-xs">
                 {match.project.stage}
               </Badge>
               {match.project.aiAssessment && (
@@ -472,7 +472,7 @@ export default function MatchFeedPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Match Feed</h1>
+          <h1 className="text-3xl font-semibold text-foreground">Match Feed</h1>
           <p className="text-gray-500 text-sm mt-1">
             Score = Industry + Stage + Tech + Funding + Geo (90) + IR Bonus (10)
           </p>
@@ -480,7 +480,7 @@ export default function MatchFeedPage() {
         <Button
           onClick={handleGenerate}
           disabled={generating}
-          className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+          className="bg-primary hover:bg-primary/90 gap-2"
         >
           {generating ? (
             <>
@@ -502,8 +502,8 @@ export default function MatchFeedPage() {
             onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
               filter === f
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"
+                ? "bg-primary text-white border-primary"
+                : "bg-white text-gray-600 border-gray-200 hover:border-primary/30"
             }`}
           >
             {f === "active"

@@ -234,7 +234,7 @@ export function FileUpload({
             transition-all duration-300
             ${
               isDragging
-                ? "border-blue-500 bg-blue-50"
+                ? "border-primary bg-primary/10"
                 : "border-gray-300 hover:border-gray-400 bg-gray-50"
             }
             ${error ? "border-red-300 bg-red-50" : ""}
@@ -244,7 +244,7 @@ export function FileUpload({
                 <div
                   className={`
               size-12 rounded-full flex items-center justify-center mb-4
-              ${isDragging ? "bg-blue-100" : "bg-gray-200"}
+              ${isDragging ? "bg-primary/20" : "bg-gray-200"}
               ${error ? "bg-red-100" : ""}
             `}
                 >
@@ -252,12 +252,12 @@ export function FileUpload({
                     <AlertCircle className="size-6 text-red-600" />
                   ) : (
                     <Upload
-                      className={`size-6 ${isDragging ? "text-blue-600" : "text-gray-600"}`}
+                      className={`size-6 ${isDragging ? "text-primary" : "text-gray-600"}`}
                     />
                   )}
                 </div>
 
-                <p className="text-sm font-medium text-gray-900 mb-1">
+                <p className="text-sm font-medium text-foreground mb-1">
                   {isDragging ? "Drop your file here" : description}
                 </p>
                 <p className="text-xs text-gray-500">
@@ -288,8 +288,8 @@ export function FileUpload({
                     />
                   </div>
                 ) : (
-                  <div className="size-16 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <File className="size-8 text-blue-600" />
+                  <div className="size-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <File className="size-8 text-primary" />
                   </div>
                 )}
 
@@ -297,7 +297,7 @@ export function FileUpload({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {file?.name || "Uploaded file"}
                       </p>
                       <p className="text-xs text-gray-500">
@@ -320,7 +320,7 @@ export function FileUpload({
                     <div className="space-y-1">
                       <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="bg-blue-600 h-full transition-all duration-300 ease-out"
+                          className="bg-primary h-full transition-all duration-300 ease-out"
                           style={{ width: `${uploadProgress}%` }}
                         />
                       </div>

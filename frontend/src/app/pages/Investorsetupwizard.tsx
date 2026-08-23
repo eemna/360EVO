@@ -102,8 +102,8 @@ function ChipToggle({
           onClick={() => toggle(o)}
           className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
             selected.includes(o)
-              ? "bg-indigo-600 text-white border-indigo-600"
-              : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
+              ? "bg-primary text-white border-primary"
+              : "bg-white text-gray-600 border-gray-200 hover:border-primary/30 hover:text-primary"
           }`}
         >
           {o}
@@ -288,8 +288,8 @@ export default function InvestorSetupWizard() {
               onClick={() => set("riskTolerance", r)}
               className={`flex-1 py-2.5 rounded-lg text-sm font-medium border transition-all ${
                 data.riskTolerance === r
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300"
+                  ? "bg-primary text-white border-primary"
+                  : "bg-white text-gray-600 border-gray-200 hover:border-primary/30"
               }`}
             >
               {r}
@@ -394,7 +394,7 @@ export default function InvestorSetupWizard() {
         >
           ← Back to Profile
         </button>
-        <h1 className="text-3xl font-semibold text-gray-900">
+        <h1 className="text-3xl font-semibold text-foreground">
           {hasExisting ? "Edit Preferences" : "Investor Setup"}
         </h1>
         <p className="text-gray-500 mt-1 text-sm">
@@ -414,9 +414,9 @@ export default function InvestorSetupWizard() {
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center border-2 text-sm font-medium transition-all ${
                   step > i
-                    ? "bg-indigo-600 border-indigo-600 text-white"
+                    ? "bg-primary border-primary text-white"
                     : step === i
-                      ? "border-indigo-600 text-indigo-600 bg-white"
+                      ? "border-primary text-primary bg-white"
                       : "border-gray-200 text-gray-400 bg-white"
                 }`}
               >
@@ -424,7 +424,7 @@ export default function InvestorSetupWizard() {
               </div>
               <span
                 className={`text-xs font-medium hidden sm:block ${
-                  step >= i ? "text-indigo-600" : "text-gray-400"
+                  step >= i ? "text-primary" : "text-gray-400"
                 }`}
               >
                 {s}
@@ -432,7 +432,7 @@ export default function InvestorSetupWizard() {
             </button>
             {i < STEPS.length - 1 && (
               <div
-                className={`flex-1 h-0.5 mx-1 transition-all ${step > i ? "bg-indigo-600" : "bg-gray-200"}`}
+                className={`flex-1 h-0.5 mx-1 transition-all ${step > i ? "bg-primary" : "bg-gray-200"}`}
               />
             )}
           </div>
@@ -442,7 +442,7 @@ export default function InvestorSetupWizard() {
       {/* Form card */}
       <Card className="border border-gray-200 shadow-sm">
         <CardContent className="pt-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+          <h2 className="text-lg font-semibold text-foreground mb-1">
             {STEPS[step]}
           </h2>
           <div className="mt-4">{steps[step]}</div>
@@ -477,14 +477,14 @@ export default function InvestorSetupWizard() {
               {step < STEPS.length - 1 ? (
                 <Button
                   onClick={() => setStep((s) => s + 1)}
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   Continue →
                 </Button>
               ) : (
                 <Button
                   onClick={() => navigate("/app/profile/me")}
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-primary hover:bg-primary/90"
                 >
                   Done ✓
                 </Button>

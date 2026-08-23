@@ -143,11 +143,11 @@ export default function CreateProgramPage() {
       </Button>
 
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-indigo-100 rounded-xl">
-          <BookOpen className="size-5 text-indigo-600" />
+        <div className="p-2 bg-primary/20 rounded-xl">
+          <BookOpen className="size-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">
+          <h1 className="text-2xl font-semibold text-foreground">
             {isEdit ? "Edit Program" : "Create Program"}
           </h1>
           <p className="text-gray-500 text-sm">
@@ -341,7 +341,7 @@ export default function CreateProgramPage() {
         <Button
           onClick={handleSubmit}
           disabled={submitting}
-          className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+          className="bg-primary hover:bg-primary/90 gap-2"
         >
           {submitting ? (
             <LoadingSpinner size="sm" />

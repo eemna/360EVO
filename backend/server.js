@@ -29,6 +29,7 @@ import webhookRoutes from "./routes/webhookRoute.js";
 import programRoutes from "./routes/programRoute.js";
 import searchRouter from "./routes/searchroute.js";
 import { prisma } from "./config/prisma.js";
+import contactRoute from "./routes/contactRoute.js";
 
 let job, matchRegenerationJob, narrativeRetryJob, analyticsJob;
 
@@ -170,6 +171,7 @@ app.use("/api", ddRoutes); // covers /api/dd-requests and /api/data-rooms
 app.use("/api/payments", paymentRoutes);
 app.use("/api/programs", programRoutes);
 app.use("/api/search", searchRouter);
+app.use("/api/contact", contactRoute);
 
 const PORT = process.env.PORT || 5001;
 

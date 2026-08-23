@@ -273,7 +273,7 @@ export default function EventPaymentPage() {
         Back to Event
       </Button>
 
-      <h1 className="text-2xl font-bold text-gray-900">
+      <h1 className="text-2xl font-bold text-foreground">
         Complete Registration
       </h1>
 
@@ -288,12 +288,12 @@ export default function EventPaymentPage() {
                 className="size-14 rounded-xl object-cover flex-shrink-0"
               />
             ) : (
-              <div className="size-14 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                <Calendar className="size-6 text-indigo-400" />
+              <div className="size-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Calendar className="size-6 text-primary/60" />
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
+              <h3 className="font-semibold text-foreground truncate">
                 {event.title}
               </h3>
               <div className="space-y-0.5 mt-1">
@@ -357,7 +357,7 @@ export default function EventPaymentPage() {
             </Elements>
           ) : (
             <div className="py-4 flex justify-center">
-              <LoadingSpinner size="md" className="text-indigo-600" />
+              <LoadingSpinner size="md" className="text-primary" />
             </div>
           )}
         </CardContent>

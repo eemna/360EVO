@@ -171,7 +171,7 @@ export default function ExpertsPage() {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
       {/* HEADER */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Find an Expert</h1>
+        <h1 className="text-3xl font-bold text-foreground">Find an Expert</h1>
         <p className="text-gray-500 mt-1">
           Connect with experienced professionals for your business needs
         </p>
@@ -182,7 +182,7 @@ export default function ExpertsPage() {
           <Button
             onClick={handleApplyExpert}
             disabled={applying || applied}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
+            className="bg-primary hover:bg-primary/90 text-white"
           >
             {applying ? (
               <Loader2 className="size-4 mr-2 animate-spin" />
@@ -227,15 +227,13 @@ export default function ExpertsPage() {
 
         <Button
           variant="outline"
-          className={`gap-2 ${hasActiveFilters ? "border-indigo-500 text-indigo-600" : ""}`}
+          className={`gap-2 ${hasActiveFilters ? "border-primary text-primary" : ""}`}
           onClick={() => setShowFilters(!showFilters)}
         >
           <SlidersHorizontal className="size-4" />
           Filters
           {hasActiveFilters && (
-            <Badge className="bg-indigo-600 text-white text-xs px-1.5">
-              ON
-            </Badge>
+            <Badge className="bg-primary text-white text-xs px-1.5">ON</Badge>
           )}
         </Button>
 
@@ -249,7 +247,7 @@ export default function ExpertsPage() {
 
       {/* FILTERS PANEL */}
       {showFilters && (
-        <Card className="border-indigo-100">
+        <Card className="border-primary/10">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {/* Expertise */}
@@ -303,8 +301,7 @@ export default function ExpertsPage() {
               {/* Max Rate */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
-                  Max Rate:{" "}
-                  <span className="text-indigo-600">${maxRate}/hr</span>
+                  Max Rate: <span className="text-primary">${maxRate}/hr</span>
                 </p>
                 <Slider
                   min={10}
@@ -322,8 +319,7 @@ export default function ExpertsPage() {
               {/* Min Rating */}
               <div className="space-y-2">
                 <p className="text-sm font-medium text-gray-700">
-                  Min Rating:{" "}
-                  <span className="text-indigo-600">{minRating}★</span>
+                  Min Rating: <span className="text-primary">{minRating}★</span>
                 </p>
                 <Slider
                   min={0}
@@ -408,7 +404,7 @@ export default function ExpertsPage() {
                 onClick={() => setPage(i + 1)}
                 className={`size-9 rounded-md text-sm font-medium transition-colors ${
                   page === i + 1
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-primary text-white"
                     : "text-gray-600 hover:bg-gray-100"
                 }`}
               >
@@ -458,14 +454,14 @@ function ExpertCard({
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all duration-200 group"
+      className="cursor-pointer hover:shadow-md hover:border-primary/20 transition-all duration-200 group"
       onClick={onClick}
     >
       <CardContent className="pt-6 space-y-4">
         {/* Header */}
         <div className="flex gap-3 items-start">
           {/* Avatar */}
-          <div className="size-14 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <div className="size-14 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
             {profile.avatar ? (
               <img
                 src={profile.avatar}
@@ -473,14 +469,14 @@ function ExpertCard({
                 className="size-full object-cover"
               />
             ) : (
-              <span className="text-xl font-bold text-indigo-600">
+              <span className="text-xl font-bold text-primary">
                 {expert.name.charAt(0).toUpperCase()}
               </span>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
+            <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
               {expert.name}
             </h3>
 
@@ -511,7 +507,7 @@ function ExpertCard({
           {/* Rate */}
           {profile.hourlyRate && (
             <div className="text-right flex-shrink-0">
-              <p className="font-bold text-indigo-600">
+              <p className="font-bold text-primary">
                 ${Number(profile.hourlyRate)}
               </p>
               <p className="text-xs text-gray-400">/hour</p>
@@ -530,7 +526,7 @@ function ExpertCard({
             {profile.expertise?.slice(0, 3).map((tag) => (
               <Badge
                 key={tag}
-                className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0"
+                className="bg-primary/10 text-primary text-xs px-2 py-0"
               >
                 {tag}
               </Badge>
@@ -556,7 +552,7 @@ function ExpertCard({
 
         {/* CTA */}
         <Button
-          className="w-full bg-indigo-600 hover:bg-indigo-700 mt-2"
+          className="w-full bg-primary hover:bg-primary/90 mt-2"
           disabled={
             profile.availabilityStatus !== "AVAILABLE" ||
             !currentUserRole ||

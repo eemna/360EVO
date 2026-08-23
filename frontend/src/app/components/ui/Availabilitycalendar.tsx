@@ -114,7 +114,7 @@ export default function AvailabilityCalendar({
     <Card className="border border-gray-200">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          <Clock className="size-4 text-indigo-600" />
+          <Clock className="size-4 text-primary" />
           Pick a time
         </CardTitle>
         <div className="flex items-center gap-1">
@@ -177,9 +177,9 @@ export default function AvailabilityCalendar({
                       onClick={() => setSelectedDate(iso)}
                       className={`aspect-square rounded-lg text-sm font-medium transition-colors ${
                         isSelected
-                          ? "bg-indigo-600 text-white"
+                          ? "bg-primary text-white"
                           : isAvailable
-                            ? "bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                            ? "bg-primary/10 text-primary hover:bg-primary/20"
                             : "text-gray-300 cursor-not-allowed"
                       }`}
                     >
@@ -226,8 +226,8 @@ export default function AvailabilityCalendar({
                         }}
                         className={`px-2 py-2 rounded-lg text-sm font-medium border transition-colors ${
                           isSelected
-                            ? "bg-indigo-600 text-white border-indigo-600"
-                            : "border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50"
+                            ? "bg-primary text-white border-primary"
+                            : "border-gray-200 text-gray-700 hover:border-primary/30 hover:bg-primary/10"
                         }`}
                       >
                         {time}

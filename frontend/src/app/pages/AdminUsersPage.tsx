@@ -177,12 +177,12 @@ export default function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Users</h1>
+          <h1 className="text-3xl font-semibold text-foreground">Users</h1>
           <p className="text-gray-500 text-sm mt-1">Manage platform users</p>
         </div>
         <Button
           size="sm"
-          className="bg-indigo-600 hover:bg-indigo-700 gap-1.5"
+          className="bg-primary hover:bg-primary/90 gap-1.5"
           onClick={() => {
             setInviteEmail("");
             setShowInviteModal(true);
@@ -245,7 +245,7 @@ export default function AdminUsersPage() {
                   className={user.isSuspended ? "bg-red-50 opacity-80" : ""}
                 >
                   <TableCell
-                    className="font-medium cursor-pointer hover:text-indigo-600"
+                    className="font-medium cursor-pointer hover:text-primary"
                     onClick={() => navigate(`/app/profile/${user.id}`)}
                   >
                     {user.name}
@@ -439,7 +439,7 @@ export default function AdminUsersPage() {
             <Button
               onClick={submitInviteEmail}
               disabled={!inviteEmail.trim()}
-              className="bg-indigo-600 hover:bg-indigo-700"
+              className="bg-primary hover:bg-primary/90"
             >
               Continue
             </Button>

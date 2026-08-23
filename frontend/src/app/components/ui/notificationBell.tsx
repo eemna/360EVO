@@ -111,7 +111,7 @@ export function NotificationBell() {
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-xs text-indigo-600 hover:underline"
+                className="text-xs text-primary hover:underline"
               >
                 Mark all read
               </button>
@@ -130,12 +130,12 @@ export function NotificationBell() {
                   key={n.id}
                   onClick={() => handleClickNotification(n)}
                   className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition ${
-                    !n.isRead ? "bg-indigo-50" : ""
+                    !n.isRead ? "bg-primary/10" : ""
                   }`}
                 >
                   <p
                     className={`text-sm font-medium ${
-                      !n.isRead ? "text-indigo-800" : "text-gray-800"
+                      !n.isRead ? "text-foreground" : "text-gray-800"
                     }`}
                   >
                     {n.title}

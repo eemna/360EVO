@@ -68,7 +68,7 @@ const TYPE_CONFIG = {
   INCUBATION: {
     label: "Incubation",
     icon: BookOpen,
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-primary/20 text-primary",
   },
   ACCELERATION: {
     label: "Acceleration",
@@ -130,7 +130,7 @@ function ProgramApplicationCard({ app }: { app: ProgramApplication }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-semibold text-gray-900 truncate">
+              <h3 className="font-semibold text-foreground truncate">
                 {app.program.title}
               </h3>
               <span
@@ -198,7 +198,7 @@ function EventApplicationCard({ app }: { app: EventApplication }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
-              <h3 className="font-semibold text-gray-900 truncate">
+              <h3 className="font-semibold text-foreground truncate">
                 {app.event.title}
               </h3>
               <span
@@ -330,7 +330,7 @@ function IncomingApplicationsPanel() {
             Applications to your events will appear here.
           </p>
           <Button
-            className="mt-4 bg-blue-600 hover:bg-blue-700"
+            className="mt-4 bg-primary hover:bg-primary/90"
             onClick={() => navigate("/app/events/create")}
           >
             Create a Workshop
@@ -347,7 +347,7 @@ function IncomingApplicationsPanel() {
           <CardContent className="pt-5 pb-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="font-semibold text-foreground">
                   {group.eventTitle}
                 </h3>
                 <p className="text-xs text-gray-400 mt-0.5">
@@ -514,7 +514,7 @@ export default function MyApplicationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">
+        <h1 className="text-3xl font-semibold text-foreground">
           My Applications
         </h1>
         <p className="text-gray-500 text-sm mt-1">
@@ -531,7 +531,7 @@ export default function MyApplicationsPage() {
             onClick={() => setActiveTab(key)}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors flex items-center gap-1.5 ${
               activeTab === key
-                ? "bg-indigo-600 text-white"
+                ? "bg-primary text-white"
                 : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -561,7 +561,7 @@ export default function MyApplicationsPage() {
                 onClick={() => setProgramFilter(f)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   programFilter === f
-                    ? "bg-indigo-600 text-white border-indigo-600"
+                    ? "bg-primary text-white border-primary"
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -594,7 +594,7 @@ export default function MyApplicationsPage() {
                   Browse available programs and apply to get started.
                 </p>
                 <Button
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-primary hover:bg-primary/90"
                   onClick={() => window.location.assign("/app/programs")}
                 >
                   Browse Programs
@@ -621,7 +621,7 @@ export default function MyApplicationsPage() {
                 onClick={() => setEventFilter(f)}
                 className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
                   eventFilter === f
-                    ? "bg-indigo-600 text-white border-indigo-600"
+                    ? "bg-primary text-white border-primary"
                     : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
                 }`}
               >
@@ -654,7 +654,7 @@ export default function MyApplicationsPage() {
                   Browse events and apply to attend.
                 </p>
                 <Button
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-primary hover:bg-primary/90"
                   onClick={() => window.location.assign("/app/events")}
                 >
                   Browse Events

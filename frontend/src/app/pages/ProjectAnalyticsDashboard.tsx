@@ -172,7 +172,7 @@ export default function ProjectAnalyticsDashboard({
     {
       label: "Views",
       value: totals.views,
-      color: "bg-indigo-500",
+      color: "bg-primary",
       pct: Math.round((totals.views / maxMetric) * 100),
     },
     {
@@ -232,8 +232,8 @@ export default function ProjectAnalyticsDashboard({
       {/* Header + range picker */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <BarChart3 className="size-5 text-indigo-600" />
-          <h2 className="text-lg font-semibold text-gray-900">Analytics</h2>
+          <BarChart3 className="size-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Analytics</h2>
         </div>
         <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
           {RANGE_OPTIONS.map(({ value, label }) => (
@@ -243,7 +243,7 @@ export default function ProjectAnalyticsDashboard({
               onClick={() => setRange(value)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
                 range === value
-                  ? "bg-white text-indigo-600 shadow-sm"
+                  ? "bg-white text-primary shadow-sm"
                   : "text-gray-500 hover:text-gray-700 bg-transparent"
               }`}
             >
@@ -259,7 +259,7 @@ export default function ProjectAnalyticsDashboard({
           icon={Eye}
           label="Total Views"
           value={totals.views}
-          accent="text-indigo-600"
+          accent="text-primary"
         />
         <StatCard
           icon={Bookmark}
@@ -448,7 +448,7 @@ export default function ProjectAnalyticsDashboard({
               <Card className="border border-gray-200">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <TrendingUp className="size-4 text-indigo-500" />
+                    <TrendingUp className="size-4 text-primary" />
                     Views by Country
                   </CardTitle>
                 </CardHeader>
@@ -514,7 +514,7 @@ export default function ProjectAnalyticsDashboard({
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-foreground">
                       {interest.user.name}
                     </p>
                     <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">

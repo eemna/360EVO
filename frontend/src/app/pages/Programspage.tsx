@@ -54,7 +54,7 @@ interface Pagination {
 const TYPE_CONFIG = {
   INCUBATION: {
     label: "Incubation",
-    color: "bg-blue-100 text-blue-700 border-blue-200",
+    color: "bg-primary/20 text-primary border-primary/20",
     icon: BookOpen,
   },
   ACCELERATION: {
@@ -135,7 +135,7 @@ function ProgramCard({
           {TYPE_CONFIG[program.type].label}
         </span>
 
-        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-snug">
+        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
           {program.title}
         </h3>
 
@@ -174,7 +174,7 @@ function ProgramCard({
           <span className="text-xs text-gray-400">
             by {program.organizer.name}
           </span>
-          <ChevronRight className="size-4 text-gray-300 group-hover:text-indigo-500 transition-colors" />
+          <ChevronRight className="size-4 text-gray-300 group-hover:text-primary transition-colors" />
         </div>
 
         {isAdmin && (
@@ -184,7 +184,7 @@ function ProgramCard({
           >
             <button
               onClick={() => navigate(`/app/programs/${program.id}/edit`)}
-              className="text-xs text-indigo-600 hover:underline font-medium"
+              className="text-xs text-primary hover:underline font-medium"
             >
               Edit
             </button>
@@ -279,20 +279,20 @@ export default function ProgramsPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Programs</h1>
+          <h1 className="text-3xl font-semibold text-foreground">Programs</h1>
           <p className="text-gray-500 text-sm mt-1">
             Incubation, acceleration, and mentorship programs for startups
           </p>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">
-            <span className="font-semibold text-indigo-600">{stats.open}</span>{" "}
+            <span className="font-semibold text-primary">{stats.open}</span>{" "}
             open programs
           </span>
           {isAdmin && (
             <button
               onClick={() => navigate("/app/programs/create")}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
             >
               <Plus className="size-4" /> Create
             </button>
@@ -307,7 +307,7 @@ export default function ProgramsPage() {
             onClick={() => setShowMine(false)}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
               !showMine
-                ? "bg-indigo-600 text-white"
+                ? "bg-primary text-white"
                 : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -317,7 +317,7 @@ export default function ProgramsPage() {
             onClick={() => setShowMine(true)}
             className={`px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
               showMine
-                ? "bg-indigo-600 text-white"
+                ? "bg-primary text-white"
                 : "text-gray-500 hover:text-gray-800"
             }`}
           >
@@ -338,9 +338,9 @@ export default function ProgramsPage() {
                     <button
                       key={type}
                       onClick={() => setTypeFilter("all")}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${typeFilter === "all" ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-gray-300"}`}
+                      className={`p-4 rounded-xl border-2 text-left transition-all ${typeFilter === "all" ? "border-primary bg-primary/10" : "border-gray-200 bg-white hover:border-gray-300"}`}
                     >
-                      <p className="font-semibold text-sm text-gray-900">
+                      <p className="font-semibold text-sm text-foreground">
                         All Programs
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
@@ -356,11 +356,11 @@ export default function ProgramsPage() {
                   <button
                     key={type}
                     onClick={() => setTypeFilter(type)}
-                    className={`p-4 rounded-xl border-2 text-left transition-all ${typeFilter === type ? "border-indigo-500 bg-indigo-50" : "border-gray-200 bg-white hover:border-gray-300"}`}
+                    className={`p-4 rounded-xl border-2 text-left transition-all ${typeFilter === type ? "border-primary bg-primary/10" : "border-gray-200 bg-white hover:border-gray-300"}`}
                   >
                     <div className="flex items-center gap-2 mb-1">
-                      <Icon className="size-4 text-indigo-600" />
-                      <p className="font-semibold text-sm text-gray-900">
+                      <Icon className="size-4 text-primary" />
+                      <p className="font-semibold text-sm text-foreground">
                         {cfg.label}
                       </p>
                     </div>

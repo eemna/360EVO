@@ -223,7 +223,7 @@ export function BookConsultationPage() {
           <ArrowLeft className="size-4 mr-2" />
           Back
         </Button>
-        <h1 className="text-3xl font-semibold text-gray-900">
+        <h1 className="text-3xl font-semibold text-foreground">
           Book a Consultation
         </h1>
         <p className="text-gray-600 mt-1">
@@ -243,7 +243,7 @@ export function BookConsultationPage() {
                     {getInitials(expert.name)}
                   </AvatarFallback>
                 </Avatar>
-                <h3 className="font-semibold text-lg text-gray-900">
+                <h3 className="font-semibold text-lg text-foreground">
                   {expert.name}
                 </h3>
                 <Badge className="bg-green-100 text-green-700 mt-2">
@@ -255,7 +255,7 @@ export function BookConsultationPage() {
                     <DollarSign className="size-4" />
                     <span className="text-sm">Hourly Rate</span>
                   </div>
-                  <div className="text-3xl font-bold text-indigo-600">
+                  <div className="text-3xl font-bold text-primary">
                     ${expert.profile.hourlyRate ?? 0}
                   </div>
                   <p className="text-sm text-gray-500 mt-1">per hour</p>
@@ -271,7 +271,7 @@ export function BookConsultationPage() {
                       <Badge
                         key={skill}
                         variant="outline"
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 text-xs"
+                        className="bg-primary/10 border-primary/20 text-primary text-xs"
                       >
                         {skill}
                       </Badge>
@@ -300,7 +300,7 @@ export function BookConsultationPage() {
                       <span
                         className={cn(
                           "font-medium",
-                          slot.enabled ? "text-gray-900" : "text-gray-400",
+                          slot.enabled ? "text-foreground" : "text-gray-400",
                         )}
                       >
                         {dayNames[slot.day]}
@@ -328,7 +328,7 @@ export function BookConsultationPage() {
           <Card className="shadow-md">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-semibold">
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm font-semibold">
                   1
                 </div>
                 <CardTitle>Select a Date & Time</CardTitle>
@@ -364,10 +364,10 @@ export function BookConsultationPage() {
 
           {/* Step 2: Confirm */}
           {selectedSlot && (
-            <Card className="shadow-md border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+            <Card className="shadow-md border-2 border-primary/20 bg-gradient-to-br from-indigo-50 to-white">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-semibold">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white text-sm font-semibold">
                     2
                   </div>
                   <CardTitle>Confirm Your Booking</CardTitle>
@@ -376,10 +376,10 @@ export function BookConsultationPage() {
               <CardContent className="space-y-4">
                 <div className="bg-white p-4 rounded-lg space-y-3">
                   <div className="flex items-center gap-3">
-                    <CalendarIcon className="size-5 text-indigo-600" />
+                    <CalendarIcon className="size-5 text-primary" />
                     <div>
                       <p className="text-sm text-gray-600">Date & Time</p>
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-foreground">
                         {format(
                           new Date(selectedSlot),
                           "EEEE, MMMM d, yyyy 'at' HH:mm",
@@ -388,19 +388,19 @@ export function BookConsultationPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Clock className="size-5 text-indigo-600" />
+                    <Clock className="size-5 text-primary" />
                     <div>
                       <p className="text-sm text-gray-600">Duration</p>
-                      <p className="font-semibold text-gray-900">
+                      <p className="font-semibold text-foreground">
                         {duration} minutes
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <DollarSign className="size-5 text-indigo-600" />
+                    <DollarSign className="size-5 text-primary" />
                     <div>
                       <p className="text-sm text-gray-600">Total Cost</p>
-                      <p className="font-semibold text-gray-900">${price}</p>
+                      <p className="font-semibold text-foreground">${price}</p>
                     </div>
                   </div>
                 </div>
@@ -472,7 +472,7 @@ export function BookConsultationPage() {
                   />
                 </div>
                 <Button
-                  className="bg-indigo-600 hover:bg-indigo-700 min-w-[160px]"
+                  className="bg-primary hover:bg-primary/90 min-w-[160px]"
                   onClick={handleConfirmBooking}
                   disabled={booking || !topic.trim()}
                 >

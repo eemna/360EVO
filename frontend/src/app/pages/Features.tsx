@@ -234,7 +234,7 @@ export function Features() {
             </Link>
             <Link
               to="/contact?as=investor"
-              className="px-8 py-4 border-2 border-[#0D1B2A]/20 text-[#0D1B2A] rounded-xl hover:border-[#0D1B2A]/40 transition-colors"
+              className="px-8 py-4 border-2 border-white/30 text-white rounded-xl hover:border-white/50 hover:bg-white/5 transition-colors"
             >
               Request Investor Access →
             </Link>

@@ -97,7 +97,7 @@ export function ConfirmActionDialog({
             className={
               destructive
                 ? "bg-red-600 hover:bg-red-700"
-                : "bg-indigo-600 hover:bg-indigo-700"
+                : "bg-primary hover:bg-primary/90"
             }
           >
             {loading ? (

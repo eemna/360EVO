@@ -68,8 +68,8 @@ export function DdRequestModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-1">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <FileSearch className="size-5 text-indigo-600" />
+            <div className="p-2 bg-primary/20 rounded-lg">
+              <FileSearch className="size-5 text-primary" />
             </div>
             <DialogTitle className="text-lg">
               Request Due Diligence Access
@@ -87,9 +87,9 @@ export function DdRequestModal({
 
         <div className="space-y-4 py-2">
           {/* Info banner */}
-          <div className="flex items-start gap-3 bg-indigo-50 border border-indigo-100 rounded-xl p-3">
-            <ShieldCheck className="size-4 text-indigo-600 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-indigo-700 leading-relaxed">
+          <div className="flex items-start gap-3 bg-primary/10 border border-primary/10 rounded-xl p-3">
+            <ShieldCheck className="size-4 text-primary mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-primary leading-relaxed">
               Access is granted for 30 days. All document views are logged. The
               startup reviews your request before granting access.
             </p>
@@ -147,7 +147,7 @@ export function DdRequestModal({
           <Button
             onClick={handleSubmit}
             disabled={submitting}
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             {submitting ? (
               <LoadingSpinner size="sm" />

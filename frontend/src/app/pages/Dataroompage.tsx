@@ -158,7 +158,7 @@ function RiskBadge({ level }: { level: "LOW" | "MEDIUM" | "HIGH" }) {
 function getFileIcon(fileType: string) {
   if (fileType === "application/pdf")
     return <FileText className="size-4 text-red-500 flex-shrink-0" />;
-  return <File className="size-4 text-blue-500 flex-shrink-0" />;
+  return <File className="size-4 text-primary flex-shrink-0" />;
 }
 
 const ACTION_LABELS: Record<string, string> = {
@@ -427,8 +427,8 @@ export default function DataRoomPage() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <FolderOpen className="size-5 text-indigo-600" />
-            <h1 className="text-2xl font-semibold text-gray-900">
+            <FolderOpen className="size-5 text-primary" />
+            <h1 className="text-2xl font-semibold text-foreground">
               {dataRoom.project.title} — Data Room
             </h1>
           </div>
@@ -441,7 +441,7 @@ export default function DataRoomPage() {
             <Badge
               className={
                 isInvestor
-                  ? "bg-indigo-100 text-indigo-700 border-indigo-200"
+                  ? "bg-primary/20 text-primary border-primary/20"
                   : "bg-green-100 text-green-700 border-green-200"
               }
             >
@@ -456,7 +456,7 @@ export default function DataRoomPage() {
             onClick={() =>
               navigate(`/app/investor/data-rooms/${id}/deal-brief`)
             }
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             <FileBarChart className="size-4" />
             {dataRoom.dealBrief ? "View Deal Brief" : "Generate Deal Brief"}
@@ -472,13 +472,13 @@ export default function DataRoomPage() {
             className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 transition-colors"
           >
             <div className="flex items-center gap-2">
-              <Bot className="size-4 text-indigo-600" />
+              <Bot className="size-4 text-primary" />
               <span className="text-sm font-semibold text-gray-800">
                 AI Document Analysis
               </span>
               {riskScan && <RiskBadge level={riskScan.overallRiskLevel} />}
               {scanLoading && (
-                <LoadingSpinner size="sm" className="text-indigo-600" />
+                <LoadingSpinner size="sm" className="text-primary" />
               )}
             </div>
             {riskExpanded ? (
@@ -502,7 +502,7 @@ export default function DataRoomPage() {
                     size="sm"
                     onClick={() => runAiScan()}
                     disabled={dataRoom.documents.length === 0}
-                    className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+                    className="bg-primary hover:bg-primary/90 gap-2"
                   >
                     <Sparkles className="size-4" />
                     Run AI Scan
@@ -512,7 +512,7 @@ export default function DataRoomPage() {
 
               {scanLoading && !riskScan && (
                 <div className="py-8 flex flex-col items-center gap-3">
-                  <LoadingSpinner size="lg" className="text-indigo-600" />
+                  <LoadingSpinner size="lg" className="text-primary" />
                   <p className="text-sm text-gray-500">
                     Analysing documents...
                   </p>
@@ -522,7 +522,7 @@ export default function DataRoomPage() {
               {riskScan && (
                 <div className="pt-4 space-y-4">
                   {/* Summary */}
-                  <p className="text-sm text-gray-600 leading-relaxed border-l-4 border-indigo-300 pl-3">
+                  <p className="text-sm text-gray-600 leading-relaxed border-l-4 border-primary/30 pl-3">
                     {riskScan.summary}
                   </p>
 
@@ -612,7 +612,7 @@ export default function DataRoomPage() {
                 onClick={() => setActiveTab(key as typeof activeTab)}
                 className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === key
-                    ? "border-indigo-600 text-indigo-600"
+                    ? "border-primary text-primary"
                     : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
               >
@@ -640,10 +640,10 @@ export default function DataRoomPage() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingDoc}
                     variant="outline"
-                    className="gap-2 border-dashed border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                    className="gap-2 border-dashed border-primary/30 text-primary hover:bg-primary/10"
                   >
                     {uploadingDoc ? (
-                      <LoadingSpinner size="sm" className="text-indigo-600" />
+                      <LoadingSpinner size="sm" className="text-primary" />
                     ) : (
                       <Upload className="size-4" />
                     )}
@@ -772,7 +772,7 @@ export default function DataRoomPage() {
             <div className="space-y-4">
               {/* Ask question — investor only */}
               {isInvestor && (
-                <Card className="border border-indigo-100 bg-indigo-50/40">
+                <Card className="border border-primary/10 bg-primary/10/40">
                   <CardContent className="pt-4 pb-4">
                     <p className="text-sm font-medium text-gray-700 mb-2">
                       Ask a question
@@ -788,7 +788,7 @@ export default function DataRoomPage() {
                         size="sm"
                         onClick={handleAskQuestion}
                         disabled={askingQuestion || !newQuestion.trim()}
-                        className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+                        className="bg-primary hover:bg-primary/90 gap-2"
                       >
                         {askingQuestion ? (
                           <LoadingSpinner size="sm" />
@@ -820,7 +820,7 @@ export default function DataRoomPage() {
                         <CardContent className="pt-4 pb-4">
                           {/* Question */}
                           <div className="flex items-start gap-2 mb-3">
-                            <div className="size-7 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 text-xs font-bold text-indigo-700">
+                            <div className="size-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary">
                               Q
                             </div>
                             <div className="flex-1">
@@ -835,7 +835,7 @@ export default function DataRoomPage() {
                               </p>
                             </div>
                             {hasSuggestion && (
-                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-indigo-50 text-indigo-600 border border-indigo-200 flex-shrink-0">
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs bg-primary/10 text-primary border border-primary/20 flex-shrink-0">
                                 <Bot className="size-2.5" />
                                 AI draft
                               </span>
@@ -890,7 +890,7 @@ export default function DataRoomPage() {
                                       handleGetAiSuggestion(thread.id)
                                     }
                                     disabled={aiSuggesting === thread.id}
-                                    className="text-xs gap-1 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                                    className="text-xs gap-1 border-primary/20 text-primary hover:bg-primary/10"
                                   >
                                     {aiSuggesting === thread.id ? (
                                       <LoadingSpinner size="sm" />
@@ -919,14 +919,14 @@ export default function DataRoomPage() {
                               {isExpanded && (
                                 <div className="space-y-2">
                                   {thread.aiSuggestedAnswer && (
-                                    <div className="flex items-start gap-2 bg-indigo-50 border border-indigo-100 rounded-lg p-2.5">
-                                      <Bot className="size-3.5 text-indigo-500 mt-0.5 flex-shrink-0" />
+                                    <div className="flex items-start gap-2 bg-primary/10 border border-primary/10 rounded-lg p-2.5">
+                                      <Bot className="size-3.5 text-primary mt-0.5 flex-shrink-0" />
                                       <div>
-                                        <p className="text-xs font-medium text-indigo-700 mb-1">
+                                        <p className="text-xs font-medium text-primary mb-1">
                                           AI Suggested Answer — review and edit
                                           before sending
                                         </p>
-                                        <p className="text-xs text-indigo-600">
+                                        <p className="text-xs text-primary">
                                           {thread.aiSuggestedAnswer}
                                         </p>
                                       </div>
@@ -1053,21 +1053,21 @@ export default function DataRoomPage() {
 
           {/* Deal Brief card — investor only */}
           {isInvestor && (
-            <Card className="border-2 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white">
+            <Card className="border-2 border-primary/10 bg-gradient-to-br from-indigo-50 to-white">
               <CardContent className="pt-5 pb-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <FileBarChart className="size-4 text-indigo-600" />
+                  <FileBarChart className="size-4 text-primary" />
                   <span className="text-sm font-semibold text-indigo-900">
                     AI Deal Brief
                   </span>
                 </div>
-                <p className="text-xs text-indigo-700 mb-3 leading-relaxed">
+                <p className="text-xs text-primary mb-3 leading-relaxed">
                   Generate a structured investor-ready report combining project
                   data, AI scores, and document findings.
                 </p>
                 <Button
                   size="sm"
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
+                  className="w-full bg-primary hover:bg-primary/90 gap-2"
                   onClick={() =>
                     navigate(`/app/investor/data-rooms/${id}/deal-brief`)
                   }

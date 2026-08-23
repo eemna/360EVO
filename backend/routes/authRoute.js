@@ -53,7 +53,11 @@ router.post(
   forgotPasswordRateLimit,
   forgotPassword,
 );
-router.post("/reset-password", requireRecaptcha("reset_password"), resetPassword);
+router.post(
+  "/reset-password",
+  requireRecaptcha("reset_password"),
+  resetPassword,
+);
 router.post("/refresh-token", refreshToken);
 router.put("/change-password", protect, changePassword);
 router.put("/update-email", protect, updateEmail);

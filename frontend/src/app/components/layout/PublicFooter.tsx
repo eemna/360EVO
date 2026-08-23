@@ -11,9 +11,9 @@ export function Footer() {
           <div>
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2 mb-3">
-              <div className="h-14 w-32 rounded-lg bg-white flex items-center justify-center p-1">
+              <div className="h-15 w-45 flex items-center justify-center">
                 <img
-                  src="/logo.png"
+                  src="/Logo_WHITE.png"
                   alt="360EVO"
                   className="h-full w-full object-contain"
                 />

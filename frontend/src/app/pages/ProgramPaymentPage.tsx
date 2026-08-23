@@ -132,7 +132,7 @@ function PaymentForm({
       </div>
 
       <Button
-        className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2 h-11 text-base font-semibold"
+        className="w-full bg-primary hover:bg-primary/90 gap-2 h-11 text-base font-semibold"
         onClick={handlePay}
         disabled={paying || !stripe}
       >
@@ -167,7 +167,7 @@ function SuccessScreen({
         <p className="text-green-700 text-sm">
           Your spot in <strong>{program.title}</strong> is confirmed.
         </p>
-        <Button onClick={onDone} className="bg-indigo-600 hover:bg-indigo-700">
+        <Button onClick={onDone} className="bg-primary hover:bg-primary/90">
           View Program
         </Button>
       </CardContent>
@@ -249,16 +249,18 @@ export default function ProgramPaymentPage() {
         <ArrowLeft className="size-4" /> Back to Program
       </Button>
 
-      <h1 className="text-2xl font-bold text-gray-900">Complete Enrollment</h1>
+      <h1 className="text-2xl font-bold text-foreground">
+        Complete Enrollment
+      </h1>
 
       <Card className="border border-gray-200">
         <CardContent className="pt-4 pb-4">
           <div className="flex items-start gap-3">
-            <div className="size-14 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-              <BookOpen className="size-6 text-indigo-400" />
+            <div className="size-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <BookOpen className="size-6 text-primary/60" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 truncate">
+              <h3 className="font-semibold text-foreground truncate">
                 {program.title}
               </h3>
               <p className="text-xs text-gray-500 mt-1">{program.type}</p>
@@ -286,7 +288,7 @@ export default function ProgramPaymentPage() {
           </div>
           <div className="flex justify-between text-sm border-t border-gray-100 pt-2 font-semibold">
             <span>Total</span>
-            <span className="text-indigo-600">${program.price}</span>
+            <span className="text-primary">${program.price}</span>
           </div>
         </CardContent>
       </Card>
@@ -311,7 +313,7 @@ export default function ProgramPaymentPage() {
             </Elements>
           ) : (
             <div className="py-4 flex justify-center">
-              <LoadingSpinner size="md" className="text-indigo-600" />
+              <LoadingSpinner size="md" className="text-primary" />
             </div>
           )}
         </CardContent>

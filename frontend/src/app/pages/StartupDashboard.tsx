@@ -72,7 +72,7 @@ const getStatusColor = (status: string) => {
     case "DRAFT":
       return "bg-gray-100 text-gray-700 border-gray-200";
     default:
-      return "bg-blue-100 text-blue-700 border-blue-200";
+      return "bg-primary/20 text-primary border-primary/20";
   }
 };
 
@@ -258,7 +258,7 @@ export default function StartupDashboard() {
           </Button>
           <Button
             onClick={() => setIsWizardOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             <Plus className="size-5" />
             Create Project
@@ -270,7 +270,7 @@ export default function StartupDashboard() {
         <StatCard
           title="Total Projects"
           value={stats.totalProjects}
-          icon={<TrendingUp className="size-6 text-blue-600" />}
+          icon={<TrendingUp className="size-6 text-primary" />}
         />
         <StatCard
           title="Total Views"
@@ -347,7 +347,7 @@ export default function StartupDashboard() {
                   onClick={() => setStatusFilter(s)}
                   className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                     statusFilter === s
-                      ? "bg-blue-600 text-white border-blue-600"
+                      ? "bg-primary text-white border-primary"
                       : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
                   }`}
                 >
@@ -384,7 +384,7 @@ export default function StartupDashboard() {
             {!search && (
               <Button
                 onClick={() => setIsWizardOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 w-fit"
+                className="bg-primary hover:bg-primary/90 w-fit"
               >
                 Create Project
               </Button>
@@ -400,7 +400,7 @@ export default function StartupDashboard() {
                 <CardHeader>
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <CardTitle className="text-lg text-gray-900">
+                      <CardTitle className="text-lg text-foreground">
                         {project.title}
                       </CardTitle>
                       <Badge
@@ -424,7 +424,7 @@ export default function StartupDashboard() {
                           }
                         >
                           <Pencil
-                            className={`w-4 h-4 ${project.status === "APPROVED" ? "text-gray-400" : "text-blue-600"}`}
+                            className={`w-4 h-4 ${project.status === "APPROVED" ? "text-gray-400" : "text-primary"}`}
                           />
                         </Button>
                       )}

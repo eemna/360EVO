@@ -70,7 +70,7 @@ function Field({
   return (
     <div className="space-y-1.5">
       <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        {icon && <span className="text-blue-500">{icon}</span>}
+        {icon && <span className="text-primary">{icon}</span>}
         {label}
         {required && <span className="text-red-500">*</span>}
       </Label>
@@ -229,7 +229,7 @@ export default function CreateEventForm() {
           Back to Events
         </button>
 
-        <h1 className="text-2xl font-semibold text-gray-900">
+        <h1 className="text-2xl font-semibold text-foreground">
           {isEditing
             ? "Edit Event"
             : isExpert
@@ -278,7 +278,7 @@ export default function CreateEventForm() {
               onChange={set("description")}
               rows={4}
               placeholder="Tell attendees what to expect..."
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-gray-400"
+              className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent placeholder:text-gray-400"
             />
           </Field>
 
@@ -474,7 +474,7 @@ export default function CreateEventForm() {
             <Button
               onClick={() => handleSubmit(false)}
               disabled={submitting}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-white"
             >
               {submitting ? "Saving..." : "Save Changes"}
             </Button>
@@ -490,7 +490,7 @@ export default function CreateEventForm() {
               <Button
                 onClick={() => handleSubmit(true)}
                 disabled={submitting}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-primary hover:bg-primary/90 text-white"
               >
                 {submitting ? "Publishing..." : "Publish Now"}
               </Button>

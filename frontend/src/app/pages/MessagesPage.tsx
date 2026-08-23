@@ -350,7 +350,7 @@ export function MessagesPage() {
           }}
           className={cn(
             "font-semibold underline",
-            isMe ? "text-white" : "text-indigo-600",
+            isMe ? "text-white" : "text-primary",
           )}
         >
           @{displayName}
@@ -383,7 +383,7 @@ export function MessagesPage() {
   return (
     <div className="flex flex-col h-full">
       <div className="mb-6 flex flex-col">
-        <h1 className="text-3xl font-semibold text-gray-900">Messages</h1>
+        <h1 className="text-3xl font-semibold text-foreground">Messages</h1>
         <p className="text-gray-600 mt-1">
           Connect with team members and collaborators
         </p>
@@ -399,7 +399,7 @@ export function MessagesPage() {
           )}
         >
           <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            <h2 className="text-lg font-semibold text-foreground mb-3">
               Conversations
             </h2>
             <Button
@@ -424,7 +424,7 @@ export function MessagesPage() {
                 className={cn(
                   "flex w-full gap-3 border-b border-gray-100 p-4 text-left transition-all hover:bg-gray-50",
                   selectedConv === conv.id &&
-                    "bg-indigo-50 border-l-4 border-l-indigo-600 hover:bg-indigo-50",
+                    "bg-primary/10 border-l-4 border-l-indigo-600 hover:bg-primary/10",
                 )}
               >
                 <div className="relative flex-shrink-0">
@@ -443,7 +443,7 @@ export function MessagesPage() {
                     <span
                       className={cn(
                         "font-semibold text-sm truncate",
-                        conv.unread > 0 && "text-gray-900",
+                        conv.unread > 0 && "text-foreground",
                       )}
                     >
                       {conv.otherUser?.name ?? "Unknown user"}
@@ -457,14 +457,12 @@ export function MessagesPage() {
                       className={cn(
                         "truncate text-sm",
                         conv.unread > 0
-                          ? "text-gray-900 font-medium"
+                          ? "text-foreground font-medium"
                           : "text-gray-600",
                       )}
                     >
                       {conv.typing ? (
-                        <span className="text-indigo-600 italic">
-                          typing...
-                        </span>
+                        <span className="text-primary italic">typing...</span>
                       ) : conv.lastMessage ? (
                         stripMentions(conv.lastMessage.content)
                       ) : (
@@ -472,7 +470,7 @@ export function MessagesPage() {
                       )}
                     </p>
                     {conv.unread > 0 && (
-                      <Badge className="ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-xs text-white px-1.5 shadow-sm">
+                      <Badge className="ml-2 flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs text-white px-1.5 shadow-sm">
                         {conv.unread}
                       </Badge>
                     )}
@@ -496,7 +494,7 @@ export function MessagesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden text-gray-600 hover:text-gray-900"
+                className="md:hidden text-gray-600 hover:text-foreground"
                 onClick={() => setMobileView("conversations")}
                 aria-label="Back to conversations"
               >
@@ -516,7 +514,7 @@ export function MessagesPage() {
                     <div className="absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500 shadow-sm" />
                   )}
               </div>
-              <div className="font-semibold text-gray-900">
+              <div className="font-semibold text-foreground">
                 {selectedConversation?.otherUser?.name}
               </div>
             </div>
@@ -574,7 +572,7 @@ export function MessagesPage() {
                         className={cn(
                           "rounded-2xl px-4 py-2.5",
                           isMe
-                            ? "bg-indigo-600 text-white"
+                            ? "bg-primary text-white"
                             : "bg-white border border-gray-200",
                         )}
                       >
@@ -600,7 +598,7 @@ export function MessagesPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 flex-shrink-0"
+                className="text-gray-500 hover:text-foreground hover:bg-gray-100 flex-shrink-0"
               >
                 <Paperclip className="h-5 w-5" />
               </Button>
@@ -636,12 +634,12 @@ export function MessagesPage() {
                   }}
                   placeholder="Type your message..."
                   rows={1}
-                  className="w-full min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-indigo-300 focus:bg-white text-sm resize-none placeholder:text-gray-400"
+                  className="w-full min-h-[42px] max-h-32 overflow-y-auto px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 focus:outline-none focus:border-primary/30 focus:bg-white text-sm resize-none placeholder:text-gray-400"
                 />
               </div>
               <Button
                 onClick={handleSendMessage}
-                className="gap-2 bg-indigo-600 hover:bg-indigo-700"
+                className="gap-2 bg-primary hover:bg-primary/90"
                 disabled={!messageInput.trim()}
               >
                 <Send className="h-4 w-4" />

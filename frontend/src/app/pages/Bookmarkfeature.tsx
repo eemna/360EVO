@@ -57,7 +57,7 @@ export function BookmarkButton({
       title={isBookmarked ? "Remove bookmark" : "Bookmark this project"}
       className={`
         inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition-all duration-200
-        ${isBookmarked ? "text-blue-600 bg-blue-50 hover:bg-blue-100" : "text-gray-400 hover:text-blue-600 hover:bg-blue-50"}
+        ${isBookmarked ? "text-primary bg-primary/10 hover:bg-primary/20" : "text-gray-400 hover:text-primary hover:bg-primary/10"}
         ${animating ? "scale-110" : "scale-100"}
         ${className}
       `}
@@ -142,7 +142,7 @@ export function ExpressInterestModal({
           rows={5}
           maxLength={500}
           placeholder="Introduce yourself and explain why you're interested in this project..."
-          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder:text-gray-400"
+          className="w-full px-3 py-2 rounded-xl border border-gray-200 text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-gray-400"
         />
         <p className="text-xs text-gray-400 text-right">{message.length}/500</p>
       </AppModal>
@@ -213,7 +213,7 @@ type Project = {
 const stageColors: Record<string, string> = {
   IDEA: "bg-gray-100 text-gray-700",
   PROTOTYPE: "bg-blue-100 text-blue-700",
-  MVP: "bg-indigo-100 text-indigo-700",
+  MVP: "bg-primary/20 text-primary",
   GROWTH: "bg-purple-100 text-purple-700",
   SCALING: "bg-green-100 text-green-700",
 };
@@ -242,7 +242,9 @@ export default function SavedProjectsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Saved Projects</h1>
+        <h1 className="text-3xl font-semibold text-foreground">
+          Saved Projects
+        </h1>
         <p className="text-gray-500 text-sm mt-1">
           Projects you've bookmarked for later.
         </p>
@@ -295,7 +297,7 @@ export default function SavedProjectsPage() {
                         e.stopPropagation();
                         void toggle(project.id);
                       }}
-                      className="absolute top-4 right-4 p-1.5 rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-all"
+                      className="absolute top-4 right-4 p-1.5 rounded-lg text-primary bg-primary/10 hover:bg-primary/20 transition-all"
                     >
                       <Bookmark className="w-4 h-4 fill-blue-600" />
                     </button>
@@ -309,7 +311,7 @@ export default function SavedProjectsPage() {
                       </div>
                     )}
 
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-indigo-600 transition-colors pr-8">
+                    <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors pr-8">
                       {project.title}
                     </h3>
                     <p className="text-sm text-gray-600 mb-4 line-clamp-2">
@@ -327,7 +329,7 @@ export default function SavedProjectsPage() {
                         <Badge
                           key={tech}
                           variant="outline"
-                          className="text-xs border-indigo-200 text-indigo-700"
+                          className="text-xs border-primary/20 text-primary"
                         >
                           {tech}
                         </Badge>

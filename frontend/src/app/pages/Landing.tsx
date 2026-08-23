@@ -16,7 +16,7 @@ export default function Landing() {
       {/* Hero Section */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+          <h1 className="text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
             Connect Startups with Experts.
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -54,8 +54,8 @@ export default function Landing() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-3">
           <Card className="border border-gray-200 p-8 transition-shadow hover:shadow-lg">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-              <Rocket className="h-6 w-6 text-blue-600" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20">
+              <Rocket className="h-6 w-6 text-primary" />
             </div>
             <h3 className="mb-2 text-xl font-semibold">For Startups</h3>
             <p className="text-gray-600">
@@ -65,8 +65,8 @@ export default function Landing() {
             </p>
           </Card>
           <Card className="border border-gray-200 p-8 transition-shadow hover:shadow-lg">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100">
-              <Lightbulb className="h-6 w-6 text-indigo-600" />
+            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20">
+              <Lightbulb className="h-6 w-6 text-primary" />
             </div>
             <h3 className="mb-2 text-xl font-semibold">For Experts</h3>
             <p className="text-gray-600">
@@ -92,7 +92,7 @@ export default function Landing() {
       <section className="bg-gray-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-foreground">
               Everything you need to succeed
             </h2>
             <p className="mt-4 text-lg text-gray-600">
@@ -101,7 +101,7 @@ export default function Landing() {
           </div>
           <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
                 <Target className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -113,7 +113,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
                 <Users className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -137,7 +137,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
                 <TrendingUp className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -149,7 +149,7 @@ export default function Landing() {
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-600">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary">
                 <Rocket className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -187,7 +187,7 @@ export default function Landing() {
             <Link to="/register">
               <Button
                 size="lg"
-                className="bg-white px-8 py-6 text-lg text-blue-600 hover:bg-gray-100"
+                className="bg-white px-8 py-6 text-lg text-primary hover:bg-gray-100"
               >
                 Create Your Account
               </Button>

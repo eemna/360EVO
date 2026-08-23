@@ -97,7 +97,7 @@ function PaymentForm({
         </div>
         <div className="border-t pt-2 flex justify-between font-bold">
           <span>Total</span>
-          <span className="text-indigo-600">${amount}</span>
+          <span className="text-primary">${amount}</span>
         </div>
       </div>
 
@@ -124,7 +124,7 @@ function PaymentForm({
       <Button
         type="submit"
         disabled={paying || !stripe}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
+        className="w-full bg-primary hover:bg-primary/90 gap-2"
       >
         {paying ? (
           <>
@@ -220,9 +220,9 @@ export default function ConsultationPaymentPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {booking && (
-            <div className="bg-indigo-50 rounded-lg p-4 space-y-2 text-sm">
+            <div className="bg-primary/10 rounded-lg p-4 space-y-2 text-sm">
               <div className="flex items-center gap-2 text-gray-700">
-                <Calendar className="size-4 text-indigo-600" />
+                <Calendar className="size-4 text-primary" />
                 <span>
                   {format(
                     new Date(booking.startDateTime),
@@ -231,7 +231,7 @@ export default function ConsultationPaymentPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-gray-700">
-                <Clock className="size-4 text-indigo-600" />
+                <Clock className="size-4 text-primary" />
                 <span>
                   {format(new Date(booking.startDateTime), "HH:mm")} ·{" "}
                   {booking.duration} min

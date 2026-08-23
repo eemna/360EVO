@@ -277,7 +277,7 @@ export default function EventDetailPage() {
         {/* Left — main info */}
         <div className="lg:col-span-2 space-y-6">
           <div>
-            <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+            <h1 className="text-3xl font-semibold text-foreground mb-2">
               {event.title}
             </h1>
             {event.hostType === "EXPERT" && event.organizer.profile ? (
@@ -285,7 +285,7 @@ export default function EventDetailPage() {
                 onClick={() => navigate(`/app/profile/${event.organizer.id}`)}
                 className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 cursor-pointer hover:bg-gray-50 transition-colors"
               >
-                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold flex-shrink-0 overflow-hidden">
+                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold flex-shrink-0 overflow-hidden">
                   {event.organizer.profile.avatar ? (
                     <img
                       src={event.organizer.profile.avatar}
@@ -297,7 +297,7 @@ export default function EventDetailPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">
+                  <p className="text-sm font-semibold text-foreground">
                     {event.organizer.name}
                   </p>
                   {event.organizer.profile.reviewCount > 0 && (
@@ -323,7 +323,7 @@ export default function EventDetailPage() {
 
           {/* Description */}
           <div className="bg-white rounded-2xl border border-gray-100 p-6">
-            <h2 className="font-semibold text-gray-900 mb-3">
+            <h2 className="font-semibold text-foreground mb-3">
               About this event
             </h2>
             <p className="text-gray-600 leading-relaxed whitespace-pre-line">
@@ -334,7 +334,7 @@ export default function EventDetailPage() {
           {/* Attendees preview — only for organizer */}
           {canManage && event.registrations.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-100 p-6">
-              <h2 className="font-semibold text-gray-900 mb-3">
+              <h2 className="font-semibold text-foreground mb-3">
                 Attendees ({event._count.registrations})
               </h2>
               <div className="space-y-2">
@@ -344,10 +344,10 @@ export default function EventDetailPage() {
                     onClick={() => navigate(`/app/profile/${r.user.id}`)}
                     className="flex items-center gap-3 py-2 border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50 rounded-lg px-2 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-sm font-semibold flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-semibold flex-shrink-0">
                       {r.user.name.substring(0, 1).toUpperCase()}
                     </div>
-                    <span className="text-sm text-gray-700 hover:text-blue-600 transition-colors">
+                    <span className="text-sm text-gray-700 hover:text-primary transition-colors">
                       {r.user.name}
                     </span>
 
@@ -369,9 +369,9 @@ export default function EventDetailPage() {
           <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-4 sticky top-4">
             {/* Date & Time */}
             <div className="flex gap-3">
-              <Calendar className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <Calendar className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-foreground">
                   {formatDate(event.date)}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -386,7 +386,7 @@ export default function EventDetailPage() {
             {/* Location */}
             {event.location && (
               <div className="flex gap-3">
-                <MapPin className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-gray-700">{event.location}</p>
               </div>
             )}
@@ -394,12 +394,12 @@ export default function EventDetailPage() {
             {/* Virtual Link */}
             {event.virtualLink && (
               <div className="flex gap-3">
-                <Globe className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <Globe className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                 <a
                   href={event.virtualLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline break-all"
+                  className="text-sm text-primary hover:underline break-all"
                 >
                   Join Online
                 </a>
@@ -408,7 +408,7 @@ export default function EventDetailPage() {
 
             {/* Capacity */}
             <div className="flex gap-3">
-              <Users className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <Users className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm text-gray-700">
                   <span className="font-medium">
@@ -436,7 +436,7 @@ export default function EventDetailPage() {
             </div>
             {/* Price */}
             <div className="flex gap-3">
-              <DollarSign className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <DollarSign className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <p className="text-sm text-gray-700">
                 {Number(event.price) > 0 ? `$${event.price}` : "Free"}
               </p>
@@ -524,7 +524,7 @@ export default function EventDetailPage() {
                     <Button
                       onClick={handleRegister}
                       disabled={registering || isFull}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                      className="w-full bg-primary hover:bg-primary/90 text-white gap-2"
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       {registering

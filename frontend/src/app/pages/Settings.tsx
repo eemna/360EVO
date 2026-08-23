@@ -579,7 +579,7 @@ export default function Settings() {
                 className="flex items-center justify-between py-3 border-b"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{label}</p>
+                  <p className="font-medium text-foreground">{label}</p>
                   <p className="text-sm text-gray-500">{desc}</p>
                 </div>
                 <Toggle
@@ -635,7 +635,7 @@ export default function Settings() {
                 className="flex items-center justify-between py-3 border-b"
               >
                 <div>
-                  <p className="font-medium text-gray-900">{label}</p>
+                  <p className="font-medium text-foreground">{label}</p>
                   <p className="text-sm text-gray-500">{desc}</p>
                 </div>
                 <Toggle

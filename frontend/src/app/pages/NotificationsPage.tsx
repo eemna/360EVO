@@ -17,8 +17,8 @@ interface Notification {
 }
 
 const iconMap = {
-  MESSAGE: <MessageSquare className="h-5 w-5 text-blue-500" />,
-  BOOKING: <Calendar className="h-5 w-5 text-indigo-500" />,
+  MESSAGE: <MessageSquare className="h-5 w-5 text-primary" />,
+  BOOKING: <Calendar className="h-5 w-5 text-primary" />,
   EVENT: <Bell className="h-5 w-5 text-yellow-500" />,
   PROJECT_UPDATE: <BookOpen className="h-5 w-5 text-green-500" />,
   SYSTEM: <Info className="h-5 w-5 text-gray-500" />,
@@ -60,7 +60,7 @@ export function NotificationsPage() {
     <div className="max-w-2xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">
+          <h1 className="text-3xl font-semibold text-foreground">
             Notifications
           </h1>
           <p className="text-gray-500 mt-1">
@@ -118,7 +118,7 @@ export function NotificationsPage() {
                 "w-full text-left flex items-start gap-4 p-4 rounded-xl border transition-all hover:shadow-sm",
                 notif.isRead
                   ? "bg-white border-gray-100 text-gray-500"
-                  : "bg-indigo-50 border-indigo-100 text-gray-900",
+                  : "bg-primary/10 border-primary/10 text-foreground",
               )}
             >
               <div className="mt-0.5 flex-shrink-0">{iconMap[notif.type]}</div>
@@ -126,7 +126,7 @@ export function NotificationsPage() {
                 <p
                   className={cn(
                     "font-medium text-sm",
-                    !notif.isRead && "text-gray-900",
+                    !notif.isRead && "text-foreground",
                   )}
                 >
                   {notif.title}
@@ -137,7 +137,7 @@ export function NotificationsPage() {
                 </p>
               </div>
               {!notif.isRead && (
-                <div className="h-2 w-2 rounded-full bg-indigo-600 mt-2 flex-shrink-0" />
+                <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
               )}
             </button>
           ))

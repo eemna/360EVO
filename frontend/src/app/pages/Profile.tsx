@@ -354,7 +354,7 @@ export default function Profile() {
   return (
     <div>
       {/* Cover */}
-      <div className="relative h-64 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-xl mb-20">
+      <div className="relative h-64 bg-gradient-to-br from-[#C9A84C] via-[#D4B55C] to-[#1D9E75] rounded-xl mb-20">
         <div className="absolute -bottom-16 left-8">
           <div className="relative">
             <Avatar className="size-32 border-4 border-white shadow-xl">
@@ -362,7 +362,7 @@ export default function Profile() {
                 src={profile.avatar || undefined}
                 alt={profileUser.name}
               />
-              <AvatarFallback className="bg-indigo-600 text-white text-3xl font-semibold">
+              <AvatarFallback className="bg-primary text-white text-3xl font-semibold">
                 {getInitials(profileUser.name)}
               </AvatarFallback>
             </Avatar>
@@ -468,7 +468,7 @@ text-white border border-white/30 gap-2"
               href={profile.linkedIn}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-blue-600"
+              className="flex items-center gap-2 text-primary"
             >
               <Linkedin className="w-4 h-4" />
               LinkedIn
@@ -503,7 +503,7 @@ text-white border border-white/30 gap-2"
                       size="sm"
                       variant="ghost"
                       onClick={() => navigate("/app/investor/setup")}
-                      className="h-7 px-2 text-xs text-indigo-600 hover:text-indigo-700"
+                      className="h-7 px-2 text-xs text-primary hover:text-primary"
                     >
                       <Edit3 className="size-3 mr-1" />
                       Edit
@@ -520,7 +520,7 @@ text-white border border-white/30 gap-2"
                         {investorProfile.industries.map((i) => (
                           <span
                             key={i}
-                            className="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100"
+                            className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/10"
                           >
                             {i}
                           </span>
@@ -554,7 +554,7 @@ text-white border border-white/30 gap-2"
                         {investorProfile.technologies.map((t) => (
                           <span
                             key={t}
-                            className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100"
+                            className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/10"
                           >
                             {t}
                           </span>
@@ -605,7 +605,7 @@ text-white border border-white/30 gap-2"
           {profileUser.role === "INVESTOR" &&
             !investorProfile &&
             isOwnProfile && (
-              <Card className="border-dashed border-2 border-indigo-200">
+              <Card className="border-dashed border-2 border-primary/20">
                 <CardContent className="py-8 text-center space-y-3">
                   <DollarSign className="size-8 text-indigo-300 mx-auto" />
                   <p className="text-sm text-gray-500">
@@ -614,7 +614,7 @@ text-white border border-white/30 gap-2"
                   <Button
                     size="sm"
                     onClick={() => navigate("/app/investor/setup")}
-                    className="bg-indigo-600 hover:bg-indigo-700"
+                    className="bg-primary hover:bg-primary/90"
                   >
                     Set Up Preferences
                   </Button>
@@ -652,14 +652,16 @@ text-white border border-white/30 gap-2"
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Location</p>
-                <p className="font-medium text-gray-900">{profile.location}</p>
+                <p className="font-medium text-foreground">
+                  {profile.location}
+                </p>
               </div>
               {canSeePhone && profile.phone && (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Phone</p>
                   <div className="flex items-center gap-2">
                     <Phone className="size-4 text-gray-500" />
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       {profile.phone}
                     </span>
                   </div>
@@ -670,7 +672,7 @@ text-white border border-white/30 gap-2"
                   <p className="text-sm text-gray-600 mb-1">Email</p>
                   <div className="flex items-center gap-2">
                     <Mail className="size-4 text-gray-500" />
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-foreground">
                       {profileUser.email}
                     </span>
                   </div>
@@ -685,7 +687,7 @@ text-white border border-white/30 gap-2"
                     href={profile.linkedIn}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+                    className="flex items-center gap-2 text-primary hover:text-primary transition-colors"
                   >
                     <Linkedin className="size-4" />
                     <span className="text-sm">View LinkedIn</span>
@@ -713,7 +715,7 @@ text-white border border-white/30 gap-2"
               )}
               {/* Ticket Size */}
               {(investorProfile.fundingMin || investorProfile.fundingMax) && (
-                <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+                <Card className="border-2 border-primary/20 bg-gradient-to-br from-indigo-50 to-white">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-indigo-900">
                       <DollarSign className="size-5" />
@@ -722,7 +724,7 @@ text-white border border-white/30 gap-2"
                   </CardHeader>
                   <CardContent>
                     <div className="text-center py-4">
-                      <p className="text-3xl font-semibold text-indigo-600 mb-1">
+                      <p className="text-3xl font-semibold text-primary mb-1">
                         {investorProfile.fundingMin
                           ? `$${Number(investorProfile.fundingMin).toLocaleString()}`
                           : "—"}
@@ -751,7 +753,7 @@ text-white border border-white/30 gap-2"
             </>
           )}
           {profileUser.role === "EXPERT" && (
-            <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+            <Card className="border-2 border-primary/20 bg-gradient-to-br from-indigo-50 to-white">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-indigo-900">
                   <DollarSign className="size-5" />
@@ -761,7 +763,7 @@ text-white border border-white/30 gap-2"
 
               <CardContent>
                 <div className="text-center py-4">
-                  <p className="text-4xl font-semibold text-indigo-600 mb-1">
+                  <p className="text-4xl font-semibold text-primary mb-1">
                     {profile.hourlyRate
                       ? `$${profile.hourlyRate}`
                       : "Not specified"}
@@ -785,7 +787,7 @@ text-white border border-white/30 gap-2"
         <DialogContent className="sm:max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-2xl">
-              <Edit3 className="size-6 text-indigo-600" />
+              <Edit3 className="size-6 text-primary" />
               Edit Profile
             </DialogTitle>
             <DialogDescription>
@@ -1062,7 +1064,7 @@ text-white border border-white/30 gap-2"
                                 className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center border-b border-gray-200 pb-4"
                               >
                                 {/* Day */}
-                                <p className="font-medium text-gray-900">
+                                <p className="font-medium text-foreground">
                                   {dayName}
                                 </p>
 
@@ -1131,7 +1133,7 @@ text-white border border-white/30 gap-2"
                 {/* STARTUP SECTION */}
                 {formData.role === "STARTUP" && (
                   <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-foreground">
                       Company Information
                     </h3>
 
@@ -1196,7 +1198,7 @@ text-white border border-white/30 gap-2"
                 <Button
                   type="submit"
                   disabled={saving}
-                  className="bg-indigo-600 hover:bg-indigo-700 w-40"
+                  className="bg-primary hover:bg-primary/90 w-40"
                 >
                   {saving ? (
                     <>

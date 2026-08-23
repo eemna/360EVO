@@ -717,7 +717,7 @@ export function ProjectCreationWizard({
                       index < currentStep
                         ? "bg-green-600 text-white"
                         : index === currentStep
-                          ? "bg-blue-600 text-white"
+                          ? "bg-primary text-white"
                           : "bg-gray-200 text-gray-500"
                     }`}
                   >
@@ -729,7 +729,7 @@ export function ProjectCreationWizard({
                   </div>
                   <span
                     className={`text-sm font-medium ${
-                      index <= currentStep ? "text-gray-900" : "text-gray-400"
+                      index <= currentStep ? "text-foreground" : "text-gray-400"
                     }`}
                   >
                     {step}
@@ -953,15 +953,15 @@ export function ProjectCreationWizard({
                                     : ""
                                 } ${
                                   stage === value
-                                    ? "border-blue-600 bg-blue-50"
+                                    ? "border-primary bg-primary/10"
                                     : "border-gray-200 hover:bg-gray-50"
                                 }`}
                               >
                                 <Icon
-                                  className={`size-6 mx-auto mb-2 ${stage === value ? "text-blue-600" : "text-gray-400"}`}
+                                  className={`size-6 mx-auto mb-2 ${stage === value ? "text-primary" : "text-gray-400"}`}
                                 />
                                 <div
-                                  className={`text-sm font-medium ${stage === value ? "text-blue-600" : "text-gray-700"}`}
+                                  className={`text-sm font-medium ${stage === value ? "text-primary" : "text-gray-700"}`}
                                 >
                                   {label}
                                 </div>
@@ -1017,7 +1017,7 @@ export function ProjectCreationWizard({
                               onClick={() => toggleTechTag(tag)}
                               className={`cursor-pointer px-4 py-2 text-sm ${
                                 techTags?.includes(tag)
-                                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                                  ? "bg-primary text-white hover:bg-primary/90"
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                               }`}
                             >
@@ -1404,7 +1404,7 @@ export function ProjectCreationWizard({
                       </div>
 
                       {/* REVIEW SUMMARY */}
-                      <Card className="p-6 bg-blue-50 border-gray-300">
+                      <Card className="p-6 bg-primary/10 border-gray-300">
                         <h3 className="font-semibold mb-4">
                           Review Your Project
                         </h3>
@@ -1438,29 +1438,29 @@ export function ProjectCreationWizard({
 
                 {/* Right Column - Preview & Tips */}
                 <div className="space-y-6">
-                  <Card className="p-6 bg-blue-50 border-blue-200 sticky top-0">
+                  <Card className="p-6 bg-primary/10 border-primary/20 sticky top-0">
                     <h4 className="font-semibold mb-3 flex items-center gap-2">
-                      <Lightbulb className="size-5 text-blue-600" />
+                      <Lightbulb className="size-5 text-primary" />
                       Tips for Step {currentStep + 1}
                     </h4>
                     <ul className="space-y-2 text-sm text-gray-700">
                       {currentStep === 0 && (
                         <>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Choose a memorable and descriptive project name
                             </span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Your tagline should explain what you do in one
                               sentence
                             </span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Be honest about your current project stage
                             </span>
@@ -1470,20 +1470,20 @@ export function ProjectCreationWizard({
                       {currentStep === 1 && (
                         <>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Use formatting to make your description easy to
                               read
                             </span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Include problem, solution, and target market
                             </span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>Select 3-5 core technologies</span>
                           </li>
                         </>
@@ -1491,13 +1491,13 @@ export function ProjectCreationWizard({
                       {currentStep === 2 && (
                         <>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Include key team members and their roles
                             </span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>Photos help build trust with investors</span>
                           </li>
                         </>
@@ -1505,11 +1505,11 @@ export function ProjectCreationWizard({
                       {currentStep === 3 && (
                         <>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>Be transparent about funding needs</span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>Set realistic milestone dates</span>
                           </li>
                         </>
@@ -1517,13 +1517,13 @@ export function ProjectCreationWizard({
                       {currentStep === 4 && (
                         <>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               A great hero image makes your project stand out
                             </span>
                           </li>
                           <li className="flex gap-2">
-                            <ChevronRight className="size-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <ChevronRight className="size-4 text-primary mt-0.5 flex-shrink-0" />
                             <span>
                               Review all information before submitting
                             </span>
@@ -1542,7 +1542,7 @@ export function ProjectCreationWizard({
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-600 transition-all duration-300"
+                        className="h-full bg-primary transition-all duration-300"
                         style={{
                           width: `${((currentStep + 1) / STEPS.length) * 100}%`,
                         }}

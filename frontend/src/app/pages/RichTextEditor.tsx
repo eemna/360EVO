@@ -37,7 +37,7 @@ function ToolbarButton({
       onClick={onClick}
       title={title}
       className={`p-2 rounded hover:bg-gray-100 transition-colors ${
-        isActive ? "bg-blue-100 text-blue-600" : "text-gray-700"
+        isActive ? "bg-primary/20 text-primary" : "text-gray-700"
       }`}
     >
       {children}
@@ -85,7 +85,7 @@ export function RichTextEditor({
   }
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-blue-500 transition-colors">
+    <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:border-primary transition-colors">
       <div className="bg-gray-50 border-b border-gray-300 p-2 flex flex-wrap gap-1">
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}

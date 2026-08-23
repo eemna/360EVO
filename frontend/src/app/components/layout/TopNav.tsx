@@ -214,7 +214,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
           {/* Logo */}
           <Link to="/app" className="flex items-center gap-2 shrink-0">
             <img
-              src="/LOGO_WHITE.png"
+              src="/Logo_BLUE.png"
               alt="360EVO"
               className="h-40 w-30 rounded-lg object-contain"
             />
@@ -326,7 +326,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                       <button
                         type="button"
                         onClick={handleMarkAllRead}
-                        className="text-xs text-indigo-600 hover:underline"
+                        className="text-xs text-primary hover:underline"
                       >
                         Mark all read
                       </button>
@@ -348,10 +348,10 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                           onKeyDown={(e) =>
                             e.key === "Enter" && handleClickNotification(n)
                           }
-                          className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition ${!n.isRead ? "bg-indigo-50" : ""}`}
+                          className={`px-4 py-3 cursor-pointer hover:bg-gray-50 transition ${!n.isRead ? "bg-primary/10" : ""}`}
                         >
                           <p
-                            className={`text-sm font-medium ${!n.isRead ? "text-indigo-800" : "text-gray-800"}`}
+                            className={`text-sm font-medium ${!n.isRead ? "text-primary-foreground" : "text-gray-800"}`}
                           >
                             {n.title}
                           </p>
@@ -373,7 +373,7 @@ export default function TopNav({ onMenuClick }: TopNavProps) {
                         setNotifOpen(false);
                         navigate("/app/notifications");
                       }}
-                      className="text-sm text-indigo-600 hover:underline"
+                      className="text-sm text-primary hover:underline"
                     >
                       View all notifications
                     </button>

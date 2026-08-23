@@ -124,7 +124,7 @@ function BookingSummaryCard({ booking }: { booking: Booking }) {
     <Card className="border-l-4 border-l-indigo-400">
       <CardContent className="py-4 space-y-2">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <p className="font-semibold text-gray-900">
+          <p className="font-semibold text-foreground">
             {booking.member?.name || "Client"}
           </p>
           <Badge
@@ -158,7 +158,7 @@ function BookingSummaryCard({ booking }: { booking: Booking }) {
           </p>
         )}
         {booking.meetingType === "VIDEO" && booking.meetingLink && (
-          <div className="flex items-center gap-1.5 text-sm text-blue-600">
+          <div className="flex items-center gap-1.5 text-sm text-primary">
             <Video className="size-4" />
             <a
               href={booking.meetingLink}
@@ -383,7 +383,7 @@ export function ManageReservations() {
       case "pending":
         return "bg-orange-100 text-orange-700 border-orange-300";
       case "available":
-        return "bg-blue-100 text-blue-700 border-blue-300";
+        return "bg-primary/20 text-primary border-primary/30";
       default:
         return "bg-gray-100 text-gray-700 border-gray-300";
     }
@@ -436,7 +436,7 @@ export function ManageReservations() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-semibold text-gray-900 mb-2">
+          <h1 className="text-4xl font-semibold text-foreground mb-2">
             Bookings
           </h1>
           <p className="text-gray-600">
@@ -490,7 +490,7 @@ export function ManageReservations() {
                   <p className="text-sm font-medium text-gray-600">
                     Total Confirmed Earnings
                   </p>
-                  <p className="text-3xl font-semibold text-indigo-600 mt-1">
+                  <p className="text-3xl font-semibold text-primary mt-1">
                     $
                     {confirmedBookings
                       .reduce(
@@ -500,8 +500,8 @@ export function ManageReservations() {
                       .toLocaleString()}
                   </p>
                 </div>
-                <div className="size-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                  <DollarSign className="size-6 text-indigo-600" />
+                <div className="size-12 bg-primary/20 rounded-full flex items-center justify-center">
+                  <DollarSign className="size-6 text-primary" />
                 </div>
               </div>
             </CardContent>
@@ -655,7 +655,7 @@ export function ManageReservations() {
                     </CardHeader>
                     <CardContent className="space-y-2 pt-0">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 mb-1">
+                        <p className="text-sm font-semibold text-foreground mb-1">
                           Topic: {booking.topic}
                         </p>
                         <p className="text-sm text-gray-600 leading-relaxed">
@@ -687,7 +687,7 @@ export function ManageReservations() {
                           booking.meetingLink && (
                             <Button
                               size="sm"
-                              className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                              className="bg-primary hover:bg-primary/90 text-white"
                               onClick={() =>
                                 window.open(booking.meetingLink, "_blank")
                               }
@@ -845,7 +845,7 @@ export function ManageReservations() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <p className="text-sm font-semibold text-gray-900 mb-1">
+                        <p className="text-sm font-semibold text-foreground mb-1">
                           Topic: {booking.topic}
                         </p>
                       </div>
@@ -854,8 +854,8 @@ export function ManageReservations() {
 
                       {booking.meetingType === "VIDEO" &&
                         booking.meetingLink && (
-                          <div className="w-full bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-                            <Video className="size-5 text-blue-600 mt-1" />
+                          <div className="w-full bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-start gap-3">
+                            <Video className="size-5 text-primary mt-1" />
 
                             <div className="flex flex-col">
                               <p className="text-sm font-medium text-gray-700">
@@ -866,7 +866,7 @@ export function ManageReservations() {
                                 href={booking.meetingLink}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-blue-600 hover:underline break-all"
+                                className="text-sm text-primary hover:underline break-all"
                               >
                                 {booking.meetingLink}
                               </a>
@@ -988,7 +988,7 @@ export function ManageReservations() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm font-semibold text-gray-900 mb-3">
+                      <p className="text-sm font-semibold text-foreground mb-3">
                         Topic: {booking.topic}
                       </p>
                     </CardContent>
@@ -1015,13 +1015,13 @@ export function ManageReservations() {
                             ? "bg-green-50 border-green-200"
                             : slot.status === "pending"
                               ? "bg-orange-50 border-orange-200"
-                              : "bg-blue-50 border-blue-200"
+                              : "bg-primary/10 border-primary/20"
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <p className="font-semibold text-gray-900">
+                              <p className="font-semibold text-foreground">
                                 {formatDate(slot.date)}
                               </p>
                               <Badge
@@ -1078,7 +1078,7 @@ export function ManageReservations() {
                       hasBooking: (date) => getBookingsForDate(date).length > 0,
                     }}
                     modifiersClassNames={{
-                      hasBooking: "bg-indigo-100 font-semibold text-indigo-700",
+                      hasBooking: "bg-primary/20 font-semibold text-primary",
                     }}
                     className="rounded-lg border border-gray-300 shadow-sm p-4"
                   />
@@ -1126,7 +1126,7 @@ export function ManageReservations() {
               >
                 Upcoming
                 {upcomingBookings.length > 0 && (
-                  <Badge className="ml-2 bg-indigo-500 text-white">
+                  <Badge className="ml-2 bg-primary text-white">
                     {upcomingBookings.length}
                   </Badge>
                 )}

@@ -304,7 +304,7 @@ export function DocumentUpload({
         return <FileText className="size-6 text-red-600" />;
       case "doc":
       case "docx":
-        return <FileText className="size-6 text-blue-600" />;
+        return <FileText className="size-6 text-primary" />;
       case "jpg":
       case "jpeg":
       case "png":
@@ -341,7 +341,7 @@ export function DocumentUpload({
           transition-all duration-300 mb-4
           ${
             isDragging
-              ? "border-blue-500 bg-blue-50"
+              ? "border-primary bg-primary/10"
               : "border-gray-300 hover:border-gray-400 bg-gray-50"
           }
           ${uploadedFiles.length >= maxFiles ? "opacity-50 cursor-not-allowed" : ""}
@@ -361,15 +361,15 @@ export function DocumentUpload({
           <div
             className={`
             size-12 rounded-full flex items-center justify-center mb-3
-            ${isDragging ? "bg-blue-100" : "bg-gray-200"}
+            ${isDragging ? "bg-primary/20" : "bg-gray-200"}
           `}
           >
             <Upload
-              className={`size-6 ${isDragging ? "text-blue-600" : "text-gray-600"}`}
+              className={`size-6 ${isDragging ? "text-primary" : "text-gray-600"}`}
             />
           </div>
 
-          <p className="text-sm font-medium text-gray-900 mb-1">
+          <p className="text-sm font-medium text-foreground mb-1">
             {isDragging ? "Drop your files here" : description}
           </p>
           <p className="text-xs text-gray-500">
@@ -412,7 +412,7 @@ export function DocumentUpload({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-foreground truncate">
                         {uploadedFile.file?.name ||
                           uploadedFile.cloudinaryData?.originalName}
                       </p>
@@ -436,7 +436,7 @@ export function DocumentUpload({
                     <div className="space-y-1">
                       <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                         <div
-                          className="bg-blue-600 h-full transition-all duration-300 ease-out"
+                          className="bg-primary h-full transition-all duration-300 ease-out"
                           style={{ width: `${uploadedFile.progress}%` }}
                         ></div>
                       </div>

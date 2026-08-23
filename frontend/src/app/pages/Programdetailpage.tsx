@@ -72,7 +72,7 @@ const TYPE_CONFIG = {
   INCUBATION: {
     label: "Incubation",
     icon: BookOpen,
-    color: "text-blue-600 bg-blue-50",
+    color: "text-primary bg-primary/10",
   },
   ACCELERATION: {
     label: "Acceleration",
@@ -172,14 +172,14 @@ function ApplicationModal({
 
         <div className="space-y-5 py-2">
           {/* Program summary */}
-          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+          <div className="bg-primary/10 border border-primary/10 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="size-4 text-indigo-600" />
+              <CheckCircle2 className="size-4 text-primary" />
               <span className="text-sm font-semibold text-indigo-900">
                 {TYPE_CONFIG[program.type].label} Program
               </span>
             </div>
-            <p className="text-xs text-indigo-700">
+            <p className="text-xs text-primary">
               Starts {formatDate(program.startDate)} · {program.capacity} spots
               · Deadline {formatDate(program.applicationDeadline)}
             </p>
@@ -294,7 +294,7 @@ function ApplicationModal({
           <Button
             onClick={handleSubmit}
             disabled={submitting || !motivation.trim()}
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             {submitting ? (
               <LoadingSpinner size="sm" />
@@ -493,7 +493,7 @@ export default function ProgramDetailPage() {
         {/* Right: sidebar */}
         <div className="space-y-4">
           {/* Apply card */}
-          <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white sticky top-4">
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-indigo-50 to-white sticky top-4">
             <CardContent className="pt-5 pb-5 space-y-4">
               {/* Stats */}
               <div className="space-y-2.5">
@@ -577,7 +577,7 @@ export default function ProgramDetailPage() {
               {/* CTA */}
               {!user ? (
                 <Button
-                  className="w-full bg-indigo-600 hover:bg-indigo-700"
+                  className="w-full bg-primary hover:bg-primary/90"
                   onClick={() => navigate("/login")}
                 >
                   Log in to Apply
@@ -595,7 +595,7 @@ export default function ProgramDetailPage() {
                 </div>
               ) : canApply ? (
                 <Button
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 gap-2"
+                  className="w-full bg-primary hover:bg-primary/90 gap-2"
                   onClick={() => setApplyOpen(true)}
                 >
                   <Rocket className="size-4" />
@@ -619,7 +619,7 @@ export default function ProgramDetailPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full text-xs text-indigo-600"
+                  className="w-full text-xs text-primary"
                   onClick={() => navigate("/app/programs/my-applications")}
                 >
                   View my applications →

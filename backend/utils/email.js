@@ -10,20 +10,18 @@ const connectionString = process.env.AZURE_COMMUNICATION_CONNECTION_STRING;
 const senderAddress =
   process.env.AZURE_COMMUNICATION_SENDER || process.env.EMAIL_USER;
 
-const emailClient = connectionString
-  ? new EmailClient(connectionString)
-  : null;
+const emailClient = connectionString ? new EmailClient(connectionString) : null;
 
 export const sendEmail = async ({ to, subject, html }) => {
   try {
     if (!emailClient) {
       throw new Error(
-        "AZURE_COMMUNICATION_CONNECTION_STRING is not configured"
+        "AZURE_COMMUNICATION_CONNECTION_STRING is not configured",
       );
     }
     if (!senderAddress) {
       throw new Error(
-        "Sender address missing: set AZURE_COMMUNICATION_SENDER or EMAIL_USER"
+        "Sender address missing: set AZURE_COMMUNICATION_SENDER or EMAIL_USER",
       );
     }
 

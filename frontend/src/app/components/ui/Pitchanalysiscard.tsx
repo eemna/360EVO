@@ -66,7 +66,7 @@ export function PitchAnalysisCard({ projectId }: PitchAnalysisCardProps) {
         <Button
           onClick={handleGenerate}
           disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+          className="bg-primary hover:bg-primary/90 gap-2"
         >
           {loading ? (
             <>

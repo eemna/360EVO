@@ -27,9 +27,9 @@ export function Slider({
       className={`relative flex w-full touch-none select-none items-center ${className ?? ""}`}
     >
       <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-gray-200">
-        <SliderPrimitive.Range className="absolute h-full bg-indigo-600" />
+        <SliderPrimitive.Range className="absolute h-full bg-primary" />
       </SliderPrimitive.Track>
-      <SliderPrimitive.Thumb className="block size-4 rounded-full border-2 border-indigo-600 bg-white shadow focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50" />
+      <SliderPrimitive.Thumb className="block size-4 rounded-full border-2 border-primary bg-white shadow focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50" />
     </SliderPrimitive.Root>
   );
 }

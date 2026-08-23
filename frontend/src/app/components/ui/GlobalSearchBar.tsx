@@ -221,7 +221,7 @@ export default function GlobalSearchBar() {
                       onMouseDown={() => pickSuggestion(s)}
                       className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors ${
                         flatIdx === activeIdx
-                          ? "bg-blue-50 text-blue-700"
+                          ? "bg-primary/10 text-primary"
                           : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
@@ -248,7 +248,7 @@ export default function GlobalSearchBar() {
                 type="button"
                 aria-label={`See all results for ${query}`}
                 onMouseDown={submitSearch}
-                className="text-sm text-blue-600 font-medium hover:underline"
+                className="text-sm text-primary font-medium hover:underline"
               >
                 See all results for "{query}"
               </button>

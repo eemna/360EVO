@@ -94,7 +94,7 @@ interface Project {
 const stageColors = {
   IDEA: "bg-gray-100 text-gray-700",
   PROTOTYPE: "bg-blue-100 text-blue-700",
-  MVP: "bg-indigo-100 text-indigo-700",
+  MVP: "bg-primary/20 text-primary",
   GROWTH: "bg-purple-100 text-purple-700",
   SCALING: "bg-green-100 text-green-700",
 };
@@ -350,8 +350,8 @@ export default function ProjectDetailsPage() {
 
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="flex items-center gap-2 text-gray-700">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Briefcase className="size-4 text-indigo-600" />
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <Briefcase className="size-4 text-primary" />
                 </div>
                 <span>{project.industry}</span>
               </div>
@@ -371,8 +371,8 @@ export default function ProjectDetailsPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-gray-700">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Users className="size-4 text-blue-600" />
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <Users className="size-4 text-primary" />
                 </div>
                 <span>By {project.owner?.name}</span>
               </div>
@@ -389,7 +389,7 @@ export default function ProjectDetailsPage() {
                 <Badge
                   key={tech}
                   variant="outline"
-                  className="bg-white border-indigo-200 text-indigo-700 px-4 py-1.5"
+                  className="bg-white border-primary/20 text-primary px-4 py-1.5"
                 >
                   {tech}
                 </Badge>
@@ -434,7 +434,7 @@ export default function ProjectDetailsPage() {
 
                 <button
                   onClick={() => setShowFullDesc((v) => !v)}
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1"
+                  className="text-sm font-medium text-primary hover:text-primary transition-colors flex items-center gap-1"
                 >
                   {showFullDesc ? (
                     <>
@@ -499,7 +499,7 @@ export default function ProjectDetailsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h4 className="font-medium text-gray-900">
+                        <h4 className="font-medium text-foreground">
                           {member.name}
                         </h4>
                         <p className="text-sm text-gray-600">{member.role}</p>
@@ -529,7 +529,7 @@ export default function ProjectDetailsPage() {
                         </div>
                         <div className="flex-1 pb-6">
                           <div className="flex flex-wrap items-center gap-3 mb-1">
-                            <h4 className="font-medium text-gray-900">
+                            <h4 className="font-medium text-foreground">
                               {milestone.title}
                             </h4>
                             {milestone.completedAt && (
@@ -572,7 +572,7 @@ export default function ProjectDetailsPage() {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-gray-600 mb-2">Target Amount</p>
-                  <p className="text-3xl font-semibold text-indigo-600">
+                  <p className="text-3xl font-semibold text-primary">
                     {formatCurrency(
                       project.fundingSought ?? 0,
                       project.currency,
@@ -622,7 +622,7 @@ export default function ProjectDetailsPage() {
                   <p className="text-sm text-gray-600 mb-1">Visibility</p>
                   <Badge
                     variant="outline"
-                    className="bg-blue-50 text-blue-700 border-blue-200"
+                    className="bg-primary/10 text-primary border-primary/20"
                   >
                     {project.visibility}
                   </Badge>
@@ -643,10 +643,10 @@ export default function ProjectDetailsPage() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
-                    <Megaphone className="size-5 text-indigo-500" />
+                    <Megaphone className="size-5 text-primary" />
                     Updates
                     {updates.length > 0 && (
-                      <Badge className="bg-indigo-100 text-indigo-700 text-xs ml-1">
+                      <Badge className="bg-primary/20 text-primary text-xs ml-1">
                         {updates.length}
                       </Badge>
                     )}
@@ -677,14 +677,14 @@ export default function ProjectDetailsPage() {
 
               <CardContent className="space-y-4">
                 {isOwner && showPostForm && (
-                  <div className="bg-indigo-50 rounded-xl p-4 space-y-3 border border-indigo-100">
+                  <div className="bg-primary/10 rounded-xl p-4 space-y-3 border border-primary/10">
                     <textarea
                       value={postContent}
                       onChange={(e) => setPostContent(e.target.value)}
                       rows={3}
                       maxLength={1000}
                       placeholder="Share a project update with the community..."
-                      className="w-full px-3 py-2 rounded-lg border border-indigo-200 bg-white text-sm text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
+                      className="w-full px-3 py-2 rounded-lg border border-primary/20 bg-white text-sm text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-gray-400"
                     />
                     <p className="text-xs text-gray-400 text-right">
                       {postContent.length}/1000
@@ -696,7 +696,7 @@ export default function ProjectDetailsPage() {
                         value={postImageUrl}
                         onChange={(e) => setPostImageUrl(e.target.value)}
                         placeholder="Image URL (optional)"
-                        className="flex-1 px-3 py-1.5 rounded-lg border border-indigo-200 bg-white text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
+                        className="flex-1 px-3 py-1.5 rounded-lg border border-primary/20 bg-white text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring placeholder:text-gray-400"
                       />
                     </div>
                     {postImageUrl && (
@@ -716,7 +716,7 @@ export default function ProjectDetailsPage() {
                     <Button
                       onClick={handlePostUpdate}
                       disabled={posting || !postContent.trim()}
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm h-9"
+                      className="w-full bg-primary hover:bg-primary/90 text-white text-sm h-9"
                     >
                       {posting ? "Posting..." : "Post Update"}
                     </Button>

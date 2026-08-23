@@ -53,19 +53,24 @@ export const useRecaptcha = () => {
       .catch(() => setReady(false));
   }, []);
 
-  const getToken = useCallback(async (action: string): Promise<string | null> => {
-    if (!SITE_KEY || !window.grecaptcha) return null;
-    return new Promise((resolve) => {
-      window.grecaptcha!.ready(async () => {
-        try {
-          const token = await window.grecaptcha!.execute(SITE_KEY, { action });
-          resolve(token);
-        } catch {
-          resolve(null);
-        }
+  const getToken = useCallback(
+    async (action: string): Promise<string | null> => {
+      if (!SITE_KEY || !window.grecaptcha) return null;
+      return new Promise((resolve) => {
+        window.grecaptcha!.ready(async () => {
+          try {
+            const token = await window.grecaptcha!.execute(SITE_KEY, {
+              action,
+            });
+            resolve(token);
+          } catch {
+            resolve(null);
+          }
+        });
       });
-    });
-  }, []);
+    },
+    [],
+  );
 
   return { getToken, enabled: Boolean(SITE_KEY), ready };
 };

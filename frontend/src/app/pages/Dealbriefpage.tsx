@@ -151,8 +151,8 @@ export default function DealBriefPage() {
             Back
           </Button>
           <div className="flex items-center gap-2">
-            <FileBarChart className="size-5 text-indigo-600" />
-            <h1 className="text-xl font-semibold text-gray-900">
+            <FileBarChart className="size-5 text-primary" />
+            <h1 className="text-xl font-semibold text-foreground">
               AI Deal Brief
             </h1>
           </div>
@@ -196,7 +196,7 @@ export default function DealBriefPage() {
             <Button
               onClick={handleGenerate}
               disabled={generating}
-              className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+              className="bg-primary hover:bg-primary/90 gap-2"
             >
               {generating ? (
                 <LoadingSpinner size="sm" />
@@ -211,7 +211,7 @@ export default function DealBriefPage() {
 
       {/* Not generated yet */}
       {!brief && !generating && (
-        <Card className="border-2 border-dashed border-indigo-200">
+        <Card className="border-2 border-dashed border-primary/20">
           <CardContent className="py-16 text-center">
             <FileBarChart className="size-10 text-indigo-200 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
@@ -223,7 +223,7 @@ export default function DealBriefPage() {
             </p>
             <Button
               onClick={handleGenerate}
-              className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+              className="bg-primary hover:bg-primary/90 gap-2"
             >
               <Sparkles className="size-4" />
               Generate Deal Brief
@@ -235,7 +235,7 @@ export default function DealBriefPage() {
       {generating && !brief && (
         <Card>
           <CardContent className="py-16 flex flex-col items-center gap-4">
-            <LoadingSpinner size="lg" className="text-indigo-600" />
+            <LoadingSpinner size="lg" className="text-primary" />
             <p className="text-sm text-gray-500">
               Analysing project data, documents, and investor thesis...
             </p>
@@ -256,14 +256,14 @@ export default function DealBriefPage() {
           </div>
 
           {/* Headline */}
-          <Card className="border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-white">
+          <Card className="border-2 border-primary/20 bg-gradient-to-br from-indigo-50 to-white">
             <CardContent className="pt-6 pb-6">
               <div className="flex items-start gap-3">
-                <div className="p-2 bg-indigo-100 rounded-xl flex-shrink-0">
-                  <Sparkles className="size-5 text-indigo-600" />
+                <div className="p-2 bg-primary/20 rounded-xl flex-shrink-0">
+                  <Sparkles className="size-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wider mb-1">
+                  <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-1">
                     Investment Headline
                   </p>
                   <p className="text-lg font-semibold text-indigo-900 leading-relaxed">
@@ -296,7 +296,7 @@ export default function DealBriefPage() {
             <SectionCard
               icon={Building2}
               title="Company Snapshot"
-              accent="bg-indigo-500"
+              accent="bg-primary"
             >
               <p className="text-sm text-gray-700 leading-relaxed">
                 {brief.content.companySnapshot}
@@ -316,7 +316,7 @@ export default function DealBriefPage() {
             <SectionCard
               icon={Globe}
               title="Market Opportunity"
-              accent="bg-blue-500"
+              accent="bg-primary"
             >
               <p className="text-sm text-gray-700 leading-relaxed">
                 {brief.content.marketOpportunity}

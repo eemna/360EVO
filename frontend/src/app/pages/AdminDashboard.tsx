@@ -486,7 +486,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Overview</h1>
+          <h1 className="text-3xl font-semibold text-foreground">Overview</h1>
           <p className="text-gray-500 text-sm mt-1">
             Manage the 360EVO platform
           </p>
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
           <Button
             size="sm"
             onClick={() => navigate("/app/events/create")}
-            className="bg-blue-600 hover:bg-blue-700 gap-1.5"
+            className="bg-primary hover:bg-primary/90 gap-1.5"
           >
             <Calendar className="size-4" />
             Create Event
@@ -523,7 +523,7 @@ export default function AdminDashboard() {
             onClick={() => setActiveSection(key)}
             className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
               activeSection === key
-                ? "bg-indigo-600 text-white"
+                ? "bg-primary text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -554,15 +554,15 @@ export default function AdminDashboard() {
                 label: "Total Users",
                 value: stats?.users ?? 0,
                 icon: Users,
-                accent: "text-blue-600",
-                bg: "bg-blue-50",
+                accent: "text-primary",
+                bg: "bg-primary/10",
               },
               {
                 label: "Total Projects",
                 value: stats?.projects ?? 0,
                 icon: FolderOpen,
-                accent: "text-indigo-600",
-                bg: "bg-indigo-50",
+                accent: "text-primary",
+                bg: "bg-primary/10",
               },
               {
                 label: "Events",
@@ -622,15 +622,15 @@ export default function AdminDashboard() {
             </button>
             <button
               onClick={() => setActiveSection("experts")}
-              className="text-left p-4 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition-colors"
+              className="text-left p-4 bg-primary/10 border border-primary/20 rounded-xl hover:bg-primary/20 transition-colors"
             >
-              <p className="text-2xl font-bold text-blue-700">
+              <p className="text-2xl font-bold text-primary">
                 {expertApplicants.length}
               </p>
-              <p className="text-sm text-blue-600 font-medium">
+              <p className="text-sm text-primary font-medium">
                 Expert Applications
               </p>
-              <p className="text-xs text-blue-500 mt-0.5">Click to review →</p>
+              <p className="text-xs text-primary mt-0.5">Click to review →</p>
             </button>
             <button
               onClick={() => navigate("/app/admin/users")}
@@ -687,7 +687,7 @@ export default function AdminDashboard() {
                   projects.map((project) => (
                     <TableRow key={project.id}>
                       <TableCell
-                        className="font-medium cursor-pointer hover:text-indigo-600"
+                        className="font-medium cursor-pointer hover:text-primary"
                         onClick={() =>
                           navigate(`/app/startup/projects/${project.id}`)
                         }
@@ -758,7 +758,7 @@ export default function AdminDashboard() {
               onClick={() => setExpertsView("pending")}
               className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 expertsView === "pending"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-primary text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
               onClick={() => setExpertsView("all")}
               className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 expertsView === "all"
-                  ? "bg-indigo-600 text-white"
+                  ? "bg-primary text-white"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
@@ -916,7 +916,7 @@ export default function AdminDashboard() {
                           return (
                             <TableRow key={u.id}>
                               <TableCell
-                                className="font-medium cursor-pointer hover:text-indigo-600"
+                                className="font-medium cursor-pointer hover:text-primary"
                                 onClick={() => navigate(`/app/profile/${u.id}`)}
                               >
                                 {u.name}
@@ -1067,12 +1067,12 @@ export default function AdminDashboard() {
           <Card className="border border-gray-200">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <BookOpen className="size-4 text-blue-600" />
+                <BookOpen className="size-4 text-primary" />
                 Programs ({programs.length})
               </CardTitle>
               <Button
                 size="sm"
-                className="bg-indigo-600 hover:bg-indigo-700"
+                className="bg-primary hover:bg-primary/90"
                 onClick={() => navigate("/app/programs/create")}
               >
                 + New Program
@@ -1327,7 +1327,7 @@ export default function AdminDashboard() {
                 </CardTitle>
                 <Button
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700"
+                  className="bg-primary hover:bg-primary/90"
                   onClick={() => navigate("/app/events/create")}
                 >
                   + New Event
@@ -1414,7 +1414,7 @@ export default function AdminDashboard() {
                           <TableCell>
                             <button
                               onClick={() => viewEventRegistrations(e)}
-                              className="text-sm font-medium text-indigo-600 hover:text-indigo-800 hover:underline"
+                              className="text-sm font-medium text-primary hover:text-primary-foreground hover:underline"
                             >
                               {e._count.registrations} →
                             </button>
@@ -1448,7 +1448,7 @@ export default function AdminDashboard() {
                 <p className="text-xs text-gray-500 font-medium">
                   Total Transactions
                 </p>
-                <p className="text-3xl font-bold text-indigo-600 mt-1">
+                <p className="text-3xl font-bold text-primary mt-1">
                   {revenueData.reduce((acc, r) => acc + Number(r.count), 0)}
                 </p>
               </CardContent>

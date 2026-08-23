@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "../components/ui/select";
 import { useSearchParams } from "react-router";
-
+import api from "../../services/axios";
 type Persona = "startup" | "investor" | "partner";
 
 export function Contact() {
@@ -46,9 +46,30 @@ export function Contact() {
     email: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+
+    const formData =
+      persona === "startup"
+        ? startupForm
+        : persona === "investor"
+          ? investorForm
+          : partnerForm;
+
+    try {
+      await api.post("/contact", {
+        name: formData.name,
+        email: formData.email,
+        message:
+          persona === "partner"
+            ? partnerForm.lookingFor
+            : `New ${persona} inquiry via contact page.`,
+        persona,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Contact form submission failed:", err);
+    }
   };
 
   const switchPersona = (p: Persona) => {
@@ -484,10 +505,10 @@ export function Contact() {
                   <div className="flex items-center gap-3">
                     <Mail className="text-[#1D9E75]" size={20} />
                     <a
-                      href="mailto:hello@360evo.com"
+                      href="mailto:Contact-Us@360EVO.AI"
                       className="text-white hover:text-[#1D9E75] transition-colors"
                     >
-                      hello@360evo.com
+                      Contact-Us@360EVO.AI
                     </a>
                   </div>
                   <div className="flex items-center gap-3">

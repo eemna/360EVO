@@ -282,7 +282,7 @@ export default function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Analytics</h1>
+        <h1 className="text-3xl font-semibold text-foreground">Analytics</h1>
         <p className="text-gray-500 text-sm mt-1">
           Understand trends across the 360EVO platform
         </p>
@@ -347,7 +347,7 @@ export default function AdminAnalyticsPage() {
       <Card className="border border-gray-200">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="size-4 text-indigo-600" />
+            <TrendingUp className="size-4 text-primary" />
             Growth — Sign-ups by Role
           </CardTitle>
         </CardHeader>
@@ -418,7 +418,7 @@ export default function AdminAnalyticsPage() {
       <Card className="border border-gray-200">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Users className="size-4 text-blue-600" />
+            <Users className="size-4 text-primary" />
             Engagement — Active Users
           </CardTitle>
         </CardHeader>
@@ -473,7 +473,7 @@ export default function AdminAnalyticsPage() {
       <Card className="border border-gray-200">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <FolderOpen className="size-4 text-indigo-600" />
+            <FolderOpen className="size-4 text-primary" />
             Projects — Submitted vs Approved vs Rejected
           </CardTitle>
         </CardHeader>
@@ -915,7 +915,7 @@ export default function AdminAnalyticsPage() {
         <Card className="border border-gray-200">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <BookOpen className="size-6 text-blue-600" />
+              <BookOpen className="size-6 text-primary" />
               Program Fill Rate vs Capacity
             </CardTitle>
           </CardHeader>
@@ -943,7 +943,7 @@ export default function AdminAnalyticsPage() {
                     </div>
                     <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-600 rounded-full"
+                        className="h-full bg-primary rounded-full"
                         style={{
                           width: `${Math.min(program.fillRate, 100)}%`,
                         }}

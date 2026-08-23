@@ -157,8 +157,8 @@ export default function DdInboxPage() {
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900 flex items-center gap-3">
-            <Inbox className="size-7 text-indigo-600" />
+          <h1 className="text-3xl font-semibold text-foreground flex items-center gap-3">
+            <Inbox className="size-7 text-primary" />
             {isInvestor ? "My DD Requests" : "DD Request Inbox"}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -183,7 +183,7 @@ export default function DdInboxPage() {
             onClick={() => setFilter(f)}
             className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${
               filter === f
-                ? "bg-indigo-600 text-white border-indigo-600"
+                ? "bg-primary text-white border-primary"
                 : "bg-white text-gray-600 border-gray-200 hover:border-gray-300"
             }`}
           >
@@ -222,7 +222,7 @@ export default function DdInboxPage() {
             </p>
             {isInvestor && (
               <Button
-                className="mt-4 bg-indigo-600 hover:bg-indigo-700"
+                className="mt-4 bg-primary hover:bg-primary/90"
                 onClick={() => navigate("/app/projects")}
               >
                 Browse Projects
@@ -253,7 +253,7 @@ export default function DdInboxPage() {
                             receivedReq.investor?.profile?.avatar || undefined
                           }
                         />
-                        <AvatarFallback className="bg-indigo-100 text-indigo-700 font-semibold">
+                        <AvatarFallback className="bg-primary/20 text-primary font-semibold">
                           {receivedReq.investor?.name?.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -264,12 +264,12 @@ export default function DdInboxPage() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         {/* Investor view: show startup/project name */}
                         {isInvestor ? (
-                          <span className="font-semibold text-gray-900">
+                          <span className="font-semibold text-foreground">
                             {sentReq.project?.title}
                           </span>
                         ) : (
                           <>
-                            <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-foreground">
                               {receivedReq.investor?.name}
                             </span>
                             <span className="text-gray-400 text-xs">
@@ -285,7 +285,7 @@ export default function DdInboxPage() {
                           {cfg.label}
                         </span>
                         {req.nda && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
                             <Shield className="size-3" />
                             NDA Agreed
                           </span>
@@ -393,7 +393,7 @@ export default function DdInboxPage() {
                                 `/app/startup/data-rooms/${req.dataRoom!.id}`,
                               )
                             }
-                            className="bg-indigo-600 hover:bg-indigo-700 gap-1"
+                            className="bg-primary hover:bg-primary/90 gap-1"
                           >
                             <FolderOpen className="size-4" />
                             Open Data Room

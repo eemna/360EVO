@@ -182,7 +182,7 @@ function TopMatchRow({
     >
       <ScoreRing score={match.matchScore} size={44} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
+        <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
           {match.project.title}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -199,7 +199,7 @@ function TopMatchRow({
           </p>
         )}
       </div>
-      <ChevronRight className="size-4 text-gray-300 group-hover:text-indigo-400 flex-shrink-0 transition-colors" />
+      <ChevronRight className="size-4 text-gray-300 group-hover:text-primary/60 flex-shrink-0 transition-colors" />
     </div>
   );
 }
@@ -233,11 +233,11 @@ function SetupChecklist({ profile }: { profile: InvestorProfile | null }) {
         <span className="text-xs text-gray-500 font-medium">
           Profile completeness
         </span>
-        <span className="text-xs font-bold text-indigo-600">{pct}%</span>
+        <span className="text-xs font-bold text-primary">{pct}%</span>
       </div>
       <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
         <div
-          className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+          className="h-full bg-primary rounded-full transition-all duration-700"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -368,7 +368,7 @@ export default function InvestorDashboard() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900 ">
+          <h1 className="text-3xl font-semibold text-foreground ">
             Welcome back, {user?.name?.split(" ")[0]}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -387,7 +387,7 @@ export default function InvestorDashboard() {
           <Button
             onClick={handleGenerate}
             disabled={generating}
-            className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+            className="bg-primary hover:bg-primary/90 gap-2"
           >
             {generating ? (
               <>
@@ -404,16 +404,16 @@ export default function InvestorDashboard() {
 
       {/* No profile banner */}
       {/* !loadingProfile && !profileComplete && (
-        <div className="rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50 p-6 flex items-center justify-between gap-4 flex-wrap">
+        <div className="rounded-xl border-2 border-dashed border-primary/20 bg-primary/10 p-6 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 rounded-lg">
-              <Zap className="size-5 text-indigo-600" />
+            <div className="p-2 bg-primary/20 rounded-lg">
+              <Zap className="size-5 text-primary" />
             </div>
             <div>
               <p className="font-semibold text-indigo-900 text-sm">
                 Complete your investor profile to unlock AI matching
               </p>
-              <p className="text-xs text-indigo-600 mt-0.5">
+              <p className="text-xs text-primary mt-0.5">
                 Add your thesis, sectors, and preferences so we can find the
                 best projects for you.
               </p>
@@ -421,7 +421,7 @@ export default function InvestorDashboard() {
           </div>
           <Button
             onClick={() => navigate("/app/investor/setup")}
-            className="bg-indigo-600 hover:bg-indigo-700 flex-shrink-0"
+            className="bg-primary hover:bg-primary/90 flex-shrink-0"
           >
             Set Up Profile →
           </Button>
@@ -450,7 +450,7 @@ export default function InvestorDashboard() {
                 ? `${matches.length} total`
                 : "Generate to start"
             }
-            accent="text-indigo-600"
+            accent="text-primary"
           />
           <StatCard
             icon={TrendingUp}
@@ -491,7 +491,7 @@ export default function InvestorDashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/app/investor/matches")}
-                className="text-xs text-indigo-600 hover:text-indigo-700 gap-1"
+                className="text-xs text-primary hover:text-primary gap-1"
               >
                 View all <ChevronRight className="size-3" />
               </Button>
@@ -512,7 +512,7 @@ export default function InvestorDashboard() {
                     size="sm"
                     onClick={handleGenerate}
                     disabled={generating}
-                    className="bg-indigo-600 hover:bg-indigo-700 gap-2"
+                    className="bg-primary hover:bg-primary/90 gap-2"
                   >
                     {generating ? (
                       <LoadingSpinner size="sm" />
@@ -560,31 +560,31 @@ export default function InvestorDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <button
               onClick={() => navigate("/app/investor/matches")}
-              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
+              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all text-left group"
             >
-              <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                <Target className="size-5 text-indigo-600" />
+              <div className="p-2.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                <Target className="size-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   Match Feed
                 </p>
                 <p className="text-xs text-gray-400">
                   Browse all AI-scored matches
                 </p>
               </div>
-              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
+              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-primary/60 transition-colors" />
             </button>
 
             <button
               onClick={() => navigate("/app/projects")}
-              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
+              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all text-left group"
             >
               <div className="p-2.5 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors">
                 <Globe className="size-5 text-purple-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   Project Gallery
                 </p>
                 <p className="text-xs text-gray-400">
@@ -601,7 +601,7 @@ export default function InvestorDashboard() {
                 <FolderOpen className="size-5 text-green-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   Due Diligence
                 </p>
                 <p className="text-xs text-gray-400">Your data room requests</p>
@@ -611,33 +611,35 @@ export default function InvestorDashboard() {
 
             <button
               onClick={() => navigate("/app/events/my")}
-              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
+              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all text-left group"
             >
-              <div className="p-2.5 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-                <Calendar className="size-5 text-blue-600" />
+              <div className="p-2.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                <Calendar className="size-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">My Events</p>
+                <p className="text-sm font-semibold text-foreground">
+                  My Events
+                </p>
                 <p className="text-xs text-gray-400">Your registered events</p>
               </div>
-              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
+              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-primary/60 transition-colors" />
             </button>
             <button
               onClick={() => navigate("/app/programs/my-applications")}
-              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:shadow-sm transition-all text-left group"
+              className="flex items-center gap-4 p-4 bg-white border border-gray-200 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all text-left group"
             >
-              <div className="p-2.5 bg-indigo-50 rounded-lg group-hover:bg-indigo-100 transition-colors">
-                <BookOpen className="size-5 text-indigo-600" />
+              <div className="p-2.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                <BookOpen className="size-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">
+                <p className="text-sm font-semibold text-foreground">
                   My Applications
                 </p>
                 <p className="text-xs text-gray-400">
                   Programs you've applied to
                 </p>
               </div>
-              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-indigo-400 transition-colors" />
+              <ChevronRight className="size-4 text-gray-300 ml-auto group-hover:text-primary/60 transition-colors" />
             </button>
           </div>
         </div>
@@ -652,7 +654,7 @@ export default function InvestorDashboard() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate("/app/investor/setup")}
-                className="text-xs text-indigo-600 hover:text-indigo-700"
+                className="text-xs text-primary hover:text-primary"
               >
                 Edit
               </Button>
@@ -771,7 +773,7 @@ export default function InvestorDashboard() {
                     <span className="text-xs text-gray-500 block mb-1">
                       Ticket Size
                     </span>
-                    <span className="text-sm font-semibold text-indigo-600">
+                    <span className="text-sm font-semibold text-primary">
                       {profile.fundingMin
                         ? `$${Number(profile.fundingMin).toLocaleString()}`
                         : "—"}
@@ -793,7 +795,7 @@ export default function InvestorDashboard() {
                       {profile.industries.slice(0, 4).map((i) => (
                         <span
                           key={i}
-                          className="text-xs px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100"
+                          className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/10"
                         >
                           {i}
                         </span>
@@ -860,20 +862,20 @@ export default function InvestorDashboard() {
 
           {/* Thesis snippet */}
           {!loadingProfile && profile?.investmentThesis && (
-            <Card className="border-2 border-indigo-100 bg-gradient-to-br from-indigo-50 to-white">
+            <Card className="border-2 border-primary/10 bg-gradient-to-br from-indigo-50 to-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base text-indigo-900">
                   Investment Thesis
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-xs text-indigo-700 leading-relaxed line-clamp-4">
+                <p className="text-xs text-primary leading-relaxed line-clamp-4">
                   {profile.investmentThesis}
                 </p>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-xs text-indigo-600 hover:text-indigo-700 px-0 mt-2"
+                  className="text-xs text-primary hover:text-primary px-0 mt-2"
                   onClick={() => navigate("/app/investor/setup")}
                 >
                   Edit thesis →

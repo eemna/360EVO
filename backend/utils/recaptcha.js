@@ -25,7 +25,11 @@ export const verifyRecaptcha = async (token, expectedAction) => {
   const data = await resp.json();
 
   if (!data.success) {
-    return { ok: false, reason: "verification_failed", errors: data["error-codes"] };
+    return {
+      ok: false,
+      reason: "verification_failed",
+      errors: data["error-codes"],
+    };
   }
 
   if (expectedAction && data.action && data.action !== expectedAction) {

@@ -104,7 +104,7 @@ export default function LeftSidebar({
           </Button>
 
           <Card className="overflow-hidden border-none shadow mb-4">
-            <div className="h-16 bg-gradient-to-r from-blue-600 to-indigo-600" />
+            <div className="h-16 bg-gradient-to-r from-[#C9A84C] to-[#D4B55C]" />
             <div className="relative px-4 pb-4">
               <Avatar className="absolute -top-8 h-16 w-16 border-4 border-white">
                 <AvatarImage src={user?.profile?.avatar || undefined} />
@@ -115,7 +115,7 @@ export default function LeftSidebar({
               <div className="pt-10">
                 <Link
                   to="/app/profile/me"
-                  className="font-semibold hover:text-blue-600"
+                  className="font-semibold hover:text-primary"
                 >
                   {user?.name}
                 </Link>
@@ -149,7 +149,7 @@ export default function LeftSidebar({
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                         isActive
-                          ? "bg-blue-50 text-blue-600 font-medium"
+                          ? "bg-primary/10 text-primary font-medium"
                           : "text-gray-700 hover:bg-gray-100",
                       )}
                     >
