@@ -15,14 +15,18 @@ import {
   updateEmail,
   updateProfile,
   verifyNewEmail,
+  googleAuth,
 } from "../controllers/authController.js";
 import { protect } from "../middleware/auth.js";
 import forgotPasswordRateLimit from "../middleware/forgotPasswordRateLimit.js";
+import loginRateLimit from "../middleware/loginRateLimit.js";
+import { requireRecaptcha } from "../middleware/recaptcha.js";
 
 const router = express.Router();
 
 router.post(
   "/register",
+  requireRecaptcha("register"),
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("email").isEmail().withMessage("Valid email required"),
@@ -33,13 +37,23 @@ router.post(
   ],
   register,
 );
-router.post("/login", login);
+router.post("/login", loginRateLimit, requireRecaptcha("login"), login);
+router.post("/google", requireRecaptcha("google_auth"), googleAuth);
 router.post("/logout", protect, logout);
 router.get("/me", protect, getMe);
 router.post("/verify-email", verifyEmail);
-router.post("/resend-verification", resendVerification);
-router.post("/forgot-password", forgotPasswordRateLimit, forgotPassword);
-router.post("/reset-password", resetPassword);
+router.post(
+  "/resend-verification",
+  requireRecaptcha("resend_verification"),
+  resendVerification,
+);
+router.post(
+  "/forgot-password",
+  requireRecaptcha("forgot_password"),
+  forgotPasswordRateLimit,
+  forgotPassword,
+);
+router.post("/reset-password", requireRecaptcha("reset_password"), resetPassword);
 router.post("/refresh-token", refreshToken);
 router.put("/change-password", protect, changePassword);
 router.put("/update-email", protect, updateEmail);

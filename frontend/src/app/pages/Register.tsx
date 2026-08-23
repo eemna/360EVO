@@ -17,6 +17,8 @@ import { Card, CardContent } from "../components/ui/card";
 import { PasswordStrengthBar } from "../components/ui/password-strength-bar";
 import { useToast } from "../../context/ToastContext";
 import { Eye, EyeOff } from "lucide-react";
+import { useRecaptcha } from "../../hooks/useRecaptcha";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 import { Briefcase, Users, User, TrendingUp, CheckCircle2 } from "lucide-react";
 
 type Role = "member" | "startup" | "expert" | "investor" | null;
@@ -37,6 +39,10 @@ export default function RegistrationPage() {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
+  const { getToken } = useRecaptcha();
+
+  // Honeypot — invisible to humans, bots fill it and get silently rejected
+  const [honeypot, setHoneypot] = useState("");
 
   const inviteToken = searchParams.get("inviteToken");
   const inviteEmail = searchParams.get("email");
@@ -163,8 +169,11 @@ export default function RegistrationPage() {
     }
 
     try {
+      const recaptchaToken = await getToken("register");
       await api.post("/auth/register", {
         name: formData.fullName,
+        website: honeypot,
+        recaptchaToken,
         email: formData.email,
         password: formData.password,
         role: formData.role,
@@ -342,6 +351,13 @@ export default function RegistrationPage() {
                   >
                     Continue
                   </Button>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-white/10" />
+                    <span className="text-white/40 text-xs">or</span>
+                    <div className="flex-1 h-px bg-white/10" />
+                  </div>
+                  <GoogleSignInButton role={formData.role} />
                 </div>
               )}
 
@@ -360,6 +376,23 @@ export default function RegistrationPage() {
                       details below.
                     </p>
                   )}
+
+                  {/* Honeypot — hidden from humans, catches bots */}
+                  <input
+                    type="text"
+                    name="website"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      left: "-9999px",
+                      opacity: 0,
+                      height: 0,
+                    }}
+                  />
 
                   <div className="space-y-2">
                     <Label htmlFor="fullName" className="text-white/80">
@@ -484,7 +517,6 @@ export default function RegistrationPage() {
               {/* Step 3 - role details */}
               {currentStep === 3 && (
                 <div className="space-y-4">
-                  {/* startup fields */}
                   {formData.role === "startup" && (
                     <>
                       <h2 className="text-2xl text-center font-semibold text-white">

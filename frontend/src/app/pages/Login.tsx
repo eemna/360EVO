@@ -5,11 +5,14 @@ import { useToast } from "../../context/ToastContext";
 import { LoadingSpinner } from "../components/ui/LoadingSpinner";
 import { useAuth } from "../../hooks/useAuth";
 import { Eye, EyeOff } from "lucide-react";
+import { useRecaptcha } from "../../hooks/useRecaptcha";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { showToast } = useToast();
+  const { getToken } = useRecaptcha();
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +25,12 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await api.post("/auth/login", { email, password });
+      const recaptchaToken = await getToken("login");
+      const response = await api.post("/auth/login", {
+        email,
+        password,
+        recaptchaToken,
+      });
 
       if (response.data.twoFactorRequired) {
         navigate("/verify-2fa", {
@@ -84,17 +92,15 @@ export default function LoginPage() {
   return (
     <div className="w-full flex items-center justify-center bg-[#e8eef5] px-4 py-8">
       <div className="bg-[#1A2A3A] border border-white/10 rounded-xl shadow-lg p-8 w-full max-w-md">
-        {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <div className="h-14 w-30 rounded-lg bg-white flex items-center justify-center p-1.5">
-            <img
-              src="/logo.png"
-              alt="360EVO"
-              className="h-full w-full object-contain"
-            />
-          </div>
-        </div>
-
+       <div className="flex justify-center mb-6">
+  <div className="h-15 w-60 flex items-center justify-center">
+    <img
+      src="/logo-white.png"
+      alt="360EVO"
+      className="h-full w-full object-contain"
+    />
+  </div>
+</div>
         <h1 className="text-center text-white text-xl font-semibold mb-2">
           Welcome back to 360EVO
         </h1>
@@ -107,7 +113,6 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Email Field - Fixed white text */}
           <div className="space-y-2">
             <label
               htmlFor="email"
@@ -129,7 +134,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Password Field - Fixed white text */}
           <div className="space-y-2">
             <label
               htmlFor="password"
@@ -165,7 +169,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Forgot Password */}
           <div className="flex justify-end">
             <button
               type="button"
@@ -176,7 +179,6 @@ export default function LoginPage() {
             </button>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -193,7 +195,13 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Sign Up Link */}
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-white/10" />
+          <span className="text-white/40 text-xs">or</span>
+          <div className="flex-1 h-px bg-white/10" />
+        </div>
+        <GoogleSignInButton />
+
         <p className="text-center mt-6 text-white/60 text-sm">
           Don't have an account?{" "}
           <button
@@ -204,7 +212,6 @@ export default function LoginPage() {
           </button>
         </p>
 
-        {/* Back to Home */}
         <div className="text-center mt-4">
           <button
             onClick={() => navigate("/")}

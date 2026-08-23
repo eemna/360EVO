@@ -1,0 +1,50 @@
+name: Ops (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "Which ops task to run"
+        required: true
+        type: choice
+        options:
+          - fix-node-env
+          - install-admin-key
+
+jobs:
+  ops:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set NODE_ENV=production in backend/.env
+        if: inputs.task == 'fix-node-env'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/360evo/backend
+            cp .env .env.bak-ops
+            if grep -q '^NODE_ENV=' .env; then
+              sed -i 's/^NODE_ENV=.*/NODE_ENV=production/' .env
+            else
+              echo 'NODE_ENV=production' >> .env
+            fi
+            grep '^NODE_ENV=' .env
+            cd /opt/360evo && docker compose up -d backend
+
+      - name: Install Kimi admin SSH key
+        if: inputs.task == 'install-admin-key'
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            mkdir -p /root/.ssh && chmod 700 /root/.ssh
+            KEY='ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINwSwEJFJMZec6MTITbHgk4NpZY4LdOjOPBG7m21jLfz kimi-admin-360evo'
+            grep -qF 'kimi-admin-360evo' /root/.ssh/authorized_keys || echo "$KEY" >> /root/.ssh/authorized_keys
+            chmod 600 /root/.ssh/authorized_keys
+            echo "key installed"
