@@ -25,7 +25,7 @@ export function Contact() {
     sector: "",
     stage: "",
     email: "",
-    password: "",
+    message: "",
   });
 
   // Investor form state
@@ -35,6 +35,7 @@ export function Contact() {
     checkSize: "",
     sectorFocus: "",
     email: "",
+    message: "",
   });
 
   // Partner form state
@@ -58,12 +59,7 @@ export function Contact() {
 
     try {
       await api.post("/contact", {
-        name: formData.name,
-        email: formData.email,
-        message:
-          persona === "partner"
-            ? partnerForm.lookingFor
-            : `New ${persona} inquiry via contact page.`,
+        ...formData,
         persona,
       });
       setSubmitted(true);
@@ -136,9 +132,8 @@ export function Contact() {
                     <Mail className="text-[#1D9E75]" size={28} />
                   </div>
                   <p className="text-xl text-white leading-relaxed">
-                    {persona === "startup"
-                      ? "You're in. Check your email to finish setting up your profile."
-                      : "Thanks — we review every request personally and typically respond within 2 business days."}
+                    Thanks — we review every request personally and typically
+                    respond within 2 business days.
                   </p>
                 </div>
               ) : (
@@ -146,6 +141,9 @@ export function Contact() {
                   {/* Startup Form */}
                   {persona === "startup" && (
                     <form onSubmit={handleSubmit} className="space-y-6">
+                      <p className="text-white/60 text-sm -mt-2 mb-2">
+                        Tell us about your startup and we'll get back to you.
+                      </p>
                       <div>
                         <label className="block text-white mb-2">
                           Full Name
@@ -251,19 +249,19 @@ export function Contact() {
                       </div>
                       <div>
                         <label className="block text-white mb-2">
-                          Password
+                          Message
                         </label>
-                        <input
-                          type="password"
-                          value={startupForm.password}
+                        <textarea
+                          value={startupForm.message}
                           onChange={(e) =>
                             setStartupForm({
                               ...startupForm,
-                              password: e.target.value,
+                              message: e.target.value,
                             })
                           }
+                          rows={4}
                           className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
-                          placeholder="Create a password"
+                          placeholder="Tell us about your startup..."
                           required
                         />
                       </div>
@@ -368,6 +366,24 @@ export function Contact() {
                           }
                           className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
                           placeholder="you@example.com"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-white mb-2">
+                          Message
+                        </label>
+                        <textarea
+                          value={investorForm.message}
+                          onChange={(e) =>
+                            setInvestorForm({
+                              ...investorForm,
+                              message: e.target.value,
+                            })
+                          }
+                          rows={4}
+                          className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:border-[#1D9E75]"
+                          placeholder="Tell us about your investment focus..."
                           required
                         />
                       </div>
